@@ -1,0 +1,14 @@
+# Python
+venv/
+.env/
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+
+# Data (we keep the structure via .gitkeep, but not the files)
+data/raw/*
+data/indexed/*
+data/pending/*
+logs/
+*.log
