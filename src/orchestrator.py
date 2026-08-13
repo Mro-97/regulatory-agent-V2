@@ -207,30 +207,38 @@ class Orchestrateur:
         evidences: list[EvidenceRecuperee],
     ) -> tuple[list[EvidenceRecuperee], SortieAgent]:
         """
-        Étape 2 (temporelle) : filtrage par date de validité.
-        TODO : implémenter src/agents/temporal.py.
-        Pour l'instant : filtre déterministe sans LLM.
+        Étape 2 : analyse temporelle via AgentTemporel.
+        Filtre déterministe + détection d'anomalies.
+        LLM (Qwen 2.5 7B) activable via use_llm=True quand les modèles
+        sont disponibles.
         """
-        date_ref = date_contexte or datetime.now(timezone.utc).date()
+        from src.agents.temporal import AgentTemporel
 
-        filtrees = [
-            e for e in evidences
-            if e.valid_from <= date_ref and (
-                e.valid_to is None or e.valid_to >= date_ref
-            )
-        ]
+        # use_llm=False par défaut sur Mac A (16 Go) — activer sur Mac B
+        agent = AgentTemporel(use_llm=False)
+        resultat = agent.analyser(
+            question=question,
+            evidences=evidences,
+            date_contexte=date_contexte,
+        )
+
+        contenu = {
+            "date_ref": resultat.date_ref.isoformat(),
+            "avant_filtrage": len(evidences),
+            "apres_filtrage": len(resultat.evidences_applicables),
+            "chevauchements": resultat.chevauchements,
+            "lacunes": resultat.lacunes,
+            "niveau_confiance": resultat.niveau_confiance.value,
+        }
+        if resultat.explication_llm:
+            contenu["explication_llm"] = resultat.explication_llm
 
         sortie = SortieAgent(
             nom_agent="Temporal",
-            machine="Mac_B",
-            contenu={
-                "date_ref": date_ref.isoformat(),
-                "avant_filtrage": len(evidences),
-                "apres_filtrage": len(filtrees),
-                "statut": "filtre_deterministe",  # pas encore de LLM
-            },
+            machine="Mac_A",
+            contenu=contenu,
         )
-        return filtrees, sortie
+        return resultat.evidences_applicables, sortie
 
     async def _etape_explainer(
         self,
