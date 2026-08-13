@@ -5,7 +5,7 @@
 # --- Inférence locale (Apple Silicon) ---
 mlx>=0.16.0
 mlx-lm>=0.16.0
-mlx-embedding-models>=0.0.11
+mlx-embeddings>=0.1.0
 
 # --- API ---
 fastapi>=0.111.0

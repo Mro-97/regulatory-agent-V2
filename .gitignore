@@ -12,3 +12,7 @@ data/indexed/*
 data/pending/*
 logs/
 *.log
+
+# Exclure les données brutes sauf les fichiers de test
+data/raw/*
+!data/raw/test_*.json

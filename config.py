@@ -55,7 +55,7 @@ class Parametres(BaseSettings):
     # DOIT être identique dans les deux pour que les vecteurs soient compatibles.
     # ------------------------------------------------------------------
     modele_embedding: str = Field(
-        default="bge-m3",
+        default="models/bge-m3-mlx",
         description=(
             "Nom du modèle d'embedding dans le registre mlx-embedding-models. "
             "bge-m3 : multilingue, dimension 1024, compatible French regulatory text."
