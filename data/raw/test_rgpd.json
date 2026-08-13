@@ -1,13 +1,16 @@
 {
   "id": "RGPD_2016_679",
   "titre": "Règlement (UE) 2016/679 du Parlement européen et du Conseil du 27 avril 2016",
-  "source": "EUR_LEX",
+  "source": "EUR-Lex",
   "url_source": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32016R0679",
   "publication_date": "2016-05-04",
   "entry_into_force": "2018-05-25",
   "repeal_date": null,
   "version": "2026-08-03",
-  "themes": ["protection_donnees", "numerique"],
+  "themes": [
+    "protection_donnees",
+    "numerique"
+  ],
   "chapitres": [
     {
       "id": "chap1",
@@ -31,7 +34,10 @@
             "valid_from": "2018-05-25",
             "valid_to": null
           },
-          "citations": ["art_33", "art_35"]
+          "citations": [
+            "art_33",
+            "art_35"
+          ]
         },
         {
           "id": "art_33",
@@ -41,7 +47,10 @@
             "valid_from": "2018-05-25",
             "valid_to": null
           },
-          "citations": ["art_32", "art_34"]
+          "citations": [
+            "art_32",
+            "art_34"
+          ]
         }
       ]
     }
@@ -49,7 +58,7 @@
   "textes_lies": [
     {
       "ref": "NIS2_2022_2555",
-      "relation": "SE_CHEVAUCHE",
+      "relation": "se_chevauche",
       "commentaire": "Obligations de cybersécurité similaires"
     }
   ]

@@ -10,6 +10,7 @@ import json
 import logging
 import sys
 from pathlib import Path
+import uuid
 from datetime import date
 from typing import List, Optional
 import mlx_embedding_models  # ou mlx_embeddings selon l'installation
@@ -27,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 class Ingester:
     def __init__(self, collection_name: str = "regulatory_chunks", recreate: bool = False):
-        self.client = QdrantClient(url=cfg.qdrant_url)
+        self.client = QdrantClient(host=cfg.qdrant_host, port=cfg.qdrant_port)
         self.collection_name = collection_name
         self.embedding_model = self._load_embedding_model()
 
@@ -35,22 +36,11 @@ class Ingester:
             self._recreate_collection()
 
     def _load_embedding_model(self):
-        """Charge le modèle d'embedding MLX (bge-m3)."""
-        # bge-m3 est un bon modèle pour les embeddings
-        # Si mlx-embedding-models est installé, on peut l'utiliser directement
-        try:
-            from mlx_embedding_models import MLXEmbedding
-            model = MLXEmbedding("bge-m3", trust_remote_code=True)
-            logger.info(f"✅ Modèle d'embedding chargé : {model}")
-            return model
-        except ImportError:
-            # Fallback : utiliser MLX pour charger un modèle d'embedding via mlx-lm ?
-            # Alternative plus simple : utiliser un modèle d'embedding via mlx-lm
-            from src.mlx_utils import get_model
-            # On utilise le modèle retriever pour faire de l'embedding (Mistral)
-            model = get_model(cfg.model_retriever)
-            logger.info(f"⚠️ Fallback : modèle {cfg.model_retriever} utilisé pour l'embedding")
-            return model
+        """Charge le modèle d'embedding MLX (bge-m3) via mlx_utils."""
+        from src.mlx_utils import get_embedding
+        model = get_embedding(cfg.modele_embedding)
+        logger.info(f"Modèle d'embedding : {cfg.modele_embedding}")
+        return model
 
     def _recreate_collection(self):
         """Supprime et recrée la collection Qdrant."""
@@ -64,20 +54,13 @@ class Ingester:
         logger.info(f"✅ Collection '{self.collection_name}' créée (dim=1024)")
 
     def embed_chunk(self, text: str) -> List[float]:
-        """Génère un embedding pour un chunk de texte."""
-        # Si on a un vrai modèle d'embedding (bge-m3)
-        if hasattr(self.embedding_model, "encode"):
-            return self.embedding_model.encode(text).tolist()
-        # Sinon, fallback vers un modèle textuel (Mistral) qui peut produire un embedding
-        # Ici on simule un embedding de taille 1024 pour le test
-        # À remplacer par une vraie logique MLX
-        import numpy as np
-        import hashlib
-        # Simuler un embedding à partir du hash du texte (pour test)
-        hash_val = int(hashlib.sha256(text.encode()).hexdigest(), 16) % 10000
-        # Générer un vecteur de 1024 float entre 0 et 1
-        rng = np.random.default_rng(seed=hash_val)
-        return rng.random(1024).tolist()
+        """Génère un embedding pour un chunk de texte via MLXEmbedding (bge-m3)."""
+        vecteur = self.embedding_model.encode(text)
+        if isinstance(vecteur, list):
+            return vecteur
+        if hasattr(vecteur, "tolist"):
+            return vecteur.tolist()
+        return list(vecteur)
 
     def chunk_document(self, doc: DocumentReglementaire) -> List[MetadonneesChunk]:
         """Découpe un document en chunks (un par article)."""
@@ -87,7 +70,7 @@ class Ingester:
                 # On peut aussi découper l'article en plusieurs chunks si trop long
                 # Ici on prend tout le texte comme un chunk
                 chunk = MetadonneesChunk(
-                    chunk_id=f"{doc.id}_{article.id}",
+                    chunk_id=str(uuid.uuid4()),
                     document_id=doc.id,
                     chapitre_id=chapitre.id,
                     article_id=article.id,
