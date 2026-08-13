@@ -245,39 +245,34 @@ class Orchestrateur:
         question: str,
         evidences: list[EvidenceRecuperee],
         type_pipeline: str,
+        date_ref=None,
     ) -> tuple[str, NiveauConfiance, SortieAgent]:
         """
-        Étape 3 : génération de la réponse en langage naturel.
-        TODO : implémenter src/agents/explainer.py (Qwen 2.5 7B).
-        Pour l'instant : assemblage des textes récupérés.
+        Étape 3 : synthèse via AgentExplainer.
+        Assemblage structuré (use_llm=False) ou Qwen 2.5 7B (use_llm=True).
         """
-        if not evidences:
-            reponse = (
-                "Aucun passage réglementaire pertinent n'a été trouvé. "
-                "Vérifiez que les documents correspondants ont été ingérés."
-            )
-            confiance = NiveauConfiance.INCERTAIN
-        else:
-            # Assemblage brut — sera remplacé par Qwen 2.5 7B
-            extraits = "\n\n".join(
-                f"[{e.document_id} / {e.article_id}] {e.texte_extrait}"
-                for e in evidences[:5]
-            )
-            reponse = (
-                f"Passages réglementaires pertinents récupérés "
-                f"(réponse synthétisée à venir) :\n\n{extraits}"
-            )
-            confiance = NiveauConfiance.MOYEN
+        from src.agents.explainer import AgentExplainer
+
+        # use_llm=False par défaut — activer quand Qwen est disponible
+        agent = AgentExplainer(use_llm=False)
+        resultat = agent.expliquer(
+            question=question,
+            evidences=evidences,
+            date_ref=date_ref,
+            type_pipeline=type_pipeline,
+        )
 
         sortie = SortieAgent(
             nom_agent="Explainer",
-            machine="Mac_B",
+            machine="Mac_A",
             contenu={
-                "statut": "assemblage_brut",  # pas encore de LLM
+                "mode": resultat.mode,
                 "evidences_utilisees": len(evidences),
+                "sources_citees": len(resultat.sources_citees),
+                "niveau_confiance": resultat.niveau_confiance.value,
             },
         )
-        return reponse, confiance, sortie
+        return resultat.reponse, resultat.niveau_confiance, sortie
 
     # ------------------------------------------------------------------
     # Pipeline principal
@@ -371,6 +366,7 @@ class Orchestrateur:
                 question=requete.question,
                 evidences=evidences,
                 type_pipeline=type_pipeline,
+                date_ref=requete.date_contexte,
             )
             agents_executes.append(sortie_explainer)
         except Exception as exc:
