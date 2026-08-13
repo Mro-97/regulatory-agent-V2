@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from enum import Enum
 from typing import Any, Optional
 from uuid import UUID, uuid4
@@ -267,7 +267,7 @@ class SortieAgent(BaseModel):
 
     nom_agent: str = Field(..., description="Nom de l'agent.")
     machine: str = Field(..., description="Machine d'exécution.")
-    horodatage: datetime = Field(default_factory=datetime.utcnow)
+    horodatage: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     contenu: dict[str, Any] = Field(default_factory=dict)
     duree_ms: Optional[int] = Field(default=None, ge=0)
 
@@ -279,7 +279,7 @@ class EnregistrementAudit(BaseModel):
     """
 
     request_id: UUID = Field(default_factory=uuid4)
-    horodatage: datetime = Field(default_factory=datetime.utcnow)
+    horodatage: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     user_query: str = Field(..., description="Question brute de l'utilisateur.")
     date_contexte: Optional[date] = Field(default=None, description="Date réglementaire de contexte.")
     documents_recuperes: list[str] = Field(default_factory=list)
@@ -309,7 +309,7 @@ class TacheValidation(BaseModel):
     tache_id: UUID = Field(default_factory=uuid4)
     type_file: TypeFilePendante = Field(..., description="File Redis de destination.")
     statut: StatutValidation = Field(default=StatutValidation.EN_ATTENTE)
-    horodatage_creation: datetime = Field(default_factory=datetime.utcnow)
+    horodatage_creation: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     horodatage_traitement: Optional[datetime] = Field(default=None)
     request_id: Optional[UUID] = Field(default=None)
     contenu: dict[str, Any] = Field(default_factory=dict)
@@ -397,7 +397,7 @@ Licence : propriétaire — Regulatory Agent V2.
 
 import hashlib
 import json
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from enum import Enum
 from typing import Any, Optional
 from uuid import UUID, uuid4
@@ -651,7 +651,7 @@ class SortieAgent(BaseModel):
 
     nom_agent: str = Field(..., description="Nom de l'agent.")
     machine: str = Field(..., description="Machine d'exécution.")
-    horodatage: datetime = Field(default_factory=datetime.utcnow)
+    horodatage: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     contenu: dict[str, Any] = Field(default_factory=dict)
     duree_ms: Optional[int] = Field(default=None, ge=0)
 
@@ -663,7 +663,7 @@ class EnregistrementAudit(BaseModel):
     """
 
     request_id: UUID = Field(default_factory=uuid4)
-    horodatage: datetime = Field(default_factory=datetime.utcnow)
+    horodatage: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     user_query: str = Field(..., description="Question brute de l'utilisateur.")
     date_contexte: Optional[date] = Field(default=None, description="Date réglementaire de contexte.")
     documents_recuperes: list[str] = Field(default_factory=list)
@@ -693,7 +693,7 @@ class TacheValidation(BaseModel):
     tache_id: UUID = Field(default_factory=uuid4)
     type_file: TypeFilePendante = Field(..., description="File Redis de destination.")
     statut: StatutValidation = Field(default=StatutValidation.EN_ATTENTE)
-    horodatage_creation: datetime = Field(default_factory=datetime.utcnow)
+    horodatage_creation: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     horodatage_traitement: Optional[datetime] = Field(default=None)
     request_id: Optional[UUID] = Field(default=None)
     contenu: dict[str, Any] = Field(default_factory=dict)
