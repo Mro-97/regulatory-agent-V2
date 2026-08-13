@@ -1,0 +1,71 @@
+{
+  "id": "NIS2_2022_2555",
+  "titre": "Directive (UE) 2022/2555 du Parlement européen et du Conseil concernant des mesures destinées à assurer un niveau élevé commun de cybersécurité dans l'ensemble de l'Union (NIS 2)",
+  "source": "EUR-Lex",
+  "url_source": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32022L2555",
+  "publication_date": "2022-12-27",
+  "entry_into_force": "2023-01-16",
+  "repeal_date": null,
+  "version": "2024-10-17",
+  "themes": ["cybersecurite", "securite_reseaux", "incidents", "numerique"],
+  "chapitres": [
+    {
+      "id": "chap1",
+      "titre": "Dispositions générales",
+      "articles": [
+        {
+          "id": "art_1",
+          "titre": "Objet",
+          "texte": "La présente directive établit des mesures visant à assurer un niveau élevé commun de cybersécurité dans l'Union, en vue d'améliorer le fonctionnement du marché intérieur. À cette fin, la présente directive prévoit : a) des obligations imposant aux États membres d'adopter des stratégies nationales en matière de cybersécurité ; b) des règles relatives aux capacités des autorités compétentes, des autorités uniques de points de contact et des équipes de réponse aux incidents de sécurité informatique (CSIRT) dans les États membres ; c) des obligations en matière de gestion des risques de cybersécurité et d'information imposées aux entités essentielles et importantes.",
+          "validite": {"valid_from": "2023-01-16", "valid_to": null},
+          "citations": ["art_2", "art_21", "art_23"]
+        },
+        {
+          "id": "art_2",
+          "titre": "Champ d'application",
+          "texte": "La présente directive s'applique aux entités publiques et privées des types mentionnés à l'annexe I ou II qui remplissent les conditions prévues à l'article 3. La présente directive ne s'applique pas aux entités qui exercent des activités dans des domaines tels que la défense nationale, la sécurité nationale, la sécurité publique, ou les services répressifs, y compris la prévention, l'enquête, la détection et la poursuite des infractions pénales. La présente directive s'applique également sans préjudice des règles adoptées au niveau de l'Union concernant la protection des données à caractère personnel.",
+          "validite": {"valid_from": "2023-01-16", "valid_to": null},
+          "citations": ["art_3"]
+        },
+        {
+          "id": "art_3",
+          "titre": "Entités essentielles et importantes",
+          "texte": "Aux fins de la présente directive, sont considérées comme entités essentielles : a) les entités des types mentionnés à l'annexe I qui dépassent les seuils pour les moyennes entreprises prévus à l'article 2, paragraphe 1, de l'annexe de la recommandation 2003/361/CE ; b) les fournisseurs de réseaux de communications électroniques publics ou de services de communications électroniques accessibles au public qui dépassent les seuils pour les moyennes entreprises ; c) les entités qualifiées d'essentielles par un État membre. Sont considérées comme entités importantes les entités des types mentionnés à l'annexe I ou II qui ne relèvent pas du paragraphe 1 et qui dépassent les seuils pour les petites entreprises.",
+          "validite": {"valid_from": "2023-01-16", "valid_to": null},
+          "citations": ["art_2"]
+        }
+      ]
+    },
+    {
+      "id": "chap4",
+      "titre": "Gestion des risques de cybersécurité et obligations d'information",
+      "articles": [
+        {
+          "id": "art_21",
+          "titre": "Mesures de gestion des risques de cybersécurité",
+          "texte": "Les États membres veillent à ce que les entités essentielles et importantes prennent des mesures techniques, opérationnelles et organisationnelles appropriées et proportionnées pour gérer les risques qui menacent la sécurité des réseaux et des systèmes d'information que ces entités utilisent pour leurs activités ou pour la fourniture de leurs services, et pour prévenir ou minimiser l'impact des incidents sur les destinataires de leurs services et sur d'autres services. Ces mesures garantissent un niveau de sécurité des réseaux et des systèmes d'information adapté aux risques existants, compte tenu de l'état des connaissances et, s'il y a lieu, des normes européennes et internationales applicables. Les mesures visées comprennent au moins les éléments suivants : a) les politiques relatives à l'analyse des risques et à la sécurité des systèmes d'information ; b) la gestion des incidents ; c) la continuité des activités, par exemple la gestion des sauvegardes et la reprise des activités, et la gestion des crises ; d) la sécurité de la chaîne d'approvisionnement, y compris les aspects de sécurité concernant les relations entre chaque entité et ses fournisseurs directs ou prestataires de services ; e) la sécurité de l'acquisition, du développement et de la maintenance des réseaux et des systèmes d'information, y compris le traitement et la divulgation des vulnérabilités ; f) des politiques et des procédures pour évaluer l'efficacité des mesures de gestion des risques de cybersécurité ; g) les pratiques de base en matière de cyberhygiène et la formation à la cybersécurité ; h) des politiques et des procédures relatives à l'utilisation de la cryptographie et, s'il y a lieu, du chiffrement ; i) la sécurité des ressources humaines, des politiques de contrôle d'accès et la gestion des actifs ; j) l'utilisation de solutions d'authentification à plusieurs facteurs ou d'authentification continue.",
+          "validite": {"valid_from": "2024-10-17", "valid_to": null},
+          "citations": ["art_23", "art_24"]
+        },
+        {
+          "id": "art_23",
+          "titre": "Obligations d'information",
+          "texte": "Les États membres veillent à ce que les entités essentielles et importantes notifient, sans retard injustifié, à leur CSIRT ou, s'il y a lieu, à leur autorité compétente, tout incident ayant un impact significatif sur la fourniture de leurs services. Le cas échéant, les entités concernées notifient sans retard injustifié les destinataires de leurs services qui sont susceptibles d'être affectés par une cybermenace significative de toute mesure ou tout recours que ces destinataires peuvent prendre en réponse à cette menace. La notification contient les informations permettant à l'autorité compétente ou au CSIRT de déterminer tout impact transfrontalier éventuel de l'incident. La notification initiale est effectuée sans retard injustifié et en tout état de cause dans un délai de 24 heures à compter du moment où l'entité a eu connaissance de l'incident. La notification initiale indique notamment si l'incident est suspecté d'être causé par des actes illicites ou malveillants. Dans un délai de 72 heures à compter du moment où l'entité a eu connaissance de l'incident, un rapport d'incident est communiqué à l'autorité compétente ou au CSIRT, qui met à jour les informations fournies dans la notification initiale.",
+          "validite": {"valid_from": "2024-10-17", "valid_to": null},
+          "citations": ["art_21", "art_30"]
+        },
+        {
+          "id": "art_24",
+          "titre": "Utilisation de schémas européens de certification de cybersécurité",
+          "texte": "Pour démontrer la conformité avec certaines exigences prévues à l'article 21, les États membres peuvent exiger des entités essentielles et importantes d'utiliser des produits TIC, services TIC et processus TIC particuliers certifiés dans le cadre de schémas européens de certification de cybersécurité adoptés conformément à l'article 49 du règlement (UE) 2019/881. En outre, la Commission peut adopter des actes d'exécution précisant les catégories d'entités essentielles et importantes qui sont tenues d'utiliser des produits TIC, services TIC et processus TIC certifiés particuliers.",
+          "validite": {"valid_from": "2024-10-17", "valid_to": null},
+          "citations": ["art_21"]
+        }
+      ]
+    }
+  ],
+  "textes_lies": [
+    {"ref": "RGPD_2016_679", "relation": "se_chevauche", "commentaire": "Obligations communes de sécurité et notification d'incidents"},
+    {"ref": "NIS1_2016_1148", "relation": "abroge", "commentaire": "NIS2 abroge la directive NIS1"}
+  ]
+}

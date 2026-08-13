@@ -1,0 +1,71 @@
+{
+  "id": "ANSSI_RECOMMANDATIONS_2023",
+  "titre": "Recommandations de sécurité pour les systèmes d'information — ANSSI 2023",
+  "source": "ANSSI",
+  "url_source": "https://www.ssi.gouv.fr/guide/recommandations-de-securite-relatives-aux-systemes-dinformation/",
+  "publication_date": "2023-06-01",
+  "entry_into_force": "2023-06-01",
+  "repeal_date": null,
+  "version": "2023-06-01",
+  "themes": ["cybersecurite", "systemes_information", "securite", "bonnes_pratiques"],
+  "chapitres": [
+    {
+      "id": "chap1",
+      "titre": "Gouvernance de la sécurité",
+      "articles": [
+        {
+          "id": "rec_1",
+          "titre": "Politique de sécurité des systèmes d'information",
+          "texte": "Toute organisation traitant des données sensibles doit disposer d'une politique de sécurité des systèmes d'information (PSSI) formalisée et approuvée par la direction. Cette politique doit définir les objectifs de sécurité, les responsabilités, les règles et les procédures applicables. Elle doit être révisée régulièrement (au minimum annuellement) et après tout incident de sécurité majeur. La PSSI doit couvrir au minimum : la classification des informations et des actifs ; la gestion des accès et des identités ; la sécurité physique et environnementale ; la gestion des incidents de sécurité ; la continuité d'activité ; la conformité réglementaire.",
+          "validite": {"valid_from": "2023-06-01", "valid_to": null},
+          "citations": ["rec_2", "rec_3"]
+        },
+        {
+          "id": "rec_2",
+          "titre": "Gestion des risques",
+          "texte": "L'analyse de risque est le fondement de toute démarche de sécurité. Elle permet d'identifier les menaces pesant sur le système d'information, d'évaluer leur probabilité et leur impact, et de définir les mesures de traitement appropriées. L'ANSSI recommande d'utiliser la méthode EBIOS Risk Manager pour réaliser les analyses de risque. Cette méthode structurée permet d'identifier les sources de risque, les objets essentiels à protéger, les scénarios de menace et les mesures de sécurité à mettre en place. L'analyse de risque doit être actualisée régulièrement et à chaque évolution significative du système d'information.",
+          "validite": {"valid_from": "2023-06-01", "valid_to": null},
+          "citations": ["rec_1"]
+        },
+        {
+          "id": "rec_3",
+          "titre": "Cloisonnement des réseaux",
+          "texte": "Le cloisonnement des réseaux permet de limiter la propagation d'une attaque en cas de compromission d'un segment du réseau. L'ANSSI recommande de : segmenter le réseau en zones de sécurité homogènes selon la sensibilité des données et des systèmes ; filtrer les flux entre les zones à l'aide de pare-feux et de proxys applicatifs ; mettre en place des systèmes de détection et de prévention des intrusions (IDS/IPS) ; interdire tout flux non justifié par un besoin opérationnel ; auditer régulièrement les règles de filtrage.",
+          "validite": {"valid_from": "2023-06-01", "valid_to": null},
+          "citations": ["rec_4"]
+        },
+        {
+          "id": "rec_4",
+          "titre": "Gestion des incidents de sécurité",
+          "texte": "La gestion des incidents de sécurité comprend la détection, la qualification, le traitement et le retour d'expérience sur les incidents. L'ANSSI recommande de : mettre en place un processus formalisé de gestion des incidents couvrant toutes les phases (détection, confinement, éradication, restauration, retour d'expérience) ; désigner une équipe de réponse aux incidents (CSIRT ou équivalent) ; documenter tous les incidents et les actions menées ; notifier les autorités compétentes (ANSSI pour les opérateurs d'importance vitale, CNIL en cas de violation de données personnelles) dans les délais réglementaires ; réaliser des exercices de gestion de crise réguliers.",
+          "validite": {"valid_from": "2023-06-01", "valid_to": null},
+          "citations": ["rec_1", "rec_2"]
+        }
+      ]
+    },
+    {
+      "id": "chap2",
+      "titre": "Sécurité technique",
+      "articles": [
+        {
+          "id": "rec_5",
+          "titre": "Gestion des mises à jour",
+          "texte": "Les vulnérabilités logicielles sont une des principales causes de compromission des systèmes d'information. L'ANSSI recommande de : maintenir un inventaire exhaustif des logiciels et des versions installés ; définir et appliquer une politique de gestion des correctifs (patch management) ; appliquer les correctifs de sécurité dans les meilleurs délais, en priorité pour les vulnérabilités critiques (sous 72 heures pour les vulnérabilités exploitées activement) ; mettre en place un processus de test des correctifs avant déploiement en production ; abonner les équipes sécurité aux bulletins d'alerte des éditeurs et des CERT.",
+          "validite": {"valid_from": "2023-06-01", "valid_to": null},
+          "citations": []
+        },
+        {
+          "id": "rec_6",
+          "titre": "Sauvegardes et continuité d'activité",
+          "texte": "Les sauvegardes sont essentielles pour garantir la continuité d'activité en cas d'incident. L'ANSSI recommande d'appliquer la règle 3-2-1 : 3 copies des données, sur 2 supports différents, dont 1 hors site. Les sauvegardes doivent être : chiffrées pour les données sensibles ; testées régulièrement (restauration complète au minimum annuelle) ; protégées contre les rançongiciels (sauvegardes hors ligne ou immuables) ; conservées pendant une durée adaptée aux obligations légales et aux besoins métier. Un plan de continuité d'activité (PCA) et un plan de reprise d'activité (PRA) doivent être formalisés et testés.",
+          "validite": {"valid_from": "2023-06-01", "valid_to": null},
+          "citations": ["rec_4"]
+        }
+      ]
+    }
+  ],
+  "textes_lies": [
+    {"ref": "NIS2_2022_2555", "relation": "complete", "commentaire": "Guide pratique pour les entités NIS2"},
+    {"ref": "RGPD_2016_679", "relation": "reference", "commentaire": "Mesures de sécurité art. 32 RGPD"}
+  ]
+}
