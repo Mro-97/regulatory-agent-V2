@@ -375,6 +375,27 @@ class Orchestrateur:
             niveau_confiance = NiveauConfiance.INCERTAIN
 
         # ----------------------------------------------------------
+        # Mode real — Étape 4 : Citations
+        # ----------------------------------------------------------
+        try:
+            from src.agents.citation import AgentCitation
+            agent_citation = AgentCitation(use_llm=False)
+            resultat_citation = agent_citation.generate(evidences=evidences)
+            agents_executes.append(SortieAgent(
+                nom_agent="Citation",
+                machine="Mac_A",
+                contenu={
+                    "mode": resultat_citation.mode,
+                    "verifiees": len(resultat_citation.citations_verifiees),
+                    "douteuses": len(resultat_citation.citations_douteuses),
+                },
+            ))
+            if resultat_citation.avertissement:
+                logger.warning("Citation : %s", resultat_citation.avertissement)
+        except Exception as exc:
+            logger.warning("Agent Citation échoué, ignoré : %s", exc)
+
+        # ----------------------------------------------------------
         # Validation humaine
         # ----------------------------------------------------------
         soumettre_validation = (
