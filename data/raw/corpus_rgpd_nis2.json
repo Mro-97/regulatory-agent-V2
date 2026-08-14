@@ -1,0 +1,3736 @@
+[
+  {
+    "id": "RGPD_2016_679",
+    "titre": "Texte reglementaire RGPD_2016_679",
+    "source": "EUR-Lex",
+    "publication_date": "2008-01-22",
+    "entry_into_force": "2010-01-14",
+    "repeal_date": null,
+    "version": "2013-07-31",
+    "themes": [
+      "protection_donnees",
+      "cybersecurite",
+      "numerique",
+      "vie_privee"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement RGPD_2016_679. Les organisations disposent d'un délai de 21 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2010-01-14",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_94_33",
+              "RoHS_2011_65"
+            ]
+          },
+          {
+            "id": "art_2_v1",
+            "titre": "Article 2 — Version initiale",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement RGPD_2016_679. Les organisations disposent d'un délai de 22 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2010-01-14",
+              "valid_to": "2012-12-13"
+            },
+            "citations": [
+              "DIRECTIVE_2013_40",
+              "RoHS_2011_65"
+            ]
+          },
+          {
+            "id": "art_2_v2",
+            "titre": "Article 2 — Version amendée",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement RGPD_2016_679. Les organisations disposent d'un délai de 22 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2012-12-14",
+              "valid_to": null
+            },
+            "citations": [
+              "RoHS_2011_65",
+              "DIRECTIVE_2013_40"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement RGPD_2016_679. Les organisations disposent d'un délai de 22 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2010-01-14",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2013_40",
+              "DIRECTIVE_94_33"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement RGPD_2016_679. Les organisations disposent d'un délai de 14 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2010-01-14",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2013_40",
+              "RoHS_2011_65"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement RGPD_2016_679. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2010-01-14",
+              "valid_to": null
+            },
+            "citations": [
+              "RoHS_2011_65",
+              "DIRECTIVE_94_33"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "ISO_12100",
+        "relation": "complete",
+        "commentaire": "Relation RGPD_2016_679-ISO_12100"
+      },
+      {
+        "ref": "DIRECTIVE_2018_1972",
+        "relation": "complete",
+        "commentaire": "Relation RGPD_2016_679-DIRECTIVE_2018_1972"
+      },
+      {
+        "ref": "DIRECTIVE_2006_25",
+        "relation": "reference",
+        "commentaire": "Relation RGPD_2016_679-DIRECTIVE_2006_25"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "rgpd_nis2"
+    }
+  },
+  {
+    "id": "NIS2_2022_2555",
+    "titre": "Texte reglementaire NIS2_2022_2555",
+    "source": "EUR-Lex",
+    "publication_date": "2012-06-29",
+    "entry_into_force": "2013-11-26",
+    "repeal_date": "2020-06-24",
+    "version": "2019-04-19",
+    "themes": [
+      "protection_donnees",
+      "cybersecurite",
+      "numerique",
+      "vie_privee"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement NIS2_2022_2555. Les organisations disposent d'un délai de 19 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2013-11-26",
+              "valid_to": "2020-06-24"
+            },
+            "citations": [
+              "DIRECTIVE_2009_73",
+              "DIRECTIVE_2009_28"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement NIS2_2022_2555. Les organisations disposent d'un délai de 15 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2013-11-26",
+              "valid_to": "2020-06-24"
+            },
+            "citations": [
+              "CNIL_DELIB_2020",
+              "DIRECTIVE_2009_28"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement NIS2_2022_2555. Les organisations disposent d'un délai de 17 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2013-11-26",
+              "valid_to": "2020-06-24"
+            },
+            "citations": [
+              "DIRECTIVE_2009_28",
+              "DIRECTIVE_2009_73"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement NIS2_2022_2555. Les organisations disposent d'un délai de 23 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2013-11-26",
+              "valid_to": "2020-06-24"
+            },
+            "citations": [
+              "CNIL_DELIB_2020",
+              "DIRECTIVE_2009_28"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement NIS2_2022_2555. Les organisations disposent d'un délai de 13 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2013-11-26",
+              "valid_to": "2020-06-24"
+            },
+            "citations": [
+              "DIRECTIVE_2009_73",
+              "DIRECTIVE_2009_28"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement NIS2_2022_2555. Les organisations disposent d'un délai de 5 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2013-11-26",
+              "valid_to": "2020-06-24"
+            },
+            "citations": [
+              "CNIL_DELIB_2020",
+              "DIRECTIVE_2009_73"
+            ]
+          },
+          {
+            "id": "art_7",
+            "titre": "Article 7",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement NIS2_2022_2555. Les organisations disposent d'un délai de 21 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2013-11-26",
+              "valid_to": "2020-06-24"
+            },
+            "citations": [
+              "CNIL_DELIB_2020",
+              "DIRECTIVE_2009_28"
+            ]
+          },
+          {
+            "id": "art_8",
+            "titre": "Article 8",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement NIS2_2022_2555. Les organisations disposent d'un délai de 13 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2013-11-26",
+              "valid_to": "2020-06-24"
+            },
+            "citations": [
+              "CNIL_DELIB_2020",
+              "DIRECTIVE_2009_73"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2009_125_EN",
+        "relation": "complete",
+        "commentaire": "Relation NIS2_2022_2555-DIRECTIVE_2009_125_EN"
+      },
+      {
+        "ref": "EN_ISO_4414",
+        "relation": "reference",
+        "commentaire": "Relation NIS2_2022_2555-EN_ISO_4414"
+      },
+      {
+        "ref": "DIRECTIVE_2012_34",
+        "relation": "reference",
+        "commentaire": "Relation NIS2_2022_2555-DIRECTIVE_2012_34"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "rgpd_nis2"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2016_680",
+    "titre": "Texte reglementaire DIRECTIVE_2016_680",
+    "source": "EUR-Lex",
+    "publication_date": "2022-04-25",
+    "entry_into_force": "2023-03-22",
+    "repeal_date": null,
+    "version": "2023-03-22",
+    "themes": [
+      "protection_donnees",
+      "cybersecurite",
+      "numerique",
+      "vie_privee"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2016_680. Les organisations disposent d'un délai de 23 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2023-03-22",
+              "valid_to": null
+            },
+            "citations": [
+              "CYBER_ACT_2019_881",
+              "REGULATION_2018_1725"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2016_680. Les organisations disposent d'un délai de 23 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2023-03-22",
+              "valid_to": null
+            },
+            "citations": [
+              "CYBER_ACT_2019_881",
+              "DIRECTIVE_2004_37"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2016_680. Les organisations disposent d'un délai de 17 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2023-03-22",
+              "valid_to": null
+            },
+            "citations": [
+              "CYBER_ACT_2019_881",
+              "DIRECTIVE_2004_37"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2016_680. Les organisations disposent d'un délai de 19 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2023-03-22",
+              "valid_to": null
+            },
+            "citations": [
+              "CYBER_ACT_2019_881",
+              "DIRECTIVE_2004_37"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2016_680. Les organisations disposent d'un délai de 14 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2023-03-22",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2004_37",
+              "REGULATION_2018_1725"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2016_680. Les organisations disposent d'un délai de 17 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2023-03-22",
+              "valid_to": null
+            },
+            "citations": [
+              "REGULATION_2018_1725",
+              "DIRECTIVE_2004_37"
+            ]
+          },
+          {
+            "id": "art_7",
+            "titre": "Article 7",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2016_680. Les organisations disposent d'un délai de 21 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2023-03-22",
+              "valid_to": null
+            },
+            "citations": [
+              "CYBER_ACT_2019_881",
+              "REGULATION_2018_1725"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2008_114",
+        "relation": "modifie",
+        "commentaire": "Relation DIRECTIVE_2016_680-DIRECTIVE_2008_114"
+      },
+      {
+        "ref": "CNIL_DELIB_2022",
+        "relation": "se_chevauche",
+        "commentaire": "Relation DIRECTIVE_2016_680-CNIL_DELIB_2022"
+      },
+      {
+        "ref": "EN_ISO_14122",
+        "relation": "reference",
+        "commentaire": "Relation DIRECTIVE_2016_680-EN_ISO_14122"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "rgpd_nis2"
+    }
+  },
+  {
+    "id": "CNIL_DELIB_2019",
+    "titre": "Texte reglementaire CNIL_DELIB_2019",
+    "source": "EUR-Lex",
+    "publication_date": "2022-01-08",
+    "entry_into_force": "2022-10-01",
+    "repeal_date": null,
+    "version": "2022-10-01",
+    "themes": [
+      "protection_donnees",
+      "cybersecurite",
+      "numerique",
+      "vie_privee"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement CNIL_DELIB_2019. Les organisations disposent d'un délai de 14 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-10-01",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2003_10",
+              "DIRECTIVE_2015_2193"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement CNIL_DELIB_2019. Les organisations disposent d'un délai de 13 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-10-01",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_60204",
+              "DIRECTIVE_2003_10"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement CNIL_DELIB_2019. Les organisations disposent d'un délai de 13 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-10-01",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2003_10",
+              "DIRECTIVE_2015_2193"
+            ]
+          },
+          {
+            "id": "art_4_v1",
+            "titre": "Article 4 — Version initiale",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement CNIL_DELIB_2019. Les organisations disposent d'un délai de 13 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-10-01",
+              "valid_to": "2026-05-02"
+            },
+            "citations": [
+              "DIRECTIVE_2003_10",
+              "DIRECTIVE_2015_2193"
+            ]
+          },
+          {
+            "id": "art_4_v2",
+            "titre": "Article 4 — Version amendée",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement CNIL_DELIB_2019. Les organisations disposent d'un délai de 13 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2026-05-03",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2015_2193",
+              "DIRECTIVE_2003_10"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement CNIL_DELIB_2019. Les organisations disposent d'un délai de 22 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-10-01",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_60204",
+              "DIRECTIVE_2003_10"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement CNIL_DELIB_2019. Les organisations disposent d'un délai de 23 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-10-01",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_60204",
+              "DIRECTIVE_2015_2193"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2011_92",
+        "relation": "se_chevauche",
+        "commentaire": "Relation CNIL_DELIB_2019-DIRECTIVE_2011_92"
+      },
+      {
+        "ref": "DIRECTIVE_2009_125_EN",
+        "relation": "reference",
+        "commentaire": "Relation CNIL_DELIB_2019-DIRECTIVE_2009_125_EN"
+      },
+      {
+        "ref": "DIRECTIVE_2012_19",
+        "relation": "reference",
+        "commentaire": "Relation CNIL_DELIB_2019-DIRECTIVE_2012_19"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "rgpd_nis2"
+    }
+  },
+  {
+    "id": "CNIL_DELIB_2020",
+    "titre": "Texte reglementaire CNIL_DELIB_2020",
+    "source": "EUR-Lex",
+    "publication_date": "2010-01-16",
+    "entry_into_force": "2011-02-19",
+    "repeal_date": null,
+    "version": "2013-03-18",
+    "themes": [
+      "protection_donnees",
+      "cybersecurite",
+      "numerique",
+      "vie_privee"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement CNIL_DELIB_2020. Les organisations disposent d'un délai de 6 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2011-02-19",
+              "valid_to": null
+            },
+            "citations": [
+              "NIS1_2016_1148",
+              "ANSSI_GUIDE_CLOUD"
+            ]
+          },
+          {
+            "id": "art_2_v1",
+            "titre": "Article 2 — Version initiale",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement CNIL_DELIB_2020. Les organisations disposent d'un délai de 22 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2011-02-19",
+              "valid_to": "2017-05-11"
+            },
+            "citations": [
+              "ANSSI_GUIDE_CLOUD",
+              "NIS1_2016_1148"
+            ]
+          },
+          {
+            "id": "art_2_v2",
+            "titre": "Article 2 — Version amendée",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement CNIL_DELIB_2020. Les organisations disposent d'un délai de 22 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2017-05-12",
+              "valid_to": null
+            },
+            "citations": [
+              "ANSSI_GUIDE_CLOUD",
+              "NIS1_2016_1148"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement CNIL_DELIB_2020. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2011-02-19",
+              "valid_to": null
+            },
+            "citations": [
+              "NIS1_2016_1148",
+              "ANSSI_GUIDE_CLOUD"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2007_2",
+        "relation": "complete",
+        "commentaire": "Relation CNIL_DELIB_2020-DIRECTIVE_2007_2"
+      },
+      {
+        "ref": "DIRECTIVE_92_57",
+        "relation": "complete",
+        "commentaire": "Relation CNIL_DELIB_2020-DIRECTIVE_92_57"
+      },
+      {
+        "ref": "DIRECTIVE_2002_49",
+        "relation": "reference",
+        "commentaire": "Relation CNIL_DELIB_2020-DIRECTIVE_2002_49"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "rgpd_nis2"
+    }
+  },
+  {
+    "id": "ANSSI_GUIDE_2023",
+    "titre": "Texte reglementaire ANSSI_GUIDE_2023",
+    "source": "EUR-Lex",
+    "publication_date": "2024-02-20",
+    "entry_into_force": "2025-12-11",
+    "repeal_date": null,
+    "version": "2025-12-11",
+    "themes": [
+      "protection_donnees",
+      "cybersecurite",
+      "numerique",
+      "vie_privee"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement ANSSI_GUIDE_2023. Les organisations disposent d'un délai de 15 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2025-12-11",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2007_65",
+              "RoHS_2011_65"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement ANSSI_GUIDE_2023. Les organisations disposent d'un délai de 22 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2025-12-11",
+              "valid_to": null
+            },
+            "citations": [
+              "RoHS_2011_65",
+              "DIRECTIVE_2007_65"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement ANSSI_GUIDE_2023. Les organisations disposent d'un délai de 20 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2025-12-11",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2015_2193",
+              "RoHS_2011_65"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement ANSSI_GUIDE_2023. Les organisations disposent d'un délai de 5 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2025-12-11",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2007_65",
+              "DIRECTIVE_2015_2193"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement ANSSI_GUIDE_2023. Les organisations disposent d'un délai de 16 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2025-12-11",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2007_65",
+              "DIRECTIVE_2015_2193"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement ANSSI_GUIDE_2023. Les organisations disposent d'un délai de 16 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2025-12-11",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2007_65",
+              "RoHS_2011_65"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2018_2001",
+        "relation": "complete",
+        "commentaire": "Relation ANSSI_GUIDE_2023-DIRECTIVE_2018_2001"
+      },
+      {
+        "ref": "EN_982",
+        "relation": "se_chevauche",
+        "commentaire": "Relation ANSSI_GUIDE_2023-EN_982"
+      },
+      {
+        "ref": "DIRECTIVE_2004_35",
+        "relation": "reference",
+        "commentaire": "Relation ANSSI_GUIDE_2023-DIRECTIVE_2004_35"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "rgpd_nis2"
+    }
+  },
+  {
+    "id": "CNIL_GUIDE_COOKIE",
+    "titre": "Texte reglementaire CNIL_GUIDE_COOKIE",
+    "source": "EUR-Lex",
+    "publication_date": "2008-03-22",
+    "entry_into_force": "2009-08-27",
+    "repeal_date": null,
+    "version": "2009-08-27",
+    "themes": [
+      "protection_donnees",
+      "cybersecurite",
+      "numerique",
+      "vie_privee"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement CNIL_GUIDE_COOKIE. Les organisations disposent d'un délai de 18 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-08-27",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2009_104",
+              "DIRECTIVE_2018_844"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement CNIL_GUIDE_COOKIE. Les organisations disposent d'un délai de 11 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-08-27",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2009_104",
+              "DIRECTIVE_92_91"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement CNIL_GUIDE_COOKIE. Les organisations disposent d'un délai de 12 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-08-27",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2009_104",
+              "DIRECTIVE_2018_844"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement CNIL_GUIDE_COOKIE. Les organisations disposent d'un délai de 16 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-08-27",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2018_844",
+              "DIRECTIVE_92_91"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement CNIL_GUIDE_COOKIE. Les organisations disposent d'un délai de 6 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-08-27",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_92_91",
+              "DIRECTIVE_2009_104"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement CNIL_GUIDE_COOKIE. Les organisations disposent d'un délai de 7 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-08-27",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2009_104",
+              "DIRECTIVE_92_91"
+            ]
+          },
+          {
+            "id": "art_7",
+            "titre": "Article 7",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement CNIL_GUIDE_COOKIE. Les organisations disposent d'un délai de 21 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-08-27",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2018_844",
+              "DIRECTIVE_2009_104"
+            ]
+          },
+          {
+            "id": "art_8",
+            "titre": "Article 8",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement CNIL_GUIDE_COOKIE. Les organisations disposent d'un délai de 5 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-08-27",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2018_844",
+              "DIRECTIVE_2009_104"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2000_60",
+        "relation": "modifie",
+        "commentaire": "Relation CNIL_GUIDE_COOKIE-DIRECTIVE_2000_60"
+      },
+      {
+        "ref": "DIRECTIVE_2018_844",
+        "relation": "reference",
+        "commentaire": "Relation CNIL_GUIDE_COOKIE-DIRECTIVE_2018_844"
+      },
+      {
+        "ref": "EN_ISO_14121",
+        "relation": "reference",
+        "commentaire": "Relation CNIL_GUIDE_COOKIE-EN_ISO_14121"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "rgpd_nis2"
+    }
+  },
+  {
+    "id": "RGPD_LIGNES_2021",
+    "titre": "Texte reglementaire RGPD_LIGNES_2021",
+    "source": "EUR-Lex",
+    "publication_date": "2022-10-06",
+    "entry_into_force": "2023-04-20",
+    "repeal_date": null,
+    "version": "2023-04-20",
+    "themes": [
+      "protection_donnees",
+      "cybersecurite",
+      "numerique",
+      "vie_privee"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement RGPD_LIGNES_2021. Les organisations disposent d'un délai de 7 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2023-04-20",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_7731",
+              "CODE_TRAVAIL_R4311"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement RGPD_LIGNES_2021. Les organisations disposent d'un délai de 18 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2023-04-20",
+              "valid_to": null
+            },
+            "citations": [
+              "CODE_TRAVAIL_R4311",
+              "EN_ISO_7731"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement RGPD_LIGNES_2021. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2023-04-20",
+              "valid_to": null
+            },
+            "citations": [
+              "CODE_TRAVAIL_R4311",
+              "EN_ISO_7731"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement RGPD_LIGNES_2021. Les organisations disposent d'un délai de 13 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2023-04-20",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_7731",
+              "DIRECTIVE_90_269"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement RGPD_LIGNES_2021. Les organisations disposent d'un délai de 11 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2023-04-20",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_90_269",
+              "EN_ISO_7731"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement RGPD_LIGNES_2021. Les organisations disposent d'un délai de 23 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2023-04-20",
+              "valid_to": null
+            },
+            "citations": [
+              "CODE_TRAVAIL_R4311",
+              "DIRECTIVE_90_269"
+            ]
+          },
+          {
+            "id": "art_7",
+            "titre": "Article 7",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement RGPD_LIGNES_2021. Les organisations disposent d'un délai de 15 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2023-04-20",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_90_269",
+              "EN_ISO_7731"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "CNIL_RECOMMANDATION_2020",
+        "relation": "reference",
+        "commentaire": "Relation RGPD_LIGNES_2021-CNIL_RECOMMANDATION_2020"
+      },
+      {
+        "ref": "REGLEMENT_2018_1999",
+        "relation": "se_chevauche",
+        "commentaire": "Relation RGPD_LIGNES_2021-REGLEMENT_2018_1999"
+      },
+      {
+        "ref": "RoHS_2011_65",
+        "relation": "modifie",
+        "commentaire": "Relation RGPD_LIGNES_2021-RoHS_2011_65"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "rgpd_nis2"
+    }
+  },
+  {
+    "id": "EDPB_GUIDE_2022",
+    "titre": "Texte reglementaire EDPB_GUIDE_2022",
+    "source": "EUR-Lex",
+    "publication_date": "2007-10-09",
+    "entry_into_force": "2009-06-20",
+    "repeal_date": null,
+    "version": "2009-06-20",
+    "themes": [
+      "protection_donnees",
+      "cybersecurite",
+      "numerique",
+      "vie_privee"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement EDPB_GUIDE_2022. Les organisations disposent d'un délai de 13 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-06-20",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_93_103",
+              "DIRECTIVE_89_655"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement EDPB_GUIDE_2022. Les organisations disposent d'un délai de 8 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-06-20",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_93_103",
+              "DIRECTIVE_89_655"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement EDPB_GUIDE_2022. Les organisations disposent d'un délai de 14 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-06-20",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_93_103",
+              "DIRECTIVE_89_655"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "EN_349",
+        "relation": "reference",
+        "commentaire": "Relation EDPB_GUIDE_2022-EN_349"
+      },
+      {
+        "ref": "EN_953",
+        "relation": "complete",
+        "commentaire": "Relation EDPB_GUIDE_2022-EN_953"
+      },
+      {
+        "ref": "DIRECTIVE_2012_27_ENV",
+        "relation": "se_chevauche",
+        "commentaire": "Relation EDPB_GUIDE_2022-DIRECTIVE_2012_27_ENV"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "rgpd_nis2"
+    }
+  },
+  {
+    "id": "CNIL_DELIB_2022",
+    "titre": "Texte reglementaire CNIL_DELIB_2022",
+    "source": "EUR-Lex",
+    "publication_date": "2009-03-15",
+    "entry_into_force": "2010-12-03",
+    "repeal_date": "2012-09-03",
+    "version": "2010-12-03",
+    "themes": [
+      "protection_donnees",
+      "cybersecurite",
+      "numerique",
+      "vie_privee"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement CNIL_DELIB_2022. Les organisations disposent d'un délai de 22 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2010-12-03",
+              "valid_to": "2012-09-03"
+            },
+            "citations": [
+              "DIRECTIVE_2012_19",
+              "DIRECTIVE_2018_2001"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement CNIL_DELIB_2022. Les organisations disposent d'un délai de 17 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2010-12-03",
+              "valid_to": "2012-09-03"
+            },
+            "citations": [
+              "DIRECTIVE_2018_2001",
+              "REACH_2006_1907"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement CNIL_DELIB_2022. Les organisations disposent d'un délai de 15 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2010-12-03",
+              "valid_to": "2012-09-03"
+            },
+            "citations": [
+              "DIRECTIVE_2012_19",
+              "REACH_2006_1907"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement CNIL_DELIB_2022. Les organisations disposent d'un délai de 3 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2010-12-03",
+              "valid_to": "2012-09-03"
+            },
+            "citations": [
+              "DIRECTIVE_2012_19",
+              "DIRECTIVE_2018_2001"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement CNIL_DELIB_2022. Les organisations disposent d'un délai de 11 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2010-12-03",
+              "valid_to": "2012-09-03"
+            },
+            "citations": [
+              "DIRECTIVE_2018_2001",
+              "DIRECTIVE_2012_19"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement CNIL_DELIB_2022. Les organisations disposent d'un délai de 22 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2010-12-03",
+              "valid_to": "2012-09-03"
+            },
+            "citations": [
+              "DIRECTIVE_2012_19",
+              "REACH_2006_1907"
+            ]
+          },
+          {
+            "id": "art_7",
+            "titre": "Article 7",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement CNIL_DELIB_2022. Les organisations disposent d'un délai de 7 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2010-12-03",
+              "valid_to": "2012-09-03"
+            },
+            "citations": [
+              "DIRECTIVE_2012_19",
+              "REACH_2006_1907"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2007_2",
+        "relation": "reference",
+        "commentaire": "Relation CNIL_DELIB_2022-DIRECTIVE_2007_2"
+      },
+      {
+        "ref": "EN_ISO_13851",
+        "relation": "se_chevauche",
+        "commentaire": "Relation CNIL_DELIB_2022-EN_ISO_13851"
+      },
+      {
+        "ref": "DIRECTIVE_89_654",
+        "relation": "reference",
+        "commentaire": "Relation CNIL_DELIB_2022-DIRECTIVE_89_654"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "rgpd_nis2"
+    }
+  },
+  {
+    "id": "NIS1_2016_1148",
+    "titre": "Texte reglementaire NIS1_2016_1148",
+    "source": "EUR-Lex",
+    "publication_date": "2012-09-23",
+    "entry_into_force": "2013-08-30",
+    "repeal_date": null,
+    "version": "2020-03-18",
+    "themes": [
+      "protection_donnees",
+      "cybersecurite",
+      "numerique",
+      "vie_privee"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement NIS1_2016_1148. Les organisations disposent d'un délai de 7 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2013-08-30",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2009_125_EN",
+              "DIRECTIVE_2012_19"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement NIS1_2016_1148. Les organisations disposent d'un délai de 20 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2013-08-30",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2009_125_EN",
+              "DIRECTIVE_2012_19"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement NIS1_2016_1148. Les organisations disposent d'un délai de 5 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2013-08-30",
+              "valid_to": null
+            },
+            "citations": [
+              "ANSSI_GUIDE_CLOUD",
+              "DIRECTIVE_2009_125_EN"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2016_797",
+        "relation": "se_chevauche",
+        "commentaire": "Relation NIS1_2016_1148-DIRECTIVE_2016_797"
+      },
+      {
+        "ref": "DIRECTIVE_2019_944",
+        "relation": "complete",
+        "commentaire": "Relation NIS1_2016_1148-DIRECTIVE_2019_944"
+      },
+      {
+        "ref": "DIRECTIVE_2014_94",
+        "relation": "reference",
+        "commentaire": "Relation NIS1_2016_1148-DIRECTIVE_2014_94"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "rgpd_nis2"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2013_40",
+    "titre": "Texte reglementaire DIRECTIVE_2013_40",
+    "source": "EUR-Lex",
+    "publication_date": "2020-05-29",
+    "entry_into_force": "2021-02-08",
+    "repeal_date": null,
+    "version": "2025-01-02",
+    "themes": [
+      "protection_donnees",
+      "cybersecurite",
+      "numerique",
+      "vie_privee"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2013_40. Les organisations disposent d'un délai de 19 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-02-08",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2016_680",
+              "ANSSI_RGS_2014"
+            ]
+          },
+          {
+            "id": "art_2_v1",
+            "titre": "Article 2 — Version initiale",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2013_40. Les organisations disposent d'un délai de 12 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-02-08",
+              "valid_to": "2026-09-21"
+            },
+            "citations": [
+              "ANSSI_RGS_2014",
+              "DIRECTIVE_2016_680"
+            ]
+          },
+          {
+            "id": "art_2_v2",
+            "titre": "Article 2 — Version amendée",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2013_40. Les organisations disposent d'un délai de 12 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2026-09-22",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2006_32",
+              "ANSSI_RGS_2014"
+            ]
+          },
+          {
+            "id": "art_3_v1",
+            "titre": "Article 3 — Version initiale",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2013_40. Les organisations disposent d'un délai de 11 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-02-08",
+              "valid_to": "2026-03-08"
+            },
+            "citations": [
+              "DIRECTIVE_2016_680",
+              "DIRECTIVE_2006_32"
+            ]
+          },
+          {
+            "id": "art_3_v2",
+            "titre": "Article 3 — Version amendée",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2013_40. Les organisations disposent d'un délai de 11 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2026-03-09",
+              "valid_to": null
+            },
+            "citations": [
+              "ANSSI_RGS_2014",
+              "DIRECTIVE_2016_680"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2013_40. Les organisations disposent d'un délai de 21 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-02-08",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2016_680",
+              "ANSSI_RGS_2014"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_92_29",
+        "relation": "se_chevauche",
+        "commentaire": "Relation DIRECTIVE_2013_40-DIRECTIVE_92_29"
+      },
+      {
+        "ref": "DIRECTIVE_2005_32",
+        "relation": "se_chevauche",
+        "commentaire": "Relation DIRECTIVE_2013_40-DIRECTIVE_2005_32"
+      },
+      {
+        "ref": "EN_60204",
+        "relation": "se_chevauche",
+        "commentaire": "Relation DIRECTIVE_2013_40-EN_60204"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "rgpd_nis2"
+    }
+  },
+  {
+    "id": "ANSSI_PRIS_2023",
+    "titre": "Texte reglementaire ANSSI_PRIS_2023",
+    "source": "EUR-Lex",
+    "publication_date": "2020-05-21",
+    "entry_into_force": "2021-08-15",
+    "repeal_date": null,
+    "version": "2024-12-15",
+    "themes": [
+      "protection_donnees",
+      "cybersecurite",
+      "numerique",
+      "vie_privee"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement ANSSI_PRIS_2023. Les organisations disposent d'un délai de 18 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-08-15",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2003_54",
+              "REGLEMENT_2018_1999"
+            ]
+          },
+          {
+            "id": "art_2_v1",
+            "titre": "Article 2 — Version initiale",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement ANSSI_PRIS_2023. Les organisations disposent d'un délai de 17 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-08-15",
+              "valid_to": "2024-04-16"
+            },
+            "citations": [
+              "DIRECTIVE_89_391",
+              "REGLEMENT_2018_1999"
+            ]
+          },
+          {
+            "id": "art_2_v2",
+            "titre": "Article 2 — Version amendée",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement ANSSI_PRIS_2023. Les organisations disposent d'un délai de 17 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2024-04-17",
+              "valid_to": null
+            },
+            "citations": [
+              "REGLEMENT_2018_1999",
+              "DIRECTIVE_2003_54"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement ANSSI_PRIS_2023. Les organisations disposent d'un délai de 9 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-08-15",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_89_391",
+              "REGLEMENT_2018_1999"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement ANSSI_PRIS_2023. Les organisations disposent d'un délai de 14 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-08-15",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_89_391",
+              "REGLEMENT_2018_1999"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement ANSSI_PRIS_2023. Les organisations disposent d'un délai de 13 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-08-15",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_89_391",
+              "REGLEMENT_2018_1999"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2011_70",
+        "relation": "se_chevauche",
+        "commentaire": "Relation ANSSI_PRIS_2023-DIRECTIVE_2011_70"
+      },
+      {
+        "ref": "DIRECTIVE_2003_10",
+        "relation": "se_chevauche",
+        "commentaire": "Relation ANSSI_PRIS_2023-DIRECTIVE_2003_10"
+      },
+      {
+        "ref": "CNIL_GUIDE_COOKIE",
+        "relation": "reference",
+        "commentaire": "Relation ANSSI_PRIS_2023-CNIL_GUIDE_COOKIE"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "rgpd_nis2"
+    }
+  },
+  {
+    "id": "CNIL_PACK_CONFORMITE",
+    "titre": "Texte reglementaire CNIL_PACK_CONFORMITE",
+    "source": "EUR-Lex",
+    "publication_date": "2014-08-13",
+    "entry_into_force": "2016-04-12",
+    "repeal_date": null,
+    "version": "2016-04-12",
+    "themes": [
+      "protection_donnees",
+      "cybersecurite",
+      "numerique",
+      "vie_privee"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement CNIL_PACK_CONFORMITE. Les organisations disposent d'un délai de 18 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2016-04-12",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2010_75_EN",
+              "EN_ISO_45001"
+            ]
+          },
+          {
+            "id": "art_2_v1",
+            "titre": "Article 2 — Version initiale",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement CNIL_PACK_CONFORMITE. Les organisations disposent d'un délai de 18 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2016-04-12",
+              "valid_to": "2022-09-08"
+            },
+            "citations": [
+              "EN_ISO_45001",
+              "DIRECTIVE_2010_75_EN"
+            ]
+          },
+          {
+            "id": "art_2_v2",
+            "titre": "Article 2 — Version amendée",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement CNIL_PACK_CONFORMITE. Les organisations disposent d'un délai de 18 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2022-09-09",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_89_656",
+              "EN_ISO_45001"
+            ]
+          },
+          {
+            "id": "art_3_v1",
+            "titre": "Article 3 — Version initiale",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement CNIL_PACK_CONFORMITE. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2016-04-12",
+              "valid_to": "2023-10-30"
+            },
+            "citations": [
+              "EN_ISO_45001",
+              "DIRECTIVE_2010_75_EN"
+            ]
+          },
+          {
+            "id": "art_3_v2",
+            "titre": "Article 3 — Version amendée",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement CNIL_PACK_CONFORMITE. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2023-10-31",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2010_75_EN",
+              "DIRECTIVE_89_656"
+            ]
+          },
+          {
+            "id": "art_4_v1",
+            "titre": "Article 4 — Version initiale",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement CNIL_PACK_CONFORMITE. Les organisations disposent d'un délai de 16 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2016-04-12",
+              "valid_to": "2021-03-30"
+            },
+            "citations": [
+              "EN_ISO_45001",
+              "DIRECTIVE_2010_75_EN"
+            ]
+          },
+          {
+            "id": "art_4_v2",
+            "titre": "Article 4 — Version amendée",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement CNIL_PACK_CONFORMITE. Les organisations disposent d'un délai de 16 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2021-03-31",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2010_75_EN",
+              "EN_ISO_45001"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "EN_ISO_14121",
+        "relation": "complete",
+        "commentaire": "Relation CNIL_PACK_CONFORMITE-EN_ISO_14121"
+      },
+      {
+        "ref": "DIRECTIVE_2010_31",
+        "relation": "reference",
+        "commentaire": "Relation CNIL_PACK_CONFORMITE-DIRECTIVE_2010_31"
+      },
+      {
+        "ref": "EN_ISO_13857",
+        "relation": "reference",
+        "commentaire": "Relation CNIL_PACK_CONFORMITE-EN_ISO_13857"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "rgpd_nis2"
+    }
+  },
+  {
+    "id": "EDPB_AVIS_2023",
+    "titre": "Texte reglementaire EDPB_AVIS_2023",
+    "source": "EUR-Lex",
+    "publication_date": "2007-08-26",
+    "entry_into_force": "2009-03-23",
+    "repeal_date": null,
+    "version": "2016-04-13",
+    "themes": [
+      "protection_donnees",
+      "cybersecurite",
+      "numerique",
+      "vie_privee"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement EDPB_AVIS_2023. Les organisations disposent d'un délai de 13 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-03-23",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2016_680",
+              "RGPD_2016_679"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement EDPB_AVIS_2023. Les organisations disposent d'un délai de 22 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-03-23",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_13480",
+              "RGPD_2016_679"
+            ]
+          },
+          {
+            "id": "art_3_v1",
+            "titre": "Article 3 — Version initiale",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement EDPB_AVIS_2023. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-03-23",
+              "valid_to": "2014-12-16"
+            },
+            "citations": [
+              "DIRECTIVE_2016_680",
+              "EN_13480"
+            ]
+          },
+          {
+            "id": "art_3_v2",
+            "titre": "Article 3 — Version amendée",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement EDPB_AVIS_2023. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2014-12-17",
+              "valid_to": null
+            },
+            "citations": [
+              "RGPD_2016_679",
+              "EN_13480"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement EDPB_AVIS_2023. Les organisations disposent d'un délai de 22 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-03-23",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2016_680",
+              "EN_13480"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement EDPB_AVIS_2023. Les organisations disposent d'un délai de 19 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-03-23",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_13480",
+              "DIRECTIVE_2016_680"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement EDPB_AVIS_2023. Les organisations disposent d'un délai de 18 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-03-23",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2016_680",
+              "EN_13480"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2014_68",
+        "relation": "se_chevauche",
+        "commentaire": "Relation EDPB_AVIS_2023-DIRECTIVE_2014_68"
+      },
+      {
+        "ref": "DIRECTIVE_2009_31",
+        "relation": "modifie",
+        "commentaire": "Relation EDPB_AVIS_2023-DIRECTIVE_2009_31"
+      },
+      {
+        "ref": "DIRECTIVE_2009_148",
+        "relation": "reference",
+        "commentaire": "Relation EDPB_AVIS_2023-DIRECTIVE_2009_148"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "rgpd_nis2"
+    }
+  },
+  {
+    "id": "REGULATION_2018_1725",
+    "titre": "Texte reglementaire REGULATION_2018_1725",
+    "source": "EUR-Lex",
+    "publication_date": "2020-09-14",
+    "entry_into_force": "2021-11-01",
+    "repeal_date": null,
+    "version": "2025-07-11",
+    "themes": [
+      "protection_donnees",
+      "cybersecurite",
+      "numerique",
+      "vie_privee"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement REGULATION_2018_1725. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-11-01",
+              "valid_to": null
+            },
+            "citations": [
+              "RGPD_LIGNES_2021",
+              "DIRECTIVE_2016_797"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement REGULATION_2018_1725. Les organisations disposent d'un délai de 3 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-11-01",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2009_28",
+              "DIRECTIVE_2016_797"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement REGULATION_2018_1725. Les organisations disposent d'un délai de 9 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-11-01",
+              "valid_to": null
+            },
+            "citations": [
+              "RGPD_LIGNES_2021",
+              "DIRECTIVE_2009_28"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement REGULATION_2018_1725. Les organisations disposent d'un délai de 7 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-11-01",
+              "valid_to": null
+            },
+            "citations": [
+              "RGPD_LIGNES_2021",
+              "DIRECTIVE_2009_28"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement REGULATION_2018_1725. Les organisations disposent d'un délai de 19 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-11-01",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2016_797",
+              "DIRECTIVE_2009_28"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement REGULATION_2018_1725. Les organisations disposent d'un délai de 20 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-11-01",
+              "valid_to": null
+            },
+            "citations": [
+              "RGPD_LIGNES_2021",
+              "DIRECTIVE_2009_28"
+            ]
+          },
+          {
+            "id": "art_7",
+            "titre": "Article 7",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement REGULATION_2018_1725. Les organisations disposent d'un délai de 9 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-11-01",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2009_28",
+              "RGPD_LIGNES_2021"
+            ]
+          },
+          {
+            "id": "art_8",
+            "titre": "Article 8",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement REGULATION_2018_1725. Les organisations disposent d'un délai de 12 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-11-01",
+              "valid_to": null
+            },
+            "citations": [
+              "RGPD_LIGNES_2021",
+              "DIRECTIVE_2016_797"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2018_2001_EN",
+        "relation": "reference",
+        "commentaire": "Relation REGULATION_2018_1725-DIRECTIVE_2018_2001_EN"
+      },
+      {
+        "ref": "DIRECTIVE_89_654",
+        "relation": "reference",
+        "commentaire": "Relation REGULATION_2018_1725-DIRECTIVE_89_654"
+      },
+      {
+        "ref": "DIRECTIVE_2009_72",
+        "relation": "reference",
+        "commentaire": "Relation REGULATION_2018_1725-DIRECTIVE_2009_72"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "rgpd_nis2"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2002_58",
+    "titre": "Texte reglementaire DIRECTIVE_2002_58",
+    "source": "EUR-Lex",
+    "publication_date": "2008-09-25",
+    "entry_into_force": "2010-04-16",
+    "repeal_date": null,
+    "version": "2013-03-22",
+    "themes": [
+      "protection_donnees",
+      "cybersecurite",
+      "numerique",
+      "vie_privee"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2002_58. Les organisations disposent d'un délai de 14 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2010-04-16",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_60204",
+              "DIRECTIVE_92_104"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2002_58. Les organisations disposent d'un délai de 9 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2010-04-16",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_60204",
+              "DIRECTIVE_92_104"
+            ]
+          },
+          {
+            "id": "art_3_v1",
+            "titre": "Article 3 — Version initiale",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2002_58. Les organisations disposent d'un délai de 7 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2010-04-16",
+              "valid_to": "2014-12-21"
+            },
+            "citations": [
+              "RGPD_LIGNES_2021",
+              "EN_60204"
+            ]
+          },
+          {
+            "id": "art_3_v2",
+            "titre": "Article 3 — Version amendée",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2002_58. Les organisations disposent d'un délai de 7 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2014-12-22",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_60204",
+              "RGPD_LIGNES_2021"
+            ]
+          },
+          {
+            "id": "art_4_v1",
+            "titre": "Article 4 — Version initiale",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2002_58. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2010-04-16",
+              "valid_to": "2015-12-28"
+            },
+            "citations": [
+              "EN_60204",
+              "DIRECTIVE_92_104"
+            ]
+          },
+          {
+            "id": "art_4_v2",
+            "titre": "Article 4 — Version amendée",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2002_58. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2015-12-29",
+              "valid_to": null
+            },
+            "citations": [
+              "RGPD_LIGNES_2021",
+              "EN_60204"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2002_58. Les organisations disposent d'un délai de 20 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2010-04-16",
+              "valid_to": null
+            },
+            "citations": [
+              "RGPD_LIGNES_2021",
+              "DIRECTIVE_92_104"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2019_944_EN",
+        "relation": "reference",
+        "commentaire": "Relation DIRECTIVE_2002_58-DIRECTIVE_2019_944_EN"
+      },
+      {
+        "ref": "DIRECTIVE_2009_72",
+        "relation": "reference",
+        "commentaire": "Relation DIRECTIVE_2002_58-DIRECTIVE_2009_72"
+      },
+      {
+        "ref": "DIRECTIVE_2015_2366",
+        "relation": "reference",
+        "commentaire": "Relation DIRECTIVE_2002_58-DIRECTIVE_2015_2366"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "rgpd_nis2"
+    }
+  },
+  {
+    "id": "ANSSI_RGS_2014",
+    "titre": "Texte reglementaire ANSSI_RGS_2014",
+    "source": "EUR-Lex",
+    "publication_date": "2020-06-27",
+    "entry_into_force": "2021-02-22",
+    "repeal_date": null,
+    "version": "2021-02-22",
+    "themes": [
+      "protection_donnees",
+      "cybersecurite",
+      "numerique",
+      "vie_privee"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement ANSSI_RGS_2014. Les organisations disposent d'un délai de 8 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-02-22",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2007_65",
+              "DIRECTIVE_2009_73"
+            ]
+          },
+          {
+            "id": "art_2_v1",
+            "titre": "Article 2 — Version initiale",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement ANSSI_RGS_2014. Les organisations disposent d'un délai de 18 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-02-22",
+              "valid_to": "2026-05-22"
+            },
+            "citations": [
+              "DIRECTIVE_2007_65",
+              "DIRECTIVE_2009_73"
+            ]
+          },
+          {
+            "id": "art_2_v2",
+            "titre": "Article 2 — Version amendée",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement ANSSI_RGS_2014. Les organisations disposent d'un délai de 18 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2026-05-23",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_89_391_ST",
+              "DIRECTIVE_2007_65"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement ANSSI_RGS_2014. Les organisations disposent d'un délai de 12 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-02-22",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2009_73",
+              "DIRECTIVE_89_391_ST"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement ANSSI_RGS_2014. Les organisations disposent d'un délai de 19 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-02-22",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2007_65",
+              "DIRECTIVE_2009_73"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement ANSSI_RGS_2014. Les organisations disposent d'un délai de 8 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-02-22",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2009_73",
+              "DIRECTIVE_89_391_ST"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement ANSSI_RGS_2014. Les organisations disposent d'un délai de 3 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-02-22",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_89_391_ST",
+              "DIRECTIVE_2007_65"
+            ]
+          },
+          {
+            "id": "art_7",
+            "titre": "Article 7",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement ANSSI_RGS_2014. Les organisations disposent d'un délai de 22 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-02-22",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_89_391_ST",
+              "DIRECTIVE_2009_73"
+            ]
+          },
+          {
+            "id": "art_8",
+            "titre": "Article 8",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement ANSSI_RGS_2014. Les organisations disposent d'un délai de 5 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-02-22",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2007_65",
+              "DIRECTIVE_2009_73"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "ANSSI_GUIDE_2023",
+        "relation": "complete",
+        "commentaire": "Relation ANSSI_RGS_2014-ANSSI_GUIDE_2023"
+      },
+      {
+        "ref": "DIRECTIVE_2009_72",
+        "relation": "se_chevauche",
+        "commentaire": "Relation ANSSI_RGS_2014-DIRECTIVE_2009_72"
+      },
+      {
+        "ref": "DIRECTIVE_89_655",
+        "relation": "reference",
+        "commentaire": "Relation ANSSI_RGS_2014-DIRECTIVE_89_655"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "rgpd_nis2"
+    }
+  },
+  {
+    "id": "CNIL_RECOMMANDATION_2020",
+    "titre": "Texte reglementaire CNIL_RECOMMANDATION_2020",
+    "source": "EUR-Lex",
+    "publication_date": "2014-08-09",
+    "entry_into_force": "2015-10-04",
+    "repeal_date": null,
+    "version": "2018-08-09",
+    "themes": [
+      "protection_donnees",
+      "cybersecurite",
+      "numerique",
+      "vie_privee"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1_v1",
+            "titre": "Article 1 — Version initiale",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement CNIL_RECOMMANDATION_2020. Les organisations disposent d'un délai de 10 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-10-04",
+              "valid_to": "2019-01-30"
+            },
+            "citations": [
+              "DIRECTIVE_2007_65",
+              "EN_954_1"
+            ]
+          },
+          {
+            "id": "art_1_v2",
+            "titre": "Article 1 — Version amendée",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement CNIL_RECOMMANDATION_2020. Les organisations disposent d'un délai de 10 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2019-01-31",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2006_25",
+              "DIRECTIVE_2007_65"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement CNIL_RECOMMANDATION_2020. Les organisations disposent d'un délai de 6 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-10-04",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2007_65",
+              "EN_954_1"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement CNIL_RECOMMANDATION_2020. Les organisations disposent d'un délai de 10 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-10-04",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2007_65",
+              "DIRECTIVE_2006_25"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement CNIL_RECOMMANDATION_2020. Les organisations disposent d'un délai de 22 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-10-04",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_954_1",
+              "DIRECTIVE_2007_65"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement CNIL_RECOMMANDATION_2020. Les organisations disposent d'un délai de 10 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-10-04",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_954_1",
+              "DIRECTIVE_2006_25"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2016_797",
+        "relation": "reference",
+        "commentaire": "Relation CNIL_RECOMMANDATION_2020-DIRECTIVE_2016_797"
+      },
+      {
+        "ref": "DIRECTIVE_2002_49",
+        "relation": "se_chevauche",
+        "commentaire": "Relation CNIL_RECOMMANDATION_2020-DIRECTIVE_2002_49"
+      },
+      {
+        "ref": "DIRECTIVE_2012_34",
+        "relation": "se_chevauche",
+        "commentaire": "Relation CNIL_RECOMMANDATION_2020-DIRECTIVE_2012_34"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "rgpd_nis2"
+    }
+  },
+  {
+    "id": "EIDAS_2014_910",
+    "titre": "Texte reglementaire EIDAS_2014_910",
+    "source": "EUR-Lex",
+    "publication_date": "2007-05-21",
+    "entry_into_force": "2009-04-17",
+    "repeal_date": null,
+    "version": "2013-01-18",
+    "themes": [
+      "protection_donnees",
+      "cybersecurite",
+      "numerique",
+      "vie_privee"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement EIDAS_2014_910. Les organisations disposent d'un délai de 21 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-04-17",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2007_2",
+              "DIRECTIVE_2014_65"
+            ]
+          },
+          {
+            "id": "art_2_v1",
+            "titre": "Article 2 — Version initiale",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement EIDAS_2014_910. Les organisations disposent d'un délai de 17 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-04-17",
+              "valid_to": "2015-12-13"
+            },
+            "citations": [
+              "DIRECTIVE_2014_65",
+              "DIRECTIVE_89_656"
+            ]
+          },
+          {
+            "id": "art_2_v2",
+            "titre": "Article 2 — Version amendée",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement EIDAS_2014_910. Les organisations disposent d'un délai de 17 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2015-12-14",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2007_2",
+              "DIRECTIVE_2014_65"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement EIDAS_2014_910. Les organisations disposent d'un délai de 3 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-04-17",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_89_656",
+              "DIRECTIVE_2007_2"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2011_83",
+        "relation": "modifie",
+        "commentaire": "Relation EIDAS_2014_910-DIRECTIVE_2011_83"
+      },
+      {
+        "ref": "EN_ISO_11161",
+        "relation": "reference",
+        "commentaire": "Relation EIDAS_2014_910-EN_ISO_11161"
+      },
+      {
+        "ref": "EN_ISO_14121",
+        "relation": "se_chevauche",
+        "commentaire": "Relation EIDAS_2014_910-EN_ISO_14121"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "rgpd_nis2"
+    }
+  },
+  {
+    "id": "DORA_2022_2554",
+    "titre": "Texte reglementaire DORA_2022_2554",
+    "source": "EUR-Lex",
+    "publication_date": "2018-02-20",
+    "entry_into_force": "2018-10-19",
+    "repeal_date": null,
+    "version": "2018-10-19",
+    "themes": [
+      "protection_donnees",
+      "cybersecurite",
+      "numerique",
+      "vie_privee"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement DORA_2022_2554. Les organisations disposent d'un délai de 7 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2018-10-19",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_92_91",
+              "EN_ISO_11111"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement DORA_2022_2554. Les organisations disposent d'un délai de 15 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2018-10-19",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_11111",
+              "DIRECTIVE_92_91"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement DORA_2022_2554. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2018-10-19",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_92_91",
+              "DIRECTIVE_2018_844"
+            ]
+          },
+          {
+            "id": "art_4_v1",
+            "titre": "Article 4 — Version initiale",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement DORA_2022_2554. Les organisations disposent d'un délai de 6 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2018-10-19",
+              "valid_to": "2025-03-15"
+            },
+            "citations": [
+              "DIRECTIVE_92_91",
+              "DIRECTIVE_2018_844"
+            ]
+          },
+          {
+            "id": "art_4_v2",
+            "titre": "Article 4 — Version amendée",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement DORA_2022_2554. Les organisations disposent d'un délai de 6 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2025-03-16",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_92_91",
+              "DIRECTIVE_2018_844"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement DORA_2022_2554. Les organisations disposent d'un délai de 3 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2018-10-19",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_11111",
+              "DIRECTIVE_92_91"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement DORA_2022_2554. Les organisations disposent d'un délai de 10 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2018-10-19",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_11111",
+              "DIRECTIVE_2018_844"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "CIRCULAIRE_DGT_2012",
+        "relation": "se_chevauche",
+        "commentaire": "Relation DORA_2022_2554-CIRCULAIRE_DGT_2012"
+      },
+      {
+        "ref": "CNIL_RECOMMANDATION_2020",
+        "relation": "modifie",
+        "commentaire": "Relation DORA_2022_2554-CNIL_RECOMMANDATION_2020"
+      },
+      {
+        "ref": "DIRECTIVE_2014_68",
+        "relation": "se_chevauche",
+        "commentaire": "Relation DORA_2022_2554-DIRECTIVE_2014_68"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "rgpd_nis2"
+    }
+  },
+  {
+    "id": "CYBER_ACT_2019_881",
+    "titre": "Texte reglementaire CYBER_ACT_2019_881",
+    "source": "EUR-Lex",
+    "publication_date": "2011-05-26",
+    "entry_into_force": "2012-06-20",
+    "repeal_date": "2020-02-16",
+    "version": "2012-06-20",
+    "themes": [
+      "protection_donnees",
+      "cybersecurite",
+      "numerique",
+      "vie_privee"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement CYBER_ACT_2019_881. Les organisations disposent d'un délai de 15 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2012-06-20",
+              "valid_to": "2020-02-16"
+            },
+            "citations": [
+              "DIRECTIVE_92_58",
+              "DIRECTIVE_2002_49"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement CYBER_ACT_2019_881. Les organisations disposent d'un délai de 7 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2012-06-20",
+              "valid_to": "2020-02-16"
+            },
+            "citations": [
+              "DIRECTIVE_2006_95",
+              "DIRECTIVE_2002_49"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement CYBER_ACT_2019_881. Les organisations disposent d'un délai de 21 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2012-06-20",
+              "valid_to": "2020-02-16"
+            },
+            "citations": [
+              "DIRECTIVE_92_58",
+              "DIRECTIVE_2006_95"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement CYBER_ACT_2019_881. Les organisations disposent d'un délai de 12 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2012-06-20",
+              "valid_to": "2020-02-16"
+            },
+            "citations": [
+              "DIRECTIVE_92_58",
+              "DIRECTIVE_2002_49"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement CYBER_ACT_2019_881. Les organisations disposent d'un délai de 12 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2012-06-20",
+              "valid_to": "2020-02-16"
+            },
+            "citations": [
+              "DIRECTIVE_92_58",
+              "DIRECTIVE_2002_49"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement CYBER_ACT_2019_881. Les organisations disposent d'un délai de 20 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2012-06-20",
+              "valid_to": "2020-02-16"
+            },
+            "citations": [
+              "DIRECTIVE_2006_95",
+              "DIRECTIVE_92_58"
+            ]
+          },
+          {
+            "id": "art_7",
+            "titre": "Article 7",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement CYBER_ACT_2019_881. Les organisations disposent d'un délai de 16 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2012-06-20",
+              "valid_to": "2020-02-16"
+            },
+            "citations": [
+              "DIRECTIVE_2006_95",
+              "DIRECTIVE_92_58"
+            ]
+          },
+          {
+            "id": "art_8",
+            "titre": "Article 8",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement CYBER_ACT_2019_881. Les organisations disposent d'un délai de 20 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2012-06-20",
+              "valid_to": "2020-02-16"
+            },
+            "citations": [
+              "DIRECTIVE_2002_49",
+              "DIRECTIVE_2006_95"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "CNIL_GUIDE_COOKIE",
+        "relation": "modifie",
+        "commentaire": "Relation CYBER_ACT_2019_881-CNIL_GUIDE_COOKIE"
+      },
+      {
+        "ref": "DIRECTIVE_2014_32",
+        "relation": "modifie",
+        "commentaire": "Relation CYBER_ACT_2019_881-DIRECTIVE_2014_32"
+      },
+      {
+        "ref": "EN_349",
+        "relation": "complete",
+        "commentaire": "Relation CYBER_ACT_2019_881-EN_349"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "rgpd_nis2"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2015_2366",
+    "titre": "Texte reglementaire DIRECTIVE_2015_2366",
+    "source": "EUR-Lex",
+    "publication_date": "2014-09-17",
+    "entry_into_force": "2015-11-19",
+    "repeal_date": null,
+    "version": "2020-07-04",
+    "themes": [
+      "protection_donnees",
+      "cybersecurite",
+      "numerique",
+      "vie_privee"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2015_2366. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-11-19",
+              "valid_to": null
+            },
+            "citations": [
+              "RoHS_2011_65",
+              "EN_982"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2015_2366. Les organisations disposent d'un délai de 9 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-11-19",
+              "valid_to": null
+            },
+            "citations": [
+              "RoHS_2011_65",
+              "EN_982"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2015_2366. Les organisations disposent d'un délai de 9 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-11-19",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2011_70",
+              "RoHS_2011_65"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "EN_ISO_13849",
+        "relation": "se_chevauche",
+        "commentaire": "Relation DIRECTIVE_2015_2366-EN_ISO_13849"
+      },
+      {
+        "ref": "CNIL_DELIB_2021",
+        "relation": "modifie",
+        "commentaire": "Relation DIRECTIVE_2015_2366-CNIL_DELIB_2021"
+      },
+      {
+        "ref": "CNIL_RECOMMANDATION_2020",
+        "relation": "complete",
+        "commentaire": "Relation DIRECTIVE_2015_2366-CNIL_RECOMMANDATION_2020"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "rgpd_nis2"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2018_1972",
+    "titre": "Texte reglementaire DIRECTIVE_2018_1972",
+    "source": "EUR-Lex",
+    "publication_date": "2021-08-08",
+    "entry_into_force": "2022-09-01",
+    "repeal_date": null,
+    "version": "2022-09-01",
+    "themes": [
+      "protection_donnees",
+      "cybersecurite",
+      "numerique",
+      "vie_privee"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2018_1972. Les organisations disposent d'un délai de 20 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-09-01",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_89_655",
+              "DIRECTIVE_92_57"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2018_1972. Les organisations disposent d'un délai de 19 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-09-01",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_89_655",
+              "DIRECTIVE_2006_32"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2018_1972. Les organisations disposent d'un délai de 13 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-09-01",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_89_655",
+              "DIRECTIVE_92_57"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2018_1972. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-09-01",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2006_32",
+              "DIRECTIVE_92_57"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2018_1972. Les organisations disposent d'un délai de 11 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-09-01",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_92_57",
+              "DIRECTIVE_89_655"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2018_1972. Les organisations disposent d'un délai de 7 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-09-01",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_89_655",
+              "DIRECTIVE_2006_32"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "REGLEMENT_2018_1999",
+        "relation": "reference",
+        "commentaire": "Relation DIRECTIVE_2018_1972-REGLEMENT_2018_1999"
+      },
+      {
+        "ref": "DIRECTIVE_2005_89",
+        "relation": "modifie",
+        "commentaire": "Relation DIRECTIVE_2018_1972-DIRECTIVE_2005_89"
+      },
+      {
+        "ref": "DIRECTIVE_92_29",
+        "relation": "modifie",
+        "commentaire": "Relation DIRECTIVE_2018_1972-DIRECTIVE_92_29"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "rgpd_nis2"
+    }
+  },
+  {
+    "id": "ANSSI_RECOMMANDATIONS_2022",
+    "titre": "Texte reglementaire ANSSI_RECOMMANDATIONS_2022",
+    "source": "EUR-Lex",
+    "publication_date": "2016-05-03",
+    "entry_into_force": "2017-04-20",
+    "repeal_date": null,
+    "version": "2019-04-01",
+    "themes": [
+      "protection_donnees",
+      "cybersecurite",
+      "numerique",
+      "vie_privee"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1_v1",
+            "titre": "Article 1 — Version initiale",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement ANSSI_RECOMMANDATIONS_2022. Les organisations disposent d'un délai de 19 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2017-04-20",
+              "valid_to": "2020-02-18"
+            },
+            "citations": [
+              "DIRECTIVE_2018_2001_EN",
+              "ANSSI_GUIDE_2023"
+            ]
+          },
+          {
+            "id": "art_1_v2",
+            "titre": "Article 1 — Version amendée",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement ANSSI_RECOMMANDATIONS_2022. Les organisations disposent d'un délai de 19 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2020-02-19",
+              "valid_to": null
+            },
+            "citations": [
+              "ANSSI_GUIDE_2023",
+              "DIRECTIVE_2003_54"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement ANSSI_RECOMMANDATIONS_2022. Les organisations disposent d'un délai de 23 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2017-04-20",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2018_2001_EN",
+              "ANSSI_GUIDE_2023"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement ANSSI_RECOMMANDATIONS_2022. Les organisations disposent d'un délai de 9 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2017-04-20",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2003_54",
+              "ANSSI_GUIDE_2023"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement ANSSI_RECOMMANDATIONS_2022. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2017-04-20",
+              "valid_to": null
+            },
+            "citations": [
+              "ANSSI_GUIDE_2023",
+              "DIRECTIVE_2003_54"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "EN_ISO_13849",
+        "relation": "reference",
+        "commentaire": "Relation ANSSI_RECOMMANDATIONS_2022-EN_ISO_13849"
+      },
+      {
+        "ref": "IEC_62061",
+        "relation": "reference",
+        "commentaire": "Relation ANSSI_RECOMMANDATIONS_2022-IEC_62061"
+      },
+      {
+        "ref": "DIRECTIVE_2012_34",
+        "relation": "se_chevauche",
+        "commentaire": "Relation ANSSI_RECOMMANDATIONS_2022-DIRECTIVE_2012_34"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "rgpd_nis2"
+    }
+  },
+  {
+    "id": "CNIL_DELIB_2021",
+    "titre": "Texte reglementaire CNIL_DELIB_2021",
+    "source": "EUR-Lex",
+    "publication_date": "2017-04-07",
+    "entry_into_force": "2018-12-18",
+    "repeal_date": null,
+    "version": "2018-12-18",
+    "themes": [
+      "protection_donnees",
+      "cybersecurite",
+      "numerique",
+      "vie_privee"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement CNIL_DELIB_2021. Les organisations disposent d'un délai de 9 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2018-12-18",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_13480",
+              "DIRECTIVE_2016_797"
+            ]
+          },
+          {
+            "id": "art_2_v1",
+            "titre": "Article 2 — Version initiale",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement CNIL_DELIB_2021. Les organisations disposent d'un délai de 15 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2018-12-18",
+              "valid_to": "2025-07-07"
+            },
+            "citations": [
+              "EN_13480",
+              "EN_ISO_11684_2"
+            ]
+          },
+          {
+            "id": "art_2_v2",
+            "titre": "Article 2 — Version amendée",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement CNIL_DELIB_2021. Les organisations disposent d'un délai de 15 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2025-07-08",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2016_797",
+              "EN_ISO_11684_2"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement CNIL_DELIB_2021. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2018-12-18",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_11684_2",
+              "DIRECTIVE_2016_797"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement CNIL_DELIB_2021. Les organisations disposent d'un délai de 15 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2018-12-18",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2016_797",
+              "EN_13480"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "EN_349",
+        "relation": "se_chevauche",
+        "commentaire": "Relation CNIL_DELIB_2021-EN_349"
+      },
+      {
+        "ref": "EN_954_1",
+        "relation": "modifie",
+        "commentaire": "Relation CNIL_DELIB_2021-EN_954_1"
+      },
+      {
+        "ref": "CNIL_PACK_CONFORMITE",
+        "relation": "modifie",
+        "commentaire": "Relation CNIL_DELIB_2021-CNIL_PACK_CONFORMITE"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "rgpd_nis2"
+    }
+  },
+  {
+    "id": "EDPB_GUIDE_2021",
+    "titre": "Texte reglementaire EDPB_GUIDE_2021",
+    "source": "EUR-Lex",
+    "publication_date": "2020-06-19",
+    "entry_into_force": "2021-11-20",
+    "repeal_date": null,
+    "version": "2021-11-20",
+    "themes": [
+      "protection_donnees",
+      "cybersecurite",
+      "numerique",
+      "vie_privee"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1_v1",
+            "titre": "Article 1 — Version initiale",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement EDPB_GUIDE_2021. Les organisations disposent d'un délai de 11 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-11-20",
+              "valid_to": "2024-09-19"
+            },
+            "citations": [
+              "AI_ACT_2024_1689",
+              "EN_60204"
+            ]
+          },
+          {
+            "id": "art_1_v2",
+            "titre": "Article 1 — Version amendée",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement EDPB_GUIDE_2021. Les organisations disposent d'un délai de 11 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2024-09-20",
+              "valid_to": null
+            },
+            "citations": [
+              "AI_ACT_2024_1689",
+              "DIRECTIVE_2012_34"
+            ]
+          },
+          {
+            "id": "art_2_v1",
+            "titre": "Article 2 — Version initiale",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement EDPB_GUIDE_2021. Les organisations disposent d'un délai de 13 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-11-20",
+              "valid_to": "2026-03-17"
+            },
+            "citations": [
+              "AI_ACT_2024_1689",
+              "DIRECTIVE_2012_34"
+            ]
+          },
+          {
+            "id": "art_2_v2",
+            "titre": "Article 2 — Version amendée",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement EDPB_GUIDE_2021. Les organisations disposent d'un délai de 13 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2026-03-18",
+              "valid_to": null
+            },
+            "citations": [
+              "AI_ACT_2024_1689",
+              "EN_60204"
+            ]
+          },
+          {
+            "id": "art_3_v1",
+            "titre": "Article 3 — Version initiale",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement EDPB_GUIDE_2021. Les organisations disposent d'un délai de 12 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-11-20",
+              "valid_to": "2026-07-31"
+            },
+            "citations": [
+              "AI_ACT_2024_1689",
+              "EN_60204"
+            ]
+          },
+          {
+            "id": "art_3_v2",
+            "titre": "Article 3 — Version amendée",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement EDPB_GUIDE_2021. Les organisations disposent d'un délai de 12 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2026-08-01",
+              "valid_to": null
+            },
+            "citations": [
+              "AI_ACT_2024_1689",
+              "EN_60204"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement EDPB_GUIDE_2021. Les organisations disposent d'un délai de 7 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-11-20",
+              "valid_to": null
+            },
+            "citations": [
+              "AI_ACT_2024_1689",
+              "DIRECTIVE_2012_34"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2008_114",
+        "relation": "se_chevauche",
+        "commentaire": "Relation EDPB_GUIDE_2021-DIRECTIVE_2008_114"
+      },
+      {
+        "ref": "CODE_TRAVAIL_R4311",
+        "relation": "modifie",
+        "commentaire": "Relation EDPB_GUIDE_2021-CODE_TRAVAIL_R4311"
+      },
+      {
+        "ref": "EN_ISO_13857",
+        "relation": "complete",
+        "commentaire": "Relation EDPB_GUIDE_2021-EN_ISO_13857"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "rgpd_nis2"
+    }
+  },
+  {
+    "id": "REGULATION_2022_868",
+    "titre": "Texte reglementaire REGULATION_2022_868",
+    "source": "EUR-Lex",
+    "publication_date": "2024-10-23",
+    "entry_into_force": "2025-07-07",
+    "repeal_date": null,
+    "version": "2025-07-07",
+    "themes": [
+      "protection_donnees",
+      "cybersecurite",
+      "numerique",
+      "vie_privee"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement REGULATION_2022_868. Les organisations disposent d'un délai de 10 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2025-07-07",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_89_391",
+              "DIRECTIVE_2013_35"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement REGULATION_2022_868. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2025-07-07",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_89_391",
+              "DIRECTIVE_89_656"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement REGULATION_2022_868. Les organisations disposent d'un délai de 10 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2025-07-07",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_89_656",
+              "DIRECTIVE_89_391"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement REGULATION_2022_868. Les organisations disposent d'un délai de 15 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2025-07-07",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2013_35",
+              "DIRECTIVE_89_656"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement REGULATION_2022_868. Les organisations disposent d'un délai de 13 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2025-07-07",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_89_656",
+              "DIRECTIVE_2013_35"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement REGULATION_2022_868. Les organisations disposent d'un délai de 17 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2025-07-07",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_89_391",
+              "DIRECTIVE_89_656"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "CNIL_DELIB_2019",
+        "relation": "modifie",
+        "commentaire": "Relation REGULATION_2022_868-CNIL_DELIB_2019"
+      },
+      {
+        "ref": "EN_ISO_13851",
+        "relation": "modifie",
+        "commentaire": "Relation REGULATION_2022_868-EN_ISO_13851"
+      },
+      {
+        "ref": "ANSSI_RGS_2014",
+        "relation": "modifie",
+        "commentaire": "Relation REGULATION_2022_868-ANSSI_RGS_2014"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "rgpd_nis2"
+    }
+  },
+  {
+    "id": "ANSSI_GUIDE_CLOUD",
+    "titre": "Texte reglementaire ANSSI_GUIDE_CLOUD",
+    "source": "EUR-Lex",
+    "publication_date": "2008-04-26",
+    "entry_into_force": "2008-11-18",
+    "repeal_date": "2016-02-05",
+    "version": "2008-11-18",
+    "themes": [
+      "protection_donnees",
+      "cybersecurite",
+      "numerique",
+      "vie_privee"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement ANSSI_GUIDE_CLOUD. Les organisations disposent d'un délai de 15 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2008-11-18",
+              "valid_to": "2016-02-05"
+            },
+            "citations": [
+              "EN_ISO_13849",
+              "DIRECTIVE_89_656"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement ANSSI_GUIDE_CLOUD. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2008-11-18",
+              "valid_to": "2016-02-05"
+            },
+            "citations": [
+              "DIRECTIVE_89_656",
+              "DIRECTIVE_2018_2001"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement ANSSI_GUIDE_CLOUD. Les organisations disposent d'un délai de 11 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2008-11-18",
+              "valid_to": "2016-02-05"
+            },
+            "citations": [
+              "DIRECTIVE_89_656",
+              "EN_ISO_13849"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement ANSSI_GUIDE_CLOUD. Les organisations disposent d'un délai de 11 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2008-11-18",
+              "valid_to": "2016-02-05"
+            },
+            "citations": [
+              "DIRECTIVE_2018_2001",
+              "DIRECTIVE_89_656"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Les entités essentielles doivent adopter des mesures de gestion des risques de cybersécurité. Cette obligation s'applique dans le cadre du règlement ANSSI_GUIDE_CLOUD. Les organisations disposent d'un délai de 11 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2008-11-18",
+              "valid_to": "2016-02-05"
+            },
+            "citations": [
+              "EN_ISO_13849",
+              "DIRECTIVE_2018_2001"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DORA_2022_2554",
+        "relation": "complete",
+        "commentaire": "Relation ANSSI_GUIDE_CLOUD-DORA_2022_2554"
+      },
+      {
+        "ref": "DIRECTIVE_2014_30",
+        "relation": "reference",
+        "commentaire": "Relation ANSSI_GUIDE_CLOUD-DIRECTIVE_2014_30"
+      },
+      {
+        "ref": "EN_ISO_11684_2",
+        "relation": "se_chevauche",
+        "commentaire": "Relation ANSSI_GUIDE_CLOUD-EN_ISO_11684_2"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "rgpd_nis2"
+    }
+  },
+  {
+    "id": "AI_ACT_2024_1689",
+    "titre": "Texte reglementaire AI_ACT_2024_1689",
+    "source": "EUR-Lex",
+    "publication_date": "2014-11-16",
+    "entry_into_force": "2016-04-19",
+    "repeal_date": null,
+    "version": "2019-02-22",
+    "themes": [
+      "protection_donnees",
+      "cybersecurite",
+      "numerique",
+      "vie_privee"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement AI_ACT_2024_1689. Les organisations disposent d'un délai de 12 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2016-04-19",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2006_21",
+              "DIRECTIVE_2015_2193"
+            ]
+          },
+          {
+            "id": "art_2_v1",
+            "titre": "Article 2 — Version initiale",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement AI_ACT_2024_1689. Les organisations disposent d'un délai de 13 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2016-04-19",
+              "valid_to": "2022-10-06"
+            },
+            "citations": [
+              "DIRECTIVE_91_322",
+              "DIRECTIVE_2006_21"
+            ]
+          },
+          {
+            "id": "art_2_v2",
+            "titre": "Article 2 — Version amendée",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement AI_ACT_2024_1689. Les organisations disposent d'un délai de 13 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2022-10-07",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2006_21",
+              "DIRECTIVE_91_322"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement AI_ACT_2024_1689. Les organisations disposent d'un délai de 13 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2016-04-19",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_91_322",
+              "DIRECTIVE_2006_21"
+            ]
+          },
+          {
+            "id": "art_4_v1",
+            "titre": "Article 4 — Version initiale",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement AI_ACT_2024_1689. Les organisations disposent d'un délai de 21 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2016-04-19",
+              "valid_to": "2020-04-24"
+            },
+            "citations": [
+              "DIRECTIVE_2006_21",
+              "DIRECTIVE_2015_2193"
+            ]
+          },
+          {
+            "id": "art_4_v2",
+            "titre": "Article 4 — Version amendée",
+            "texte": "Le responsable du traitement doit mettre en œuvre des mesures techniques et organisationnelles appropriées. Cette obligation s'applique dans le cadre du règlement AI_ACT_2024_1689. Les organisations disposent d'un délai de 21 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2020-04-25",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2006_21",
+              "DIRECTIVE_91_322"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement AI_ACT_2024_1689. Les organisations disposent d'un délai de 17 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2016-04-19",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2006_21",
+              "DIRECTIVE_2015_2193"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement AI_ACT_2024_1689. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2016-04-19",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2006_21",
+              "DIRECTIVE_91_322"
+            ]
+          },
+          {
+            "id": "art_7",
+            "titre": "Article 7",
+            "texte": "Toute violation de données doit être notifiée à l'autorité de contrôle dans les 72 heures. Cette obligation s'applique dans le cadre du règlement AI_ACT_2024_1689. Les organisations disposent d'un délai de 11 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2016-04-19",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2006_21",
+              "DIRECTIVE_91_322"
+            ]
+          },
+          {
+            "id": "art_8",
+            "titre": "Article 8",
+            "texte": "La notification initiale d'incident doit être effectuée dans un délai de 24 heures. Cette obligation s'applique dans le cadre du règlement AI_ACT_2024_1689. Les organisations disposent d'un délai de 5 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2016-04-19",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2006_21",
+              "DIRECTIVE_91_322"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2010_31",
+        "relation": "modifie",
+        "commentaire": "Relation AI_ACT_2024_1689-DIRECTIVE_2010_31"
+      },
+      {
+        "ref": "DIRECTIVE_2009_73",
+        "relation": "se_chevauche",
+        "commentaire": "Relation AI_ACT_2024_1689-DIRECTIVE_2009_73"
+      },
+      {
+        "ref": "DIRECTIVE_2014_25",
+        "relation": "reference",
+        "commentaire": "Relation AI_ACT_2024_1689-DIRECTIVE_2014_25"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "rgpd_nis2"
+    }
+  }
+]

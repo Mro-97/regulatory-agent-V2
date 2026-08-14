@@ -1,0 +1,3524 @@
+[
+  {
+    "id": "DIRECTIVE_2006_42",
+    "titre": "Texte reglementaire DIRECTIVE_2006_42",
+    "source": "EUR-Lex",
+    "publication_date": "2020-05-05",
+    "entry_into_force": "2021-02-23",
+    "repeal_date": "2025-03-25",
+    "version": "2021-02-23",
+    "themes": [
+      "securite_machines",
+      "directive_machine",
+      "securite_industrielle"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2006_42. Les organisations disposent d'un délai de 21 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-02-23",
+              "valid_to": "2025-03-25"
+            },
+            "citations": [
+              "ANSSI_GUIDE_CLOUD",
+              "EN_ISO_11684_2"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2006_42. Les organisations disposent d'un délai de 10 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-02-23",
+              "valid_to": "2025-03-25"
+            },
+            "citations": [
+              "ANSSI_GUIDE_CLOUD",
+              "EN_ISO_11684_2"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2006_42. Les organisations disposent d'un délai de 10 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-02-23",
+              "valid_to": "2025-03-25"
+            },
+            "citations": [
+              "CNIL_GUIDE_COOKIE",
+              "ANSSI_GUIDE_CLOUD"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2006_42. Les organisations disposent d'un délai de 16 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-02-23",
+              "valid_to": "2025-03-25"
+            },
+            "citations": [
+              "ANSSI_GUIDE_CLOUD",
+              "EN_ISO_11684_2"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2006_42. Les organisations disposent d'un délai de 6 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-02-23",
+              "valid_to": "2025-03-25"
+            },
+            "citations": [
+              "ANSSI_GUIDE_CLOUD",
+              "CNIL_GUIDE_COOKIE"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2006_42. Les organisations disposent d'un délai de 22 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-02-23",
+              "valid_to": "2025-03-25"
+            },
+            "citations": [
+              "ANSSI_GUIDE_CLOUD",
+              "CNIL_GUIDE_COOKIE"
+            ]
+          },
+          {
+            "id": "art_7",
+            "titre": "Article 7",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2006_42. Les organisations disposent d'un délai de 15 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-02-23",
+              "valid_to": "2025-03-25"
+            },
+            "citations": [
+              "CNIL_GUIDE_COOKIE",
+              "EN_ISO_11684_2"
+            ]
+          },
+          {
+            "id": "art_8",
+            "titre": "Article 8",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2006_42. Les organisations disposent d'un délai de 5 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-02-23",
+              "valid_to": "2025-03-25"
+            },
+            "citations": [
+              "ANSSI_GUIDE_CLOUD",
+              "CNIL_GUIDE_COOKIE"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "EN_983",
+        "relation": "modifie",
+        "commentaire": "Relation DIRECTIVE_2006_42-EN_983"
+      },
+      {
+        "ref": "DIRECTIVE_89_391_ST",
+        "relation": "reference",
+        "commentaire": "Relation DIRECTIVE_2006_42-DIRECTIVE_89_391_ST"
+      },
+      {
+        "ref": "EN_ISO_7731",
+        "relation": "modifie",
+        "commentaire": "Relation DIRECTIVE_2006_42-EN_ISO_7731"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "securite_machines"
+    }
+  },
+  {
+    "id": "ISO_12100",
+    "titre": "Texte reglementaire ISO_12100",
+    "source": "EUR-Lex",
+    "publication_date": "2020-04-04",
+    "entry_into_force": "2021-10-09",
+    "repeal_date": null,
+    "version": "2023-12-12",
+    "themes": [
+      "securite_machines",
+      "directive_machine",
+      "securite_industrielle"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement ISO_12100. Les organisations disposent d'un délai de 8 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-10-09",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_953",
+              "DIRECTIVE_2010_32"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement ISO_12100. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-10-09",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2010_32",
+              "EN_953"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement ISO_12100. Les organisations disposent d'un délai de 11 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-10-09",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2010_32",
+              "EN_953"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement ISO_12100. Les organisations disposent d'un délai de 23 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-10-09",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_953",
+              "DIRECTIVE_2010_32"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement ISO_12100. Les organisations disposent d'un délai de 20 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-10-09",
+              "valid_to": null
+            },
+            "citations": [
+              "EDPB_AVIS_2023",
+              "EN_953"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement ISO_12100. Les organisations disposent d'un délai de 14 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-10-09",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2010_32",
+              "EN_953"
+            ]
+          },
+          {
+            "id": "art_7",
+            "titre": "Article 7",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement ISO_12100. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-10-09",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2010_32",
+              "EDPB_AVIS_2023"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2011_92",
+        "relation": "modifie",
+        "commentaire": "Relation ISO_12100-DIRECTIVE_2011_92"
+      },
+      {
+        "ref": "EN_ISO_13855",
+        "relation": "modifie",
+        "commentaire": "Relation ISO_12100-EN_ISO_13855"
+      },
+      {
+        "ref": "DIRECTIVE_2018_2001",
+        "relation": "reference",
+        "commentaire": "Relation ISO_12100-DIRECTIVE_2018_2001"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "securite_machines"
+    }
+  },
+  {
+    "id": "EN_954_1",
+    "titre": "Texte reglementaire EN_954_1",
+    "source": "EUR-Lex",
+    "publication_date": "2018-05-30",
+    "entry_into_force": "2018-12-07",
+    "repeal_date": null,
+    "version": "2018-12-07",
+    "themes": [
+      "securite_machines",
+      "directive_machine",
+      "securite_industrielle"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1_v1",
+            "titre": "Article 1 — Version initiale",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement EN_954_1. Les organisations disposent d'un délai de 16 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2018-12-07",
+              "valid_to": "2020-12-19"
+            },
+            "citations": [
+              "DIRECTIVE_94_33",
+              "DIRECTIVE_2010_32"
+            ]
+          },
+          {
+            "id": "art_1_v2",
+            "titre": "Article 1 — Version amendée",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement EN_954_1. Les organisations disposent d'un délai de 16 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2020-12-20",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_94_33",
+              "DIRECTIVE_2003_55"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement EN_954_1. Les organisations disposent d'un délai de 23 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2018-12-07",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_94_33",
+              "DIRECTIVE_2003_55"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement EN_954_1. Les organisations disposent d'un délai de 14 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2018-12-07",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_94_33",
+              "DIRECTIVE_2003_55"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_89_655",
+        "relation": "se_chevauche",
+        "commentaire": "Relation EN_954_1-DIRECTIVE_89_655"
+      },
+      {
+        "ref": "DIRECTIVE_2018_2001_EN",
+        "relation": "reference",
+        "commentaire": "Relation EN_954_1-DIRECTIVE_2018_2001_EN"
+      },
+      {
+        "ref": "DIRECTIVE_2014_34",
+        "relation": "reference",
+        "commentaire": "Relation EN_954_1-DIRECTIVE_2014_34"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "securite_machines"
+    }
+  },
+  {
+    "id": "EN_ISO_13849",
+    "titre": "Texte reglementaire EN_ISO_13849",
+    "source": "EUR-Lex",
+    "publication_date": "2011-05-16",
+    "entry_into_force": "2012-01-10",
+    "repeal_date": null,
+    "version": "2014-12-11",
+    "themes": [
+      "securite_machines",
+      "directive_machine",
+      "securite_industrielle"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement EN_ISO_13849. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2012-01-10",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2009_73",
+              "DIRECTIVE_2009_28_EN"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement EN_ISO_13849. Les organisations disposent d'un délai de 19 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2012-01-10",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_11161",
+              "DIRECTIVE_2009_28_EN"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement EN_ISO_13849. Les organisations disposent d'un délai de 12 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2012-01-10",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2009_73",
+              "EN_ISO_11161"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_ISO_13849. Les organisations disposent d'un délai de 19 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2012-01-10",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2009_28_EN",
+              "DIRECTIVE_2009_73"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "EN_ISO_13855",
+        "relation": "complete",
+        "commentaire": "Relation EN_ISO_13849-EN_ISO_13855"
+      },
+      {
+        "ref": "DIRECTIVE_92_29",
+        "relation": "complete",
+        "commentaire": "Relation EN_ISO_13849-DIRECTIVE_92_29"
+      },
+      {
+        "ref": "EN_ISO_10218",
+        "relation": "se_chevauche",
+        "commentaire": "Relation EN_ISO_13849-EN_ISO_10218"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "securite_machines"
+    }
+  },
+  {
+    "id": "IEC_62061",
+    "titre": "Texte reglementaire IEC_62061",
+    "source": "EUR-Lex",
+    "publication_date": "2007-08-05",
+    "entry_into_force": "2008-04-01",
+    "repeal_date": null,
+    "version": "2008-04-01",
+    "themes": [
+      "securite_machines",
+      "directive_machine",
+      "securite_industrielle"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement IEC_62061. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2008-04-01",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2010_30",
+              "DIRECTIVE_90_270"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement IEC_62061. Les organisations disposent d'un délai de 10 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2008-04-01",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_953",
+              "DIRECTIVE_90_270"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement IEC_62061. Les organisations disposent d'un délai de 6 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2008-04-01",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_953",
+              "DIRECTIVE_2010_30"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement IEC_62061. Les organisations disposent d'un délai de 17 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2008-04-01",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_90_270",
+              "DIRECTIVE_2010_30"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "EN_1088",
+        "relation": "se_chevauche",
+        "commentaire": "Relation IEC_62061-EN_1088"
+      },
+      {
+        "ref": "DIRECTIVE_2012_27_ENV",
+        "relation": "complete",
+        "commentaire": "Relation IEC_62061-DIRECTIVE_2012_27_ENV"
+      },
+      {
+        "ref": "DIRECTIVE_92_29",
+        "relation": "complete",
+        "commentaire": "Relation IEC_62061-DIRECTIVE_92_29"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "securite_machines"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2014_34",
+    "titre": "Texte reglementaire DIRECTIVE_2014_34",
+    "source": "EUR-Lex",
+    "publication_date": "2010-04-08",
+    "entry_into_force": "2012-04-06",
+    "repeal_date": null,
+    "version": "2014-04-16",
+    "themes": [
+      "securite_machines",
+      "directive_machine",
+      "securite_industrielle"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1_v1",
+            "titre": "Article 1 — Version initiale",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_34. Les organisations disposent d'un délai de 20 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2012-04-06",
+              "valid_to": "2014-06-05"
+            },
+            "citations": [
+              "ACCORD_CADRE_STRESS",
+              "DIRECTIVE_2003_10"
+            ]
+          },
+          {
+            "id": "art_1_v2",
+            "titre": "Article 1 — Version amendée",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_34. Les organisations disposent d'un délai de 20 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2014-06-06",
+              "valid_to": null
+            },
+            "citations": [
+              "ACCORD_CADRE_STRESS",
+              "DIRECTIVE_2014_32"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_34. Les organisations disposent d'un délai de 18 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2012-04-06",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2014_32",
+              "ACCORD_CADRE_STRESS"
+            ]
+          },
+          {
+            "id": "art_3_v1",
+            "titre": "Article 3 — Version initiale",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_34. Les organisations disposent d'un délai de 15 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2012-04-06",
+              "valid_to": "2018-08-22"
+            },
+            "citations": [
+              "DIRECTIVE_2014_32",
+              "DIRECTIVE_2003_10"
+            ]
+          },
+          {
+            "id": "art_3_v2",
+            "titre": "Article 3 — Version amendée",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_34. Les organisations disposent d'un délai de 15 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2018-08-23",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2014_32",
+              "DIRECTIVE_2003_10"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2004_8",
+        "relation": "complete",
+        "commentaire": "Relation DIRECTIVE_2014_34-DIRECTIVE_2004_8"
+      },
+      {
+        "ref": "DIRECTIVE_2009_28_EN",
+        "relation": "reference",
+        "commentaire": "Relation DIRECTIVE_2014_34-DIRECTIVE_2009_28_EN"
+      },
+      {
+        "ref": "NIS1_2016_1148",
+        "relation": "complete",
+        "commentaire": "Relation DIRECTIVE_2014_34-NIS1_2016_1148"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "securite_machines"
+    }
+  },
+  {
+    "id": "EN_ISO_10218",
+    "titre": "Texte reglementaire EN_ISO_10218",
+    "source": "EUR-Lex",
+    "publication_date": "2007-04-25",
+    "entry_into_force": "2007-12-23",
+    "repeal_date": null,
+    "version": "2007-12-23",
+    "themes": [
+      "securite_machines",
+      "directive_machine",
+      "securite_industrielle"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement EN_ISO_10218. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2007-12-23",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_13857",
+              "DIRECTIVE_2008_114"
+            ]
+          },
+          {
+            "id": "art_2_v1",
+            "titre": "Article 2 — Version initiale",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement EN_ISO_10218. Les organisations disposent d'un délai de 22 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2007-12-23",
+              "valid_to": "2012-08-11"
+            },
+            "citations": [
+              "DIRECTIVE_2009_72",
+              "EN_ISO_13857"
+            ]
+          },
+          {
+            "id": "art_2_v2",
+            "titre": "Article 2 — Version amendée",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement EN_ISO_10218. Les organisations disposent d'un délai de 22 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2012-08-12",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2008_114",
+              "EN_ISO_13857"
+            ]
+          },
+          {
+            "id": "art_3_v1",
+            "titre": "Article 3 — Version initiale",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement EN_ISO_10218. Les organisations disposent d'un délai de 22 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2007-12-23",
+              "valid_to": "2015-11-02"
+            },
+            "citations": [
+              "DIRECTIVE_2009_72",
+              "DIRECTIVE_2008_114"
+            ]
+          },
+          {
+            "id": "art_3_v2",
+            "titre": "Article 3 — Version amendée",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement EN_ISO_10218. Les organisations disposent d'un délai de 22 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2015-11-03",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_13857",
+              "DIRECTIVE_2009_72"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement EN_ISO_10218. Les organisations disposent d'un délai de 11 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2007-12-23",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2008_114",
+              "DIRECTIVE_2009_72"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_ISO_10218. Les organisations disposent d'un délai de 13 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2007-12-23",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_13857",
+              "DIRECTIVE_2008_114"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_ISO_10218. Les organisations disposent d'un délai de 22 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2007-12-23",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_13857",
+              "DIRECTIVE_2008_114"
+            ]
+          },
+          {
+            "id": "art_7",
+            "titre": "Article 7",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement EN_ISO_10218. Les organisations disposent d'un délai de 19 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2007-12-23",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2009_72",
+              "EN_ISO_13857"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_92_58",
+        "relation": "complete",
+        "commentaire": "Relation EN_ISO_10218-DIRECTIVE_92_58"
+      },
+      {
+        "ref": "RoHS_2011_65",
+        "relation": "modifie",
+        "commentaire": "Relation EN_ISO_10218-RoHS_2011_65"
+      },
+      {
+        "ref": "DIRECTIVE_92_57",
+        "relation": "reference",
+        "commentaire": "Relation EN_ISO_10218-DIRECTIVE_92_57"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "securite_machines"
+    }
+  },
+  {
+    "id": "DIRECTIVE_89_391",
+    "titre": "Texte reglementaire DIRECTIVE_89_391",
+    "source": "EUR-Lex",
+    "publication_date": "2019-09-20",
+    "entry_into_force": "2021-09-10",
+    "repeal_date": null,
+    "version": "2026-05-30",
+    "themes": [
+      "securite_machines",
+      "directive_machine",
+      "securite_industrielle"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1_v1",
+            "titre": "Article 1 — Version initiale",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_89_391. Les organisations disposent d'un délai de 20 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-09-10",
+              "valid_to": "2026-11-07"
+            },
+            "citations": [
+              "DIRECTIVE_2000_54",
+              "EN_ISO_11684_2"
+            ]
+          },
+          {
+            "id": "art_1_v2",
+            "titre": "Article 1 — Version amendée",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_89_391. Les organisations disposent d'un délai de 20 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2026-11-08",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2000_54",
+              "ANSSI_GUIDE_2023"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_89_391. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-09-10",
+              "valid_to": null
+            },
+            "citations": [
+              "ANSSI_GUIDE_2023",
+              "DIRECTIVE_2000_54"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_89_391. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-09-10",
+              "valid_to": null
+            },
+            "citations": [
+              "ANSSI_GUIDE_2023",
+              "EN_ISO_11684_2"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2006_42",
+        "relation": "reference",
+        "commentaire": "Relation DIRECTIVE_89_391-DIRECTIVE_2006_42"
+      },
+      {
+        "ref": "DIRECTIVE_91_322",
+        "relation": "complete",
+        "commentaire": "Relation DIRECTIVE_89_391-DIRECTIVE_91_322"
+      },
+      {
+        "ref": "CNIL_DELIB_2020",
+        "relation": "modifie",
+        "commentaire": "Relation DIRECTIVE_89_391-CNIL_DELIB_2020"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "securite_machines"
+    }
+  },
+  {
+    "id": "EN_ISO_11111",
+    "titre": "Texte reglementaire EN_ISO_11111",
+    "source": "EUR-Lex",
+    "publication_date": "2018-05-17",
+    "entry_into_force": "2020-01-24",
+    "repeal_date": null,
+    "version": "2020-01-24",
+    "themes": [
+      "securite_machines",
+      "directive_machine",
+      "securite_industrielle"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement EN_ISO_11111. Les organisations disposent d'un délai de 21 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2020-01-24",
+              "valid_to": null
+            },
+            "citations": [
+              "CNIL_DELIB_2022",
+              "EN_982"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement EN_ISO_11111. Les organisations disposent d'un délai de 12 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2020-01-24",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_982",
+              "CNIL_DELIB_2022"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement EN_ISO_11111. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2020-01-24",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_982",
+              "CNIL_DELIB_2022"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2004_22",
+        "relation": "complete",
+        "commentaire": "Relation EN_ISO_11111-DIRECTIVE_2004_22"
+      },
+      {
+        "ref": "DIRECTIVE_2014_94",
+        "relation": "complete",
+        "commentaire": "Relation EN_ISO_11111-DIRECTIVE_2014_94"
+      },
+      {
+        "ref": "NIS1_2016_1148",
+        "relation": "complete",
+        "commentaire": "Relation EN_ISO_11111-NIS1_2016_1148"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "securite_machines"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2009_104",
+    "titre": "Texte reglementaire DIRECTIVE_2009_104",
+    "source": "EUR-Lex",
+    "publication_date": "2015-04-01",
+    "entry_into_force": "2015-10-23",
+    "repeal_date": null,
+    "version": "2019-02-12",
+    "themes": [
+      "securite_machines",
+      "directive_machine",
+      "securite_industrielle"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2009_104. Les organisations disposent d'un délai de 15 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-10-23",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2010_32",
+              "DIRECTIVE_2003_10"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2009_104. Les organisations disposent d'un délai de 17 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-10-23",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2003_10",
+              "DIRECTIVE_2013_40"
+            ]
+          },
+          {
+            "id": "art_3_v1",
+            "titre": "Article 3 — Version initiale",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2009_104. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-10-23",
+              "valid_to": "2021-06-27"
+            },
+            "citations": [
+              "DIRECTIVE_2010_32",
+              "DIRECTIVE_2003_10"
+            ]
+          },
+          {
+            "id": "art_3_v2",
+            "titre": "Article 3 — Version amendée",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2009_104. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2021-06-28",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2010_32",
+              "DIRECTIVE_2013_40"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2009_104. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-10-23",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2013_40",
+              "DIRECTIVE_2010_32"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2009_104. Les organisations disposent d'un délai de 6 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-10-23",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2010_32",
+              "DIRECTIVE_2003_10"
+            ]
+          },
+          {
+            "id": "art_6_v1",
+            "titre": "Article 6 — Version initiale",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2009_104. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-10-23",
+              "valid_to": "2022-09-05"
+            },
+            "citations": [
+              "DIRECTIVE_2010_32",
+              "DIRECTIVE_2013_40"
+            ]
+          },
+          {
+            "id": "art_6_v2",
+            "titre": "Article 6 — Version amendée",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2009_104. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2022-09-06",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2010_32",
+              "DIRECTIVE_2003_10"
+            ]
+          },
+          {
+            "id": "art_7_v1",
+            "titre": "Article 7 — Version initiale",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2009_104. Les organisations disposent d'un délai de 21 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-10-23",
+              "valid_to": "2018-04-21"
+            },
+            "citations": [
+              "DIRECTIVE_2013_40",
+              "DIRECTIVE_2010_32"
+            ]
+          },
+          {
+            "id": "art_7_v2",
+            "titre": "Article 7 — Version amendée",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2009_104. Les organisations disposent d'un délai de 21 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2018-04-22",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2003_10",
+              "DIRECTIVE_2013_40"
+            ]
+          },
+          {
+            "id": "art_8_v1",
+            "titre": "Article 8 — Version initiale",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2009_104. Les organisations disposent d'un délai de 16 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-10-23",
+              "valid_to": "2021-07-05"
+            },
+            "citations": [
+              "DIRECTIVE_2013_40",
+              "DIRECTIVE_2010_32"
+            ]
+          },
+          {
+            "id": "art_8_v2",
+            "titre": "Article 8 — Version amendée",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2009_104. Les organisations disposent d'un délai de 16 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2021-07-06",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2013_40",
+              "DIRECTIVE_2003_10"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_99_92",
+        "relation": "modifie",
+        "commentaire": "Relation DIRECTIVE_2009_104-DIRECTIVE_99_92"
+      },
+      {
+        "ref": "DIRECTIVE_2014_25",
+        "relation": "reference",
+        "commentaire": "Relation DIRECTIVE_2009_104-DIRECTIVE_2014_25"
+      },
+      {
+        "ref": "EN_ISO_9000",
+        "relation": "modifie",
+        "commentaire": "Relation DIRECTIVE_2009_104-EN_ISO_9000"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "securite_machines"
+    }
+  },
+  {
+    "id": "EN_60204",
+    "titre": "Texte reglementaire EN_60204",
+    "source": "EUR-Lex",
+    "publication_date": "2021-08-21",
+    "entry_into_force": "2022-12-16",
+    "repeal_date": null,
+    "version": "2022-12-16",
+    "themes": [
+      "securite_machines",
+      "directive_machine",
+      "securite_industrielle"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement EN_60204. Les organisations disposent d'un délai de 15 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-12-16",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2004_107",
+              "DIRECTIVE_2009_28"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement EN_60204. Les organisations disposent d'un délai de 9 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-12-16",
+              "valid_to": null
+            },
+            "citations": [
+              "REGULATION_2018_1725",
+              "DIRECTIVE_2009_28"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_60204. Les organisations disposent d'un délai de 17 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-12-16",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2004_107",
+              "DIRECTIVE_2009_28"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement EN_60204. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-12-16",
+              "valid_to": null
+            },
+            "citations": [
+              "REGULATION_2018_1725",
+              "DIRECTIVE_2009_28"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement EN_60204. Les organisations disposent d'un délai de 10 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-12-16",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2004_107",
+              "REGULATION_2018_1725"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement EN_60204. Les organisations disposent d'un délai de 3 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-12-16",
+              "valid_to": null
+            },
+            "citations": [
+              "REGULATION_2018_1725",
+              "DIRECTIVE_2004_107"
+            ]
+          },
+          {
+            "id": "art_7",
+            "titre": "Article 7",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_60204. Les organisations disposent d'un délai de 16 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-12-16",
+              "valid_to": null
+            },
+            "citations": [
+              "REGULATION_2018_1725",
+              "DIRECTIVE_2004_107"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2018_2001",
+        "relation": "complete",
+        "commentaire": "Relation EN_60204-DIRECTIVE_2018_2001"
+      },
+      {
+        "ref": "DIRECTIVE_2010_31_EN",
+        "relation": "complete",
+        "commentaire": "Relation EN_60204-DIRECTIVE_2010_31_EN"
+      },
+      {
+        "ref": "DIRECTIVE_2010_31",
+        "relation": "se_chevauche",
+        "commentaire": "Relation EN_60204-DIRECTIVE_2010_31"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "securite_machines"
+    }
+  },
+  {
+    "id": "EN_ISO_14121",
+    "titre": "Texte reglementaire EN_ISO_14121",
+    "source": "EUR-Lex",
+    "publication_date": "2022-11-04",
+    "entry_into_force": "2023-08-20",
+    "repeal_date": null,
+    "version": "2023-08-20",
+    "themes": [
+      "securite_machines",
+      "directive_machine",
+      "securite_industrielle"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement EN_ISO_14121. Les organisations disposent d'un délai de 6 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2023-08-20",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2014_68_EN",
+              "DIRECTIVE_2014_32"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_ISO_14121. Les organisations disposent d'un délai de 22 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2023-08-20",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2014_32",
+              "DIRECTIVE_2014_68_EN"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_ISO_14121. Les organisations disposent d'un délai de 8 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2023-08-20",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2014_68_EN",
+              "DIRECTIVE_2014_32"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_98_24",
+        "relation": "modifie",
+        "commentaire": "Relation EN_ISO_14121-DIRECTIVE_98_24"
+      },
+      {
+        "ref": "DIRECTIVE_2003_10",
+        "relation": "complete",
+        "commentaire": "Relation EN_ISO_14121-DIRECTIVE_2003_10"
+      },
+      {
+        "ref": "CIRCULAIRE_DGT_2012",
+        "relation": "reference",
+        "commentaire": "Relation EN_ISO_14121-CIRCULAIRE_DGT_2012"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "securite_machines"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2006_95",
+    "titre": "Texte reglementaire DIRECTIVE_2006_95",
+    "source": "EUR-Lex",
+    "publication_date": "2015-11-13",
+    "entry_into_force": "2016-07-29",
+    "repeal_date": null,
+    "version": "2016-07-29",
+    "themes": [
+      "securite_machines",
+      "directive_machine",
+      "securite_industrielle"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1_v1",
+            "titre": "Article 1 — Version initiale",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2006_95. Les organisations disposent d'un délai de 7 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2016-07-29",
+              "valid_to": "2022-11-13"
+            },
+            "citations": [
+              "DIRECTIVE_89_654",
+              "DIRECTIVE_2013_35"
+            ]
+          },
+          {
+            "id": "art_1_v2",
+            "titre": "Article 1 — Version amendée",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2006_95. Les organisations disposent d'un délai de 7 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2022-11-14",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_89_654",
+              "DIRECTIVE_2013_35"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2006_95. Les organisations disposent d'un délai de 16 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2016-07-29",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_89_654",
+              "DIRECTIVE_91_322"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2006_95. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2016-07-29",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_91_322",
+              "DIRECTIVE_89_654"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2006_95. Les organisations disposent d'un délai de 21 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2016-07-29",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2013_35",
+              "DIRECTIVE_91_322"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2006_95. Les organisations disposent d'un délai de 15 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2016-07-29",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_91_322",
+              "DIRECTIVE_2013_35"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2006_95. Les organisations disposent d'un délai de 10 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2016-07-29",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_91_322",
+              "DIRECTIVE_2013_35"
+            ]
+          },
+          {
+            "id": "art_7",
+            "titre": "Article 7",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2006_95. Les organisations disposent d'un délai de 13 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2016-07-29",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_91_322",
+              "DIRECTIVE_2013_35"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2012_27_EN",
+        "relation": "se_chevauche",
+        "commentaire": "Relation DIRECTIVE_2006_95-DIRECTIVE_2012_27_EN"
+      },
+      {
+        "ref": "CNIL_DELIB_2019",
+        "relation": "modifie",
+        "commentaire": "Relation DIRECTIVE_2006_95-CNIL_DELIB_2019"
+      },
+      {
+        "ref": "DIRECTIVE_2009_73",
+        "relation": "se_chevauche",
+        "commentaire": "Relation DIRECTIVE_2006_95-DIRECTIVE_2009_73"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "securite_machines"
+    }
+  },
+  {
+    "id": "EN_ISO_13857",
+    "titre": "Texte reglementaire EN_ISO_13857",
+    "source": "EUR-Lex",
+    "publication_date": "2007-11-19",
+    "entry_into_force": "2009-07-29",
+    "repeal_date": null,
+    "version": "2011-08-05",
+    "themes": [
+      "securite_machines",
+      "directive_machine",
+      "securite_industrielle"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement EN_ISO_13857. Les organisations disposent d'un délai de 17 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-07-29",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_98_24",
+              "DIRECTIVE_2009_28"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_ISO_13857. Les organisations disposent d'un délai de 11 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-07-29",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_98_24",
+              "DIRECTIVE_2006_95"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement EN_ISO_13857. Les organisations disposent d'un délai de 14 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-07-29",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2006_95",
+              "DIRECTIVE_2009_28"
+            ]
+          },
+          {
+            "id": "art_4_v1",
+            "titre": "Article 4 — Version initiale",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement EN_ISO_13857. Les organisations disposent d'un délai de 10 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-07-29",
+              "valid_to": "2011-10-20"
+            },
+            "citations": [
+              "DIRECTIVE_2009_28",
+              "DIRECTIVE_2006_95"
+            ]
+          },
+          {
+            "id": "art_4_v2",
+            "titre": "Article 4 — Version amendée",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement EN_ISO_13857. Les organisations disposent d'un délai de 10 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2011-10-21",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2006_95",
+              "DIRECTIVE_2009_28"
+            ]
+          },
+          {
+            "id": "art_5_v1",
+            "titre": "Article 5 — Version initiale",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_ISO_13857. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-07-29",
+              "valid_to": "2014-01-06"
+            },
+            "citations": [
+              "DIRECTIVE_98_24",
+              "DIRECTIVE_2009_28"
+            ]
+          },
+          {
+            "id": "art_5_v2",
+            "titre": "Article 5 — Version amendée",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_ISO_13857. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2014-01-07",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_98_24",
+              "DIRECTIVE_2006_95"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "RGPD_2016_679",
+        "relation": "se_chevauche",
+        "commentaire": "Relation EN_ISO_13857-RGPD_2016_679"
+      },
+      {
+        "ref": "ANSSI_PRIS_2023",
+        "relation": "se_chevauche",
+        "commentaire": "Relation EN_ISO_13857-ANSSI_PRIS_2023"
+      },
+      {
+        "ref": "EN_ISO_9000",
+        "relation": "reference",
+        "commentaire": "Relation EN_ISO_13857-EN_ISO_9000"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "securite_machines"
+    }
+  },
+  {
+    "id": "EN_349",
+    "titre": "Texte reglementaire EN_349",
+    "source": "EUR-Lex",
+    "publication_date": "2018-11-30",
+    "entry_into_force": "2020-06-16",
+    "repeal_date": null,
+    "version": "2023-12-29",
+    "themes": [
+      "securite_machines",
+      "directive_machine",
+      "securite_industrielle"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement EN_349. Les organisations disposent d'un délai de 21 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2020-06-16",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_11684_2",
+              "DIRECTIVE_2006_25"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement EN_349. Les organisations disposent d'un délai de 5 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2020-06-16",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_11684_2",
+              "DIRECTIVE_92_58"
+            ]
+          },
+          {
+            "id": "art_3_v1",
+            "titre": "Article 3 — Version initiale",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_349. Les organisations disposent d'un délai de 18 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2020-06-16",
+              "valid_to": "2026-07-08"
+            },
+            "citations": [
+              "DIRECTIVE_2006_25",
+              "EN_ISO_11684_2"
+            ]
+          },
+          {
+            "id": "art_3_v2",
+            "titre": "Article 3 — Version amendée",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_349. Les organisations disposent d'un délai de 18 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2026-07-09",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2006_25",
+              "DIRECTIVE_92_58"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_349. Les organisations disposent d'un délai de 8 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2020-06-16",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2006_25",
+              "EN_ISO_11684_2"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_349. Les organisations disposent d'un délai de 17 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2020-06-16",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2006_25",
+              "EN_ISO_11684_2"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement EN_349. Les organisations disposent d'un délai de 10 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2020-06-16",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_92_58",
+              "EN_ISO_11684_2"
+            ]
+          },
+          {
+            "id": "art_7",
+            "titre": "Article 7",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_349. Les organisations disposent d'un délai de 10 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2020-06-16",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2006_25",
+              "EN_ISO_11684_2"
+            ]
+          },
+          {
+            "id": "art_8",
+            "titre": "Article 8",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement EN_349. Les organisations disposent d'un délai de 3 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2020-06-16",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_11684_2",
+              "DIRECTIVE_92_58"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2009_28_EN",
+        "relation": "reference",
+        "commentaire": "Relation EN_349-DIRECTIVE_2009_28_EN"
+      },
+      {
+        "ref": "CNIL_DELIB_2021",
+        "relation": "reference",
+        "commentaire": "Relation EN_349-CNIL_DELIB_2021"
+      },
+      {
+        "ref": "DIRECTIVE_2008_98",
+        "relation": "reference",
+        "commentaire": "Relation EN_349-DIRECTIVE_2008_98"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "securite_machines"
+    }
+  },
+  {
+    "id": "EN_ISO_14122",
+    "titre": "Texte reglementaire EN_ISO_14122",
+    "source": "EUR-Lex",
+    "publication_date": "2019-05-16",
+    "entry_into_force": "2020-08-20",
+    "repeal_date": null,
+    "version": "2024-03-08",
+    "themes": [
+      "securite_machines",
+      "directive_machine",
+      "securite_industrielle"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement EN_ISO_14122. Les organisations disposent d'un délai de 18 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2020-08-20",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2014_94",
+              "DIRECTIVE_2018_2001_EN"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement EN_ISO_14122. Les organisations disposent d'un délai de 5 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2020-08-20",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2014_94",
+              "DIRECTIVE_90_269"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement EN_ISO_14122. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2020-08-20",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2014_94",
+              "DIRECTIVE_2018_2001_EN"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_ISO_14122. Les organisations disposent d'un délai de 20 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2020-08-20",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2018_2001_EN",
+              "DIRECTIVE_2014_94"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement EN_ISO_14122. Les organisations disposent d'un délai de 12 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2020-08-20",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_90_269",
+              "DIRECTIVE_2018_2001_EN"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement EN_ISO_14122. Les organisations disposent d'un délai de 6 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2020-08-20",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2018_2001_EN",
+              "DIRECTIVE_90_269"
+            ]
+          },
+          {
+            "id": "art_7",
+            "titre": "Article 7",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement EN_ISO_14122. Les organisations disposent d'un délai de 9 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2020-08-20",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2014_94",
+              "DIRECTIVE_2018_2001_EN"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "EN_ISO_7731",
+        "relation": "complete",
+        "commentaire": "Relation EN_ISO_14122-EN_ISO_7731"
+      },
+      {
+        "ref": "DORA_2022_2554",
+        "relation": "reference",
+        "commentaire": "Relation EN_ISO_14122-DORA_2022_2554"
+      },
+      {
+        "ref": "DIRECTIVE_93_103",
+        "relation": "complete",
+        "commentaire": "Relation EN_ISO_14122-DIRECTIVE_93_103"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "securite_machines"
+    }
+  },
+  {
+    "id": "EN_1088",
+    "titre": "Texte reglementaire EN_1088",
+    "source": "EUR-Lex",
+    "publication_date": "2012-10-12",
+    "entry_into_force": "2013-04-24",
+    "repeal_date": null,
+    "version": "2013-04-24",
+    "themes": [
+      "securite_machines",
+      "directive_machine",
+      "securite_industrielle"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement EN_1088. Les organisations disposent d'un délai de 7 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2013-04-24",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_14121",
+              "CIRCULAIRE_DGT_2012"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement EN_1088. Les organisations disposent d'un délai de 21 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2013-04-24",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_14121",
+              "EN_ISO_13857"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement EN_1088. Les organisations disposent d'un délai de 8 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2013-04-24",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_14121",
+              "EN_ISO_13857"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement EN_1088. Les organisations disposent d'un délai de 5 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2013-04-24",
+              "valid_to": null
+            },
+            "citations": [
+              "CIRCULAIRE_DGT_2012",
+              "EN_ISO_13857"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement EN_1088. Les organisations disposent d'un délai de 7 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2013-04-24",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_14121",
+              "CIRCULAIRE_DGT_2012"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement EN_1088. Les organisations disposent d'un délai de 6 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2013-04-24",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_14121",
+              "CIRCULAIRE_DGT_2012"
+            ]
+          },
+          {
+            "id": "art_7",
+            "titre": "Article 7",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_1088. Les organisations disposent d'un délai de 17 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2013-04-24",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_14121",
+              "EN_ISO_13857"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2009_148",
+        "relation": "se_chevauche",
+        "commentaire": "Relation EN_1088-DIRECTIVE_2009_148"
+      },
+      {
+        "ref": "DIRECTIVE_2006_96_EN",
+        "relation": "complete",
+        "commentaire": "Relation EN_1088-DIRECTIVE_2006_96_EN"
+      },
+      {
+        "ref": "EN_ISO_14122",
+        "relation": "complete",
+        "commentaire": "Relation EN_1088-EN_ISO_14122"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "securite_machines"
+    }
+  },
+  {
+    "id": "EN_ISO_13855",
+    "titre": "Texte reglementaire EN_ISO_13855",
+    "source": "EUR-Lex",
+    "publication_date": "2011-12-08",
+    "entry_into_force": "2012-08-27",
+    "repeal_date": null,
+    "version": "2012-08-27",
+    "themes": [
+      "securite_machines",
+      "directive_machine",
+      "securite_industrielle"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_ISO_13855. Les organisations disposent d'un délai de 17 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2012-08-27",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_982",
+              "DIRECTIVE_2013_40"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement EN_ISO_13855. Les organisations disposent d'un délai de 10 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2012-08-27",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_982",
+              "DIRECTIVE_2013_40"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement EN_ISO_13855. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2012-08-27",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_982",
+              "DIRECTIVE_2006_32"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2011_92",
+        "relation": "complete",
+        "commentaire": "Relation EN_ISO_13855-DIRECTIVE_2011_92"
+      },
+      {
+        "ref": "RGPD_2016_679",
+        "relation": "complete",
+        "commentaire": "Relation EN_ISO_13855-RGPD_2016_679"
+      },
+      {
+        "ref": "DIRECTIVE_2003_54",
+        "relation": "reference",
+        "commentaire": "Relation EN_ISO_13855-DIRECTIVE_2003_54"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "securite_machines"
+    }
+  },
+  {
+    "id": "EN_ISO_11161",
+    "titre": "Texte reglementaire EN_ISO_11161",
+    "source": "EUR-Lex",
+    "publication_date": "2024-07-16",
+    "entry_into_force": "2025-06-06",
+    "repeal_date": null,
+    "version": "2025-06-06",
+    "themes": [
+      "securite_machines",
+      "directive_machine",
+      "securite_industrielle"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_ISO_11161. Les organisations disposent d'un délai de 12 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2025-06-06",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_92_91",
+              "DIRECTIVE_2015_2193"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_ISO_11161. Les organisations disposent d'un délai de 5 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2025-06-06",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_92_91",
+              "DIRECTIVE_2015_2193"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement EN_ISO_11161. Les organisations disposent d'un délai de 3 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2025-06-06",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2015_2193",
+              "DIRECTIVE_92_91"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2010_75_EN",
+        "relation": "modifie",
+        "commentaire": "Relation EN_ISO_11161-DIRECTIVE_2010_75_EN"
+      },
+      {
+        "ref": "EN_60204",
+        "relation": "modifie",
+        "commentaire": "Relation EN_ISO_11161-EN_60204"
+      },
+      {
+        "ref": "REGULATION_2018_1725",
+        "relation": "reference",
+        "commentaire": "Relation EN_ISO_11161-REGULATION_2018_1725"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "securite_machines"
+    }
+  },
+  {
+    "id": "EN_953",
+    "titre": "Texte reglementaire EN_953",
+    "source": "EUR-Lex",
+    "publication_date": "2010-01-26",
+    "entry_into_force": "2011-10-14",
+    "repeal_date": null,
+    "version": "2013-04-17",
+    "themes": [
+      "securite_machines",
+      "directive_machine",
+      "securite_industrielle"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1_v1",
+            "titre": "Article 1 — Version initiale",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement EN_953. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2011-10-14",
+              "valid_to": "2015-08-02"
+            },
+            "citations": [
+              "DIRECTIVE_2010_75",
+              "DIRECTIVE_2014_94"
+            ]
+          },
+          {
+            "id": "art_1_v2",
+            "titre": "Article 1 — Version amendée",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement EN_953. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2015-08-03",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2014_94",
+              "DIRECTIVE_2010_75"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement EN_953. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2011-10-14",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2014_94",
+              "DIRECTIVE_2018_844"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_953. Les organisations disposent d'un délai de 5 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2011-10-14",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2010_75",
+              "DIRECTIVE_2018_844"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_953. Les organisations disposent d'un délai de 19 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2011-10-14",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2018_844",
+              "DIRECTIVE_2010_75"
+            ]
+          },
+          {
+            "id": "art_5_v1",
+            "titre": "Article 5 — Version initiale",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_953. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2011-10-14",
+              "valid_to": "2017-11-02"
+            },
+            "citations": [
+              "DIRECTIVE_2014_94",
+              "DIRECTIVE_2010_75"
+            ]
+          },
+          {
+            "id": "art_5_v2",
+            "titre": "Article 5 — Version amendée",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_953. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2017-11-03",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2014_94",
+              "DIRECTIVE_2010_75"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "EN_ISO_13857",
+        "relation": "complete",
+        "commentaire": "Relation EN_953-EN_ISO_13857"
+      },
+      {
+        "ref": "DIRECTIVE_2018_1972",
+        "relation": "reference",
+        "commentaire": "Relation EN_953-DIRECTIVE_2018_1972"
+      },
+      {
+        "ref": "DIRECTIVE_2010_32",
+        "relation": "modifie",
+        "commentaire": "Relation EN_953-DIRECTIVE_2010_32"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "securite_machines"
+    }
+  },
+  {
+    "id": "EN_982",
+    "titre": "Texte reglementaire EN_982",
+    "source": "EUR-Lex",
+    "publication_date": "2021-08-30",
+    "entry_into_force": "2023-07-07",
+    "repeal_date": null,
+    "version": "2025-11-08",
+    "themes": [
+      "securite_machines",
+      "directive_machine",
+      "securite_industrielle"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_982. Les organisations disposent d'un délai de 5 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2023-07-07",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2013_40",
+              "EN_ISO_9000"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement EN_982. Les organisations disposent d'un délai de 23 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2023-07-07",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_9000",
+              "DIRECTIVE_2006_32"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement EN_982. Les organisations disposent d'un délai de 16 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2023-07-07",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_9000",
+              "DIRECTIVE_2013_40"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2009_125",
+        "relation": "modifie",
+        "commentaire": "Relation EN_982-DIRECTIVE_2009_125"
+      },
+      {
+        "ref": "DIRECTIVE_2006_32",
+        "relation": "complete",
+        "commentaire": "Relation EN_982-DIRECTIVE_2006_32"
+      },
+      {
+        "ref": "EDPB_GUIDE_2022",
+        "relation": "complete",
+        "commentaire": "Relation EN_982-EDPB_GUIDE_2022"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "securite_machines"
+    }
+  },
+  {
+    "id": "EN_983",
+    "titre": "Texte reglementaire EN_983",
+    "source": "EUR-Lex",
+    "publication_date": "2007-07-26",
+    "entry_into_force": "2008-10-30",
+    "repeal_date": null,
+    "version": "2011-09-26",
+    "themes": [
+      "securite_machines",
+      "directive_machine",
+      "securite_industrielle"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement EN_983. Les organisations disposent d'un délai de 21 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2008-10-30",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2006_42",
+              "DIRECTIVE_2010_32"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement EN_983. Les organisations disposent d'un délai de 17 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2008-10-30",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2010_32",
+              "DIRECTIVE_2006_42"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_983. Les organisations disposent d'un délai de 17 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2008-10-30",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2014_25",
+              "DIRECTIVE_2006_42"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_983. Les organisations disposent d'un délai de 10 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2008-10-30",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2010_32",
+              "DIRECTIVE_2014_25"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement EN_983. Les organisations disposent d'un délai de 18 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2008-10-30",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2010_32",
+              "DIRECTIVE_2006_42"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "CNIL_DELIB_2022",
+        "relation": "complete",
+        "commentaire": "Relation EN_983-CNIL_DELIB_2022"
+      },
+      {
+        "ref": "DIRECTIVE_2010_31_EN",
+        "relation": "reference",
+        "commentaire": "Relation EN_983-DIRECTIVE_2010_31_EN"
+      },
+      {
+        "ref": "DIRECTIVE_2009_104",
+        "relation": "se_chevauche",
+        "commentaire": "Relation EN_983-DIRECTIVE_2009_104"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "securite_machines"
+    }
+  },
+  {
+    "id": "EN_ISO_13851",
+    "titre": "Texte reglementaire EN_ISO_13851",
+    "source": "EUR-Lex",
+    "publication_date": "2024-12-14",
+    "entry_into_force": "2026-09-05",
+    "repeal_date": null,
+    "version": "2026-09-05",
+    "themes": [
+      "securite_machines",
+      "directive_machine",
+      "securite_industrielle"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_ISO_13851. Les organisations disposent d'un délai de 11 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2026-09-05",
+              "valid_to": null
+            },
+            "citations": [
+              "NIS1_2016_1148",
+              "DIRECTIVE_2014_94"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement EN_ISO_13851. Les organisations disposent d'un délai de 13 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2026-09-05",
+              "valid_to": null
+            },
+            "citations": [
+              "NIS1_2016_1148",
+              "DIRECTIVE_2014_94"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement EN_ISO_13851. Les organisations disposent d'un délai de 23 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2026-09-05",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2014_94",
+              "RGPD_LIGNES_2021"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "EN_ISO_13855",
+        "relation": "complete",
+        "commentaire": "Relation EN_ISO_13851-EN_ISO_13855"
+      },
+      {
+        "ref": "CODE_TRAVAIL_L4121",
+        "relation": "se_chevauche",
+        "commentaire": "Relation EN_ISO_13851-CODE_TRAVAIL_L4121"
+      },
+      {
+        "ref": "DIRECTIVE_92_91",
+        "relation": "modifie",
+        "commentaire": "Relation EN_ISO_13851-DIRECTIVE_92_91"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "securite_machines"
+    }
+  },
+  {
+    "id": "EN_ISO_14119",
+    "titre": "Texte reglementaire EN_ISO_14119",
+    "source": "EUR-Lex",
+    "publication_date": "2008-03-17",
+    "entry_into_force": "2008-12-24",
+    "repeal_date": null,
+    "version": "2012-10-26",
+    "themes": [
+      "securite_machines",
+      "directive_machine",
+      "securite_industrielle"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement EN_ISO_14119. Les organisations disposent d'un délai de 14 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2008-12-24",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_14121",
+              "DIRECTIVE_89_656"
+            ]
+          },
+          {
+            "id": "art_2_v1",
+            "titre": "Article 2 — Version initiale",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement EN_ISO_14119. Les organisations disposent d'un délai de 8 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2008-12-24",
+              "valid_to": "2015-04-08"
+            },
+            "citations": [
+              "EN_349",
+              "EN_ISO_14121"
+            ]
+          },
+          {
+            "id": "art_2_v2",
+            "titre": "Article 2 — Version amendée",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement EN_ISO_14119. Les organisations disposent d'un délai de 8 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2015-04-09",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_89_656",
+              "EN_ISO_14121"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement EN_ISO_14119. Les organisations disposent d'un délai de 17 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2008-12-24",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_89_656",
+              "EN_349"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement EN_ISO_14119. Les organisations disposent d'un délai de 17 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2008-12-24",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_349",
+              "EN_ISO_14121"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement EN_ISO_14119. Les organisations disposent d'un délai de 17 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2008-12-24",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_349",
+              "DIRECTIVE_89_656"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2011_92",
+        "relation": "reference",
+        "commentaire": "Relation EN_ISO_14119-DIRECTIVE_2011_92"
+      },
+      {
+        "ref": "DIRECTIVE_2002_44",
+        "relation": "complete",
+        "commentaire": "Relation EN_ISO_14119-DIRECTIVE_2002_44"
+      },
+      {
+        "ref": "DIRECTIVE_2009_125",
+        "relation": "modifie",
+        "commentaire": "Relation EN_ISO_14119-DIRECTIVE_2009_125"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "securite_machines"
+    }
+  },
+  {
+    "id": "EN_13480",
+    "titre": "Texte reglementaire EN_13480",
+    "source": "EUR-Lex",
+    "publication_date": "2016-11-02",
+    "entry_into_force": "2017-08-18",
+    "repeal_date": null,
+    "version": "2024-11-11",
+    "themes": [
+      "securite_machines",
+      "directive_machine",
+      "securite_industrielle"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement EN_13480. Les organisations disposent d'un délai de 21 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2017-08-18",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2016_2284",
+              "DIRECTIVE_93_103"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_13480. Les organisations disposent d'un délai de 12 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2017-08-18",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_93_103",
+              "DIRECTIVE_2014_34"
+            ]
+          },
+          {
+            "id": "art_3_v1",
+            "titre": "Article 3 — Version initiale",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement EN_13480. Les organisations disposent d'un délai de 23 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2017-08-18",
+              "valid_to": "2022-06-09"
+            },
+            "citations": [
+              "DIRECTIVE_2016_2284",
+              "DIRECTIVE_93_103"
+            ]
+          },
+          {
+            "id": "art_3_v2",
+            "titre": "Article 3 — Version amendée",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement EN_13480. Les organisations disposent d'un délai de 23 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2022-06-10",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2016_2284",
+              "DIRECTIVE_93_103"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement EN_13480. Les organisations disposent d'un délai de 12 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2017-08-18",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_93_103",
+              "DIRECTIVE_2014_34"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement EN_13480. Les organisations disposent d'un délai de 5 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2017-08-18",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2014_34",
+              "DIRECTIVE_2016_2284"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "REGULATION_2018_1725",
+        "relation": "reference",
+        "commentaire": "Relation EN_13480-REGULATION_2018_1725"
+      },
+      {
+        "ref": "DIRECTIVE_2015_2366",
+        "relation": "reference",
+        "commentaire": "Relation EN_13480-DIRECTIVE_2015_2366"
+      },
+      {
+        "ref": "CNIL_DELIB_2020",
+        "relation": "complete",
+        "commentaire": "Relation EN_13480-CNIL_DELIB_2020"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "securite_machines"
+    }
+  },
+  {
+    "id": "EN_ISO_11684",
+    "titre": "Texte reglementaire EN_ISO_11684",
+    "source": "EUR-Lex",
+    "publication_date": "2011-10-07",
+    "entry_into_force": "2013-08-10",
+    "repeal_date": null,
+    "version": "2016-07-03",
+    "themes": [
+      "securite_machines",
+      "directive_machine",
+      "securite_industrielle"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement EN_ISO_11684. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2013-08-10",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2012_27_EN",
+              "EN_953"
+            ]
+          },
+          {
+            "id": "art_2_v1",
+            "titre": "Article 2 — Version initiale",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement EN_ISO_11684. Les organisations disposent d'un délai de 15 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2013-08-10",
+              "valid_to": "2016-12-28"
+            },
+            "citations": [
+              "DIRECTIVE_2012_27_EN",
+              "EN_953"
+            ]
+          },
+          {
+            "id": "art_2_v2",
+            "titre": "Article 2 — Version amendée",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement EN_ISO_11684. Les organisations disposent d'un délai de 15 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2016-12-29",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_953",
+              "DIRECTIVE_2012_27_EN"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_ISO_11684. Les organisations disposent d'un délai de 23 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2013-08-10",
+              "valid_to": null
+            },
+            "citations": [
+              "RGPD_2016_679",
+              "EN_953"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_ISO_11684. Les organisations disposent d'un délai de 3 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2013-08-10",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_953",
+              "DIRECTIVE_2012_27_EN"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "REGULATION_2022_868",
+        "relation": "reference",
+        "commentaire": "Relation EN_ISO_11684-REGULATION_2022_868"
+      },
+      {
+        "ref": "EN_1088",
+        "relation": "modifie",
+        "commentaire": "Relation EN_ISO_11684-EN_1088"
+      },
+      {
+        "ref": "DIRECTIVE_2014_32",
+        "relation": "se_chevauche",
+        "commentaire": "Relation EN_ISO_11684-DIRECTIVE_2014_32"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "securite_machines"
+    }
+  },
+  {
+    "id": "EN_ISO_7731",
+    "titre": "Texte reglementaire EN_ISO_7731",
+    "source": "EUR-Lex",
+    "publication_date": "2009-02-19",
+    "entry_into_force": "2009-10-03",
+    "repeal_date": null,
+    "version": "2013-07-07",
+    "themes": [
+      "securite_machines",
+      "directive_machine",
+      "securite_industrielle"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement EN_ISO_7731. Les organisations disposent d'un délai de 15 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-10-03",
+              "valid_to": null
+            },
+            "citations": [
+              "CODE_TRAVAIL_L4121",
+              "EN_13480"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement EN_ISO_7731. Les organisations disposent d'un délai de 16 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-10-03",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_13480",
+              "CODE_TRAVAIL_L4121"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement EN_ISO_7731. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-10-03",
+              "valid_to": null
+            },
+            "citations": [
+              "RGPD_2016_679",
+              "EN_13480"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_ISO_7731. Les organisations disposent d'un délai de 10 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-10-03",
+              "valid_to": null
+            },
+            "citations": [
+              "RGPD_2016_679",
+              "EN_13480"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement EN_ISO_7731. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-10-03",
+              "valid_to": null
+            },
+            "citations": [
+              "RGPD_2016_679",
+              "CODE_TRAVAIL_L4121"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_ISO_7731. Les organisations disposent d'un délai de 5 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-10-03",
+              "valid_to": null
+            },
+            "citations": [
+              "CODE_TRAVAIL_L4121",
+              "RGPD_2016_679"
+            ]
+          },
+          {
+            "id": "art_7",
+            "titre": "Article 7",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement EN_ISO_7731. Les organisations disposent d'un délai de 13 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-10-03",
+              "valid_to": null
+            },
+            "citations": [
+              "RGPD_2016_679",
+              "CODE_TRAVAIL_L4121"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "EN_ISO_13855",
+        "relation": "complete",
+        "commentaire": "Relation EN_ISO_7731-EN_ISO_13855"
+      },
+      {
+        "ref": "DIRECTIVE_2006_32",
+        "relation": "complete",
+        "commentaire": "Relation EN_ISO_7731-DIRECTIVE_2006_32"
+      },
+      {
+        "ref": "ANSSI_RECOMMANDATIONS_2022",
+        "relation": "reference",
+        "commentaire": "Relation EN_ISO_7731-ANSSI_RECOMMANDATIONS_2022"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "securite_machines"
+    }
+  },
+  {
+    "id": "EN_ISO_11684_2",
+    "titre": "Texte reglementaire EN_ISO_11684_2",
+    "source": "EUR-Lex",
+    "publication_date": "2023-05-15",
+    "entry_into_force": "2024-04-10",
+    "repeal_date": null,
+    "version": "2025-04-15",
+    "themes": [
+      "securite_machines",
+      "directive_machine",
+      "securite_industrielle"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement EN_ISO_11684_2. Les organisations disposent d'un délai de 6 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2024-04-10",
+              "valid_to": null
+            },
+            "citations": [
+              "EDPB_GUIDE_2022",
+              "DIRECTIVE_2001_77"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement EN_ISO_11684_2. Les organisations disposent d'un délai de 14 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2024-04-10",
+              "valid_to": null
+            },
+            "citations": [
+              "EDPB_GUIDE_2022",
+              "CNIL_DELIB_2020"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement EN_ISO_11684_2. Les organisations disposent d'un délai de 8 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2024-04-10",
+              "valid_to": null
+            },
+            "citations": [
+              "EDPB_GUIDE_2022",
+              "CNIL_DELIB_2020"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement EN_ISO_11684_2. Les organisations disposent d'un délai de 5 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2024-04-10",
+              "valid_to": null
+            },
+            "citations": [
+              "CNIL_DELIB_2020",
+              "EDPB_GUIDE_2022"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_ISO_11684_2. Les organisations disposent d'un délai de 19 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2024-04-10",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2001_77",
+              "EDPB_GUIDE_2022"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2014_65",
+        "relation": "se_chevauche",
+        "commentaire": "Relation EN_ISO_11684_2-DIRECTIVE_2014_65"
+      },
+      {
+        "ref": "DIRECTIVE_2006_25",
+        "relation": "se_chevauche",
+        "commentaire": "Relation EN_ISO_11684_2-DIRECTIVE_2006_25"
+      },
+      {
+        "ref": "DIRECTIVE_2014_30",
+        "relation": "modifie",
+        "commentaire": "Relation EN_ISO_11684_2-DIRECTIVE_2014_30"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "securite_machines"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2014_68",
+    "titre": "Texte reglementaire DIRECTIVE_2014_68",
+    "source": "EUR-Lex",
+    "publication_date": "2015-01-04",
+    "entry_into_force": "2016-09-11",
+    "repeal_date": null,
+    "version": "2021-09-08",
+    "themes": [
+      "securite_machines",
+      "directive_machine",
+      "securite_industrielle"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1_v1",
+            "titre": "Article 1 — Version initiale",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_68. Les organisations disposent d'un délai de 5 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2016-09-11",
+              "valid_to": "2022-05-04"
+            },
+            "citations": [
+              "EN_ISO_11161",
+              "EN_982"
+            ]
+          },
+          {
+            "id": "art_1_v2",
+            "titre": "Article 1 — Version amendée",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_68. Les organisations disposent d'un délai de 5 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2022-05-05",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_11161",
+              "EN_982"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Le fabricant doit réaliser une évaluation des risques conformément aux principes généraux d'intégration de la sécurité. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_68. Les organisations disposent d'un délai de 6 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2016-09-11",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_982",
+              "DIRECTIVE_2007_2"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_68. Les organisations disposent d'un délai de 17 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2016-09-11",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_11161",
+              "EN_982"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_68. Les organisations disposent d'un délai de 15 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2016-09-11",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2007_2",
+              "EN_ISO_11161"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_68. Les organisations disposent d'un délai de 13 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2016-09-11",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_11161",
+              "DIRECTIVE_2007_2"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2019_944_EN",
+        "relation": "se_chevauche",
+        "commentaire": "Relation DIRECTIVE_2014_68-DIRECTIVE_2019_944_EN"
+      },
+      {
+        "ref": "EN_ISO_13855",
+        "relation": "se_chevauche",
+        "commentaire": "Relation DIRECTIVE_2014_68-EN_ISO_13855"
+      },
+      {
+        "ref": "EN_ISO_14119",
+        "relation": "modifie",
+        "commentaire": "Relation DIRECTIVE_2014_68-EN_ISO_14119"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "securite_machines"
+    }
+  },
+  {
+    "id": "EN_ISO_4414",
+    "titre": "Texte reglementaire EN_ISO_4414",
+    "source": "EUR-Lex",
+    "publication_date": "2008-03-02",
+    "entry_into_force": "2009-09-14",
+    "repeal_date": null,
+    "version": "2015-04-29",
+    "themes": [
+      "securite_machines",
+      "directive_machine",
+      "securite_industrielle"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement EN_ISO_4414. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-09-14",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_90_270",
+              "DIRECTIVE_2004_22"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement EN_ISO_4414. Les organisations disposent d'un délai de 22 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-09-14",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2004_22",
+              "DIRECTIVE_2016_680"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les machines doivent être conçues de façon à pouvoir être utilisées sans exposer les personnes à un risque. Cette obligation s'applique dans le cadre du règlement EN_ISO_4414. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-09-14",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2004_22",
+              "DIRECTIVE_90_270"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement EN_ISO_4414. Les organisations disposent d'un délai de 6 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-09-14",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2016_680",
+              "DIRECTIVE_2004_22"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "La documentation technique doit comprendre une description générale de la machine. Cette obligation s'applique dans le cadre du règlement EN_ISO_4414. Les organisations disposent d'un délai de 20 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-09-14",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2016_680",
+              "DIRECTIVE_2004_22"
+            ]
+          },
+          {
+            "id": "art_6_v1",
+            "titre": "Article 6 — Version initiale",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement EN_ISO_4414. Les organisations disposent d'un délai de 3 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-09-14",
+              "valid_to": "2015-03-02"
+            },
+            "citations": [
+              "DIRECTIVE_90_270",
+              "DIRECTIVE_2016_680"
+            ]
+          },
+          {
+            "id": "art_6_v2",
+            "titre": "Article 6 — Version amendée",
+            "texte": "Les dispositifs de protection doivent résister aux contraintes prévisibles d'usage. Cette obligation s'applique dans le cadre du règlement EN_ISO_4414. Les organisations disposent d'un délai de 3 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2015-03-03",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2004_22",
+              "DIRECTIVE_2016_680"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "RGPD_LIGNES_2021",
+        "relation": "se_chevauche",
+        "commentaire": "Relation EN_ISO_4414-RGPD_LIGNES_2021"
+      },
+      {
+        "ref": "DIRECTIVE_2005_32",
+        "relation": "complete",
+        "commentaire": "Relation EN_ISO_4414-DIRECTIVE_2005_32"
+      },
+      {
+        "ref": "DIRECTIVE_2010_31",
+        "relation": "se_chevauche",
+        "commentaire": "Relation EN_ISO_4414-DIRECTIVE_2010_31"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "securite_machines"
+    }
+  }
+]

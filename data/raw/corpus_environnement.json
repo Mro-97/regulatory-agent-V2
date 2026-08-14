@@ -1,0 +1,3857 @@
+[
+  {
+    "id": "DIRECTIVE_2010_75",
+    "titre": "Texte reglementaire DIRECTIVE_2010_75",
+    "source": "INERIS",
+    "publication_date": "2007-02-15",
+    "entry_into_force": "2007-11-24",
+    "repeal_date": null,
+    "version": "2007-11-24",
+    "themes": [
+      "environnement",
+      "pollution",
+      "dechets",
+      "emissions",
+      "biodiversite"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2010_75. Les organisations disposent d'un délai de 6 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2007-11-24",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_92_91",
+              "EN_ISO_9000"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2010_75. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2007-11-24",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2012_19",
+              "EN_ISO_9000"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2010_75. Les organisations disposent d'un délai de 22 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2007-11-24",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_9000",
+              "DIRECTIVE_92_91"
+            ]
+          },
+          {
+            "id": "art_4_v1",
+            "titre": "Article 4 — Version initiale",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2010_75. Les organisations disposent d'un délai de 13 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2007-11-24",
+              "valid_to": "2014-05-22"
+            },
+            "citations": [
+              "DIRECTIVE_2012_19",
+              "EN_ISO_9000"
+            ]
+          },
+          {
+            "id": "art_4_v2",
+            "titre": "Article 4 — Version amendée",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2010_75. Les organisations disposent d'un délai de 13 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2014-05-23",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2012_19",
+              "EN_ISO_9000"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2010_75. Les organisations disposent d'un délai de 16 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2007-11-24",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_92_91",
+              "EN_ISO_9000"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2010_75. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2007-11-24",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_92_91",
+              "EN_ISO_9000"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2009_31",
+        "relation": "modifie",
+        "commentaire": "Relation DIRECTIVE_2010_75-DIRECTIVE_2009_31"
+      },
+      {
+        "ref": "DIRECTIVE_2014_94_EN",
+        "relation": "complete",
+        "commentaire": "Relation DIRECTIVE_2010_75-DIRECTIVE_2014_94_EN"
+      },
+      {
+        "ref": "DIRECTIVE_2006_96_EN",
+        "relation": "modifie",
+        "commentaire": "Relation DIRECTIVE_2010_75-DIRECTIVE_2006_96_EN"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "environnement"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2008_98",
+    "titre": "Texte reglementaire DIRECTIVE_2008_98",
+    "source": "INERIS",
+    "publication_date": "2023-06-23",
+    "entry_into_force": "2024-12-21",
+    "repeal_date": null,
+    "version": "2026-09-14",
+    "themes": [
+      "environnement",
+      "pollution",
+      "dechets",
+      "emissions",
+      "biodiversite"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2008_98. Les organisations disposent d'un délai de 5 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2024-12-21",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2014_68",
+              "DIRECTIVE_2009_28_EN"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2008_98. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2024-12-21",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2019_944",
+              "DIRECTIVE_2009_28_EN"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2008_98. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2024-12-21",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2014_68",
+              "DIRECTIVE_2019_944"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2008_98. Les organisations disposent d'un délai de 7 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2024-12-21",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2019_944",
+              "DIRECTIVE_2009_28_EN"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2008_98. Les organisations disposent d'un délai de 23 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2024-12-21",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2019_944",
+              "DIRECTIVE_2014_68"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2008_98. Les organisations disposent d'un délai de 8 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2024-12-21",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2014_68",
+              "DIRECTIVE_2009_28_EN"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_89_656",
+        "relation": "complete",
+        "commentaire": "Relation DIRECTIVE_2008_98-DIRECTIVE_89_656"
+      },
+      {
+        "ref": "CIRCULAIRE_DGT_2012",
+        "relation": "modifie",
+        "commentaire": "Relation DIRECTIVE_2008_98-CIRCULAIRE_DGT_2012"
+      },
+      {
+        "ref": "DIRECTIVE_2006_95",
+        "relation": "modifie",
+        "commentaire": "Relation DIRECTIVE_2008_98-DIRECTIVE_2006_95"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "environnement"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2006_66",
+    "titre": "Texte reglementaire DIRECTIVE_2006_66",
+    "source": "INERIS",
+    "publication_date": "2024-04-29",
+    "entry_into_force": "2025-06-23",
+    "repeal_date": null,
+    "version": "2026-12-20",
+    "themes": [
+      "environnement",
+      "pollution",
+      "dechets",
+      "emissions",
+      "biodiversite"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2006_66. Les organisations disposent d'un délai de 23 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2025-06-23",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2002_49",
+              "REGLEMENT_2018_1999"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2006_66. Les organisations disposent d'un délai de 5 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2025-06-23",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_9000",
+              "DIRECTIVE_2002_49"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2006_66. Les organisations disposent d'un délai de 23 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2025-06-23",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2002_49",
+              "EN_ISO_9000"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "EN_ISO_13857",
+        "relation": "reference",
+        "commentaire": "Relation DIRECTIVE_2006_66-EN_ISO_13857"
+      },
+      {
+        "ref": "REGULATION_2022_868",
+        "relation": "modifie",
+        "commentaire": "Relation DIRECTIVE_2006_66-REGULATION_2022_868"
+      },
+      {
+        "ref": "DIRECTIVE_2009_125",
+        "relation": "reference",
+        "commentaire": "Relation DIRECTIVE_2006_66-DIRECTIVE_2009_125"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "environnement"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2012_19",
+    "titre": "Texte reglementaire DIRECTIVE_2012_19",
+    "source": "INERIS",
+    "publication_date": "2022-01-21",
+    "entry_into_force": "2023-10-26",
+    "repeal_date": null,
+    "version": "2026-01-22",
+    "themes": [
+      "environnement",
+      "pollution",
+      "dechets",
+      "emissions",
+      "biodiversite"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2012_19. Les organisations disposent d'un délai de 6 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2023-10-26",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2010_75",
+              "DIRECTIVE_92_29"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2012_19. Les organisations disposent d'un délai de 6 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2023-10-26",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_92_29",
+              "DIRECTIVE_92_91"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2012_19. Les organisations disposent d'un délai de 15 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2023-10-26",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_92_29",
+              "DIRECTIVE_2010_75"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2012_19. Les organisations disposent d'un délai de 16 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2023-10-26",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2010_75",
+              "DIRECTIVE_92_91"
+            ]
+          },
+          {
+            "id": "art_5_v1",
+            "titre": "Article 5 — Version initiale",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2012_19. Les organisations disposent d'un délai de 18 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2023-10-26",
+              "valid_to": "2026-05-11"
+            },
+            "citations": [
+              "DIRECTIVE_92_91",
+              "DIRECTIVE_2010_75"
+            ]
+          },
+          {
+            "id": "art_5_v2",
+            "titre": "Article 5 — Version amendée",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2012_19. Les organisations disposent d'un délai de 18 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2026-05-12",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_92_91",
+              "DIRECTIVE_2010_75"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2012_19. Les organisations disposent d'un délai de 21 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2023-10-26",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_92_29",
+              "DIRECTIVE_2010_75"
+            ]
+          },
+          {
+            "id": "art_7",
+            "titre": "Article 7",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2012_19. Les organisations disposent d'un délai de 19 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2023-10-26",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2010_75",
+              "DIRECTIVE_92_29"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2013_35",
+        "relation": "reference",
+        "commentaire": "Relation DIRECTIVE_2012_19-DIRECTIVE_2013_35"
+      },
+      {
+        "ref": "DIRECTIVE_2016_2284",
+        "relation": "modifie",
+        "commentaire": "Relation DIRECTIVE_2012_19-DIRECTIVE_2016_2284"
+      },
+      {
+        "ref": "DIRECTIVE_92_29",
+        "relation": "complete",
+        "commentaire": "Relation DIRECTIVE_2012_19-DIRECTIVE_92_29"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "environnement"
+    }
+  },
+  {
+    "id": "REACH_2006_1907",
+    "titre": "Texte reglementaire REACH_2006_1907",
+    "source": "INERIS",
+    "publication_date": "2009-02-05",
+    "entry_into_force": "2010-09-30",
+    "repeal_date": null,
+    "version": "2017-04-17",
+    "themes": [
+      "environnement",
+      "pollution",
+      "dechets",
+      "emissions",
+      "biodiversite"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement REACH_2006_1907. Les organisations disposent d'un délai de 9 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2010-09-30",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2006_32",
+              "EN_ISO_9000"
+            ]
+          },
+          {
+            "id": "art_2_v1",
+            "titre": "Article 2 — Version initiale",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement REACH_2006_1907. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2010-09-30",
+              "valid_to": "2014-09-27"
+            },
+            "citations": [
+              "DIRECTIVE_2006_32",
+              "EN_ISO_9000"
+            ]
+          },
+          {
+            "id": "art_2_v2",
+            "titre": "Article 2 — Version amendée",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement REACH_2006_1907. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2014-09-28",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2006_32",
+              "DIRECTIVE_2005_89"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement REACH_2006_1907. Les organisations disposent d'un délai de 20 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2010-09-30",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2006_32",
+              "EN_ISO_9000"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement REACH_2006_1907. Les organisations disposent d'un délai de 16 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2010-09-30",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2006_32",
+              "DIRECTIVE_2005_89"
+            ]
+          },
+          {
+            "id": "art_5_v1",
+            "titre": "Article 5 — Version initiale",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement REACH_2006_1907. Les organisations disposent d'un délai de 15 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2010-09-30",
+              "valid_to": "2013-05-18"
+            },
+            "citations": [
+              "DIRECTIVE_2005_89",
+              "EN_ISO_9000"
+            ]
+          },
+          {
+            "id": "art_5_v2",
+            "titre": "Article 5 — Version amendée",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement REACH_2006_1907. Les organisations disposent d'un délai de 15 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2013-05-19",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2005_89",
+              "EN_ISO_9000"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement REACH_2006_1907. Les organisations disposent d'un délai de 7 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2010-09-30",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2006_32",
+              "EN_ISO_9000"
+            ]
+          },
+          {
+            "id": "art_7_v1",
+            "titre": "Article 7 — Version initiale",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement REACH_2006_1907. Les organisations disposent d'un délai de 20 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2010-09-30",
+              "valid_to": "2017-10-26"
+            },
+            "citations": [
+              "DIRECTIVE_2005_89",
+              "DIRECTIVE_2006_32"
+            ]
+          },
+          {
+            "id": "art_7_v2",
+            "titre": "Article 7 — Version amendée",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement REACH_2006_1907. Les organisations disposent d'un délai de 20 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2017-10-27",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2006_32",
+              "EN_ISO_9000"
+            ]
+          },
+          {
+            "id": "art_8",
+            "titre": "Article 8",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement REACH_2006_1907. Les organisations disposent d'un délai de 19 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2010-09-30",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2006_32",
+              "EN_ISO_9000"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2006_95",
+        "relation": "modifie",
+        "commentaire": "Relation REACH_2006_1907-DIRECTIVE_2006_95"
+      },
+      {
+        "ref": "DIRECTIVE_2009_28",
+        "relation": "reference",
+        "commentaire": "Relation REACH_2006_1907-DIRECTIVE_2009_28"
+      },
+      {
+        "ref": "DIRECTIVE_2000_60",
+        "relation": "se_chevauche",
+        "commentaire": "Relation REACH_2006_1907-DIRECTIVE_2000_60"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "environnement"
+    }
+  },
+  {
+    "id": "RoHS_2011_65",
+    "titre": "Texte reglementaire RoHS_2011_65",
+    "source": "INERIS",
+    "publication_date": "2006-04-17",
+    "entry_into_force": "2007-06-28",
+    "repeal_date": null,
+    "version": "2009-10-01",
+    "themes": [
+      "environnement",
+      "pollution",
+      "dechets",
+      "emissions",
+      "biodiversite"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement RoHS_2011_65. Les organisations disposent d'un délai de 12 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2007-06-28",
+              "valid_to": null
+            },
+            "citations": [
+              "DORA_2022_2554",
+              "REACH_2006_1907"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement RoHS_2011_65. Les organisations disposent d'un délai de 8 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2007-06-28",
+              "valid_to": null
+            },
+            "citations": [
+              "REACH_2006_1907",
+              "DIRECTIVE_2003_54"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement RoHS_2011_65. Les organisations disposent d'un délai de 16 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2007-06-28",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2003_54",
+              "REACH_2006_1907"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement RoHS_2011_65. Les organisations disposent d'un délai de 21 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2007-06-28",
+              "valid_to": null
+            },
+            "citations": [
+              "REACH_2006_1907",
+              "DIRECTIVE_2003_54"
+            ]
+          },
+          {
+            "id": "art_5_v1",
+            "titre": "Article 5 — Version initiale",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement RoHS_2011_65. Les organisations disposent d'un délai de 7 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2007-06-28",
+              "valid_to": "2013-02-07"
+            },
+            "citations": [
+              "DORA_2022_2554",
+              "REACH_2006_1907"
+            ]
+          },
+          {
+            "id": "art_5_v2",
+            "titre": "Article 5 — Version amendée",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement RoHS_2011_65. Les organisations disposent d'un délai de 7 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2013-02-08",
+              "valid_to": null
+            },
+            "citations": [
+              "DORA_2022_2554",
+              "DIRECTIVE_2003_54"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement RoHS_2011_65. Les organisations disposent d'un délai de 21 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2007-06-28",
+              "valid_to": null
+            },
+            "citations": [
+              "REACH_2006_1907",
+              "DIRECTIVE_2003_54"
+            ]
+          },
+          {
+            "id": "art_7",
+            "titre": "Article 7",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement RoHS_2011_65. Les organisations disposent d'un délai de 8 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2007-06-28",
+              "valid_to": null
+            },
+            "citations": [
+              "DORA_2022_2554",
+              "REACH_2006_1907"
+            ]
+          },
+          {
+            "id": "art_8",
+            "titre": "Article 8",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement RoHS_2011_65. Les organisations disposent d'un délai de 20 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2007-06-28",
+              "valid_to": null
+            },
+            "citations": [
+              "REACH_2006_1907",
+              "DIRECTIVE_2003_54"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "EDPB_GUIDE_2021",
+        "relation": "reference",
+        "commentaire": "Relation RoHS_2011_65-EDPB_GUIDE_2021"
+      },
+      {
+        "ref": "ANSSI_RECOMMANDATIONS_2022",
+        "relation": "reference",
+        "commentaire": "Relation RoHS_2011_65-ANSSI_RECOMMANDATIONS_2022"
+      },
+      {
+        "ref": "DIRECTIVE_89_656",
+        "relation": "reference",
+        "commentaire": "Relation RoHS_2011_65-DIRECTIVE_89_656"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "environnement"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2004_35",
+    "titre": "Texte reglementaire DIRECTIVE_2004_35",
+    "source": "INERIS",
+    "publication_date": "2010-11-25",
+    "entry_into_force": "2012-11-17",
+    "repeal_date": null,
+    "version": "2018-07-26",
+    "themes": [
+      "environnement",
+      "pollution",
+      "dechets",
+      "emissions",
+      "biodiversite"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2004_35. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2012-11-17",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_94_33",
+              "DIRECTIVE_2002_49"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2004_35. Les organisations disposent d'un délai de 15 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2012-11-17",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2002_49",
+              "DIRECTIVE_94_33"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2004_35. Les organisations disposent d'un délai de 19 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2012-11-17",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_94_33",
+              "DIRECTIVE_2002_49"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2004_35. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2012-11-17",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2002_49",
+              "EN_ISO_4414"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_89_654",
+        "relation": "se_chevauche",
+        "commentaire": "Relation DIRECTIVE_2004_35-DIRECTIVE_89_654"
+      },
+      {
+        "ref": "DIRECTIVE_2010_30",
+        "relation": "complete",
+        "commentaire": "Relation DIRECTIVE_2004_35-DIRECTIVE_2010_30"
+      },
+      {
+        "ref": "EN_983",
+        "relation": "se_chevauche",
+        "commentaire": "Relation DIRECTIVE_2004_35-EN_983"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "environnement"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2003_87",
+    "titre": "Texte reglementaire DIRECTIVE_2003_87",
+    "source": "INERIS",
+    "publication_date": "2020-01-23",
+    "entry_into_force": "2020-09-26",
+    "repeal_date": null,
+    "version": "2022-12-06",
+    "themes": [
+      "environnement",
+      "pollution",
+      "dechets",
+      "emissions",
+      "biodiversite"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2003_87. Les organisations disposent d'un délai de 23 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2020-09-26",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2011_92",
+              "DIRECTIVE_2015_2366"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2003_87. Les organisations disposent d'un délai de 17 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2020-09-26",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2011_92",
+              "DIRECTIVE_2015_2366"
+            ]
+          },
+          {
+            "id": "art_3_v1",
+            "titre": "Article 3 — Version initiale",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2003_87. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2020-09-26",
+              "valid_to": "2025-07-23"
+            },
+            "citations": [
+              "DIRECTIVE_2015_2366",
+              "DIRECTIVE_2011_92"
+            ]
+          },
+          {
+            "id": "art_3_v2",
+            "titre": "Article 3 — Version amendée",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2003_87. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2025-07-24",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2015_2366",
+              "DIRECTIVE_2011_92"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2003_87. Les organisations disposent d'un délai de 16 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2020-09-26",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2015_2366",
+              "EN_ISO_7731"
+            ]
+          },
+          {
+            "id": "art_5_v1",
+            "titre": "Article 5 — Version initiale",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2003_87. Les organisations disposent d'un délai de 13 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2020-09-26",
+              "valid_to": "2024-01-23"
+            },
+            "citations": [
+              "DIRECTIVE_2015_2366",
+              "DIRECTIVE_2011_92"
+            ]
+          },
+          {
+            "id": "art_5_v2",
+            "titre": "Article 5 — Version amendée",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2003_87. Les organisations disposent d'un délai de 13 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2024-01-24",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2015_2366",
+              "DIRECTIVE_2011_92"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2003_87. Les organisations disposent d'un délai de 5 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2020-09-26",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2015_2366",
+              "DIRECTIVE_2011_92"
+            ]
+          },
+          {
+            "id": "art_7",
+            "titre": "Article 7",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2003_87. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2020-09-26",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2011_92",
+              "EN_ISO_7731"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2015_2193",
+        "relation": "se_chevauche",
+        "commentaire": "Relation DIRECTIVE_2003_87-DIRECTIVE_2015_2193"
+      },
+      {
+        "ref": "DIRECTIVE_2009_28",
+        "relation": "modifie",
+        "commentaire": "Relation DIRECTIVE_2003_87-DIRECTIVE_2009_28"
+      },
+      {
+        "ref": "DIRECTIVE_2016_2284",
+        "relation": "complete",
+        "commentaire": "Relation DIRECTIVE_2003_87-DIRECTIVE_2016_2284"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "environnement"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2009_28",
+    "titre": "Texte reglementaire DIRECTIVE_2009_28",
+    "source": "INERIS",
+    "publication_date": "2017-12-19",
+    "entry_into_force": "2019-01-28",
+    "repeal_date": null,
+    "version": "2023-02-18",
+    "themes": [
+      "environnement",
+      "pollution",
+      "dechets",
+      "emissions",
+      "biodiversite"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2009_28. Les organisations disposent d'un délai de 3 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2019-01-28",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_93_103",
+              "DIRECTIVE_92_104"
+            ]
+          },
+          {
+            "id": "art_2_v1",
+            "titre": "Article 2 — Version initiale",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2009_28. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2019-01-28",
+              "valid_to": "2025-06-29"
+            },
+            "citations": [
+              "DIRECTIVE_93_103",
+              "DIRECTIVE_92_104"
+            ]
+          },
+          {
+            "id": "art_2_v2",
+            "titre": "Article 2 — Version amendée",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2009_28. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2025-06-30",
+              "valid_to": null
+            },
+            "citations": [
+              "CNIL_GUIDE_COOKIE",
+              "DIRECTIVE_92_104"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2009_28. Les organisations disposent d'un délai de 9 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2019-01-28",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_93_103",
+              "DIRECTIVE_92_104"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2009_28. Les organisations disposent d'un délai de 8 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2019-01-28",
+              "valid_to": null
+            },
+            "citations": [
+              "CNIL_GUIDE_COOKIE",
+              "DIRECTIVE_92_104"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2009_28. Les organisations disposent d'un délai de 8 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2019-01-28",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_93_103",
+              "DIRECTIVE_92_104"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2009_28. Les organisations disposent d'un délai de 23 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2019-01-28",
+              "valid_to": null
+            },
+            "citations": [
+              "CNIL_GUIDE_COOKIE",
+              "DIRECTIVE_92_104"
+            ]
+          },
+          {
+            "id": "art_7_v1",
+            "titre": "Article 7 — Version initiale",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2009_28. Les organisations disposent d'un délai de 6 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2019-01-28",
+              "valid_to": "2026-07-15"
+            },
+            "citations": [
+              "CNIL_GUIDE_COOKIE",
+              "DIRECTIVE_93_103"
+            ]
+          },
+          {
+            "id": "art_7_v2",
+            "titre": "Article 7 — Version amendée",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2009_28. Les organisations disposent d'un délai de 6 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2026-07-16",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_92_104",
+              "DIRECTIVE_93_103"
+            ]
+          },
+          {
+            "id": "art_8",
+            "titre": "Article 8",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2009_28. Les organisations disposent d'un délai de 12 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2019-01-28",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_92_104",
+              "CNIL_GUIDE_COOKIE"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2009_28_EN",
+        "relation": "reference",
+        "commentaire": "Relation DIRECTIVE_2009_28-DIRECTIVE_2009_28_EN"
+      },
+      {
+        "ref": "DIRECTIVE_2011_70",
+        "relation": "complete",
+        "commentaire": "Relation DIRECTIVE_2009_28-DIRECTIVE_2011_70"
+      },
+      {
+        "ref": "DIRECTIVE_89_656",
+        "relation": "reference",
+        "commentaire": "Relation DIRECTIVE_2009_28-DIRECTIVE_89_656"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "environnement"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2018_2001",
+    "titre": "Texte reglementaire DIRECTIVE_2018_2001",
+    "source": "INERIS",
+    "publication_date": "2024-02-12",
+    "entry_into_force": "2025-06-29",
+    "repeal_date": null,
+    "version": "2025-06-29",
+    "themes": [
+      "environnement",
+      "pollution",
+      "dechets",
+      "emissions",
+      "biodiversite"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2018_2001. Les organisations disposent d'un délai de 11 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2025-06-29",
+              "valid_to": null
+            },
+            "citations": [
+              "ISO_12100",
+              "EN_ISO_9000"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2018_2001. Les organisations disposent d'un délai de 17 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2025-06-29",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_9000",
+              "DIRECTIVE_92_58"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2018_2001. Les organisations disposent d'un délai de 8 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2025-06-29",
+              "valid_to": null
+            },
+            "citations": [
+              "ISO_12100",
+              "EN_ISO_9000"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2018_2001. Les organisations disposent d'un délai de 20 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2025-06-29",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_92_58",
+              "ISO_12100"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "IEC_62061",
+        "relation": "modifie",
+        "commentaire": "Relation DIRECTIVE_2018_2001-IEC_62061"
+      },
+      {
+        "ref": "DIRECTIVE_2014_25",
+        "relation": "complete",
+        "commentaire": "Relation DIRECTIVE_2018_2001-DIRECTIVE_2014_25"
+      },
+      {
+        "ref": "DIRECTIVE_89_391",
+        "relation": "se_chevauche",
+        "commentaire": "Relation DIRECTIVE_2018_2001-DIRECTIVE_89_391"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "environnement"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2000_60",
+    "titre": "Texte reglementaire DIRECTIVE_2000_60",
+    "source": "INERIS",
+    "publication_date": "2018-05-16",
+    "entry_into_force": "2019-08-05",
+    "repeal_date": null,
+    "version": "2023-03-28",
+    "themes": [
+      "environnement",
+      "pollution",
+      "dechets",
+      "emissions",
+      "biodiversite"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2000_60. Les organisations disposent d'un délai de 7 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2019-08-05",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2008_50",
+              "EDPB_GUIDE_2022"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2000_60. Les organisations disposent d'un délai de 14 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2019-08-05",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2008_50",
+              "EDPB_GUIDE_2022"
+            ]
+          },
+          {
+            "id": "art_3_v1",
+            "titre": "Article 3 — Version initiale",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2000_60. Les organisations disposent d'un délai de 19 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2019-08-05",
+              "valid_to": "2023-05-18"
+            },
+            "citations": [
+              "EDPB_GUIDE_2022",
+              "DIRECTIVE_2008_50"
+            ]
+          },
+          {
+            "id": "art_3_v2",
+            "titre": "Article 3 — Version amendée",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2000_60. Les organisations disposent d'un délai de 19 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2023-05-19",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2008_50",
+              "DIRECTIVE_2012_19"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2000_60. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2019-08-05",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2012_19",
+              "EDPB_GUIDE_2022"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "EN_1088",
+        "relation": "complete",
+        "commentaire": "Relation DIRECTIVE_2000_60-EN_1088"
+      },
+      {
+        "ref": "DIRECTIVE_98_24",
+        "relation": "se_chevauche",
+        "commentaire": "Relation DIRECTIVE_2000_60-DIRECTIVE_98_24"
+      },
+      {
+        "ref": "REACH_2006_1907",
+        "relation": "complete",
+        "commentaire": "Relation DIRECTIVE_2000_60-REACH_2006_1907"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "environnement"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2008_50",
+    "titre": "Texte reglementaire DIRECTIVE_2008_50",
+    "source": "INERIS",
+    "publication_date": "2017-08-13",
+    "entry_into_force": "2019-02-13",
+    "repeal_date": null,
+    "version": "2020-05-18",
+    "themes": [
+      "environnement",
+      "pollution",
+      "dechets",
+      "emissions",
+      "biodiversite"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2008_50. Les organisations disposent d'un délai de 11 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2019-02-13",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_7731",
+              "EN_60204"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2008_50. Les organisations disposent d'un délai de 23 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2019-02-13",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_7731",
+              "EN_60204"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2008_50. Les organisations disposent d'un délai de 15 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2019-02-13",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_60204",
+              "DIRECTIVE_89_654"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2008_50. Les organisations disposent d'un délai de 14 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2019-02-13",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_89_654",
+              "EN_60204"
+            ]
+          },
+          {
+            "id": "art_5_v1",
+            "titre": "Article 5 — Version initiale",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2008_50. Les organisations disposent d'un délai de 17 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2019-02-13",
+              "valid_to": "2021-12-24"
+            },
+            "citations": [
+              "EN_ISO_7731",
+              "DIRECTIVE_89_654"
+            ]
+          },
+          {
+            "id": "art_5_v2",
+            "titre": "Article 5 — Version amendée",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2008_50. Les organisations disposent d'un délai de 17 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2021-12-25",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_60204",
+              "EN_ISO_7731"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2008_50. Les organisations disposent d'un délai de 8 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2019-02-13",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_7731",
+              "EN_60204"
+            ]
+          },
+          {
+            "id": "art_7",
+            "titre": "Article 7",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2008_50. Les organisations disposent d'un délai de 16 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2019-02-13",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_7731",
+              "EN_60204"
+            ]
+          },
+          {
+            "id": "art_8",
+            "titre": "Article 8",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2008_50. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2019-02-13",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_60204",
+              "EN_ISO_7731"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2019_944",
+        "relation": "se_chevauche",
+        "commentaire": "Relation DIRECTIVE_2008_50-DIRECTIVE_2019_944"
+      },
+      {
+        "ref": "DIRECTIVE_2014_34",
+        "relation": "complete",
+        "commentaire": "Relation DIRECTIVE_2008_50-DIRECTIVE_2014_34"
+      },
+      {
+        "ref": "DIRECTIVE_90_269",
+        "relation": "complete",
+        "commentaire": "Relation DIRECTIVE_2008_50-DIRECTIVE_90_269"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "environnement"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2016_2284",
+    "titre": "Texte reglementaire DIRECTIVE_2016_2284",
+    "source": "INERIS",
+    "publication_date": "2009-01-08",
+    "entry_into_force": "2010-12-13",
+    "repeal_date": "2018-05-14",
+    "version": "2010-12-13",
+    "themes": [
+      "environnement",
+      "pollution",
+      "dechets",
+      "emissions",
+      "biodiversite"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2016_2284. Les organisations disposent d'un délai de 22 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2010-12-13",
+              "valid_to": "2018-05-14"
+            },
+            "citations": [
+              "DIRECTIVE_2004_37",
+              "EN_349"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2016_2284. Les organisations disposent d'un délai de 5 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2010-12-13",
+              "valid_to": "2018-05-14"
+            },
+            "citations": [
+              "DIRECTIVE_2004_37",
+              "ANSSI_PRIS_2023"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2016_2284. Les organisations disposent d'un délai de 8 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2010-12-13",
+              "valid_to": "2018-05-14"
+            },
+            "citations": [
+              "ANSSI_PRIS_2023",
+              "EN_349"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2016_2284. Les organisations disposent d'un délai de 22 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2010-12-13",
+              "valid_to": "2018-05-14"
+            },
+            "citations": [
+              "ANSSI_PRIS_2023",
+              "EN_349"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_92_29",
+        "relation": "complete",
+        "commentaire": "Relation DIRECTIVE_2016_2284-DIRECTIVE_92_29"
+      },
+      {
+        "ref": "DIRECTIVE_2009_125",
+        "relation": "modifie",
+        "commentaire": "Relation DIRECTIVE_2016_2284-DIRECTIVE_2009_125"
+      },
+      {
+        "ref": "EN_ISO_13855",
+        "relation": "modifie",
+        "commentaire": "Relation DIRECTIVE_2016_2284-EN_ISO_13855"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "environnement"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2010_31",
+    "titre": "Texte reglementaire DIRECTIVE_2010_31",
+    "source": "INERIS",
+    "publication_date": "2008-12-19",
+    "entry_into_force": "2009-10-06",
+    "repeal_date": "2016-08-16",
+    "version": "2017-12-13",
+    "themes": [
+      "environnement",
+      "pollution",
+      "dechets",
+      "emissions",
+      "biodiversite"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2010_31. Les organisations disposent d'un délai de 20 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-10-06",
+              "valid_to": "2016-08-16"
+            },
+            "citations": [
+              "EDPB_GUIDE_2022",
+              "REGULATION_2018_1725"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2010_31. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-10-06",
+              "valid_to": "2016-08-16"
+            },
+            "citations": [
+              "REGULATION_2018_1725",
+              "EDPB_GUIDE_2022"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2010_31. Les organisations disposent d'un délai de 19 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-10-06",
+              "valid_to": "2016-08-16"
+            },
+            "citations": [
+              "EDPB_GUIDE_2022",
+              "EN_13480"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2010_31. Les organisations disposent d'un délai de 18 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-10-06",
+              "valid_to": "2016-08-16"
+            },
+            "citations": [
+              "EN_13480",
+              "REGULATION_2018_1725"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2010_31. Les organisations disposent d'un délai de 16 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-10-06",
+              "valid_to": "2016-08-16"
+            },
+            "citations": [
+              "EN_13480",
+              "EDPB_GUIDE_2022"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2010_31. Les organisations disposent d'un délai de 12 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-10-06",
+              "valid_to": "2016-08-16"
+            },
+            "citations": [
+              "REGULATION_2018_1725",
+              "EN_13480"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2002_44",
+        "relation": "se_chevauche",
+        "commentaire": "Relation DIRECTIVE_2010_31-DIRECTIVE_2002_44"
+      },
+      {
+        "ref": "CNIL_RECOMMANDATION_2020",
+        "relation": "se_chevauche",
+        "commentaire": "Relation DIRECTIVE_2010_31-CNIL_RECOMMANDATION_2020"
+      },
+      {
+        "ref": "ISO_12100",
+        "relation": "se_chevauche",
+        "commentaire": "Relation DIRECTIVE_2010_31-ISO_12100"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "environnement"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2012_27_ENV",
+    "titre": "Texte reglementaire DIRECTIVE_2012_27_ENV",
+    "source": "INERIS",
+    "publication_date": "2014-05-31",
+    "entry_into_force": "2015-06-25",
+    "repeal_date": null,
+    "version": "2018-10-09",
+    "themes": [
+      "environnement",
+      "pollution",
+      "dechets",
+      "emissions",
+      "biodiversite"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2012_27_ENV. Les organisations disposent d'un délai de 11 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-06-25",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_11684_2",
+              "CNIL_DELIB_2022"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2012_27_ENV. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-06-25",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2006_66",
+              "EN_ISO_11684_2"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2012_27_ENV. Les organisations disposent d'un délai de 8 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-06-25",
+              "valid_to": null
+            },
+            "citations": [
+              "CNIL_DELIB_2022",
+              "EN_ISO_11684_2"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2012_27_ENV. Les organisations disposent d'un délai de 12 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-06-25",
+              "valid_to": null
+            },
+            "citations": [
+              "CNIL_DELIB_2022",
+              "EN_ISO_11684_2"
+            ]
+          },
+          {
+            "id": "art_5_v1",
+            "titre": "Article 5 — Version initiale",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2012_27_ENV. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-06-25",
+              "valid_to": "2020-01-21"
+            },
+            "citations": [
+              "EN_ISO_11684_2",
+              "DIRECTIVE_2006_66"
+            ]
+          },
+          {
+            "id": "art_5_v2",
+            "titre": "Article 5 — Version amendée",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2012_27_ENV. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2020-01-22",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2006_66",
+              "CNIL_DELIB_2022"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2012_27_ENV. Les organisations disposent d'un délai de 13 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-06-25",
+              "valid_to": null
+            },
+            "citations": [
+              "CNIL_DELIB_2022",
+              "DIRECTIVE_2006_66"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2013_40",
+        "relation": "se_chevauche",
+        "commentaire": "Relation DIRECTIVE_2012_27_ENV-DIRECTIVE_2013_40"
+      },
+      {
+        "ref": "DIRECTIVE_2018_2001",
+        "relation": "complete",
+        "commentaire": "Relation DIRECTIVE_2012_27_ENV-DIRECTIVE_2018_2001"
+      },
+      {
+        "ref": "ISO_12100",
+        "relation": "modifie",
+        "commentaire": "Relation DIRECTIVE_2012_27_ENV-ISO_12100"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "environnement"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2014_94",
+    "titre": "Texte reglementaire DIRECTIVE_2014_94",
+    "source": "INERIS",
+    "publication_date": "2019-06-19",
+    "entry_into_force": "2021-03-05",
+    "repeal_date": "2025-02-14",
+    "version": "2021-03-05",
+    "themes": [
+      "environnement",
+      "pollution",
+      "dechets",
+      "emissions",
+      "biodiversite"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_94. Les organisations disposent d'un délai de 15 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-03-05",
+              "valid_to": "2025-02-14"
+            },
+            "citations": [
+              "DIRECTIVE_2009_104",
+              "EN_982"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_94. Les organisations disposent d'un délai de 8 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-03-05",
+              "valid_to": "2025-02-14"
+            },
+            "citations": [
+              "EN_982",
+              "REACH_2006_1907"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_94. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-03-05",
+              "valid_to": "2025-02-14"
+            },
+            "citations": [
+              "DIRECTIVE_2009_104",
+              "EN_982"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_94. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-03-05",
+              "valid_to": "2025-02-14"
+            },
+            "citations": [
+              "DIRECTIVE_2009_104",
+              "REACH_2006_1907"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_94. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-03-05",
+              "valid_to": "2025-02-14"
+            },
+            "citations": [
+              "REACH_2006_1907",
+              "DIRECTIVE_2009_104"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_94. Les organisations disposent d'un délai de 5 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-03-05",
+              "valid_to": "2025-02-14"
+            },
+            "citations": [
+              "EN_982",
+              "DIRECTIVE_2009_104"
+            ]
+          },
+          {
+            "id": "art_7",
+            "titre": "Article 7",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_94. Les organisations disposent d'un délai de 15 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-03-05",
+              "valid_to": "2025-02-14"
+            },
+            "citations": [
+              "DIRECTIVE_2009_104",
+              "REACH_2006_1907"
+            ]
+          },
+          {
+            "id": "art_8",
+            "titre": "Article 8",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_94. Les organisations disposent d'un délai de 5 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2021-03-05",
+              "valid_to": "2025-02-14"
+            },
+            "citations": [
+              "DIRECTIVE_2009_104",
+              "EN_982"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_94_33",
+        "relation": "complete",
+        "commentaire": "Relation DIRECTIVE_2014_94-DIRECTIVE_94_33"
+      },
+      {
+        "ref": "DIRECTIVE_2013_35",
+        "relation": "modifie",
+        "commentaire": "Relation DIRECTIVE_2014_94-DIRECTIVE_2013_35"
+      },
+      {
+        "ref": "REGULATION_2022_868",
+        "relation": "modifie",
+        "commentaire": "Relation DIRECTIVE_2014_94-REGULATION_2022_868"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "environnement"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2019_944",
+    "titre": "Texte reglementaire DIRECTIVE_2019_944",
+    "source": "INERIS",
+    "publication_date": "2018-11-23",
+    "entry_into_force": "2019-05-26",
+    "repeal_date": null,
+    "version": "2023-03-27",
+    "themes": [
+      "environnement",
+      "pollution",
+      "dechets",
+      "emissions",
+      "biodiversite"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2019_944. Les organisations disposent d'un délai de 13 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2019-05-26",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_11161",
+              "DIRECTIVE_2004_22"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2019_944. Les organisations disposent d'un délai de 17 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2019-05-26",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_11161",
+              "DIRECTIVE_2004_22"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2019_944. Les organisations disposent d'un délai de 13 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2019-05-26",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2004_22",
+              "EN_ISO_11161"
+            ]
+          },
+          {
+            "id": "art_4_v1",
+            "titre": "Article 4 — Version initiale",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2019_944. Les organisations disposent d'un délai de 18 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2019-05-26",
+              "valid_to": "2022-02-25"
+            },
+            "citations": [
+              "DIRECTIVE_2004_22",
+              "EN_ISO_11684_2"
+            ]
+          },
+          {
+            "id": "art_4_v2",
+            "titre": "Article 4 — Version amendée",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2019_944. Les organisations disposent d'un délai de 18 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2022-02-26",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_11161",
+              "EN_ISO_11684_2"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2019_944. Les organisations disposent d'un délai de 16 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2019-05-26",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_11161",
+              "EN_ISO_11684_2"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2019_944. Les organisations disposent d'un délai de 10 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2019-05-26",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2004_22",
+              "EN_ISO_11161"
+            ]
+          },
+          {
+            "id": "art_7",
+            "titre": "Article 7",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2019_944. Les organisations disposent d'un délai de 20 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2019-05-26",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2004_22",
+              "EN_ISO_11161"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2010_75",
+        "relation": "reference",
+        "commentaire": "Relation DIRECTIVE_2019_944-DIRECTIVE_2010_75"
+      },
+      {
+        "ref": "CNIL_DELIB_2021",
+        "relation": "complete",
+        "commentaire": "Relation DIRECTIVE_2019_944-CNIL_DELIB_2021"
+      },
+      {
+        "ref": "DIRECTIVE_2007_65",
+        "relation": "complete",
+        "commentaire": "Relation DIRECTIVE_2019_944-DIRECTIVE_2007_65"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "environnement"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2009_31",
+    "titre": "Texte reglementaire DIRECTIVE_2009_31",
+    "source": "INERIS",
+    "publication_date": "2017-03-11",
+    "entry_into_force": "2018-03-30",
+    "repeal_date": null,
+    "version": "2018-03-30",
+    "themes": [
+      "environnement",
+      "pollution",
+      "dechets",
+      "emissions",
+      "biodiversite"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2009_31. Les organisations disposent d'un délai de 22 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2018-03-30",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_98_24",
+              "ANSSI_GUIDE_CLOUD"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2009_31. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2018-03-30",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2015_2366",
+              "DIRECTIVE_98_24"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2009_31. Les organisations disposent d'un délai de 18 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2018-03-30",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2015_2366",
+              "ANSSI_GUIDE_CLOUD"
+            ]
+          },
+          {
+            "id": "art_4_v1",
+            "titre": "Article 4 — Version initiale",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2009_31. Les organisations disposent d'un délai de 18 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2018-03-30",
+              "valid_to": "2025-12-21"
+            },
+            "citations": [
+              "DIRECTIVE_2015_2366",
+              "ANSSI_GUIDE_CLOUD"
+            ]
+          },
+          {
+            "id": "art_4_v2",
+            "titre": "Article 4 — Version amendée",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2009_31. Les organisations disposent d'un délai de 18 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2025-12-22",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_98_24",
+              "ANSSI_GUIDE_CLOUD"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "EN_ISO_13857",
+        "relation": "modifie",
+        "commentaire": "Relation DIRECTIVE_2009_31-EN_ISO_13857"
+      },
+      {
+        "ref": "DIRECTIVE_2016_797",
+        "relation": "se_chevauche",
+        "commentaire": "Relation DIRECTIVE_2009_31-DIRECTIVE_2016_797"
+      },
+      {
+        "ref": "DIRECTIVE_2011_92",
+        "relation": "reference",
+        "commentaire": "Relation DIRECTIVE_2009_31-DIRECTIVE_2011_92"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "environnement"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2004_107",
+    "titre": "Texte reglementaire DIRECTIVE_2004_107",
+    "source": "INERIS",
+    "publication_date": "2014-10-31",
+    "entry_into_force": "2015-10-24",
+    "repeal_date": null,
+    "version": "2015-10-24",
+    "themes": [
+      "environnement",
+      "pollution",
+      "dechets",
+      "emissions",
+      "biodiversite"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2004_107. Les organisations disposent d'un délai de 3 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-10-24",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2014_30",
+              "DIRECTIVE_2014_68_EN"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2004_107. Les organisations disposent d'un délai de 14 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-10-24",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2014_30",
+              "DIRECTIVE_2014_68_EN"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2004_107. Les organisations disposent d'un délai de 10 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-10-24",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_9000",
+              "DIRECTIVE_2014_30"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2004_107. Les organisations disposent d'un délai de 8 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-10-24",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2014_68_EN",
+              "DIRECTIVE_2014_30"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2004_107. Les organisations disposent d'un délai de 14 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-10-24",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2014_30",
+              "EN_ISO_9000"
+            ]
+          },
+          {
+            "id": "art_6_v1",
+            "titre": "Article 6 — Version initiale",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2004_107. Les organisations disposent d'un délai de 21 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-10-24",
+              "valid_to": "2020-05-16"
+            },
+            "citations": [
+              "DIRECTIVE_2014_68_EN",
+              "DIRECTIVE_2014_30"
+            ]
+          },
+          {
+            "id": "art_6_v2",
+            "titre": "Article 6 — Version amendée",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2004_107. Les organisations disposent d'un délai de 21 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2020-05-17",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2014_68_EN",
+              "DIRECTIVE_2014_30"
+            ]
+          },
+          {
+            "id": "art_7_v1",
+            "titre": "Article 7 — Version initiale",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2004_107. Les organisations disposent d'un délai de 9 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-10-24",
+              "valid_to": "2019-06-27"
+            },
+            "citations": [
+              "DIRECTIVE_2014_30",
+              "DIRECTIVE_2014_68_EN"
+            ]
+          },
+          {
+            "id": "art_7_v2",
+            "titre": "Article 7 — Version amendée",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2004_107. Les organisations disposent d'un délai de 9 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2019-06-28",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2014_68_EN",
+              "DIRECTIVE_2014_30"
+            ]
+          },
+          {
+            "id": "art_8",
+            "titre": "Article 8",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2004_107. Les organisations disposent d'un délai de 7 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-10-24",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_9000",
+              "DIRECTIVE_2014_30"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2009_28_EN",
+        "relation": "se_chevauche",
+        "commentaire": "Relation DIRECTIVE_2004_107-DIRECTIVE_2009_28_EN"
+      },
+      {
+        "ref": "DIRECTIVE_93_103",
+        "relation": "modifie",
+        "commentaire": "Relation DIRECTIVE_2004_107-DIRECTIVE_93_103"
+      },
+      {
+        "ref": "DIRECTIVE_2003_10",
+        "relation": "se_chevauche",
+        "commentaire": "Relation DIRECTIVE_2004_107-DIRECTIVE_2003_10"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "environnement"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2011_92",
+    "titre": "Texte reglementaire DIRECTIVE_2011_92",
+    "source": "INERIS",
+    "publication_date": "2021-06-27",
+    "entry_into_force": "2022-06-09",
+    "repeal_date": "2026-04-15",
+    "version": "2026-12-19",
+    "themes": [
+      "environnement",
+      "pollution",
+      "dechets",
+      "emissions",
+      "biodiversite"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2011_92. Les organisations disposent d'un délai de 14 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-06-09",
+              "valid_to": "2026-04-15"
+            },
+            "citations": [
+              "DIRECTIVE_2011_70",
+              "DIRECTIVE_90_270"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2011_92. Les organisations disposent d'un délai de 16 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-06-09",
+              "valid_to": "2026-04-15"
+            },
+            "citations": [
+              "DIRECTIVE_90_270",
+              "EN_13480"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2011_92. Les organisations disposent d'un délai de 12 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-06-09",
+              "valid_to": "2026-04-15"
+            },
+            "citations": [
+              "DIRECTIVE_90_270",
+              "DIRECTIVE_2011_70"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2011_92. Les organisations disposent d'un délai de 5 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-06-09",
+              "valid_to": "2026-04-15"
+            },
+            "citations": [
+              "DIRECTIVE_2011_70",
+              "DIRECTIVE_90_270"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2011_92. Les organisations disposent d'un délai de 8 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-06-09",
+              "valid_to": "2026-04-15"
+            },
+            "citations": [
+              "DIRECTIVE_2011_70",
+              "DIRECTIVE_90_270"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2007_65",
+        "relation": "se_chevauche",
+        "commentaire": "Relation DIRECTIVE_2011_92-DIRECTIVE_2007_65"
+      },
+      {
+        "ref": "DIRECTIVE_2010_31",
+        "relation": "complete",
+        "commentaire": "Relation DIRECTIVE_2011_92-DIRECTIVE_2010_31"
+      },
+      {
+        "ref": "EN_ISO_11161",
+        "relation": "reference",
+        "commentaire": "Relation DIRECTIVE_2011_92-EN_ISO_11161"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "environnement"
+    }
+  },
+  {
+    "id": "REGLEMENT_995_2010",
+    "titre": "Texte reglementaire REGLEMENT_995_2010",
+    "source": "INERIS",
+    "publication_date": "2011-02-13",
+    "entry_into_force": "2012-06-28",
+    "repeal_date": null,
+    "version": "2017-06-21",
+    "themes": [
+      "environnement",
+      "pollution",
+      "dechets",
+      "emissions",
+      "biodiversite"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement REGLEMENT_995_2010. Les organisations disposent d'un délai de 21 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2012-06-28",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2008_50",
+              "DIRECTIVE_2010_32"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement REGLEMENT_995_2010. Les organisations disposent d'un délai de 8 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2012-06-28",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2000_54",
+              "DIRECTIVE_2010_32"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement REGLEMENT_995_2010. Les organisations disposent d'un délai de 5 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2012-06-28",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2008_50",
+              "DIRECTIVE_2000_54"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement REGLEMENT_995_2010. Les organisations disposent d'un délai de 5 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2012-06-28",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2008_50",
+              "DIRECTIVE_2000_54"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement REGLEMENT_995_2010. Les organisations disposent d'un délai de 15 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2012-06-28",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2000_54",
+              "DIRECTIVE_2010_32"
+            ]
+          },
+          {
+            "id": "art_6_v1",
+            "titre": "Article 6 — Version initiale",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement REGLEMENT_995_2010. Les organisations disposent d'un délai de 22 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2012-06-28",
+              "valid_to": "2018-11-10"
+            },
+            "citations": [
+              "DIRECTIVE_2008_50",
+              "DIRECTIVE_2000_54"
+            ]
+          },
+          {
+            "id": "art_6_v2",
+            "titre": "Article 6 — Version amendée",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement REGLEMENT_995_2010. Les organisations disposent d'un délai de 22 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2018-11-11",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2000_54",
+              "DIRECTIVE_2008_50"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2007_2",
+        "relation": "complete",
+        "commentaire": "Relation REGLEMENT_995_2010-DIRECTIVE_2007_2"
+      },
+      {
+        "ref": "DIRECTIVE_2016_680",
+        "relation": "se_chevauche",
+        "commentaire": "Relation REGLEMENT_995_2010-DIRECTIVE_2016_680"
+      },
+      {
+        "ref": "CNIL_DELIB_2019",
+        "relation": "se_chevauche",
+        "commentaire": "Relation REGLEMENT_995_2010-CNIL_DELIB_2019"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "environnement"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2006_21",
+    "titre": "Texte reglementaire DIRECTIVE_2006_21",
+    "source": "INERIS",
+    "publication_date": "2020-11-18",
+    "entry_into_force": "2022-05-17",
+    "repeal_date": null,
+    "version": "2026-01-16",
+    "themes": [
+      "environnement",
+      "pollution",
+      "dechets",
+      "emissions",
+      "biodiversite"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2006_21. Les organisations disposent d'un délai de 7 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-05-17",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2010_32",
+              "DIRECTIVE_2012_27_EN"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2006_21. Les organisations disposent d'un délai de 23 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-05-17",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2010_32",
+              "DIRECTIVE_2001_77"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2006_21. Les organisations disposent d'un délai de 14 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-05-17",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2012_27_EN",
+              "DIRECTIVE_2010_32"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2006_21. Les organisations disposent d'un délai de 12 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-05-17",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2001_77",
+              "DIRECTIVE_2012_27_EN"
+            ]
+          },
+          {
+            "id": "art_5_v1",
+            "titre": "Article 5 — Version initiale",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2006_21. Les organisations disposent d'un délai de 3 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-05-17",
+              "valid_to": "2025-11-25"
+            },
+            "citations": [
+              "DIRECTIVE_2001_77",
+              "DIRECTIVE_2010_32"
+            ]
+          },
+          {
+            "id": "art_5_v2",
+            "titre": "Article 5 — Version amendée",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2006_21. Les organisations disposent d'un délai de 3 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2025-11-26",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2001_77",
+              "DIRECTIVE_2012_27_EN"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2006_21. Les organisations disposent d'un délai de 18 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-05-17",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2001_77",
+              "DIRECTIVE_2010_32"
+            ]
+          },
+          {
+            "id": "art_7",
+            "titre": "Article 7",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2006_21. Les organisations disposent d'un délai de 3 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-05-17",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2012_27_EN",
+              "DIRECTIVE_2001_77"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2004_22",
+        "relation": "complete",
+        "commentaire": "Relation DIRECTIVE_2006_21-DIRECTIVE_2004_22"
+      },
+      {
+        "ref": "DIRECTIVE_2013_30",
+        "relation": "complete",
+        "commentaire": "Relation DIRECTIVE_2006_21-DIRECTIVE_2013_30"
+      },
+      {
+        "ref": "DIRECTIVE_2008_50",
+        "relation": "modifie",
+        "commentaire": "Relation DIRECTIVE_2006_21-DIRECTIVE_2008_50"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "environnement"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2013_30",
+    "titre": "Texte reglementaire DIRECTIVE_2013_30",
+    "source": "INERIS",
+    "publication_date": "2024-07-31",
+    "entry_into_force": "2026-02-18",
+    "repeal_date": null,
+    "version": "2026-02-18",
+    "themes": [
+      "environnement",
+      "pollution",
+      "dechets",
+      "emissions",
+      "biodiversite"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2013_30. Les organisations disposent d'un délai de 12 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2026-02-18",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2014_68_EN",
+              "CODE_TRAVAIL_L4121"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2013_30. Les organisations disposent d'un délai de 9 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2026-02-18",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2004_107",
+              "DIRECTIVE_2014_68_EN"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2013_30. Les organisations disposent d'un délai de 6 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2026-02-18",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2014_68_EN",
+              "CODE_TRAVAIL_L4121"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2013_30. Les organisations disposent d'un délai de 22 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2026-02-18",
+              "valid_to": null
+            },
+            "citations": [
+              "CODE_TRAVAIL_L4121",
+              "DIRECTIVE_2004_107"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2013_30. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2026-02-18",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2004_107",
+              "DIRECTIVE_2014_68_EN"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2013_30. Les organisations disposent d'un délai de 12 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2026-02-18",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2014_68_EN",
+              "CODE_TRAVAIL_L4121"
+            ]
+          },
+          {
+            "id": "art_7",
+            "titre": "Article 7",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2013_30. Les organisations disposent d'un délai de 10 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2026-02-18",
+              "valid_to": null
+            },
+            "citations": [
+              "CODE_TRAVAIL_L4121",
+              "DIRECTIVE_2004_107"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_92_29",
+        "relation": "modifie",
+        "commentaire": "Relation DIRECTIVE_2013_30-DIRECTIVE_92_29"
+      },
+      {
+        "ref": "DIRECTIVE_2009_31",
+        "relation": "reference",
+        "commentaire": "Relation DIRECTIVE_2013_30-DIRECTIVE_2009_31"
+      },
+      {
+        "ref": "DIRECTIVE_2009_148",
+        "relation": "modifie",
+        "commentaire": "Relation DIRECTIVE_2013_30-DIRECTIVE_2009_148"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "environnement"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2015_2193",
+    "titre": "Texte reglementaire DIRECTIVE_2015_2193",
+    "source": "INERIS",
+    "publication_date": "2021-08-19",
+    "entry_into_force": "2022-03-19",
+    "repeal_date": null,
+    "version": "2022-03-19",
+    "themes": [
+      "environnement",
+      "pollution",
+      "dechets",
+      "emissions",
+      "biodiversite"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2015_2193. Les organisations disposent d'un délai de 8 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-03-19",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2000_54",
+              "EN_349"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2015_2193. Les organisations disposent d'un délai de 10 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-03-19",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2000_54",
+              "EN_349"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2015_2193. Les organisations disposent d'un délai de 9 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2022-03-19",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_349",
+              "DIRECTIVE_2000_60"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "DIRECTIVE_2019_944_EN",
+        "relation": "reference",
+        "commentaire": "Relation DIRECTIVE_2015_2193-DIRECTIVE_2019_944_EN"
+      },
+      {
+        "ref": "DIRECTIVE_2018_2001",
+        "relation": "complete",
+        "commentaire": "Relation DIRECTIVE_2015_2193-DIRECTIVE_2018_2001"
+      },
+      {
+        "ref": "DIRECTIVE_2009_148",
+        "relation": "se_chevauche",
+        "commentaire": "Relation DIRECTIVE_2015_2193-DIRECTIVE_2009_148"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "environnement"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2007_2",
+    "titre": "Texte reglementaire DIRECTIVE_2007_2",
+    "source": "INERIS",
+    "publication_date": "2022-09-14",
+    "entry_into_force": "2024-08-27",
+    "repeal_date": null,
+    "version": "2024-08-27",
+    "themes": [
+      "environnement",
+      "pollution",
+      "dechets",
+      "emissions",
+      "biodiversite"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2007_2. Les organisations disposent d'un délai de 6 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2024-08-27",
+              "valid_to": null
+            },
+            "citations": [
+              "DORA_2022_2554",
+              "DIRECTIVE_2006_66"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2007_2. Les organisations disposent d'un délai de 8 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2024-08-27",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2006_66",
+              "DIRECTIVE_93_103"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2007_2. Les organisations disposent d'un délai de 10 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2024-08-27",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2006_66",
+              "DORA_2022_2554"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "CNIL_DELIB_2022",
+        "relation": "complete",
+        "commentaire": "Relation DIRECTIVE_2007_2-CNIL_DELIB_2022"
+      },
+      {
+        "ref": "RoHS_2011_65",
+        "relation": "complete",
+        "commentaire": "Relation DIRECTIVE_2007_2-RoHS_2011_65"
+      },
+      {
+        "ref": "EN_ISO_13851",
+        "relation": "modifie",
+        "commentaire": "Relation DIRECTIVE_2007_2-EN_ISO_13851"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "environnement"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2002_49",
+    "titre": "Texte reglementaire DIRECTIVE_2002_49",
+    "source": "INERIS",
+    "publication_date": "2008-01-19",
+    "entry_into_force": "2009-06-28",
+    "repeal_date": null,
+    "version": "2012-02-27",
+    "themes": [
+      "environnement",
+      "pollution",
+      "dechets",
+      "emissions",
+      "biodiversite"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2002_49. Les organisations disposent d'un délai de 18 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-06-28",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2003_55",
+              "CNIL_DELIB_2022"
+            ]
+          },
+          {
+            "id": "art_2_v1",
+            "titre": "Article 2 — Version initiale",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2002_49. Les organisations disposent d'un délai de 9 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-06-28",
+              "valid_to": "2015-09-22"
+            },
+            "citations": [
+              "CNIL_DELIB_2022",
+              "DIRECTIVE_2008_98"
+            ]
+          },
+          {
+            "id": "art_2_v2",
+            "titre": "Article 2 — Version amendée",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2002_49. Les organisations disposent d'un délai de 9 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2015-09-23",
+              "valid_to": null
+            },
+            "citations": [
+              "CNIL_DELIB_2022",
+              "DIRECTIVE_2008_98"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2002_49. Les organisations disposent d'un délai de 17 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2009-06-28",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2003_55",
+              "CNIL_DELIB_2022"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "CNIL_RECOMMANDATION_2020",
+        "relation": "reference",
+        "commentaire": "Relation DIRECTIVE_2002_49-CNIL_RECOMMANDATION_2020"
+      },
+      {
+        "ref": "DIRECTIVE_2006_96_EN",
+        "relation": "reference",
+        "commentaire": "Relation DIRECTIVE_2002_49-DIRECTIVE_2006_96_EN"
+      },
+      {
+        "ref": "ANSSI_RGS_2014",
+        "relation": "modifie",
+        "commentaire": "Relation DIRECTIVE_2002_49-ANSSI_RGS_2014"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "environnement"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2011_70",
+    "titre": "Texte reglementaire DIRECTIVE_2011_70",
+    "source": "INERIS",
+    "publication_date": "2012-03-05",
+    "entry_into_force": "2013-02-12",
+    "repeal_date": "2015-11-08",
+    "version": "2015-10-10",
+    "themes": [
+      "environnement",
+      "pollution",
+      "dechets",
+      "emissions",
+      "biodiversite"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2011_70. Les organisations disposent d'un délai de 23 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2013-02-12",
+              "valid_to": "2015-11-08"
+            },
+            "citations": [
+              "DIRECTIVE_2012_19",
+              "DIRECTIVE_98_24"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2011_70. Les organisations disposent d'un délai de 22 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2013-02-12",
+              "valid_to": "2015-11-08"
+            },
+            "citations": [
+              "DIRECTIVE_2012_19",
+              "DIRECTIVE_98_24"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2011_70. Les organisations disposent d'un délai de 5 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2013-02-12",
+              "valid_to": "2015-11-08"
+            },
+            "citations": [
+              "DIRECTIVE_2012_19",
+              "DIRECTIVE_2001_77"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2011_70. Les organisations disposent d'un délai de 19 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2013-02-12",
+              "valid_to": "2015-11-08"
+            },
+            "citations": [
+              "DIRECTIVE_2012_19",
+              "DIRECTIVE_98_24"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2011_70. Les organisations disposent d'un délai de 13 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2013-02-12",
+              "valid_to": "2015-11-08"
+            },
+            "citations": [
+              "DIRECTIVE_2001_77",
+              "DIRECTIVE_98_24"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2011_70. Les organisations disposent d'un délai de 19 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2013-02-12",
+              "valid_to": "2015-11-08"
+            },
+            "citations": [
+              "DIRECTIVE_98_24",
+              "DIRECTIVE_2012_19"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "REGULATION_2018_1725",
+        "relation": "se_chevauche",
+        "commentaire": "Relation DIRECTIVE_2011_70-REGULATION_2018_1725"
+      },
+      {
+        "ref": "EN_ISO_11111",
+        "relation": "modifie",
+        "commentaire": "Relation DIRECTIVE_2011_70-EN_ISO_11111"
+      },
+      {
+        "ref": "CYBER_ACT_2019_881",
+        "relation": "complete",
+        "commentaire": "Relation DIRECTIVE_2011_70-CYBER_ACT_2019_881"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "environnement"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2009_125",
+    "titre": "Texte reglementaire DIRECTIVE_2009_125",
+    "source": "INERIS",
+    "publication_date": "2008-03-19",
+    "entry_into_force": "2008-10-17",
+    "repeal_date": null,
+    "version": "2013-06-25",
+    "themes": [
+      "environnement",
+      "pollution",
+      "dechets",
+      "emissions",
+      "biodiversite"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2009_125. Les organisations disposent d'un délai de 10 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2008-10-17",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2018_2001_EN",
+              "DIRECTIVE_2002_44"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2009_125. Les organisations disposent d'un délai de 23 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2008-10-17",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2018_2001_EN",
+              "DIRECTIVE_2016_797"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2009_125. Les organisations disposent d'un délai de 14 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2008-10-17",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2016_797",
+              "DIRECTIVE_2002_44"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "EN_349",
+        "relation": "se_chevauche",
+        "commentaire": "Relation DIRECTIVE_2009_125-EN_349"
+      },
+      {
+        "ref": "DIRECTIVE_2000_54",
+        "relation": "se_chevauche",
+        "commentaire": "Relation DIRECTIVE_2009_125-DIRECTIVE_2000_54"
+      },
+      {
+        "ref": "DIRECTIVE_2012_34",
+        "relation": "reference",
+        "commentaire": "Relation DIRECTIVE_2009_125-DIRECTIVE_2012_34"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "environnement"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2014_30",
+    "titre": "Texte reglementaire DIRECTIVE_2014_30",
+    "source": "INERIS",
+    "publication_date": "2007-10-01",
+    "entry_into_force": "2008-11-05",
+    "repeal_date": null,
+    "version": "2008-11-05",
+    "themes": [
+      "environnement",
+      "pollution",
+      "dechets",
+      "emissions",
+      "biodiversite"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1",
+            "titre": "Article 1",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_30. Les organisations disposent d'un délai de 9 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2008-11-05",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_11684",
+              "DIRECTIVE_2009_73"
+            ]
+          },
+          {
+            "id": "art_2",
+            "titre": "Article 2",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_30. Les organisations disposent d'un délai de 6 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2008-11-05",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2009_73",
+              "AI_ACT_2024_1689"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_30. Les organisations disposent d'un délai de 24 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2008-11-05",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_11684",
+              "DIRECTIVE_2009_73"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_30. Les organisations disposent d'un délai de 20 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2008-11-05",
+              "valid_to": null
+            },
+            "citations": [
+              "AI_ACT_2024_1689",
+              "EN_ISO_11684"
+            ]
+          },
+          {
+            "id": "art_5",
+            "titre": "Article 5",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_30. Les organisations disposent d'un délai de 14 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2008-11-05",
+              "valid_to": null
+            },
+            "citations": [
+              "DIRECTIVE_2009_73",
+              "AI_ACT_2024_1689"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_30. Les organisations disposent d'un délai de 16 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2008-11-05",
+              "valid_to": null
+            },
+            "citations": [
+              "AI_ACT_2024_1689",
+              "DIRECTIVE_2009_73"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "CODE_TRAVAIL_L4121",
+        "relation": "complete",
+        "commentaire": "Relation DIRECTIVE_2014_30-CODE_TRAVAIL_L4121"
+      },
+      {
+        "ref": "DIRECTIVE_2005_32",
+        "relation": "modifie",
+        "commentaire": "Relation DIRECTIVE_2014_30-DIRECTIVE_2005_32"
+      },
+      {
+        "ref": "DIRECTIVE_2003_54",
+        "relation": "reference",
+        "commentaire": "Relation DIRECTIVE_2014_30-DIRECTIVE_2003_54"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "environnement"
+    }
+  },
+  {
+    "id": "DIRECTIVE_2014_32",
+    "titre": "Texte reglementaire DIRECTIVE_2014_32",
+    "source": "INERIS",
+    "publication_date": "2014-01-28",
+    "entry_into_force": "2015-11-02",
+    "repeal_date": null,
+    "version": "2016-11-01",
+    "themes": [
+      "environnement",
+      "pollution",
+      "dechets",
+      "emissions",
+      "biodiversite"
+    ],
+    "chapitres": [
+      {
+        "id": "chap_principal",
+        "titre": "Dispositions",
+        "articles": [
+          {
+            "id": "art_1_v1",
+            "titre": "Article 1 — Version initiale",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_32. Les organisations disposent d'un délai de 12 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-11-02",
+              "valid_to": "2020-04-27"
+            },
+            "citations": [
+              "EN_ISO_11111",
+              "ACCORD_CADRE_STRESS"
+            ]
+          },
+          {
+            "id": "art_1_v2",
+            "titre": "Article 1 — Version amendée",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_32. Les organisations disposent d'un délai de 12 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2020-04-28",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_11111",
+              "ACCORD_CADRE_STRESS"
+            ]
+          },
+          {
+            "id": "art_2_v1",
+            "titre": "Article 2 — Version initiale",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_32. Les organisations disposent d'un délai de 6 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-11-02",
+              "valid_to": "2021-10-27"
+            },
+            "citations": [
+              "EN_ISO_11111",
+              "IEC_62061"
+            ]
+          },
+          {
+            "id": "art_2_v2",
+            "titre": "Article 2 — Version amendée",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_32. Les organisations disposent d'un délai de 6 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2021-10-28",
+              "valid_to": null
+            },
+            "citations": [
+              "ACCORD_CADRE_STRESS",
+              "IEC_62061"
+            ]
+          },
+          {
+            "id": "art_3",
+            "titre": "Article 3",
+            "texte": "Les émissions de polluants doivent respecter les valeurs limites fixées. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_32. Les organisations disposent d'un délai de 10 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-11-02",
+              "valid_to": null
+            },
+            "citations": [
+              "ACCORD_CADRE_STRESS",
+              "EN_ISO_11111"
+            ]
+          },
+          {
+            "id": "art_4",
+            "titre": "Article 4",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_32. Les organisations disposent d'un délai de 21 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-11-02",
+              "valid_to": null
+            },
+            "citations": [
+              "IEC_62061",
+              "EN_ISO_11111"
+            ]
+          },
+          {
+            "id": "art_5_v1",
+            "titre": "Article 5 — Version initiale",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_32. Les organisations disposent d'un délai de 18 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-11-02",
+              "valid_to": "2018-11-26"
+            },
+            "citations": [
+              "IEC_62061",
+              "ACCORD_CADRE_STRESS"
+            ]
+          },
+          {
+            "id": "art_5_v2",
+            "titre": "Article 5 — Version amendée",
+            "texte": "Les déchets dangereux doivent être traités par des prestataires agréés. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_32. Les organisations disposent d'un délai de 18 mois pour se mettre en conformité. (version amendée)",
+            "validite": {
+              "valid_from": "2018-11-27",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_11111",
+              "ACCORD_CADRE_STRESS"
+            ]
+          },
+          {
+            "id": "art_6",
+            "titre": "Article 6",
+            "texte": "Les installations classées doivent obtenir une autorisation préfectorale. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_32. Les organisations disposent d'un délai de 4 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-11-02",
+              "valid_to": null
+            },
+            "citations": [
+              "ACCORD_CADRE_STRESS",
+              "IEC_62061"
+            ]
+          },
+          {
+            "id": "art_7",
+            "titre": "Article 7",
+            "texte": "Les rejets aqueux font l'objet d'une surveillance régulière. Cette obligation s'applique dans le cadre du règlement DIRECTIVE_2014_32. Les organisations disposent d'un délai de 16 mois pour se mettre en conformité.",
+            "validite": {
+              "valid_from": "2015-11-02",
+              "valid_to": null
+            },
+            "citations": [
+              "EN_ISO_11111",
+              "IEC_62061"
+            ]
+          }
+        ]
+      }
+    ],
+    "textes_lies": [
+      {
+        "ref": "EN_954_1",
+        "relation": "reference",
+        "commentaire": "Relation DIRECTIVE_2014_32-EN_954_1"
+      },
+      {
+        "ref": "DIRECTIVE_2003_87",
+        "relation": "se_chevauche",
+        "commentaire": "Relation DIRECTIVE_2014_32-DIRECTIVE_2003_87"
+      },
+      {
+        "ref": "EN_ISO_13857",
+        "relation": "reference",
+        "commentaire": "Relation DIRECTIVE_2014_32-EN_ISO_13857"
+      }
+    ],
+    "metadonnees_supplementaires": {
+      "theme": "environnement"
+    }
+  }
+]
