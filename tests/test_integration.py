@@ -1,0 +1,395 @@
+"""
+tests/test_integration.py — Tests d'intégration pipeline complet
+================================================================
+
+Tests sans LLM, avec Qdrant en mémoire et Redis mocké.
+Couvre le pipeline : ingestion → retrieval → temporal → explainer → citation.
+
+Nécessite : qdrant-client installé.
+Lance avec : python3 -m pytest tests/test_integration.py -v
+"""
+
+from __future__ import annotations
+
+import asyncio
+import json
+from datetime import date
+from pathlib import Path
+from unittest.mock import AsyncMock, patch
+
+import pytest
+
+from src.models import (
+    DocumentReglementaire,
+    EvidenceRecuperee,
+    NiveauConfiance,
+    RequeteQuestion,
+    SourceReglementaire,
+)
+
+
+# ---------------------------------------------------------------------------
+# Fixtures
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+def doc_rgpd_json() -> dict:
+    """JSON canonique du document de test."""
+    return {
+        "id": "RGPD_2016_679",
+        "titre": "Règlement (UE) 2016/679",
+        "source": "EUR-Lex",
+        "publication_date": "2016-05-04",
+        "entry_into_force": "2018-05-25",
+        "version": "2026-08-03",
+        "themes": ["protection_donnees", "numerique"],
+        "chapitres": [
+            {
+                "id": "chap4",
+                "titre": "Sécurité",
+                "articles": [
+                    {
+                        "id": "art_32",
+                        "titre": "Sécurité du traitement",
+                        "texte": (
+                            "Compte tenu de l'état des connaissances, des coûts "
+                            "de mise en œuvre et de la nature du traitement, le responsable "
+                            "met en œuvre les mesures techniques et organisationnelles appropriées."
+                        ),
+                        "validite": {"valid_from": "2018-05-25", "valid_to": None},
+                        "citations": ["art_33"],
+                    },
+                    {
+                        "id": "art_33",
+                        "titre": "Notification d'une violation",
+                        "texte": (
+                            "En cas de violation de données à caractère personnel, "
+                            "le responsable notifie l'autorité de contrôle dans les 72 heures."
+                        ),
+                        "validite": {"valid_from": "2018-05-25", "valid_to": None},
+                        "citations": [],
+                    },
+                ],
+            }
+        ],
+        "textes_lies": [],
+    }
+
+
+@pytest.fixture
+def client_qdrant_memoire():
+    """Client Qdrant en mémoire pour les tests."""
+    from qdrant_client import QdrantClient
+    return QdrantClient(location=":memory:")
+
+
+# ---------------------------------------------------------------------------
+# Test modèle Pydantic depuis JSON
+# ---------------------------------------------------------------------------
+
+
+class TestIngestionPydantic:
+    def test_charger_document_depuis_json(self, doc_rgpd_json):
+        doc = DocumentReglementaire.model_validate(doc_rgpd_json)
+        assert doc.id == "RGPD_2016_679"
+        assert len(doc.chapitres) == 1
+        assert len(doc.chapitres[0].articles) == 2
+
+    def test_hash_document_coherent(self, doc_rgpd_json):
+        doc = DocumentReglementaire.model_validate(doc_rgpd_json)
+        h1 = doc.calculer_hash()
+        h2 = doc.calculer_hash()
+        assert h1 == h2
+
+    def test_articles_applicables_2025(self, doc_rgpd_json):
+        doc = DocumentReglementaire.model_validate(doc_rgpd_json)
+        applicables = doc.articles_applicables_a(date(2025, 6, 15))
+        assert len(applicables) == 2  # art_32 et art_33, tous deux sans valid_to
+
+
+# ---------------------------------------------------------------------------
+# Test pipeline ingestion → Qdrant
+# ---------------------------------------------------------------------------
+
+
+class TestPipelineIngestion:
+    def test_chunking_et_upsert(self, doc_rgpd_json, client_qdrant_memoire):
+        """Vérifie que l'ingestion produit des chunks indexés dans Qdrant."""
+        from qdrant_client.http.models import Distance, VectorParams, PointStruct
+        import uuid
+
+        doc = DocumentReglementaire.model_validate(doc_rgpd_json)
+
+        # Créer la collection en mémoire
+        client_qdrant_memoire.create_collection(
+            collection_name="test_collection",
+            vectors_config=VectorParams(size=4, distance=Distance.COSINE),
+        )
+
+        # Chunking via Ingester
+        from scripts.ingest import Ingester
+        ingester = Ingester.__new__(Ingester)
+        chunks = ingester.chunk_document(doc)
+        assert len(chunks) >= 2
+
+        # Upsert avec vecteurs factices
+        points = [
+            PointStruct(
+                id=str(uuid.uuid4()),
+                vector=[0.1, 0.2, 0.3, 0.4],
+                payload={
+                    "chunk_id": c.chunk_id,
+                    "document_id": c.document_id,
+                    "article_id": c.article_id,
+                    "texte_chunk": c.texte_chunk,
+                    "valid_from": c.valid_from.isoformat(),
+                    "valid_to": c.valid_to.isoformat() if c.valid_to else None,
+                    "source": c.source.value,
+                    "themes": c.themes,
+                },
+            )
+            for c in chunks
+        ]
+        client_qdrant_memoire.upsert(
+            collection_name="test_collection",
+            points=points,
+            wait=True,
+        )
+
+        info = client_qdrant_memoire.get_collection("test_collection")
+        assert (info.points_count or 0) >= 2
+
+    def test_chunking_article_court(self):
+        """Un article court doit produire un seul chunk."""
+        from scripts.ingest import Ingester
+        from src.models import DocumentReglementaire, Chapitre, VersionArticle, IntervalleValidite, SourceReglementaire
+
+        doc = DocumentReglementaire(
+            id="test", titre="Test", source=SourceReglementaire.AUTRE,
+            publication_date=date(2020, 1, 1), entry_into_force=date(2020, 1, 1),
+            version="2020-01-01",
+            chapitres=[Chapitre(id="c1", articles=[
+                VersionArticle(
+                    id="art_1", titre="Test",
+                    texte="Texte court.",
+                    validite=IntervalleValidite(valid_from=date(2020, 1, 1)),
+                )
+            ])]
+        )
+        ingester = Ingester.__new__(Ingester)
+        chunks = ingester.chunk_document(doc)
+        assert len(chunks) >= 1
+        assert any("Texte court" in c.texte_chunk for c in chunks)
+
+    def test_chunking_article_long(self):
+        """Vérifie que chunk_document produit un chunk par article avec le texte complet."""
+        from scripts.ingest import Ingester
+        from src.models import DocumentReglementaire, Chapitre, VersionArticle, IntervalleValidite, SourceReglementaire
+
+        texte_long = " ".join(["Texte réglementaire."] * 200)
+        doc = DocumentReglementaire(
+            id="test", titre="Test", source=SourceReglementaire.AUTRE,
+            publication_date=date(2020, 1, 1), entry_into_force=date(2020, 1, 1),
+            version="2020-01-01",
+            chapitres=[Chapitre(id="c1", articles=[
+                VersionArticle(
+                    id="art_1", titre="Art 1",
+                    texte=texte_long,
+                    validite=IntervalleValidite(valid_from=date(2020, 1, 1)),
+                ),
+                VersionArticle(
+                    id="art_2", titre="Art 2",
+                    texte="Second article.",
+                    validite=IntervalleValidite(valid_from=date(2020, 1, 1)),
+                ),
+            ])]
+        )
+        ingester = Ingester.__new__(Ingester)
+        chunks = ingester.chunk_document(doc)
+        # Un chunk minimum par article
+        assert len(chunks) >= 2
+        assert any(c.article_id == "art_1" for c in chunks)
+        assert any(c.article_id == "art_2" for c in chunks)
+        assert all(len(c.texte_chunk) > 0 for c in chunks)
+
+
+# ---------------------------------------------------------------------------
+# Test pipeline Retriever → Temporal → Explainer
+# ---------------------------------------------------------------------------
+
+
+class TestPipelineAgents:
+    def test_pipeline_deterministe_sans_qdrant(self):
+        """
+        Pipeline complet sans Qdrant ni LLM.
+        Injecte des EvidenceRecuperee directement dans l'Explainer.
+        """
+        from src.agents.explainer import AgentExplainer
+        from src.agents.temporal import AgentTemporel
+
+        evidences = [
+            EvidenceRecuperee(
+                chunk_id="c1",
+                document_id="RGPD_2016_679",
+                article_id="art_32",
+                texte_extrait="Le responsable met en œuvre des mesures appropriées.",
+                valid_from=date(2018, 5, 25),
+                valid_to=None,
+            ),
+            EvidenceRecuperee(
+                chunk_id="c2",
+                document_id="RGPD_2016_679",
+                article_id="art_33",
+                texte_extrait="Notification dans les 72 heures.",
+                valid_from=date(2018, 5, 25),
+                valid_to=None,
+            ),
+        ]
+
+        # Temporal
+        temporal = AgentTemporel(use_llm=False)
+        r_temporal = temporal.analyser(
+            "Obligations RGPD ?",
+            evidences,
+            date(2025, 6, 15),
+        )
+        assert len(r_temporal.evidences_applicables) == 2
+        assert r_temporal.niveau_confiance == NiveauConfiance.ELEVE
+
+        # Explainer
+        explainer = AgentExplainer(use_llm=False)
+        r_explainer = explainer.expliquer(
+            "Obligations RGPD ?",
+            r_temporal.evidences_applicables,
+            date_ref=date(2025, 6, 15),
+            type_pipeline="temporelle",
+        )
+        assert r_explainer.mode == "assemblage"
+        assert len(r_explainer.sources_citees) == 2
+        assert "RGPD_2016_679" in r_explainer.reponse
+
+    def test_pipeline_citation_verification(self):
+        """Les citations générées depuis les preuves doivent toutes être vérifiées."""
+        from src.agents.citation import AgentCitation, StatutCitation
+
+        evidences = [
+            EvidenceRecuperee(
+                chunk_id=f"chunk_{i}",
+                document_id="RGPD_2016_679",
+                article_id=f"art_{i}",
+                texte_extrait=f"Texte de l'article {i} — contenu réglementaire.",
+                valid_from=date(2018, 5, 25),
+                valid_to=None,
+            )
+            for i in range(4)
+        ]
+
+        agent = AgentCitation(use_llm=False)
+        r = agent.generate(evidences)
+
+        assert len(r.citations_verifiees) == 4
+        assert len(r.citations_douteuses) == 0
+        for cit in r.citations_verifiees:
+            assert cit.statut == StatutCitation.VERIFIEE
+
+
+# ---------------------------------------------------------------------------
+# Test orchestrateur mode mock
+# ---------------------------------------------------------------------------
+
+
+class TestOrchestrateurMock:
+    def test_mode_mock_sans_infrastructure(self):
+        """L'orchestrateur en mode mock ne doit nécessiter aucune infra."""
+        from src.orchestrator import Orchestrateur
+
+        orch = Orchestrateur(mode="mock")
+
+        async def _run():
+            req = RequeteQuestion(question="Test question RGPD")
+            rep = await orch.traiter(req)
+            assert rep.request_id is not None
+            assert "mock" in rep.reponse.lower() or len(rep.reponse) > 0
+            assert rep.niveau_confiance is not None
+
+        asyncio.run(_run())
+
+    def test_classification_requetes(self):
+        from src.orchestrator import _classifier_requete
+
+        assert _classifier_requete("Question simple", None) == "courante"
+        assert _classifier_requete("Applicable en 2023", None) == "temporelle"
+        assert _classifier_requete("Version du 15/06/2025", None) == "temporelle"
+        assert _classifier_requete("Q", date(2023, 6, 15)) == "temporelle"
+        assert _classifier_requete("Contradiction entre NIS2 et RGPD", None) == "conflit"
+        assert _classifier_requete("Incohérence entre les textes", None) == "conflit"
+
+
+# ---------------------------------------------------------------------------
+# Test audit trail
+# ---------------------------------------------------------------------------
+
+
+class TestAuditTrail:
+    def test_persistance_locale(self, tmp_path):
+        """Vérifie que l'audit JSONL est bien écrit localement."""
+        import src.audit as audit_module
+        from src.models import EnregistrementAudit
+
+        # Patch du chemin de fichier
+        chemin_test = tmp_path / "audit_test.jsonl"
+        original = audit_module.CHEMIN_AUDIT_LOCAL
+        audit_module.CHEMIN_AUDIT_LOCAL = chemin_test
+
+        async def _run():
+            gestionnaire = audit_module.GestionnaireAudit(postgres_dsn=None)
+            await gestionnaire.initialiser()
+
+            audit = EnregistrementAudit(
+                user_query="Question de test",
+                reponse_finale="Réponse de test",
+                niveau_confiance=NiveauConfiance.ELEVE,
+            )
+            hash_retourne = await gestionnaire.persister(audit)
+            assert len(hash_retourne) == 64
+
+            # Vérifier le fichier
+            assert chemin_test.exists()
+            contenu = chemin_test.read_text()
+            assert "Question de test" in contenu
+
+        try:
+            asyncio.run(_run())
+        finally:
+            audit_module.CHEMIN_AUDIT_LOCAL = original
+
+    def test_chainaage_hashes(self, tmp_path):
+        """Deux audits successifs doivent avoir des hashes chaînés."""
+        import src.audit as audit_module
+        from src.models import EnregistrementAudit
+
+        chemin_test = tmp_path / "audit_chain.jsonl"
+        original = audit_module.CHEMIN_AUDIT_LOCAL
+        audit_module.CHEMIN_AUDIT_LOCAL = chemin_test
+        audit_module._hash_precedent = None  # reset
+
+        async def _run():
+            gestionnaire = audit_module.GestionnaireAudit(postgres_dsn=None)
+            await gestionnaire.initialiser()
+
+            a1 = EnregistrementAudit(user_query="Q1", reponse_finale="R1")
+            h1 = await gestionnaire.persister(a1)
+
+            a2 = EnregistrementAudit(user_query="Q2", reponse_finale="R2")
+            h2 = await gestionnaire.persister(a2)
+
+            assert h1 != h2
+            # Le hash précédent de a2 doit être h1
+            assert a2.hash_precedent == h1
+
+        try:
+            asyncio.run(_run())
+        finally:
+            audit_module.CHEMIN_AUDIT_LOCAL = original
+            audit_module._hash_precedent = None
