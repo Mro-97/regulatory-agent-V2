@@ -103,7 +103,7 @@ def setup_collection(client, collection: str, dimension: int, reset: bool = Fals
     logger.info(
         "Collection prête : %s | vecteurs=%d | statut=%s",
         collection,
-        info.vectors_count or 0,
+        info.points_count or 0,
         info.status,
     )
 
