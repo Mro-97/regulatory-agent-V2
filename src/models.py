@@ -766,3 +766,17 @@ class ReponseDecisionValidation(BaseModel):
     tache_id: UUID
     nouveau_statut: StatutValidation
     horodatage_traitement: datetime
+
+
+class AlerteWatcher(BaseModel):
+    """Alerte générée par le Watcher lors de la détection d'une modification."""
+
+    alerte_id: UUID = Field(default_factory=uuid4)
+    source: SourceReglementaire = Field(..., description="Source où la modification a été détectée.")
+    url_detectee: str = Field(..., description="URL du document modifié.")
+    document_id_concerne: Optional[str] = Field(default=None)
+    hash_precedent: str = Field(..., description="Hash SHA-256 avant modification.")
+    hash_nouveau: str = Field(..., description="Hash SHA-256 après modification.")
+    horodatage_detection: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    description_modification: Optional[str] = Field(default=None)
+    tache_validation_id: Optional[UUID] = Field(default=None)
