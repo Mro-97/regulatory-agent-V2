@@ -90,6 +90,25 @@ class Ingester:
             data = json.load(f)
 
         # Valider avec Pydantic
+        # Gerer les fichiers contenant une liste de documents
+        if isinstance(data, list):
+            for item in data:
+                doc = DocumentReglementaire(**item)
+                chunks = self.chunk_document(doc)
+                if not chunks:
+                    continue
+                vectors = [self.embed_chunk(c.texte_chunk) for c in chunks]
+                points = [PointStruct(id=str(uuid.uuid4()), vector=v, payload={
+                    "chunk_id": c.chunk_id, "document_id": c.document_id,
+                    "chapitre_id": c.chapitre_id, "article_id": c.article_id,
+                    "source": c.source.value, "themes": c.themes,
+                    "valid_from": c.valid_from.isoformat(),
+                    "valid_to": c.valid_to.isoformat() if c.valid_to else None,
+                    "texte_chunk": c.texte_chunk, "position_dans_article": c.position_dans_article,
+                }) for c, v in zip(chunks, vectors)]
+                self.client.upsert(collection_name=self.collection_name, points=points, wait=True)
+                logger.info(f"✅ {len(chunks)} chunks indexés pour {doc.id}")
+            return
         doc = DocumentReglementaire(**data)
         logger.info(f"📄 Document chargé : {doc.id} - {doc.titre}")
 
