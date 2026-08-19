@@ -1,0 +1,346 @@
+{
+  "id": "CMR_2004_37_FULL",
+  "titre": "Directive CMR 2004/37/CE",
+  "source": "EUR-Lex",
+  "url_source": null,
+  "publication_date": "2004-04-29",
+  "entry_into_force": "2005-01-06",
+  "repeal_date": null,
+  "version": "2005-01-06",
+  "themes": [
+    "sante_travail",
+    "cmr",
+    "agents_cancerogenes"
+  ],
+  "chapitres": [
+    {
+      "id": "chap_i",
+      "titre": "DISPOSITIONS GÉNÉRALES",
+      "articles": [
+        {
+          "id": "art_2",
+          "titre": "Définitions",
+          "texte": "Définitions\nAux fins de la présente directive, on entend par:\na) «agent cancérigène»:\ni) une substance qui répond aux critères de classification dans la catégorie 1 ou 2 des\nagents cancérigènes, tels que fixés à l'annexe VI de la directive 67/548/CEE;\nii) une préparation composée d'une ou de plusieurs substances visées au point i), lorsque\nla concentration d'une ou de plusieurs de ces substances répond aux prescriptions\nrequises en matière de limites de concentration pour la classification d'une\npréparation dans la catégorie 1 ou 2 des agents cancérigènes, telles que fixées:\nsoit à l'annexe I de la directive 67/548/CEE,\nsoit à l'annexe II, partie B, de la directive 1999/45/CE, lorsque la ou les substances\nne figurent pas à l'annexe I de la directive 67/548/CEE ou n'y sont pas assorties\nde limites de concentration;\n1 Directive 83/477/CEE du Conseil du 19 septembre 1983 concernant la protection des\ntravailleurs contre les risques liés à une exposition à l'amiante pendant le travail (deuxième\ndirective particulière au sens de l'article 8 de la directive 80/1107/CEE) (JO L 263 du\n24.9.1983, p. 25). Directive modifiée en dernier lieu par la directive 2003/18/CE du Parlement\neuropéen et du Conseil (JO L 97 du 15.4.2003, p. 48).\n\n30.4.2004 FR Journal officiel de l’Union européenne L 158/ 56\n_______________________________________________________________________________\niii) une substance, une préparation ou un procédé, visés à l'annexe I de la présente\ndirective, ainsi qu'une substance ou une préparation qui est dégagée par un procédé\nvisé à ladite annexe;\nb) «agent mutagène»:\ni) une substance qui répond aux critères de classification dans la catégorie 1 ou 2 des\nagents mutagènes, tels que fixés à l'annexe VI de la directive 67/548/CEE;\nii) une préparation composée d'une ou de plusieurs substances visées au point i), lorsque\nla concentration d'une ou de plusieurs de ces substances répond aux prescriptions\nrequises en matière de limites de concentration pour la classification d'une\npréparation dans la catégorie 1 ou 2 des agents mutagènes, telles que fixées:\nsoit à l'annexe I de la directive 67/548/CEE,\nsoit à l'annexe II, partie B, de la directive 1999/45/CE, lorsque la ou les substances\nne figurent pas à l'annexe I de la directive 67/548/CEE ou n'y sont pas assorties\nde limites de concentration;\nc) «valeur limite»: sauf indication contraire, la limite de la moyenne pondérée en fonction du\ntemps de concentration d'un «agent cancérigène ou mutagène» dans l'air de la zone de\nrespiration d'un travailleur au cours d'une période de référence déterminée précisée à\nl'annexe III de la présente directive.\n\n30.4.2004 FR Journal officiel de l’Union européenne L 158/ 57\n_______________________________________________________________________________",
+          "validite": {
+            "valid_from": "2005-01-06",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "b28911fb05b833428022b6ba1eb74c4547edee1f2aeef5fccbcfe651b1274dcb"
+        },
+        {
+          "id": "art_3",
+          "titre": "Champ d'application — Identification et appréciation des risques",
+          "texte": "Champ d'application — Identification et appréciation des risques\n1. La présente directive est applicable aux activités dans lesquelles les travailleurs sont\nexposés ou susceptibles d'être exposés à des agents cancérigènes ou mutagènes résultant de\nleur travail.\n2. Pour toute activité susceptible de présenter un risque d'exposition à des agents\ncancérigènes ou mutagènes, la nature, le degré et la durée de l'exposition des travailleurs\ndoivent être déterminés, afin de pouvoir apprécier tout risque concernant la sécurité ou la\nsanté des travailleurs et de pouvoir déterminer les mesures à prendre.\nCette appréciation doit être renouvelée régulièrement et en tout cas lors de tout\nchangement des conditions pouvant affecter l'exposition des travailleurs aux agents\ncancérigènes ou mutagènes.\nL'employeur doit fournir aux autorités responsables, sur leur demande, les éléments ayant\nservi à cette appréciation.\n3. Lors de l'appréciation du risque, toutes les autres voies d'exposition, telles que l'absorption\ntranscutanée et/ou percutanée, sont prises en compte.\n4. Les employeurs, lors de l'appréciation du risque, portent une attention particulière aux\neffets éventuels concernant la sécurité ou la santé des travailleurs à risques\nparticulièrement sensibles et, entre autres, prennent en considération l'opportunité de ne\npas employer ces travailleurs dans des zones où ils peuvent être en contact avec des agents\ncancérigènes ou mutagènes.\n\n30.4.2004 FR Journal officiel de l’Union européenne L 158/ 58\n_______________________________________________________________________________\nCHAPITRE II\nOBLIGATIONS DES EMPLOYEURS",
+          "validite": {
+            "valid_from": "2005-01-06",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "c6b9afdf7e0ef476234f2dd5d8768959164360b0a699bb94ad9c24b828eac994"
+        },
+        {
+          "id": "art_4",
+          "titre": "Réduction et substitution",
+          "texte": "Réduction et substitution\n1. L'employeur réduit l'utilisation d'un agent cancérigène ou mutagène sur le lieu de travail,\nnotamment en le remplaçant, dans la mesure où cela est techniquement possible, par une\nsubstance, une préparation ou un procédé qui, dans ses conditions d'emploi, n'est pas ou est\nmoins dangereux pour la santé ou, le cas échéant, pour la sécurité des travailleurs.\n2. L'employeur communique le résultat de ses recherches à l'autorité responsable, à la\ndemande de celle-ci.",
+          "validite": {
+            "valid_from": "2005-01-06",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "ddbde0c15fc886d2469c6279d344ea4ecb3d08d9f80d4c608bb0322c11f746ba"
+        },
+        {
+          "id": "art_5",
+          "titre": "Dispositions visant à éviter ou à réduire l'exposition",
+          "texte": "Dispositions visant à éviter ou à réduire l'exposition\n1. Si les résultats de l'appréciation visée à l'article 3, paragraphe 2, révèlent un risque\nconcernant la sécurité ou la santé des travailleurs, l'exposition des travailleurs doit être\névitée.\n2. Si le remplacement de l'agent cancérigène ou mutagène par une substance, une préparation\nou un procédé qui, dans les conditions d'emploi, n'est pas ou est moins dangereux pour la\nsécurité ou la santé, n'est pas techniquement possible, l'employeur assure que la production\net l'utilisation de l'agent cancérigène ou mutagène ont lieu dans un système clos, dans la\nmesure où cela est techniquement possible.\n\n30.4.2004 FR Journal officiel de l’Union européenne L 158/ 59\n_______________________________________________________________________________\n3. Si l'application d'un système clos n'est pas techniquement possible, l'employeur assure que\nle niveau d'exposition des travailleurs est réduit à un niveau aussi bas qu'il est\ntechniquement possible.\n4. L'exposition ne doit pas dépasser la valeur limite d'un agent cancérigène indiquée à\nl'annexe III.\n5. Dans tous les cas d'utilisation d'un agent cancérigène ou mutagène, l'employeur applique\ntoutes les mesures suivantes:\na) la limitation des quantités d'un agent cancérigène ou mutagène sur le lieu de travail;\nb) la limitation, au niveau le plus bas possible, du nombre de travailleurs exposés ou\nsusceptibles de l'être;\nc) la conception des processus de travail et des mesures techniques, l'objectif étant\nd'éviter ou de minimiser le dégagement d'agents cancérigènes ou mutagènes sur le\nlieu de travail;\nd) l'évacuation des agents cancérigènes ou mutagènes à la source, l'aspiration locale ou\nla ventilation générale appropriées compatibles avec le besoin de protéger la santé\npublique et l'environnement;\ne) l'utilisation de méthodes de mesure existantes appropriées des agents cancérigènes ou\nmutagènes, en particulier pour la détection précoce des expositions anormales\nrésultant d'un événement imprévisible ou d'un accident;\nf) l'application de procédures et de méthodes de travail appropriées;\n\n30.4.2004 FR Journal officiel de l’Union européenne L 158/ 60\n_______________________________________________________________________________\ng) des mesures de protection collectives et/ou, lorsque l'exposition ne peut être évitée\npar d'autres moyens, des mesures de protection individuelles;\nh) des mesures d'hygiène, notamment le nettoyage régulier des sols, murs et autres\nsurfaces;\ni) l'information des travailleurs;\nj) la délimitation des zones à risque et l'utilisation de signaux adéquats d'avertissement\net de sécurité, y compris les signaux «défense de fumer» dans les zones où les\ntravailleurs sont exposés ou susceptibles d'être exposés à des agents cancérigènes ou\nmutagènes;\nk) la mise en place de dispositifs pour les cas d'urgence susceptibles d'entraîner des\nexpositions anormalement élevées;\nl) les moyens permettant le stockage, la manipulation et le transport sans risque,\nnotamment par l'emploi de récipients hermétiques et étiquetés de manière claire,\nnette et visible;\nm) les moyens permettant la collecte, le stockage et l'évacuation sûrs des déchets par les\ntravailleurs, y compris l'utilisation de récipients hermétiques et étiquetés de manière\nclaire, nette et visible.\n\n30.4.2004 FR Journal officiel de l’Union européenne L 158/ 61\n_______________________________________________________________________________",
+          "validite": {
+            "valid_from": "2005-01-06",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "698e0b8b50a91b79e85ce559a5861e1b3a1f8b54feb3269e8683dbd7ac2614be"
+        },
+        {
+          "id": "art_6",
+          "titre": "Information de l'autorité compétente",
+          "texte": "Information de l'autorité compétente\nSi les résultats de l'appréciation visée à l'article 3, paragraphe 2, révèlent un risque concernant la\nsécurité ou la santé des travailleurs, les employeurs mettent à la disposition de l'autorité compétente,\nsur demande, des informations appropriées sur:\na) les activités et/ou les procédés industriels mis en œuvre, y compris les raisons pour\nlesquelles des agents cancérigènes ou mutagènes sont utilisés;\nb) les quantités fabriquées ou utilisées de substances ou préparations qui contiennent des\nagents cancérigènes ou mutagènes;\nc) le nombre de travailleurs exposés;\nd) les mesures de prévention prises;\ne) le type d'équipement de protection à utiliser;\nf) la nature et le degré de l'exposition;\ng) le cas de substitution.",
+          "validite": {
+            "valid_from": "2005-01-06",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "12ed57c52f856aa4e074e54b15a17f6169b68af81c03a2371bd8fb486f9a43fc"
+        },
+        {
+          "id": "art_7",
+          "titre": "Exposition imprévisible",
+          "texte": "Exposition imprévisible\n1. En cas d'événements imprévisibles ou d'accidents susceptibles d'entraîner une exposition\nanormale des travailleurs, l'employeur en informe les travailleurs.\n\n30.4.2004 FR Journal officiel de l’Union européenne L 158/ 62\n_______________________________________________________________________________\n2. Jusqu'au rétablissement normal de la situation et tant que les causes de l'exposition\nanormale ne sont pas éliminées:\na) seuls les travailleurs indispensables pour l'exécution des réparations et d'autres\ntravaux nécessaires sont autorisés à travailler dans la zone touchée;\nb) un vêtement de protection et un équipement individuel de protection respiratoire sont\nmis à la disposition des travailleurs concernés et doivent être portés par ceux-ci;\nl'exposition ne peut pas être permanente et est limitée au strict nécessaire pour\nchaque travailleur;\nc) les travailleurs non protégés ne sont pas autorisés à travailler dans la zone touchée.",
+          "validite": {
+            "valid_from": "2005-01-06",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "b011a705b691e9abbbf14be0b9d1fc22faf1454fbe3103459f1d889535712690"
+        },
+        {
+          "id": "art_8",
+          "titre": "Exposition prévisible",
+          "texte": "Exposition prévisible\n1. Pour certaines activités telles que l'entretien, pour lesquelles la possibilité d'une\naugmentation sensible de l'exposition est prévisible et à l'égard desquelles toutes les\npossibilités de prendre d'autres mesures techniques de prévention afin de limiter cette\nexposition sont déjà épuisées, l'employeur détermine, après consultation des travailleurs\net/ou de leurs représentants dans l'entreprise ou l'établissement, sans préjudice de la\nresponsabilité de l'employeur, les mesures nécessaires pour réduire le plus possible la\ndurée d'exposition des travailleurs et pour assurer leur protection durant ces activités.\nEn application du premier alinéa, un vêtement de protection et un équipement individuel de\nprotection respiratoire sont mis à la disposition des travailleurs concernés et doivent être\nportés par ceux-ci aussi longtemps que l'exposition anormale persiste; celle-ci ne peut pas\nêtre permanente et est limitée au strict nécessaire pour chaque travailleur.\n\n30.4.2004 FR Journal officiel de l’Union européenne L 158/ 63\n_______________________________________________________________________________\n2. Les mesures appropriées sont prises pour que les zones où se déroulent les activités visées\nau paragraphe 1, premier alinéa, soient clairement délimitées et signalées ou pour qu'il soit\névité par d'autres moyens que des personnes non autorisées accèdent à ces lieux.",
+          "validite": {
+            "valid_from": "2005-01-06",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "632ddc0960648e9cb7933762b997ce71efd17bc720ea8647f45c75b93969346e"
+        },
+        {
+          "id": "art_9",
+          "titre": "Accès aux zones de risque",
+          "texte": "Accès aux zones de risque\nLes mesures appropriées sont prises par les employeurs pour que les zones où se déroulent les\nactivités pour lesquelles les résultats de l'appréciation visée à l'article 3, paragraphe 2, révèlent un\nrisque concernant la sécurité ou la santé des travailleurs ne puissent être accessibles aux travailleurs\nautres que ceux qui, en raison de leur travail ou de leur fonction, sont amenés à y pénétrer.",
+          "validite": {
+            "valid_from": "2005-01-06",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "beaf37da8f1d8b0d26b21b002754b40ed46c3cef9b7cea6d9599ee432403609a"
+        },
+        {
+          "id": "art_10",
+          "titre": "Mesures d'hygiène et de protection individuelle",
+          "texte": "Mesures d'hygiène et de protection individuelle\n1. Les employeurs sont tenus, pour toutes les activités pour lesquelles il existe un risque de\ncontamination par des agents cancérigènes ou mutagènes, de prendre des mesures\nappropriées aux fins suivantes:\na) faire en sorte que les travailleurs ne mangent pas, ne boivent pas et ne fument pas\ndans les zones de travail où il existe un risque de contamination par des agents\ncancérigènes ou mutagènes;\nb) fournir aux travailleurs des vêtements de protection appropriés ou d'autres vêtements\nparticuliers appropriés;\n\n30.4.2004 FR Journal officiel de l’Union européenne L 158/ 64\n_______________________________________________________________________________\nc) prévoir des emplacements séparés pour le rangement des vêtements de travail ou de\nprotection, d'une part, et des vêtements de ville, d'autre part;\nd) mettre à la disposition des travailleurs des sanitaires et des salles d'eau appropriés et\nadéquats;\ne) placer correctement les équipements de protection dans un endroit déterminé et\nvérifier et nettoyer ceux-ci si possible avant et, en tout cas, après chaque utilisation;\nf) réparer ou remplacer les équipements de protection défectueux avant une nouvelle\nutilisation.\n2. Le coût des mesures visées au paragraphe 1 ne peut pas être mis à la charge des\ntravailleurs.",
+          "validite": {
+            "valid_from": "2005-01-06",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "fcd8259a82bd8bbc04c3ff33ecc0b5634b86ed4d771efc44193db2f074cefbca"
+        },
+        {
+          "id": "art_11",
+          "titre": "Information et formation des travailleurs",
+          "texte": "Information et formation des travailleurs\n1. L'employeur prend les mesures appropriées pour que les travailleurs et/ou leurs\nreprésentants dans l'entreprise ou l'établissement reçoivent une formation à la fois\nsuffisante et adéquate, sur la base de tous les renseignements disponibles, notamment sous\nforme d'informations et d'instructions, concernant:\na) les risques potentiels pour la santé, y compris les risques additionnels dus à la\nconsommation du tabac,\nb) les précautions à prendre pour prévenir l'exposition,\n\n30.4.2004 FR Journal officiel de l’Union européenne L 158/ 65\n_______________________________________________________________________________\nc) les prescriptions en matière d'hygiène,\nd) le port et l'emploi des équipements et des vêtements de protection,\ne) les mesures à prendre par les travailleurs, notamment par le personnel d'intervention,\nen cas d'incident et pour la prévention d'incidents.\nCette formation doit:\nêtre adaptée à l'évolution des risques et à l'apparition de risques nouveaux,\nêtre répétée périodiquement si nécessaire.\n2. Les employeurs sont tenus d'informer les travailleurs sur les installations et leurs récipients\nannexes contenant des agents cancérigènes ou mutagènes, de veiller à ce que tous les\nrécipients, emballages et installations contenant des agents cancérigènes ou mutagènes\nsoient étiquetés de manière claire et lisible, et d'exposer des signaux de danger bien\nvisibles.",
+          "validite": {
+            "valid_from": "2005-01-06",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "261e9c053eba9350beb0950886f9bbfb8f623989499f1d94bc0c4ed7b17c8a9e"
+        },
+        {
+          "id": "art_12",
+          "titre": "Information des travailleurs",
+          "texte": "Information des travailleurs\nDes mesures appropriées sont prises pour assurer que:\na) les travailleurs et/ou leurs représentants dans l'entreprise ou l'établissement peuvent vérifier\nque les dispositions de la présente directive sont appliquées, ou peuvent être associés à\ncette application en ce qui concerne notamment:\n\n30.4.2004 FR Journal officiel de l’Union européenne L 158/ 66\n_______________________________________________________________________________\ni) les conséquences sur la sécurité et la santé des travailleurs, liées aux choix, au port et\nà l'utilisation des vêtements et des équipements de protection, sans préjudice des\nresponsabilités de l'employeur pour déterminer l'efficacité des vêtements et des\néquipements de protection;\nii) les mesures déterminées par l'employeur, visées à l'article 8, paragraphe 1, premier\nalinéa, sans préjudice des responsabilités de l'employeur pour déterminer ces\nmesures;\nb) les travailleurs et/ou leurs représentants dans l'entreprise ou l'établissement sont informés\nle plus rapidement possible d'expositions anormales, y compris celles visées à l'article 8, de\nleurs causes et des mesures prises ou à prendre pour remédier à la situation;\nc) l'employeur tient une liste actualisée des travailleurs employés aux activités pour lesquelles\nles résultats de l'appréciation visée à l'article 3, paragraphe 2, révèlent un risque concernant\nla sécurité ou la santé des travailleurs avec indication, si cette information est disponible,\nde l'exposition à laquelle ils ont été soumis;\nd) le médecin et/ou l'autorité compétente ainsi que toute autre personne responsable de la\nsécurité ou de la santé sur le lieu de travail ont accès à la liste visée au point c);\ne) chaque travailleur a accès aux informations contenues dans la liste et le concernant\npersonnellement;\nf) les travailleurs et/ou leurs représentants dans l'entreprise ou l'établissement ont accès aux\ninformations collectives anonymes.\n\n30.4.2004 FR Journal officiel de l’Union européenne L 158/ 67\n_______________________________________________________________________________",
+          "validite": {
+            "valid_from": "2005-01-06",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "dcf602d4a74be100bb50209d8f44b4abec8b32cb565aa5943e404537198af3bc"
+        },
+        {
+          "id": "art_13",
+          "titre": "Consultation et participation des travailleurs",
+          "texte": "Consultation et participation des travailleurs\nLa consultation et la participation des travailleurs et/ou de leurs représentants ont lieu\nconformément à l'article 11 de la directive 89/391/CEE sur les matières couvertes par la présente\ndirective.\nCHAPITRE III\nDISPOSITIONS DIVERSES",
+          "validite": {
+            "valid_from": "2005-01-06",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "c7cc7b499b9630fdbe309d7f7ecd297479eac09e4db55f4a71d47cf90c835351"
+        },
+        {
+          "id": "art_14",
+          "titre": "Surveillance médicale",
+          "texte": "Surveillance médicale\n1. Des mesures pour assurer la surveillance appropriée de la santé des travailleurs pour\nlesquels les résultats de l'appréciation visée à l'article 3, paragraphe 2, révèlent un risque\nconcernant leur sécurité ou leur santé sont fixées par les États membres, conformément aux\nlégislations et/ou pratiques nationales.\n2. Les mesures visées au paragraphe 1 sont telles que chaque travailleur doit pouvoir faire\nl'objet, si cela est approprié, d'une surveillance médicale adéquate:\navant l'exposition;\nà intervalles réguliers ensuite.\n\n30.4.2004 FR Journal officiel de l’Union européenne L 158/ 68\n_______________________________________________________________________________\nCes mesures sont telles qu'il est directement possible d'appliquer des mesures de médecine\nindividuelles et de médecine du travail.\n3. S'il s'avère qu'un travailleur est atteint d'une anomalie pouvant résulter d'une exposition à\ndes agents cancérigènes ou mutagènes, le médecin ou l'autorité responsable de la\nsurveillance médicale des travailleurs peut exiger que d'autres travailleurs ayant subi une\nexposition analogue fassent l'objet d'une surveillance médicale.\nDans ce cas, il est procédé à une nouvelle évaluation du risque d'exposition conformément\nà l'article 3, paragraphe 2.\n4. Lorsqu'une surveillance médicale est assurée, il est tenu un dossier médical individuel et le\nmédecin ou l'autorité responsable de la surveillance médicale propose toute mesure\nindividuelle de protection ou de prévention à prendre à l'égard de tout travailleur.\n5. Des renseignements et des conseils doivent être donnés aux travailleurs concernant toute\nsurveillance médicale dont ils peuvent faire l'objet après la fin de l'exposition.\n6. Conformément aux législations et/ou pratiques nationales:\nles travailleurs ont accès aux résultats de la surveillance médicale les concernant, et\nles travailleurs concernés ou l'employeur peuvent demander une révision des résultats de la\nsurveillance médicale.\n7. Des recommandations pratiques en vue de la surveillance médicale des travailleurs figurent\nà l'annexe II.\n\n30.4.2004 FR Journal officiel de l’Union européenne L 158/ 69\n_______________________________________________________________________________\n8. Tous les cas de cancers qui ont été identifiés, conformément aux législations et/ou\npratiques nationales, comme résultant de l'exposition à un agent cancérigène ou mutagène\npendant le travail doivent être notifiés à l'autorité responsable.",
+          "validite": {
+            "valid_from": "2005-01-06",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "107e46a41055bf378cec47777b876f18071b29b30ca5de7bb7afac095660d7a4"
+        },
+        {
+          "id": "art_15",
+          "titre": "Tenue de dossiers",
+          "texte": "Tenue de dossiers\n1. La liste visée à l'article 12, point c), et le dossier médical visé à l'article 14, paragraphe 4,\nsont conservés pendant au moins quarante ans après la fin de l'exposition, conformément\naux législations et/ou pratiques nationales.\n2. Au cas où l'entreprise cesse ses activités, ces documents sont mis à la disposition de\nl'autorité responsable, conformément aux législations et/ou pratiques nationales.",
+          "validite": {
+            "valid_from": "2005-01-06",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "10f0cd1525f292d6654b2090c7652725d296f03e8a6f89c9251780ff9daae843"
+        },
+        {
+          "id": "art_16",
+          "titre": "Valeurs limites",
+          "texte": "Valeurs limites\n1. Sur la base des informations disponibles, y compris des données scientifiques et\ntechniques, le Conseil arrête par voie de directives, conformément à la procédure prévue à\nl'article 137, paragraphe 2, du traité, des valeurs limites en ce qui concerne tous les agents\ncancérigènes ou mutagènes pour lesquels cela est possible et, si nécessaire, d'autres\ndispositions directement connexes.\n2. Les valeurs limites et les autres dispositions directement connexes figurent à l'annexe III.\n\n30.4.2004 FR Journal officiel de l’Union européenne L 158/ 70\n_______________________________________________________________________________",
+          "validite": {
+            "valid_from": "2005-01-06",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "b79f99cda3e7989989c250e2e878e8616c34a4fd6dd9b63d0399fd0bc97a89bc"
+        },
+        {
+          "id": "art_17",
+          "titre": "Annexes",
+          "texte": "Annexes\n1. Les annexes I et III ne peuvent être modifiées que conformément à la procédure prévue à\nl'article 137, paragraphe 2, du traité.\n2. Les adaptations de nature strictement technique de l'annexe II en fonction du progrès\ntechnique, de l'évolution de réglementations ou spécifications internationales et des\nconnaissances dans le domaine des agents cancérigènes ou mutagènes sont arrêtées selon la\nprocédure prévue à l'article 17 de la directive 89/391/CEE.",
+          "validite": {
+            "valid_from": "2005-01-06",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "4a485443acc9260fe3de4721baec0182d1d939c94483c468f669a367ddc69b22"
+        },
+        {
+          "id": "art_18",
+          "titre": "Exploitation de données",
+          "texte": "Exploitation de données\nLes exploitations effectuées par les autorités responsables nationales sur la base des informations\nvisées à l'article 14, paragraphe 8, sont tenues à la disposition de la Commission.",
+          "validite": {
+            "valid_from": "2005-01-06",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "e050a157dbb7850f338ea72e935825eb989e2e5b1a2558a3a7724dbd2395e9a7"
+        },
+        {
+          "id": "art_19",
+          "titre": "Information de la Commission",
+          "texte": "Information de la Commission\nLes États membres communiquent à la Commission le texte des dispositions de droit interne qu’ils\nadoptent dans le domaine régi par la présente directive.\n\n30.4.2004 FR Journal officiel de l’Union européenne L 158/ 71\n_______________________________________________________________________________",
+          "validite": {
+            "valid_from": "2005-01-06",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "559aba41f317cb4f4f4805f406698ac4a258092c6d8b6617a8992d647cbca63b"
+        },
+        {
+          "id": "art_20",
+          "titre": "Abrogation",
+          "texte": "Abrogation\nLa directive 90/394/CEE, telle que modifiée par les directives visées à l'annexe IV, partie A, de la\nprésente directive est abrogée, sans préjudice des obligations des États membres en ce qui concerne\nles délais de transposition en droit national des directives indiqués à l'annexe IV, partie B, de la\nprésente directive.\nLes références faites à la directive abrogée s'entendent comme faites à la présente directive et sont à\nlire selon le tableau de correspondance figurant à l'annexe V.",
+          "validite": {
+            "valid_from": "2005-01-06",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "448a2986964f99eadc7f0630e01b9ec603e2ffcb6ccd1054570f5f6693109178"
+        },
+        {
+          "id": "art_21",
+          "titre": "Entrée en vigueur",
+          "texte": "Entrée en vigueur\nLa présente directive entre en vigueur le vingtième jour suivant celui de sa publication au Journal\nofficiel de l’Union européenne.",
+          "validite": {
+            "valid_from": "2005-01-06",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "05b98a8dab15614cb046f1355ea76e273934dd3fb041c0fa1c60a46d21aabf06"
+        },
+        {
+          "id": "art_22",
+          "titre": "Destinataires",
+          "texte": "Destinataires\nLes États membres sont destinataires de la présente directive.\nFait à Strasbourg, le 29 avril 2004.\nPar le Parlement européen Par le Conseil\nLe président Le président\nP. COX M. McDOWELL\n\n30.4.2004 FR Journal officiel de l’Union européenne L 158/ 72\n_______________________________________________________________________________\nANNEXE I\nListe de substances, préparations et procédés\n(article 2, point a), iii))\n1. Fabrication d'auramine.\n2. Travaux exposant aux hydrocarbures polycycliques aromatiques présents dans la suie de\nhouille, le goudron de houille ou la poix de houille.\n3. Travaux exposant aux poussières, fumées ou brouillards produits lors du grillage et de\nl'électroraffinage des mattes de nickel.\n4. Procédé à l'acide fort dans la fabrication d'alcool isopropylique.\n5. Travaux exposant aux poussières de bois durs1.\n1 Une liste de certains bois durs figure dans le tome 62 des monographies sur l'évaluation des\nrisques de cancérogénicité pour l'homme intitulés «Wood Dust and Formaldehyde» (poussière\nde bois et formaldéhyde), publiées par le Centre international de recherche sur le cancer, Lyon\n1995.\n\n30.4.2004 FR Journal officiel de l’Union européenne L 158/ 73\n_______________________________________________________________________________\nANNEXE II\nRecommandations pratiques en vue de la surveillance médicale des travailleurs\n(article 14, paragraphe 7)\n1. Le médecin et/ou l'autorité responsable de la surveillance médicale des travailleurs exposés\nà des agents cancérigènes ou mutagènes doivent bien connaître les conditions ou\ncirconstances de l'exposition de chaque travailleur.\n2. La surveillance médicale des travailleurs doit être assurée conformément aux principes et\npratiques de la médecine du travail; elle doit inclure au moins les mesures suivantes:\nenregistrement des antécédents médicaux et professionnels de chaque travailleur,\nentretien personnel,\nsi approprié, surveillance biologique ainsi que dépistage des effets précoces et réversibles.\nD'autres épreuves peuvent être décidées pour chaque travailleur soumis à une surveillance\nmédicale, à la lumière des derniers acquis de la médecine du travail.\n\n30.4.2004 FR Journal officiel de l’Union européenne L 158/ 74\n_______________________________________________________________________________\nANNEXE III\nValeurs limites et autres dispositions directement connexes\n(article 16)\nA. VALEURS LIMITES D'EXPOSITION PROFESSIONNELLE\nDénomination Einecs(1) CAS(2) Valeurs limites Observations Mesures\nmg/m³(3) ppm(4) transitoires\nBenzène 200-753-7 71-43-2 3,25(5) 1(5) Peau(6) Valeur limite:\n3 ppm\n(= 9,75 mg/m3)\njusqu' au 27 juin\n2003\nChlorure de 200-831 75-01-4 7,77(5) 3(5) — —\nvinyle\nmonomère\nPoussières de — — 5,00(5)(7) — — —\nbois durs\nB. AUTRES DISPOSITIONS DIRECTEMENT CONNEXES\np. m.\n1 Einecs: Inventaire européen des produits chimiques commercialisés (European Inventory of\nExisting Chemical Substances).\n2 CAS: numéro du Chemical Abstract Service.\n3 mg/m3 = milligrammes par mètre cube d'air à 20 °C et 101,3 kPa (760 mm de pression de\nmercure).\n4 ppm = parties par million en volume dans l'air (ml/m3).\n5 Mesurées ou calculées par rapport à une période de référence de huit heures.\n6 Une pénétration cutanée s’ajoutant à l’inhalation réglementée est possible.\n7 Fraction inhalable; si les poussières de bois durs sont mélangées à d'autres poussières de bois,\nla valeur limite s'applique à toutes les poussières de bois présentes dans le mélange.\n\n30.4.2004 FR Journal officiel de l’Union européenne L 158/ 75\n_______________________________________________________________________________\nANNEXE IV\nPartie A\nDirective abrogée avec ses modifications successives\n(visées à l’article 20)\nDirective 90/394/CEE du Conseil (JO L 196 du 26.7.1990, p. 1)\nDirective 97/42/CE du Conseil (JO L 179 du 8.7.1997, p. 4)\nDirective 1999/38/CE du Conseil (JO L 138 du 1.6.1999, p. 66)\nPartie B\nDélais de transposition en droit national\n(visés à l’article 20)\nDirective Date limite de transposition\n90/394/CEE 31 décembre 1992\n97/42/CE 27 juin 2000\n1999/38/CE 29 avril 2003\n\n30.4.2004 FR Journal officiel de l’Union européenne L 158/ 76\n_______________________________________________________________________________\nANNEXE V\nTABLEAU DE CORRESPONDANCE\nDirective 90/394/CEE Présente directive",
+          "validite": {
+            "valid_from": "2005-01-06",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "4dc2e3557569f89df93bf2fac626a69f9fb566a766d5f560a5393f447b03212d"
+        },
+        {
+          "id": "art_2",
+          "titre": ", point b) Article 2, point c)",
+          "texte": "Articles 3 à 9 Articles 3 à 9",
+          "validite": {
+            "valid_from": "2005-01-06",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "d06ab76a53b8c2f725a66b0e6f40149a596a98965e2dd6c018ab93fdbf940c21"
+        },
+        {
+          "id": "art_10",
+          "titre": ", par. 1, point b), premier membre Article 10, par. 1, point b)",
+          "texte": "de phrase",
+          "validite": {
+            "valid_from": "2005-01-06",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "e903ddc57d54af7fbef09031978d9e96a3febff3ce788da3d52ca5ed767cdc8b"
+        },
+        {
+          "id": "art_10",
+          "titre": ", par. 1, point b), deuxième Article 10, par. 1, point c)",
+          "texte": "membre de phrase",
+          "validite": {
+            "valid_from": "2005-01-06",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "90c30e716491df1a1cfb9d7d41276d2dce397a9346749ade95b00d615cc2c4df"
+        },
+        {
+          "id": "art_10",
+          "titre": ", par. 1, point d), premier et Article 10, par. 1, point e)",
+          "texte": "deuxième membre de phrase",
+          "validite": {
+            "valid_from": "2005-01-06",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "747b4ccd900fdfe04be03c62b233f1f7edb4f525b2699fb6e0ad1b255868cca7"
+        },
+        {
+          "id": "art_10",
+          "titre": ", par. 1, point d), troisième Article 10, par. 1, point f)",
+          "texte": "membre de phrase",
+          "validite": {
+            "valid_from": "2005-01-06",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "90c30e716491df1a1cfb9d7d41276d2dce397a9346749ade95b00d615cc2c4df"
+        },
+        {
+          "id": "art_10",
+          "titre": ", par. 2 Article 10, par. 2",
+          "texte": "Articles 11 à 18 Articles 11 à 18",
+          "validite": {
+            "valid_from": "2005-01-06",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "fa53d37fdeb8640f0d69299fdbe7476d6478167019479eec08c7523f9b6a5996"
+        },
+        {
+          "id": "art_19",
+          "titre": ", par. 2 Article 19",
+          "texte": "–––––––– Article 20\n–––––––– Article 21",
+          "validite": {
+            "valid_from": "2005-01-06",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "1b1992b07b9c864c7e75fdb2aea2045d85214461b2343e467d6aab67014849d7"
+        },
+        {
+          "id": "art_20",
+          "titre": "Article 22",
+          "texte": "Annexe I\nAnnexe I\nAnnexe II Annexe II\nAnnexe III Annexe III\n–––––––– Annexe IV\n–––––––– Annexe V\n_______________",
+          "validite": {
+            "valid_from": "2005-01-06",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "16270e6dc6e7272a888638540d1fac012bf1763a4d1fe93033231e4fa6f6c889"
+        }
+      ]
+    }
+  ],
+  "textes_lies": [],
+  "hash_document": "6cf4ae1f1dcacd89e24a1ef531518f0898a7fd937e1710c6cff6dd7297f0a7ad",
+  "date_indexation": null,
+  "metadonnees_supplementaires": {}
+}
