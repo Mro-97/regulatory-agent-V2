@@ -359,6 +359,58 @@ class Orchestrateur:
                 logger.warning("Agent Temporal échoué, ignoré : %s", exc)
 
         # ----------------------------------------------------------
+        # Mode real — Étape 2b : Détection de conflit (si applicable)
+        # ----------------------------------------------------------
+        if type_pipeline == "conflit" and len(evidences) >= 2:
+            try:
+                from src.agents.conflit import AgentConflit
+                # use_llm=False par défaut — DeepSeek-R1 14B réservé
+                # aux cas critiques confirmés par un opérateur
+                agent_conflit = AgentConflit(use_llm=False)
+                resultat_conflit = agent_conflit.analyser(
+                    question=requete.question,
+                    evidences=evidences,
+                    date_ref=requete.date_contexte,
+                )
+                agents_executes.append(SortieAgent(
+                    nom_agent="Conflict",
+                    machine="Mac_A",
+                    contenu={
+                        "niveau_global": resultat_conflit.niveau_global.value,
+                        "conflits_detectes": len(resultat_conflit.conflits),
+                        "mode": resultat_conflit.mode,
+                    },
+                ))
+                # Soumettre à validation humaine si conflit probable/critique
+                if resultat_conflit.necessite_validation_humaine:
+                    from src.models import TacheValidation, TypeFilePendante
+                    tache_conflit = TacheValidation(
+                        type_file=TypeFilePendante.LIENS,
+                        request_id=request_id,
+                        contenu={
+                            "question": requete.question,
+                            "conflits": [
+                                {
+                                    "doc_a": c.evidence_a.document_id,
+                                    "art_a": c.evidence_a.article_id,
+                                    "doc_b": c.evidence_b.document_id,
+                                    "art_b": c.evidence_b.article_id,
+                                    "niveau": c.niveau.value,
+                                    "description": c.description,
+                                }
+                                for c in resultat_conflit.conflits
+                            ],
+                        },
+                    )
+                    await self._enregistrer_tache_redis(tache_conflit)
+                    logger.warning(
+                        "Conflit %s soumis à validation humaine.",
+                        resultat_conflit.niveau_global.value,
+                    )
+            except Exception as exc:
+                logger.warning("Agent Conflict échoué, ignoré : %s", exc)
+
+        # ----------------------------------------------------------
         # Mode real — Étape 3 : Explication
         # ----------------------------------------------------------
         try:
@@ -379,7 +431,7 @@ class Orchestrateur:
         # ----------------------------------------------------------
         try:
             from src.agents.citation import AgentCitation
-            agent_citation = AgentCitation(use_llm=False)
+            agent_citation = AgentCitation(use_llm=True)
             resultat_citation = agent_citation.generate(evidences=evidences)
             agents_executes.append(SortieAgent(
                 nom_agent="Citation",
@@ -564,14 +616,25 @@ class Orchestrateur:
 
     async def _persister_audit(self, audit: EnregistrementAudit) -> None:
         """
-        Persiste l'enregistrement d'audit.
-        Phase 1 : log structuré.
-        Phase 2 (TODO) : INSERT PostgreSQL sur Mac C.
+        Persiste l'enregistrement d'audit via src/audit.py.
+        Phase 1 : JSONL local. Phase 2 : PostgreSQL sur Mac C.
         """
-        logger.info(
-            "AUDIT request_id=%s hash=%s agents=%s confiance=%s",
-            audit.request_id,
-            (audit.hash_courant or "")[:16],
-            [a.nom_agent for a in audit.agents_executes],
-            audit.niveau_confiance.value,
-        )
+        try:
+            from src.audit import obtenir_gestionnaire
+            gestionnaire = await obtenir_gestionnaire()
+            hash_courant = await gestionnaire.persister(audit)
+            logger.info(
+                "AUDIT request_id=%s hash=%s agents=%s confiance=%s",
+                audit.request_id,
+                hash_courant[:16],
+                [a.nom_agent for a in audit.agents_executes],
+                audit.niveau_confiance.value,
+            )
+        except Exception as exc:
+            logger.error("Audit échoué (non bloquant) : %s", exc)
+            logger.info(
+                "AUDIT (log only) request_id=%s agents=%s confiance=%s",
+                audit.request_id,
+                [a.nom_agent for a in audit.agents_executes],
+                audit.niveau_confiance.value,
+            )
