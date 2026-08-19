@@ -6,6 +6,7 @@ Usage:
 """
 
 import argparse
+import gc
 import json
 import logging
 import sys
@@ -99,59 +100,68 @@ class Ingester:
 
         return chunks
     
-    def ingest_json(self, json_path: Path) -> None:
-        """Ingère un fichier JSON dans Qdrant."""
+    def ingest_json(self, json_path: Path, batch_size: int = 50) -> None:
+        """Ingere un fichier JSON dans Qdrant par lots."""
+        import gc
+        from qdrant_client.models import PointStruct
+
         with open(json_path, "r", encoding="utf-8") as f:
             data = json.load(f)
 
-        # Valider avec Pydantic
-        # Gerer les fichiers contenant une liste de documents
-        if isinstance(data, list):
-            for item in data:
-                doc = DocumentReglementaire(**item)
-                chunks = self.chunk_document(doc)
-                if not chunks:
-                    continue
-                vectors = [self.embed_chunk(c.texte_chunk) for c in chunks]
-                points = [PointStruct(id=str(uuid.uuid4()), vector=v, payload={
-                    "chunk_id": c.chunk_id, "document_id": c.document_id,
-                    "chapitre_id": c.chapitre_id, "article_id": c.article_id,
-                    "source": c.source.value, "themes": c.themes,
-                    "valid_from": c.valid_from.isoformat(),
-                    "valid_to": c.valid_to.isoformat() if c.valid_to else None,
-                    "texte_chunk": c.texte_chunk, "position_dans_article": c.position_dans_article,
-                }) for c, v in zip(chunks, vectors)]
-                self.client.upsert(collection_name=self.collection_name, points=points, wait=True)
-                logger.info(f"✅ {len(chunks)} chunks indexés pour {doc.id}")
-            return
-        doc = DocumentReglementaire(**data)
-        logger.info(f"📄 Document chargé : {doc.id} - {doc.titre}")
+        documents = data if isinstance(data, list) else [data]
+        total_ingeres = 0
 
-        # Chunker
-        chunks = self.chunk_document(doc)
-        logger.info(f"🧩 {len(chunks)} chunks générés")
+        for data_item in documents:
+            try:
+                doc = DocumentReglementaire(**data_item)
+            except Exception as e:
+                logger.error(f"Erreur validation : {e}")
+                continue
 
-        # Embedder et indexer
-        points = []
-        for chunk in chunks:
-            vector = self.embed_chunk(chunk.texte_chunk)
-            point = PointStruct(
-                id=chunk.chunk_id,
-                vector=vector,
-                payload=chunk.model_dump(mode="json")
-            )
-            points.append(point)
+            chunks = self.chunk_document(doc)
+            if not chunks:
+                continue
 
-        if not points:
-            logger.warning("Aucun point à indexer")
-            return
+            logger.info(f"Document : {doc.id} — {len(chunks)} chunks")
 
-        # Upsert dans Qdrant
-        self.client.upsert(
-            collection_name=self.collection_name,
-            points=points,
-        )
-        logger.info(f"✅ {len(points)} chunks indexés dans Qdrant")
+            for i in range(0, len(chunks), batch_size):
+                lot = chunks[i:i + batch_size]
+                points = []
+                for chunk in lot:
+                    try:
+                        vecteur = self.embed_chunk(chunk.texte_chunk)
+                        points.append(PointStruct(
+                            id=str(uuid.uuid4()),
+                            vector=vecteur,
+                            payload={
+                                "chunk_id": chunk.chunk_id,
+                                "document_id": chunk.document_id,
+                                "chapitre_id": chunk.chapitre_id,
+                                "article_id": chunk.article_id,
+                                "source": chunk.source.value,
+                                "themes": chunk.themes,
+                                "valid_from": chunk.valid_from.isoformat(),
+                                "valid_to": chunk.valid_to.isoformat() if chunk.valid_to else None,
+                                "texte_chunk": chunk.texte_chunk,
+                                "position_dans_article": chunk.position_dans_article,
+                            }
+                        ))
+                    except Exception as e:
+                        logger.error(f"Erreur embedding : {e}")
+                        continue
+
+                if points:
+                    try:
+                        self.client.upsert(collection_name=self.collection_name, points=points, wait=True)
+                        total_ingeres += len(points)
+                        logger.info(f"  Lot {i//batch_size+1} : {len(points)} chunks ({total_ingeres} total)")
+                    except Exception as e:
+                        logger.error(f"Erreur upsert : {e}")
+
+                del points, lot
+                gc.collect()
+
+        logger.info(f"Ingestion terminee : {total_ingeres} chunks")
 
 
 def main():
@@ -159,10 +169,11 @@ def main():
     parser.add_argument("--json", required=True, help="Chemin vers le fichier JSON")
     parser.add_argument("--collection", default="regulatory_chunks", help="Nom de la collection Qdrant")
     parser.add_argument("--recreate", action="store_true", help="Recréer la collection")
+    parser.add_argument("--batch-size", type=int, default=50, help="Taille des lots")
     args = parser.parse_args()
 
     ingester = Ingester(collection_name=args.collection, recreate=args.recreate)
-    ingester.ingest_json(Path(args.json))
+    ingester.ingest_json(Path(args.json), batch_size=args.batch_size)
 
 
 if __name__ == "__main__":
