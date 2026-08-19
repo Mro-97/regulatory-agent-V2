@@ -16,3 +16,13 @@ logs/
 # Exclure les données brutes sauf les fichiers de test
 data/raw/*
 !data/raw/test_*.json
+
+# Fichiers temporaires téléchargement Qdrant
+qdrant.tar.gz
+storage/
+.qdrant-initialized
+test.pdf
+models/
+.env
+data/qdrant_storage/
+qdrant
