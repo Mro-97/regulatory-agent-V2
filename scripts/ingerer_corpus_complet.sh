@@ -267,12 +267,5 @@ echo ""
 echo "════════════════════════════════════════════════"
 echo "  Ingestion terminée"
 echo "  Vérification Qdrant :"
-python3 -c "
-import sys; sys.path.insert(0,'.')
-from config import cfg
-from qdrant_client import QdrantClient
-c = QdrantClient(host=cfg.qdrant_host, port=cfg.qdrant_port)
-info = c.get_collection(cfg.qdrant_collection)
-print(f'  Chunks indexés : {info.points_count}')
-"
+echo "  Vérification : connectez-vous sur mini-1 et lancez : python3 -c \"from qdrant_client import QdrantClient; c=QdrantClient(host='127.0.0.1',port=6335); print(c.get_collection('regulatory_chunks').points_count)\""
 echo "════════════════════════════════════════════════"
