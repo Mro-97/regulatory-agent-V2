@@ -200,7 +200,7 @@ class Watcher:
                 follow_redirects=True,
                 headers={
                     "User-Agent": (
-                        "RegulatoryAgentV2/0.1 (veille réglementaire locale; "
+                        "RegulatoryAgentV2/0.1 (veille reglementaire locale; "
                         "contact: admin@regulatory-agent.local)"
                     )
                 },
