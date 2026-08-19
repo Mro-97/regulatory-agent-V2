@@ -13,7 +13,7 @@ from pathlib import Path
 import uuid
 from datetime import date
 from typing import List, Optional
-import mlx_embedding_models  # ou mlx_embeddings selon l'installation
+import mlx_embeddings
 from qdrant_client import QdrantClient
 from qdrant_client.models import VectorParams, Distance, PointStruct
 
@@ -63,27 +63,42 @@ class Ingester:
         return list(vecteur)
 
     def chunk_document(self, doc: DocumentReglementaire) -> List[MetadonneesChunk]:
-        """Découpe un document en chunks (un par article)."""
+        """Découpe un document en chunks de 700 caractères avec chevauchement de 50."""
         chunks = []
+        TAILLE = 700
+        CHEVAUCHEMENT = 50
+
         for chapitre in doc.chapitres:
             for article in chapitre.articles:
-                # On peut aussi découper l'article en plusieurs chunks si trop long
-                # Ici on prend tout le texte comme un chunk
-                chunk = MetadonneesChunk(
-                    chunk_id=str(uuid.uuid4()),
-                    document_id=doc.id,
-                    chapitre_id=chapitre.id,
-                    article_id=article.id,
-                    source=doc.source,
-                    themes=doc.themes,
-                    valid_from=article.validite.valid_from,
-                    valid_to=article.validite.valid_to,
-                    texte_chunk=article.texte,
-                    position_dans_article=0,
-                )
-                chunks.append(chunk)
-        return chunks
+                texte = article.texte or ""
+                if not texte.strip():
+                    continue
 
+                # Découpage en chunks avec chevauchement
+                debut = 0
+                position = 0
+                while debut < len(texte):
+                    fin = min(debut + TAILLE, len(texte))
+                    morceau = texte[debut:fin].strip()
+                    if morceau:
+                        chunk_id = f"{doc.id}_{article.id}_{position}"
+                        chunks.append(MetadonneesChunk(
+                            chunk_id=str(uuid.uuid4()),
+                            document_id=doc.id,
+                            chapitre_id=chapitre.id,
+                            article_id=article.id,
+                            source=doc.source,
+                            themes=doc.themes,
+                            valid_from=article.validite.valid_from,
+                            valid_to=article.validite.valid_to,
+                            texte_chunk=morceau,
+                            position_dans_article=position,
+                        ))
+                        position += 1
+                    debut += TAILLE - CHEVAUCHEMENT
+
+        return chunks
+    
     def ingest_json(self, json_path: Path) -> None:
         """Ingère un fichier JSON dans Qdrant."""
         with open(json_path, "r", encoding="utf-8") as f:
