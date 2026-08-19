@@ -215,7 +215,7 @@ class Orchestrateur:
         from src.agents.temporal import AgentTemporel
 
         # use_llm=False par défaut sur Mac A (16 Go) — activer sur Mac B
-        agent = AgentTemporel(use_llm=False)
+        agent = AgentTemporel(use_llm=True)
         resultat = agent.analyser(
             question=question,
             evidences=evidences,
@@ -254,7 +254,7 @@ class Orchestrateur:
         from src.agents.explainer import AgentExplainer
 
         # use_llm=False par défaut — activer quand Qwen est disponible
-        agent = AgentExplainer(use_llm=False)
+        agent = AgentExplainer(use_llm=True)
         resultat = agent.expliquer(
             question=question,
             evidences=evidences,
@@ -366,7 +366,7 @@ class Orchestrateur:
                 from src.agents.conflit import AgentConflit
                 # use_llm=False par défaut — DeepSeek-R1 14B réservé
                 # aux cas critiques confirmés par un opérateur
-                agent_conflit = AgentConflit(use_llm=False)
+                agent_conflit = AgentConflit(use_llm=True)
                 resultat_conflit = agent_conflit.analyser(
                     question=requete.question,
                     evidences=evidences,
