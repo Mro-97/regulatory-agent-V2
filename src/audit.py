@@ -27,10 +27,13 @@ from pathlib import Path
 from typing import Optional
 from uuid import UUID
 
+from config import cfg
+from src.models import EnregistrementAudit
+
 logger = logging.getLogger(__name__)
 
 # Chemin du fichier JSONL local (fallback si PostgreSQL indisponible)
-CHEMIN_AUDIT_LOCAL = Path(__file__).parent.parent / "data" / "audit.jsonl"
+CHEMIN_AUDIT_LOCAL = Path(cfg.audit_local_path)
 
 # Hash du dernier enregistrement — maintenu en mémoire pour le chaînage
 _hash_precedent: Optional[str] = None
@@ -90,7 +93,14 @@ class GestionnaireAudit:
         """
         Initialise la connexion PostgreSQL et crée la table si nécessaire.
         Si PostgreSQL est indisponible, continue en mode local uniquement.
+
+        Le chaînage reprend au dernier hash connu (PostgreSQL ou JSONL local).
         """
+        global _hash_precedent
+
+        if _hash_precedent is None:
+            _hash_precedent = await asyncio.to_thread(self._charger_dernier_hash_local)
+
         if not self.postgres_dsn:
             logger.info("Audit : mode local uniquement (pas de DSN PostgreSQL).")
             return
@@ -110,7 +120,6 @@ class GestionnaireAudit:
                     "SELECT hash_courant FROM audit_trail ORDER BY id DESC LIMIT 1"
                 )
                 if row:
-                    global _hash_precedent
                     _hash_precedent = row["hash_courant"]
 
             self._postgres_ok = True
@@ -121,7 +130,21 @@ class GestionnaireAudit:
             logger.warning("PostgreSQL indisponible, mode local uniquement : %s", exc)
             self._postgres_ok = False
 
-    async def persister(self, audit) -> str:
+    def _charger_dernier_hash_local(self) -> Optional[str]:
+        """Retourne le dernier hash_courant du fichier JSONL local, ou None."""
+        try:
+            if not CHEMIN_AUDIT_LOCAL.exists():
+                return None
+            lignes = CHEMIN_AUDIT_LOCAL.read_text(encoding="utf-8").strip().splitlines()
+            if not lignes:
+                return None
+            dernier = json.loads(lignes[-1])
+            return dernier.get("hash_courant")
+        except Exception as exc:
+            logger.warning("Lecture du dernier hash local échouée : %s", exc)
+            return None
+
+    async def persister(self, audit: EnregistrementAudit) -> str:
         """
         Persiste un EnregistrementAudit et retourne son hash.
 
@@ -154,16 +177,21 @@ class GestionnaireAudit:
         )
         return hash_courant
 
-    async def _persister_local(self, audit) -> None:
+    async def _persister_local(self, audit: EnregistrementAudit) -> None:
         """Écrit l'enregistrement dans le fichier JSONL local."""
         try:
             ligne = audit.model_dump_json() + "\n"
-            with open(CHEMIN_AUDIT_LOCAL, "a", encoding="utf-8") as f:
-                f.write(ligne)
+            await asyncio.to_thread(self._ecrire_ligne_local, ligne)
         except Exception as exc:
             logger.error("Écriture audit local échouée : %s", exc)
 
-    async def _persister_postgres(self, audit) -> None:
+    def _ecrire_ligne_local(self, ligne: str) -> None:
+        """Écriture synchrone déléguée au threadpool (évite de bloquer l'event loop)."""
+        CHEMIN_AUDIT_LOCAL.parent.mkdir(parents=True, exist_ok=True)
+        with open(CHEMIN_AUDIT_LOCAL, "a", encoding="utf-8") as f:
+            f.write(ligne)
+
+    async def _persister_postgres(self, audit: EnregistrementAudit) -> None:
         """INSERT dans la table audit_trail PostgreSQL."""
         if not self._pool:
             return
@@ -193,7 +221,7 @@ class GestionnaireAudit:
         except Exception as exc:
             logger.error("INSERT audit PostgreSQL échoué : %s", exc)
 
-    async def verifier_integrite(self, limite: int = 100) -> dict:
+    async def verifier_integrite(self, limite: int = 100) -> dict[str, int | list[dict[str, object]]]:
         """
         Vérifie l'intégrité de la chaîne d'audit locale.
 
@@ -206,18 +234,22 @@ class GestionnaireAudit:
         Returns:
             Dict avec total, valides, invalides, et détails des erreurs.
         """
-        from src.models import EnregistrementAudit
-
-        resultats = {"total": 0, "valides": 0, "invalides": 0, "erreurs": []}
+        total = 0
+        valides = 0
+        invalides = 0
+        erreurs: list[dict[str, object]] = []
 
         if not CHEMIN_AUDIT_LOCAL.exists():
-            return resultats
+            return {"total": total, "valides": valides, "invalides": invalides, "erreurs": erreurs}
 
-        lignes = CHEMIN_AUDIT_LOCAL.read_text(encoding="utf-8").strip().splitlines()
-        lignes = lignes[-limite:]
+        def _lire_dernieres_lignes() -> list[str]:
+            lignes = CHEMIN_AUDIT_LOCAL.read_text(encoding="utf-8").strip().splitlines()
+            return lignes[-limite:]
+
+        lignes = await asyncio.to_thread(_lire_dernieres_lignes)
 
         for i, ligne in enumerate(lignes):
-            resultats["total"] += 1
+            total += 1
             try:
                 donnees = json.loads(ligne)
                 hash_attendu = donnees.get("hash_courant")
@@ -225,20 +257,20 @@ class GestionnaireAudit:
                 hash_calcule = audit.calculer_hash()
 
                 if hash_calcule == hash_attendu:
-                    resultats["valides"] += 1
+                    valides += 1
                 else:
-                    resultats["invalides"] += 1
-                    resultats["erreurs"].append({
+                    invalides += 1
+                    erreurs.append({
                         "ligne": i + 1,
                         "request_id": donnees.get("request_id"),
                         "attendu": hash_attendu[:16] if hash_attendu else None,
                         "calcule": hash_calcule[:16],
                     })
             except Exception as exc:
-                resultats["invalides"] += 1
-                resultats["erreurs"].append({"ligne": i + 1, "erreur": str(exc)})
+                invalides += 1
+                erreurs.append({"ligne": i + 1, "erreur": str(exc)})
 
-        return resultats
+        return {"total": total, "valides": valides, "invalides": invalides, "erreurs": erreurs}
 
     async def fermer(self) -> None:
         """Ferme le pool PostgreSQL proprement."""

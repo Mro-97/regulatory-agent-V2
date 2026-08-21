@@ -70,7 +70,7 @@ if __name__ == "__main__":
             app="main:app",
             host=cfg.api_host,
             port=cfg.api_port,
-            workers=1,
+            workers=cfg.api_workers,
             reload=cfg.debug,
             log_level="debug" if cfg.debug else "info",
         )

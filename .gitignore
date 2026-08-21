@@ -6,16 +6,13 @@ __pycache__/
 *.pyo
 .DS_Store
 
-# Data (we keep the structure via .gitkeep, but not the files)
-data/raw/*
+# Données — on conserve le corpus raw (commité), pas les artefacts générés
 data/indexed/*
 data/pending/*
+data/audit.jsonl
+data/watcher_hashes.json
 logs/
 *.log
-
-# Exclure les données brutes sauf les fichiers de test
-data/raw/*
-!data/raw/test_*.json
 
 # Fichiers temporaires téléchargement Qdrant
 qdrant.tar.gz

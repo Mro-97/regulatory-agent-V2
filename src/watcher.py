@@ -45,26 +45,35 @@ CHEMIN_HASHES = Path(__file__).parent.parent / "data" / "watcher_hashes.json"
 # Sources à surveiller
 # ---------------------------------------------------------------------------
 
-SOURCES_CONFIG = [
-    {
-        "source": SourceReglementaire.EUR_LEX,
-        "urls": [
+
+class _SourceConfig:
+    """Source surveillée : source institutionnelle + URLs associées."""
+
+    def __init__(self, source: SourceReglementaire, urls: list[str]) -> None:
+        self.source = source
+        self.urls = urls
+
+
+SOURCES_CONFIG: list[_SourceConfig] = [
+    _SourceConfig(
+        source=SourceReglementaire.EUR_LEX,
+        urls=[
             "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32016R0679",
             "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32022L2555",
         ],
-    },
-    {
-        "source": SourceReglementaire.CNIL,
-        "urls": [
+    ),
+    _SourceConfig(
+        source=SourceReglementaire.CNIL,
+        urls=[
             "https://www.cnil.fr/fr/reglement-europeen-protection-donnees",
         ],
-    },
-    {
-        "source": SourceReglementaire.ANSSI,
-        "urls": [
+    ),
+    _SourceConfig(
+        source=SourceReglementaire.ANSSI,
+        urls=[
             "https://www.ssi.gouv.fr/uploads/2023/01/anssi-guide-nis2.pdf",
         ],
-    },
+    ),
 ]
 
 
@@ -143,8 +152,11 @@ async def enregistrer_alerte_redis(alerte: AlerteWatcher) -> None:
         import redis.asyncio as aioredis
 
         client = aioredis.Redis(
-            host=cfg.redis_host, port=cfg.redis_port,
-            db=cfg.redis_db, decode_responses=True,
+            host=cfg.redis_host,
+            port=cfg.redis_port,
+            password=cfg.redis_password or None,
+            db=cfg.redis_db,
+            decode_responses=True,
         )
 
         tache = TacheValidation(
@@ -197,7 +209,7 @@ class Watcher:
         if self._client_http is None or self._client_http.is_closed:
             self._client_http = httpx.AsyncClient(
                 timeout=30.0,
-                follow_redirects=True,
+                follow_redirects=cfg.watcher_follow_redirects,
                 headers={
                     "User-Agent": (
                         "RegulatoryAgentV2/0.1 (veille reglementaire locale; "
@@ -241,7 +253,7 @@ class Watcher:
         if hash_precedent is None:
             # Première vérification — enregistrer le hash de référence
             self._hashes[url] = hash_nouveau
-            sauvegarder_hashes(self._hashes)
+            await asyncio.to_thread(sauvegarder_hashes, self._hashes)
             logger.info("Watcher — première indexation : %s", url)
             return None
 
@@ -270,7 +282,7 @@ class Watcher:
 
         # Mettre à jour le hash connu
         self._hashes[url] = hash_nouveau
-        sauvegarder_hashes(self._hashes)
+        await asyncio.to_thread(sauvegarder_hashes, self._hashes)
 
         return alerte
 
@@ -298,8 +310,8 @@ class Watcher:
 
         try:
             for config in SOURCES_CONFIG:
-                source = config["source"]
-                for url in config["urls"]:
+                source = config.source
+                for url in config.urls:
                     alerte = await self.verifier_url(url, source)
                     if alerte:
                         alertes.append(alerte)

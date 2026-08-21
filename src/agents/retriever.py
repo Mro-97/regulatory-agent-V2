@@ -27,6 +27,7 @@ from qdrant_client.http.models import (
     Filter,
     IsNullCondition,
     PayloadField,
+    ScoredPoint,
 )
 
 from config import cfg
@@ -61,6 +62,8 @@ class Retriever:
         self._client = qdrant_client or QdrantClient(
             host=cfg.qdrant_host,
             port=cfg.qdrant_port,
+            https=cfg.qdrant_https,
+            api_key=cfg.qdrant_api_key or None,
         )
         self._collection = cfg.qdrant_collection
         self._top_k = top_k if top_k is not None else cfg.qdrant_top_k
@@ -151,7 +154,7 @@ class Retriever:
         vecteur: list[float],
         limite: int,
         filtre: Optional[Filter] = None,
-    ) -> list:
+    ) -> list[ScoredPoint]:
         """
         Exécute une recherche vectorielle dans Qdrant.
 
@@ -282,7 +285,7 @@ class Retriever:
         filtre_passe_b = Filter(must=[cond_from, cond_to_null])
 
         # --- Étape 4 : deux passes de recherche ---
-        points_bruts: list = []
+        points_bruts: list[ScoredPoint] = []
         ids_vus: set[str] = set()
 
         for label, filtre in [

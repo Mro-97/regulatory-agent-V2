@@ -6,9 +6,11 @@ Système local de veille réglementaire et d'assistance IA — 100 % local, sans
 
 | Machine | Rôle | Port | LLM |
 |---|---|---|---|
-| mini-1 (M4 16 Go) | Hub / API / Redis / Interface | 8000 | — |
-| m4pro1 (M4 Pro 24 Go) | Moteur / Retrieval | 8001 | Mistral 7B + Qwen 2.5 7B |
-| m4pro2 (M4 Pro 24 Go) | Expert / Conflit | 8002 | Mistral 7B + Qwen 2.5 7B + DeepSeek-R1 14B |
+| mini-1 (M4 16 Go) | Hub / API / Redis / Interface (Mac A) | 8000 | — |
+| m4pro1 (M4 Pro 24 Go) | Moteur / Retrieval (Mac B) | 8001 | Mistral 7B + Qwen 2.5 7B |
+| m4pro2 (M4 Pro 24 Go) | Expert / Conflit (Mac C) | 8002 | Mistral 7B + Qwen 2.5 7B + DeepSeek-R1 14B |
+
+Qdrant est exposé sur le port **6333** (config `QDRANT_PORT`), Redis sur **6379** (config `REDIS_PORT`).
 
 ## Prérequis
 
@@ -28,17 +30,30 @@ Système local de veille réglementaire et d'assistance IA — 100 % local, sans
     uv venv --python 3.13 venv && source venv/bin/activate
     uv pip install -r requirements.txt
     mkdir -p data/{raw,indexed,pending,qdrant_storage} logs models/bge-m3-mlx
+    cp .env.example .env   # puis renseigner API_KEY, POSTGRES_DSN…
+
+## Sécurité — à lire avant de démarrer
+
+- **Authentification :** tous les endpoints (sauf `/health` et l'interface web) exigent
+  l'en-tête `X-API-Key`. La clé est définie par `API_KEY` dans `.env`.
+  Sans clé configurée, l'API refuse tout accès (fail-closed).
+- **Exposition :** par défaut l'API écoute sur `127.0.0.1`. Utiliser `0.0.0.0`
+  uniquement derrière un proxy TLS (Caddy/Tailscale HTTPS). Les ports Qdrant/Redis
+  ne doivent jamais être exposés hors boucle locale.
+- **Credentials :** `POSTGRES_DSN`, `REDIS_PASSWORD`, `QDRANT_API_KEY` passent par
+  `.env` (jamais dans le code). Aucune valeur sensible n'est codée en dur.
+- **Swagger :** `/docs` et `/redoc` sont désactivés par défaut (`EXPOSER_DOCS=false`).
+- **CORS :** restreint aux origines de `CORS_ORIGINS`; les mutations vérifient l'en-tête
+  `Origin`. Rate limiting (par IP) sur `/ask` et `/ingest`.
+- **Générer une clé :** `openssl rand -hex 32`
 
 ## Démarrage des services
 
-    # Qdrant (mini-1 et m4pro1 — port 6335)
-    cd ~/regulatory-agent && ./qdrant --config-path /tmp/qdrant_config.yaml > /tmp/qdrant.log 2>&1 &
-
-    # Qdrant (m4pro2 — port 6333)
+    # Qdrant (toutes les machines — port 6333)
     cd ~/regulatory-agent && ./qdrant > /tmp/qdrant.log 2>&1 &
 
     # Redis (tous)
-    ~/redis-stable/src/redis-server --daemonize yes --port 6379
+    ~/redis-stable/src/redis-server --daemonize yes --port 6379 --requirepass <mot-de-passe>
 
     # API
     cd ~/regulatory-agent && source venv/bin/activate && python3 main.py
@@ -68,6 +83,7 @@ Système local de veille réglementaire et d'assistance IA — 100 % local, sans
 
     curl -s -X POST http://127.0.0.1:9001/ask \
       -H "Content-Type: application/json" \
+      -H "X-API-Key: $API_KEY" \
       -d '{"question":"Obligations de sécurité RGPD ?"}' | python3 -m json.tool
 
 ## Endpoints API
@@ -85,6 +101,9 @@ Système local de veille réglementaire et d'assistance IA — 100 % local, sans
 
     python3 -m pytest tests/ -q --tb=short
     bash scripts/tests_rag.sh
+
+Les tests de sécurité (`tests/test_api_security.py`) couvrent : authentification,
+CORS, anti-CSRF, rate limiting, limites de taille, masquage des erreurs.
 
 ## Modèles LLM
 
