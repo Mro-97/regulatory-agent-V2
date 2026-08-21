@@ -26,7 +26,9 @@ from qdrant_client.http.models import (
     FieldCondition,
     Filter,
     IsNullCondition,
+    MatchAny,
     PayloadField,
+    ScoredPoint,
 )
 
 from config import cfg
@@ -61,6 +63,8 @@ class Retriever:
         self._client = qdrant_client or QdrantClient(
             host=cfg.qdrant_host,
             port=cfg.qdrant_port,
+            https=cfg.qdrant_https,
+            api_key=cfg.qdrant_api_key or None,
         )
         self._collection = cfg.qdrant_collection
         self._top_k = top_k if top_k is not None else cfg.qdrant_top_k
@@ -142,6 +146,38 @@ class Retriever:
         """
         return IsNullCondition(is_null=PayloadField(key="valid_to"))
 
+    def _filtre_themes(self, themes: list[str]) -> Optional[FieldCondition]:
+        """
+        Condition : le payload 'themes' (array) contient au moins un des thèmes demandés.
+
+        Args:
+            themes: Liste de thèmes autorisés. Vide → aucun filtre.
+
+        Returns:
+            FieldCondition Qdrant ou None si la liste est vide.
+        """
+        themes_valides = [t for t in themes if t]
+        if not themes_valides:
+            return None
+        return FieldCondition(key="themes", match=MatchAny(any=themes_valides))
+
+    def _filtre_sources(
+        self, sources: list["SourceReglementaire"]
+    ) -> Optional[FieldCondition]:
+        """
+        Condition : le payload 'source' correspond à l'une des sources demandées.
+
+        Args:
+            sources: Liste de sources autorisées. Vide → aucun filtre.
+
+        Returns:
+            FieldCondition Qdrant ou None si la liste est vide.
+        """
+        valeurs = [s.value for s in sources if s is not None]
+        if not valeurs:
+            return None
+        return FieldCondition(key="source", match=MatchAny(any=valeurs))
+
     # ------------------------------------------------------------------
     # Recherche Qdrant
     # ------------------------------------------------------------------
@@ -151,7 +187,7 @@ class Retriever:
         vecteur: list[float],
         limite: int,
         filtre: Optional[Filter] = None,
-    ) -> list:
+    ) -> list[ScoredPoint]:
         """
         Exécute une recherche vectorielle dans Qdrant.
 
@@ -240,6 +276,8 @@ class Retriever:
         self,
         question: str,
         date_contexte: Optional[date] = None,
+        filtres_themes: Optional[list[str]] = None,
+        filtres_sources: Optional[list["SourceReglementaire"]] = None,
     ) -> list[EvidenceRecuperee]:
         """
         Recherche les passages réglementaires pertinents pour une question.
@@ -250,17 +288,22 @@ class Retriever:
         Les résultats sont fusionnés (dédupliqués) et triés par score.
 
         Args:
-            question:      Question réglementaire en langage naturel.
-            date_contexte: Date réglementaire de contexte. Si None,
-                           utilise la date du jour.
+            question:        Question réglementaire en langage naturel.
+            date_contexte:   Date réglementaire de contexte. Si None,
+                             utilise la date du jour.
+            filtres_themes:  Restreint aux chunks portant au moins un des thèmes.
+                             None ou liste vide = pas de filtrage thématique.
+            filtres_sources: Restreint aux chunks issus des sources listées.
+                             None ou liste vide = pas de filtrage par source.
 
         Returns:
             Liste d'EvidenceRecuperee triée par score décroissant,
             limitée à top_k éléments. Liste vide si aucun résultat.
         """
         logger.info(
-            "Retrieval — question=%r date_contexte=%s top_k=%d",
+            "Retrieval — question=%r date_contexte=%s top_k=%d themes=%s sources=%s",
             question[:80], date_contexte, self._top_k,
+            filtres_themes or [], [s.value for s in (filtres_sources or [])],
         )
 
         # --- Étape 1 : embedding ---
@@ -278,11 +321,24 @@ class Retriever:
         cond_to_present = self._filtre_valid_to_present(date_ref)
         cond_to_null = self._filtre_valid_to_null()
 
-        filtre_passe_a = Filter(must=[cond_from, cond_to_present])
-        filtre_passe_b = Filter(must=[cond_from, cond_to_null])
+        # Conditions communes aux deux passes (thèmes + sources API)
+        conditions_communes: list = []
+        cond_themes = self._filtre_themes(filtres_themes or [])
+        if cond_themes is not None:
+            conditions_communes.append(cond_themes)
+        cond_sources = self._filtre_sources(filtres_sources or [])
+        if cond_sources is not None:
+            conditions_communes.append(cond_sources)
+
+        filtre_passe_a = Filter(
+            must=[cond_from, cond_to_present, *conditions_communes]
+        )
+        filtre_passe_b = Filter(
+            must=[cond_from, cond_to_null, *conditions_communes]
+        )
 
         # --- Étape 4 : deux passes de recherche ---
-        points_bruts: list = []
+        points_bruts: list[ScoredPoint] = []
         ids_vus: set[str] = set()
 
         for label, filtre in [

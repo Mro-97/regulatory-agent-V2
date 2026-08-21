@@ -53,6 +53,7 @@ from src.models import (
     RequeteIngestion,
     RequeteQuestion,
     SortieAgent,
+    SourceReglementaire,
     StatutValidation,
     TacheValidation,
     TypeFilePendante,
@@ -162,6 +163,18 @@ class Orchestrateur:
             self._client_http = httpx.AsyncClient(timeout=60.0)
         return self._client_http
 
+    async def _nouveau_client_redis(self):
+        """Client Redis asynchrone avec authentification depuis la config."""
+        import redis.asyncio as aioredis
+
+        return aioredis.Redis(
+            host=cfg.redis_host,
+            port=cfg.redis_port,
+            password=cfg.redis_password or None,
+            db=cfg.redis_db,
+            decode_responses=True,
+        )
+
     # ------------------------------------------------------------------
     # Étapes du pipeline — mode real
     # ------------------------------------------------------------------
@@ -171,7 +184,7 @@ class Orchestrateur:
         question: str,
         date_contexte: Optional[date],
         filtres_themes: list[str],
-        filtres_sources: list,
+        filtres_sources: list[SourceReglementaire],
     ) -> tuple[list[EvidenceRecuperee], SortieAgent]:
         """
         Étape 1 : récupération des passages pertinents via Qdrant.
@@ -185,6 +198,8 @@ class Orchestrateur:
         evidences = retriever.retrieve(
             question=question,
             date_contexte=date_contexte,
+            filtres_themes=filtres_themes,
+            filtres_sources=filtres_sources,
         )
 
         sortie = SortieAgent(
@@ -193,6 +208,8 @@ class Orchestrateur:
             contenu={
                 "chunks_recuperes": len(evidences),
                 "date_contexte": date_contexte.isoformat() if date_contexte else None,
+                "filtres_themes": filtres_themes,
+                "filtres_sources": [s.value for s in filtres_sources],
             },
             duree_ms=int(
                 (datetime.now(timezone.utc) - debut).total_seconds() * 1000
@@ -383,7 +400,6 @@ class Orchestrateur:
                 ))
                 # Soumettre à validation humaine si conflit probable/critique
                 if resultat_conflit.necessite_validation_humaine:
-                    from src.models import TacheValidation, TypeFilePendante
                     tache_conflit = TacheValidation(
                         type_file=TypeFilePendante.LIENS,
                         request_id=request_id,
@@ -517,12 +533,7 @@ class Orchestrateur:
     async def lister_taches_pendantes(self) -> ReponseTachesPendantes:
         """Récupère les tâches en attente depuis Redis."""
         try:
-            import redis.asyncio as aioredis
-
-            client = aioredis.Redis(
-                host=cfg.redis_host, port=cfg.redis_port,
-                db=cfg.redis_db, decode_responses=True,
-            )
+            client = await self._nouveau_client_redis()
             taches: list[TacheValidation] = []
             par_file: dict[str, int] = {}
 
@@ -554,12 +565,7 @@ class Orchestrateur:
         """Applique une décision humaine à une tâche Redis."""
         horodatage = datetime.now(timezone.utc)
         try:
-            import redis.asyncio as aioredis
-
-            client = aioredis.Redis(
-                host=cfg.redis_host, port=cfg.redis_port,
-                db=cfg.redis_db, decode_responses=True,
-            )
+            client = await self._nouveau_client_redis()
             tache_trouvee = False
             for file in TypeFilePendante:
                 cles = await client.lrange(file.value, 0, -1)
@@ -603,12 +609,7 @@ class Orchestrateur:
     async def _enregistrer_tache_redis(self, tache: TacheValidation) -> None:
         """Enregistre une tâche dans la file Redis appropriée."""
         try:
-            import redis.asyncio as aioredis
-
-            client = aioredis.Redis(
-                host=cfg.redis_host, port=cfg.redis_port,
-                db=cfg.redis_db, decode_responses=True,
-            )
+            client = await self._nouveau_client_redis()
             await client.lpush(tache.type_file.value, tache.model_dump_json())
             await client.aclose()
         except Exception as exc:
