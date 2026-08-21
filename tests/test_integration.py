@@ -393,3 +393,76 @@ class TestAuditTrail:
         finally:
             audit_module.CHEMIN_AUDIT_LOCAL = original
             audit_module._hash_precedent = None
+
+    def test_verifier_integrite_chaine_intacte(self, tmp_path):
+        """Une chaîne d'audit intacte doit être entièrement valide."""
+        import src.audit as audit_module
+        from src.models import EnregistrementAudit
+
+        chemin_test = tmp_path / "audit_ok.jsonl"
+        original = audit_module.CHEMIN_AUDIT_LOCAL
+        audit_module.CHEMIN_AUDIT_LOCAL = chemin_test
+        audit_module._hash_precedent = None
+
+        async def _run():
+            gestionnaire = audit_module.GestionnaireAudit(postgres_dsn=None)
+            await gestionnaire.initialiser()
+
+            for i in range(3):
+                await gestionnaire.persister(
+                    EnregistrementAudit(user_query=f"Q{i}", reponse_finale=f"R{i}")
+                )
+
+            resultat = await gestionnaire.verifier_integrite()
+            assert resultat["total"] == 3
+            assert resultat["valides"] == 3
+            assert resultat["invalides"] == 0
+            assert resultat["erreurs"] == []
+
+        try:
+            asyncio.run(_run())
+        finally:
+            audit_module.CHEMIN_AUDIT_LOCAL = original
+            audit_module._hash_precedent = None
+
+    def test_verifier_integrite_detecte_enregistrement_supprime(self, tmp_path):
+        """
+        Un enregistrement retiré du milieu du fichier JSONL doit être détecté :
+        les deux enregistrements restants sont chacun auto-cohérents (leur
+        propre hash_courant reste correct), mais le hash_precedent du
+        troisième ne correspond plus au hash_courant du premier une fois
+        le deuxième supprimé — la liaison de chaîne est rompue.
+        """
+        import src.audit as audit_module
+        from src.models import EnregistrementAudit
+
+        chemin_test = tmp_path / "audit_trafique.jsonl"
+        original = audit_module.CHEMIN_AUDIT_LOCAL
+        audit_module.CHEMIN_AUDIT_LOCAL = chemin_test
+        audit_module._hash_precedent = None
+
+        async def _run():
+            gestionnaire = audit_module.GestionnaireAudit(postgres_dsn=None)
+            await gestionnaire.initialiser()
+
+            for i in range(3):
+                await gestionnaire.persister(
+                    EnregistrementAudit(user_query=f"Q{i}", reponse_finale=f"R{i}")
+                )
+
+            # Suppression du deuxième enregistrement (falsification simulée).
+            lignes = chemin_test.read_text(encoding="utf-8").strip().splitlines()
+            assert len(lignes) == 3
+            lignes_trafiquees = [lignes[0], lignes[2]]
+            chemin_test.write_text("\n".join(lignes_trafiquees) + "\n", encoding="utf-8")
+
+            resultat = await gestionnaire.verifier_integrite()
+            assert resultat["total"] == 2
+            assert resultat["invalides"] == 1
+            assert resultat["erreurs"][0]["type"] == "chaine_rompue"
+
+        try:
+            asyncio.run(_run())
+        finally:
+            audit_module.CHEMIN_AUDIT_LOCAL = original
+            audit_module._hash_precedent = None

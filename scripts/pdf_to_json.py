@@ -132,7 +132,9 @@ def detecter_articles(texte: str) -> list[dict]:
         texte: Texte brut du document.
 
     Returns:
-        Liste de dicts {numero, titre, texte}.
+        Liste de dicts {numero, titre, texte, debut} — "debut" est la position
+        du début de l'article dans le texte source, utilisée pour l'attribution
+        au bon chapitre dans construire_document().
     """
     articles = []
     positions = []
@@ -147,7 +149,7 @@ def detecter_articles(texte: str) -> list[dict]:
 
     if not positions:
         logger.warning("Aucun article détecté — document traité comme un seul bloc.")
-        return [{"numero": "1", "titre": "Document complet", "texte": texte.strip()}]
+        return [{"numero": "1", "titre": "Document complet", "texte": texte.strip(), "debut": 0}]
 
     # Trier par position
     positions.sort(key=lambda p: p["debut"])
@@ -170,6 +172,7 @@ def detecter_articles(texte: str) -> list[dict]:
             "numero": pos["numero"],
             "titre": titre,
             "texte": corps,
+            "debut": debut_texte,
         })
 
     logger.info("%d article(s) détecté(s)", len(articles))
@@ -241,18 +244,20 @@ def construire_document(
     # Si des chapitres ont été détectés, on regroupe les articles
     # dans leur chapitre respectif. Sinon, un seul chapitre.
     if chapitres_bruts:
-        # Attribution des articles aux chapitres par ordre
+        # Attribution de chaque article au chapitre dont le début précède
+        # immédiatement le sien (le dernier chapitre dont "debut" <= article["debut"]).
         chapitres_map: dict[str, list] = {c["id"]: [] for c in chapitres_bruts}
         chap_ids = [c["id"] for c in chapitres_bruts]
         chap_debuts = [c["debut"] for c in chapitres_bruts]
 
         for art in articles_bruts:
-            # Trouver la position de l'article dans le texte
-            chap_id = chap_ids[0]  # défaut : premier chapitre
-            for i, debut in enumerate(chap_debuts):
-                if i + 1 < len(chap_debuts):
-                    # placeholder — sans position exacte on met dans le premier
-                    pass
+            art_debut = art.get("debut", 0)
+            chap_id = chap_ids[0]  # défaut : avant le premier chapitre détecté
+            for cid, debut in zip(chap_ids, chap_debuts):
+                if debut <= art_debut:
+                    chap_id = cid
+                else:
+                    break
             chapitres_map[chap_id].append(art)
 
         chapitres: list[Chapitre] = []

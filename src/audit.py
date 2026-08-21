@@ -225,14 +225,23 @@ class GestionnaireAudit:
         """
         Vérifie l'intégrité de la chaîne d'audit locale.
 
-        Relit les N derniers enregistrements du fichier JSONL et
-        vérifie que chaque hash_courant correspond bien au contenu.
+        Relit les N derniers enregistrements du fichier JSONL et vérifie,
+        pour chacun :
+          1. Auto-cohérence : hash_courant correspond bien au contenu.
+          2. Liaison de chaîne : hash_precedent correspond au hash_courant
+             de l'enregistrement qui le précède dans le fichier.
+        Le contrôle (2) est ce qui détecte la suppression, le réordonnancement
+        ou le remplacement d'un enregistrement au milieu du fichier — un
+        contrôle (1) seul ne le détecterait pas, puisqu'un enregistrement
+        retiré reste individuellement auto-cohérent.
 
         Args:
             limite: Nombre maximum d'enregistrements à vérifier.
 
         Returns:
             Dict avec total, valides, invalides, et détails des erreurs.
+            Chaque erreur précise "type" : "hash_auto_incoherent" (contenu
+            modifié) ou "chaine_rompue" (enregistrement manquant/réordonné).
         """
         total = 0
         valides = 0
@@ -248,27 +257,56 @@ class GestionnaireAudit:
 
         lignes = await asyncio.to_thread(_lire_dernieres_lignes)
 
+        # hash_courant de l'enregistrement précédent dans la fenêtre lue.
+        # Inconnu pour la première ligne lue (son prédécesseur réel peut être
+        # hors fenêtre si le fichier contient plus de `limite` lignes) —
+        # on ne vérifie donc la liaison qu'à partir de la deuxième ligne.
+        hash_precedent_attendu: Optional[str] = None
+        precedent_connu = False
+
         for i, ligne in enumerate(lignes):
             total += 1
             try:
                 donnees = json.loads(ligne)
                 hash_attendu = donnees.get("hash_courant")
+                hash_precedent_declare = donnees.get("hash_precedent")
                 audit = EnregistrementAudit(**donnees)
                 hash_calcule = audit.calculer_hash()
 
-                if hash_calcule == hash_attendu:
+                auto_coherent = hash_calcule == hash_attendu
+                chaine_coherente = (
+                    not precedent_connu or hash_precedent_declare == hash_precedent_attendu
+                )
+
+                if auto_coherent and chaine_coherente:
                     valides += 1
                 else:
                     invalides += 1
-                    erreurs.append({
+                    detail: dict[str, object] = {
                         "ligne": i + 1,
                         "request_id": donnees.get("request_id"),
-                        "attendu": hash_attendu[:16] if hash_attendu else None,
-                        "calcule": hash_calcule[:16],
-                    })
+                    }
+                    if not auto_coherent:
+                        detail["type"] = "hash_auto_incoherent"
+                        detail["attendu"] = hash_attendu[:16] if hash_attendu else None
+                        detail["calcule"] = hash_calcule[:16]
+                    else:
+                        detail["type"] = "chaine_rompue"
+                        detail["hash_precedent_declare"] = (
+                            hash_precedent_declare[:16] if hash_precedent_declare else None
+                        )
+                        detail["hash_precedent_attendu"] = (
+                            hash_precedent_attendu[:16] if hash_precedent_attendu else None
+                        )
+                    erreurs.append(detail)
+
+                hash_precedent_attendu = hash_attendu
+                precedent_connu = True
             except Exception as exc:
                 invalides += 1
                 erreurs.append({"ligne": i + 1, "erreur": str(exc)})
+                # Ligne illisible — le prédécesseur pour la suivante n'est plus fiable.
+                precedent_connu = False
 
         return {"total": total, "valides": valides, "invalides": invalides, "erreurs": erreurs}
 
