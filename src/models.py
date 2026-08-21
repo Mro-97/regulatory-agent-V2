@@ -122,8 +122,8 @@ class VersionArticle(BaseModel):
     """
 
     id: str = Field(..., description="Identifiant unique de cette version d'article.")
-    titre: str = Field(..., description="Titre ou intitulé de l'article.")
-    texte: str = Field(..., description="Contenu textuel complet de l'article.")
+    titre: str = Field(..., max_length=500, description="Titre ou intitulé de l'article.")
+    texte: str = Field(..., max_length=100_000, description="Contenu textuel complet de l'article.")
     validite: IntervalleValidite = Field(..., description="Fenêtre temporelle de validité.")
     citations: list[str] = Field(
         default_factory=list,
@@ -150,7 +150,7 @@ class Chapitre(BaseModel):
     """Subdivision d'un texte réglementaire (chapitre, section, titre, annexe)."""
 
     id: str = Field(..., description="Identifiant unique du chapitre.")
-    titre: Optional[str] = Field(default=None, description="Intitulé du chapitre.")
+    titre: Optional[str] = Field(default=None, max_length=500, description="Intitulé du chapitre.")
     articles: list[VersionArticle] = Field(
         default_factory=list,
         description="Versions d'articles contenues dans ce chapitre.",
@@ -166,7 +166,7 @@ class TexteLie(BaseModel):
 
     ref: str = Field(..., description="Identifiant du texte cible dans le corpus.")
     relation: RelationType = Field(..., description="Nature de la relation.")
-    commentaire: Optional[str] = Field(default=None, description="Précision libre.")
+    commentaire: Optional[str] = Field(default=None, max_length=2000, description="Précision libre.")
 
 
 class DocumentReglementaire(BaseModel):
@@ -180,7 +180,7 @@ class DocumentReglementaire(BaseModel):
         description="Identifiant unique du document. Convention : SIGLE_ANNEE_NUMERO.",
         examples=["RGPD_2016_679"],
     )
-    titre: str = Field(..., description="Titre officiel complet du texte.")
+    titre: str = Field(..., max_length=500, description="Titre officiel complet du texte.")
     source: SourceReglementaire = Field(..., description="Source institutionnelle.")
     url_source: Optional[str] = Field(
         default=None, description="URL canonique sur le site source."
@@ -337,7 +337,7 @@ class TacheValidation(BaseModel):
     horodatage_traitement: Optional[datetime] = Field(default=None)
     request_id: Optional[UUID] = Field(default=None)
     contenu: dict[str, Any] = Field(default_factory=dict)
-    commentaire_validateur: Optional[str] = Field(default=None)
+    commentaire_validateur: Optional[str] = Field(default=None, max_length=2000)
     escaladee: bool = Field(default=False)
 
 
@@ -353,7 +353,7 @@ class AlerteWatcher(BaseModel):
     horodatage_detection: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc)
     )
-    description_modification: Optional[str] = Field(default=None)
+    description_modification: Optional[str] = Field(default=None, max_length=2000)
     tache_validation_id: Optional[UUID] = Field(default=None)
 
 
@@ -379,7 +379,7 @@ class RequeteQuestion(BaseModel):
     demander_validation_humaine: bool = Field(default=False)
 
 
-class ReponsQuestion(BaseModel):
+class ReponseQuestion(BaseModel):
     """Corps de la réponse POST /ask."""
 
     request_id: UUID

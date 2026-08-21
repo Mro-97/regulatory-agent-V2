@@ -87,6 +87,10 @@ class GestionnaireAudit:
         self.postgres_dsn = postgres_dsn
         self._pool = None
         self._postgres_ok = False
+        # Compte les persistances où PostgreSQL est censé être actif mais où
+        # l'INSERT a échoué — signal explicite de divergence local/PostgreSQL,
+        # là où l'échec était auparavant seulement loggé et ignoré.
+        self.desynchronisations = 0
         CHEMIN_AUDIT_LOCAL.parent.mkdir(parents=True, exist_ok=True)
 
     async def initialiser(self) -> None:
@@ -148,6 +152,13 @@ class GestionnaireAudit:
         """
         Persiste un EnregistrementAudit et retourne son hash.
 
+        Si PostgreSQL est censé être actif (self._postgres_ok) mais que
+        l'INSERT échoue, la persistance locale JSONL reste la source de
+        vérité — la divergence est comptabilisée (self.desynchronisations)
+        et loggée en ERROR plutôt que silencieusement ignorée, afin qu'un
+        écart entre les deux chaînes d'audit reste détectable (ex. via
+        GestionnaireAudit.statut() / l'endpoint /health).
+
         Args:
             audit: EnregistrementAudit (depuis src/models.py).
 
@@ -163,11 +174,24 @@ class GestionnaireAudit:
             audit.hash_courant = hash_courant
 
             # Persistance locale (toujours)
-            await self._persister_local(audit)
+            local_ok = await self._persister_local(audit)
+            if not local_ok:
+                logger.error(
+                    "Audit local NON persisté — request_id=%s hash=%s… "
+                    "(la chaîne locale et le compteur interne divergent désormais)",
+                    audit.request_id, hash_courant[:16],
+                )
 
             # Persistance PostgreSQL (si disponible)
             if self._postgres_ok:
-                await self._persister_postgres(audit)
+                postgres_ok = await self._persister_postgres(audit)
+                if not postgres_ok:
+                    self.desynchronisations += 1
+                    logger.error(
+                        "Audit PostgreSQL NON persisté — request_id=%s hash=%s… "
+                        "divergence local/PostgreSQL (total cumulé : %d)",
+                        audit.request_id, hash_courant[:16], self.desynchronisations,
+                    )
 
             _hash_precedent = hash_courant
 
@@ -177,13 +201,29 @@ class GestionnaireAudit:
         )
         return hash_courant
 
-    async def _persister_local(self, audit: EnregistrementAudit) -> None:
-        """Écrit l'enregistrement dans le fichier JSONL local."""
+    def statut(self) -> dict[str, object]:
+        """
+        État de synchronisation de l'audit trail, exposable via /health.
+
+        Returns:
+            Dict avec postgres_actif et desynchronisations (nombre
+            d'INSERT PostgreSQL échoués depuis le démarrage alors que
+            PostgreSQL était censé être disponible).
+        """
+        return {
+            "postgres_actif": self._postgres_ok,
+            "desynchronisations": self.desynchronisations,
+        }
+
+    async def _persister_local(self, audit: EnregistrementAudit) -> bool:
+        """Écrit l'enregistrement dans le fichier JSONL local. Retourne le succès."""
         try:
             ligne = audit.model_dump_json() + "\n"
             await asyncio.to_thread(self._ecrire_ligne_local, ligne)
+            return True
         except Exception as exc:
             logger.error("Écriture audit local échouée : %s", exc)
+            return False
 
     def _ecrire_ligne_local(self, ligne: str) -> None:
         """Écriture synchrone déléguée au threadpool (évite de bloquer l'event loop)."""
@@ -191,10 +231,10 @@ class GestionnaireAudit:
         with open(CHEMIN_AUDIT_LOCAL, "a", encoding="utf-8") as f:
             f.write(ligne)
 
-    async def _persister_postgres(self, audit: EnregistrementAudit) -> None:
-        """INSERT dans la table audit_trail PostgreSQL."""
+    async def _persister_postgres(self, audit: EnregistrementAudit) -> bool:
+        """INSERT dans la table audit_trail PostgreSQL. Retourne le succès."""
         if not self._pool:
-            return
+            return False
         try:
             async with self._pool.acquire() as conn:
                 await conn.execute(
@@ -218,8 +258,10 @@ class GestionnaireAudit:
                     audit.hash_precedent,
                     audit.hash_courant,
                 )
+            return True
         except Exception as exc:
             logger.error("INSERT audit PostgreSQL échoué : %s", exc)
+            return False
 
     async def verifier_integrite(self, limite: int = 100) -> dict[str, int | list[dict[str, object]]]:
         """

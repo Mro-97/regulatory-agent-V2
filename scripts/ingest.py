@@ -104,6 +104,93 @@ class Ingester:
 
         return chunks
     
+    def compter_chunks_existants(self, document_id: str) -> int:
+        """Compte les chunks déjà indexés pour un document_id donné."""
+        from qdrant_client.http.models import FieldCondition, Filter, MatchValue
+
+        resultat = self.client.count(
+            collection_name=self.collection_name,
+            count_filter=Filter(
+                must=[FieldCondition(key="document_id", match=MatchValue(value=document_id))]
+            ),
+            exact=True,
+        )
+        return resultat.count
+
+    def supprimer_chunks_document(self, document_id: str) -> None:
+        """Supprime tous les chunks déjà indexés pour un document_id donné."""
+        from qdrant_client.http.models import FieldCondition, Filter, FilterSelector, MatchValue
+
+        self.client.delete(
+            collection_name=self.collection_name,
+            points_selector=FilterSelector(
+                filter=Filter(
+                    must=[FieldCondition(key="document_id", match=MatchValue(value=document_id))]
+                )
+            ),
+        )
+        logger.info("Chunks existants supprimés pour document_id=%s", document_id)
+
+    def ingest_document(self, doc: DocumentReglementaire, batch_size: int = 50) -> int:
+        """
+        Chunk, embed et upsert un DocumentReglementaire déjà validé.
+
+        Args:
+            doc:        Document à ingérer.
+            batch_size: Taille des lots d'upsert.
+
+        Returns:
+            Nombre de chunks effectivement indexés.
+        """
+        chunks = self.chunk_document(doc)
+        if not chunks:
+            return 0
+
+        logger.info("Document : %s — %d chunks", doc.id, len(chunks))
+        total_ingeres = 0
+
+        for i in range(0, len(chunks), batch_size):
+            lot = chunks[i:i + batch_size]
+            points = []
+            for chunk in lot:
+                try:
+                    vecteur = self.embed_chunk(chunk.texte_chunk)
+                    points.append(PointStruct(
+                        id=str(uuid.uuid4()),
+                        vector=vecteur,
+                        payload={
+                            "chunk_id": chunk.chunk_id,
+                            "document_id": chunk.document_id,
+                            "chapitre_id": chunk.chapitre_id,
+                            "article_id": chunk.article_id,
+                            "source": chunk.source.value,
+                            "themes": chunk.themes,
+                            "valid_from": chunk.valid_from.isoformat(),
+                            "valid_to": chunk.valid_to.isoformat() if chunk.valid_to else None,
+                            "texte_chunk": chunk.texte_chunk,
+                            "position_dans_article": chunk.position_dans_article,
+                        }
+                    ))
+                except Exception as e:
+                    logger.error("Erreur embedding : %s", e)
+                    continue
+
+            if points:
+                try:
+                    self.client.upsert(collection_name=self.collection_name, points=points, wait=True)
+                    total_ingeres += len(points)
+                    logger.info(
+                        "Lot %d : %d chunks (%d total)",
+                        i // batch_size + 1, len(points), total_ingeres,
+                    )
+                except Exception as e:
+                    logger.error("Erreur upsert : %s", e)
+
+            del points, lot
+            gc.collect()
+
+        return total_ingeres
+
     def ingest_json(self, json_path: Path, batch_size: int = 50) -> None:
         """Ingere un fichier JSON dans Qdrant par lots."""
         with open(json_path, "r", encoding="utf-8") as f:
@@ -119,51 +206,7 @@ class Ingester:
                 logger.error("Erreur validation : %s", e)
                 continue
 
-            chunks = self.chunk_document(doc)
-            if not chunks:
-                continue
-
-            logger.info("Document : %s — %d chunks", doc.id, len(chunks))
-
-            for i in range(0, len(chunks), batch_size):
-                lot = chunks[i:i + batch_size]
-                points = []
-                for chunk in lot:
-                    try:
-                        vecteur = self.embed_chunk(chunk.texte_chunk)
-                        points.append(PointStruct(
-                            id=str(uuid.uuid4()),
-                            vector=vecteur,
-                            payload={
-                                "chunk_id": chunk.chunk_id,
-                                "document_id": chunk.document_id,
-                                "chapitre_id": chunk.chapitre_id,
-                                "article_id": chunk.article_id,
-                                "source": chunk.source.value,
-                                "themes": chunk.themes,
-                                "valid_from": chunk.valid_from.isoformat(),
-                                "valid_to": chunk.valid_to.isoformat() if chunk.valid_to else None,
-                                "texte_chunk": chunk.texte_chunk,
-                                "position_dans_article": chunk.position_dans_article,
-                            }
-                        ))
-                    except Exception as e:
-                        logger.error("Erreur embedding : %s", e)
-                        continue
-
-                if points:
-                    try:
-                        self.client.upsert(collection_name=self.collection_name, points=points, wait=True)
-                        total_ingeres += len(points)
-                        logger.info(
-                            "Lot %d : %d chunks (%d total)",
-                            i // batch_size + 1, len(points), total_ingeres,
-                        )
-                    except Exception as e:
-                        logger.error("Erreur upsert : %s", e)
-
-                del points, lot
-                gc.collect()
+            total_ingeres += self.ingest_document(doc, batch_size=batch_size)
 
         logger.info("Ingestion terminee : %d chunks", total_ingeres)
 

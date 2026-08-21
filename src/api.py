@@ -40,7 +40,7 @@ from fastapi.templating import Jinja2Templates
 
 from config import cfg
 from src.models import (
-    ReponsQuestion,
+    ReponseQuestion,
     ReponseDecisionValidation,
     ReponseIngestion,
     ReponseTachesPendantes,
@@ -245,18 +245,26 @@ async def interface(request: Request):
     summary="État du système",
     description="Vérifie que l'API est opérationnelle. Retourne l'horodatage et la version.",
 )
-async def health() -> dict[str, str]:
-    return {
+async def health() -> dict[str, object]:
+    reponse: dict[str, object] = {
         "statut": "ok",
         "app": cfg.app_nom,
         "version": cfg.app_version,
         "horodatage": datetime.now(timezone.utc).isoformat(),
     }
+    try:
+        from src.audit import obtenir_gestionnaire
+
+        gestionnaire = await obtenir_gestionnaire()
+        reponse["audit"] = gestionnaire.statut()
+    except Exception:
+        logger.exception("Statut audit indisponible pour /health")
+    return reponse
 
 
 @app.post(
     "/ask",
-    response_model=ReponsQuestion,
+    response_model=ReponseQuestion,
     tags=["Requêtes"],
     summary="Poser une question réglementaire",
     description="Pipeline RAG complet : retrieval vectoriel → filtrage temporel → explication LLM → citations.",
@@ -284,8 +292,20 @@ async def poser_question(requete: RequeteQuestion, orchestrateur: OrchestrateurD
     dependencies=[AuthDep, OrigineDep, DebitDep],
 )
 async def ingerer(requete: RequeteIngestion, orchestrateur: OrchestrateurDep):
+    from src.orchestrator import DocumentDejaIndexeError
+
     try:
         return await orchestrateur.ingerer(requete)
+    except DocumentDejaIndexeError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(exc),
+        )
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        )
     except Exception:
         logger.exception("Erreur /ingest")
         raise HTTPException(

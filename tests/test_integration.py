@@ -214,6 +214,170 @@ class TestPipelineIngestion:
         assert all(len(c.texte_chunk) > 0 for c in chunks)
 
 
+class TestIngestionReelle:
+    """
+    Tests d'Orchestrateur.ingerer() en mode "real" — l'endpoint /ingest ne
+    doit plus retourner un succès factice (bug corrigé) : il chunk, embed
+    et upsert réellement dans Qdrant, et refuse honnêtement ce qu'il ne
+    sait pas faire (URL non fournie, document déjà indexé sans
+    forcer_reindexation).
+    """
+
+    @staticmethod
+    def _ingester_en_memoire(collection: str = "test_ingest"):
+        from qdrant_client import QdrantClient
+        from qdrant_client.http.models import Distance, VectorParams
+        from scripts.ingest import Ingester
+
+        client = QdrantClient(location=":memory:")
+        client.create_collection(
+            collection_name=collection,
+            vectors_config=VectorParams(size=4, distance=Distance.COSINE),
+        )
+
+        class FauxModeleEmbedding:
+            def encode(self, texte):
+                return [0.1, 0.2, 0.3, 0.4]
+
+        ingester = Ingester.__new__(Ingester)
+        ingester.client = client
+        ingester.collection_name = collection
+        ingester.embedding_model = FauxModeleEmbedding()
+        return ingester
+
+    def test_ingestion_reelle_nouveau_document(self, doc_rgpd_json):
+        from src.models import RequeteIngestion, SourceReglementaire
+        from src.orchestrator import Orchestrateur
+
+        orchestrateur = Orchestrateur(mode="real")
+        ingester = self._ingester_en_memoire()
+        orchestrateur._obtenir_ingester = lambda: ingester
+
+        requete = RequeteIngestion(source=SourceReglementaire.EUR_LEX, contenu_json=doc_rgpd_json)
+
+        reponse = asyncio.run(orchestrateur.ingerer(requete))
+
+        assert reponse.document_id == "RGPD_2016_679"
+        assert reponse.chunks_indexes >= 2
+        assert reponse.nouvelle_version is False
+        assert len(reponse.hash_document) == 64
+
+        info = ingester.client.get_collection(ingester.collection_name)
+        assert (info.points_count or 0) == reponse.chunks_indexes
+
+    def test_ingestion_sans_contenu_json_leve_valueerror(self):
+        from src.models import RequeteIngestion, SourceReglementaire
+        from src.orchestrator import Orchestrateur
+
+        orchestrateur = Orchestrateur(mode="real")
+        requete = RequeteIngestion(source=SourceReglementaire.EUR_LEX, contenu_json=None)
+
+        with pytest.raises(ValueError):
+            asyncio.run(orchestrateur.ingerer(requete))
+
+    def test_ingestion_contenu_invalide_leve_valueerror(self):
+        from src.models import RequeteIngestion, SourceReglementaire
+        from src.orchestrator import Orchestrateur
+
+        orchestrateur = Orchestrateur(mode="real")
+        orchestrateur._obtenir_ingester = lambda: self._ingester_en_memoire()
+        requete = RequeteIngestion(
+            source=SourceReglementaire.EUR_LEX,
+            contenu_json={"id": "INCOMPLET"},  # champs requis manquants
+        )
+
+        with pytest.raises(ValueError):
+            asyncio.run(orchestrateur.ingerer(requete))
+
+    def test_ingestion_document_deja_indexe_sans_force(self, doc_rgpd_json):
+        from src.models import RequeteIngestion, SourceReglementaire
+        from src.orchestrator import DocumentDejaIndexeError, Orchestrateur
+
+        orchestrateur = Orchestrateur(mode="real")
+        ingester = self._ingester_en_memoire()
+        orchestrateur._obtenir_ingester = lambda: ingester
+        requete = RequeteIngestion(source=SourceReglementaire.EUR_LEX, contenu_json=doc_rgpd_json)
+
+        async def _run():
+            await orchestrateur.ingerer(requete)  # première ingestion, OK
+            await orchestrateur.ingerer(requete)  # deuxième, doit échouer
+
+        with pytest.raises(DocumentDejaIndexeError):
+            asyncio.run(_run())
+
+    def test_ingestion_document_deja_indexe_avec_force_remplace(self, doc_rgpd_json):
+        from src.models import RequeteIngestion, SourceReglementaire
+        from src.orchestrator import Orchestrateur
+
+        orchestrateur = Orchestrateur(mode="real")
+        ingester = self._ingester_en_memoire()
+        orchestrateur._obtenir_ingester = lambda: ingester
+
+        requete = RequeteIngestion(source=SourceReglementaire.EUR_LEX, contenu_json=doc_rgpd_json)
+        requete_force = RequeteIngestion(
+            source=SourceReglementaire.EUR_LEX,
+            contenu_json=doc_rgpd_json,
+            forcer_reindexation=True,
+        )
+
+        async def _run():
+            r1 = await orchestrateur.ingerer(requete)
+            r2 = await orchestrateur.ingerer(requete_force)
+            return r1, r2
+
+        r1, r2 = asyncio.run(_run())
+        assert r2.nouvelle_version is True
+        # Les chunks existants ont été remplacés, pas dupliqués.
+        info = ingester.client.get_collection(ingester.collection_name)
+        assert (info.points_count or 0) == r2.chunks_indexes == r1.chunks_indexes
+
+    def test_api_ingest_409_si_deja_indexe(self, doc_rgpd_json):
+        """L'API /ingest doit retourner 409 quand le document existe déjà sans forcer_reindexation."""
+        from fastapi.testclient import TestClient
+
+        from config import cfg
+        from src import api as api_module
+        from src.orchestrator import Orchestrateur
+
+        orchestrateur = Orchestrateur(mode="real")
+        ingester = self._ingester_en_memoire()
+        orchestrateur._obtenir_ingester = lambda: ingester
+
+        original = api_module._orchestrateur
+        api_module._orchestrateur = orchestrateur
+        try:
+            client = TestClient(api_module.app)
+            payload = {"source": "EUR-Lex", "contenu_json": doc_rgpd_json}
+            headers = {"X-API-Key": cfg.api_key}
+            r1 = client.post("/ingest", json=payload, headers=headers)
+            assert r1.status_code == 202
+            r2 = client.post("/ingest", json=payload, headers=headers)
+            assert r2.status_code == 409
+        finally:
+            api_module._orchestrateur = original
+
+    def test_api_ingest_400_si_contenu_json_absent(self):
+        """L'API /ingest doit retourner 400 (pas un faux succès) sans contenu_json."""
+        from fastapi.testclient import TestClient
+
+        from config import cfg
+        from src import api as api_module
+        from src.orchestrator import Orchestrateur
+
+        original = api_module._orchestrateur
+        api_module._orchestrateur = Orchestrateur(mode="real")
+        try:
+            client = TestClient(api_module.app)
+            rep = client.post(
+                "/ingest",
+                json={"source": "EUR-Lex", "url": "https://example.org/doc"},
+                headers={"X-API-Key": cfg.api_key},
+            )
+            assert rep.status_code == 400
+        finally:
+            api_module._orchestrateur = original
+
+
 # ---------------------------------------------------------------------------
 # Test pipeline Retriever → Temporal → Explainer
 # ---------------------------------------------------------------------------
@@ -534,4 +698,68 @@ class TestAuditTrail:
             asyncio.run(_run())
         finally:
             audit_module.CHEMIN_AUDIT_LOCAL = original
+
+    def test_desynchronisation_postgres_comptabilisee(self, tmp_path):
+        """
+        Si PostgreSQL est censé être actif mais que l'INSERT échoue, la
+        persistance locale (source de vérité) doit rester intacte, et
+        l'échec doit être comptabilisé et exposé via statut() — plus
+        jamais silencieusement ignoré comme auparavant.
+        """
+        import src.audit as audit_module
+        from src.models import EnregistrementAudit
+
+        chemin_test = tmp_path / "audit_desync.jsonl"
+        original = audit_module.CHEMIN_AUDIT_LOCAL
+        audit_module.CHEMIN_AUDIT_LOCAL = chemin_test
+        audit_module._hash_precedent = None
+
+        class FausseAcquisition:
+            async def __aenter__(self):
+                raise RuntimeError("connexion PostgreSQL indisponible")
+
+            async def __aexit__(self, *args):
+                return False
+
+        class FauxPool:
+            def acquire(self):
+                return FausseAcquisition()
+
+        async def _run():
+            gestionnaire = audit_module.GestionnaireAudit(postgres_dsn=None)
+            await gestionnaire.initialiser()
+            # Simule un PostgreSQL déclaré actif dont l'INSERT échoue.
+            gestionnaire._postgres_ok = True
+            gestionnaire._pool = FauxPool()
+
+            audit = EnregistrementAudit(user_query="Q", reponse_finale="R")
+            hash_retourne = await gestionnaire.persister(audit)
+
+            # La persistance locale a réussi malgré l'échec PostgreSQL.
+            assert chemin_test.exists()
+            assert "Q" in chemin_test.read_text()
+            assert len(hash_retourne) == 64
+
+            statut = gestionnaire.statut()
+            assert statut["postgres_actif"] is True
+            assert statut["desynchronisations"] == 1
+
+        try:
+            asyncio.run(_run())
+        finally:
+            audit_module.CHEMIN_AUDIT_LOCAL = original
             audit_module._hash_precedent = None
+
+    def test_health_expose_statut_audit(self):
+        """L'endpoint /health doit exposer le statut de synchronisation de l'audit."""
+        from fastapi.testclient import TestClient
+
+        from src import api as api_module
+
+        client = TestClient(api_module.app)
+        rep = client.get("/health")
+        assert rep.status_code == 200
+        donnees = rep.json()
+        assert "audit" in donnees
+        assert "postgres_actif" in donnees["audit"]
+        assert "desynchronisations" in donnees["audit"]

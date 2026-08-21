@@ -46,7 +46,7 @@ from src.models import (
     EnregistrementAudit,
     EvidenceRecuperee,
     NiveauConfiance,
-    ReponsQuestion,
+    ReponseQuestion,
     ReponseDecisionValidation,
     ReponseIngestion,
     ReponseTachesPendantes,
@@ -121,6 +121,14 @@ _MACHINE_PAR_AGENT: dict[str, str] = {
 _MACHINE_INCONNUE = "inconnue"
 
 
+class DocumentDejaIndexeError(Exception):
+    """
+    Levée par Orchestrateur.ingerer() quand un document_id est déjà présent
+    dans Qdrant et que forcer_reindexation=False. Traduite en HTTP 409 par
+    l'API (voir src/api.py).
+    """
+
+
 class Orchestrateur:
     """
     Orchestrateur central de Regulatory Agent V2.
@@ -155,6 +163,7 @@ class Orchestrateur:
 
         # Agents — instanciés en lazy lors du premier appel
         self._retriever = None
+        self._ingester = None
         self._client_http: Optional[httpx.AsyncClient] = None
 
         # Sérialise l'usage du registre MLX (_CacheGeneration) : un seul
@@ -177,6 +186,14 @@ class Orchestrateur:
             self._retriever = Retriever()
             logger.info("Retriever réel initialisé.")
         return self._retriever
+
+    def _obtenir_ingester(self):
+        """Retourne l'Ingester réel (scripts/ingest.py), créé au premier appel."""
+        if self._ingester is None:
+            from scripts.ingest import Ingester
+            self._ingester = Ingester(collection_name=cfg.qdrant_collection)
+            logger.info("Ingester réel initialisé.")
+        return self._ingester
 
     async def _http(self) -> httpx.AsyncClient:
         """Client HTTP partagé pour les appels Mac B / Mac C."""
@@ -369,7 +386,7 @@ class Orchestrateur:
     # Pipeline principal
     # ------------------------------------------------------------------
 
-    async def traiter(self, requete: RequeteQuestion) -> ReponsQuestion:
+    async def traiter(self, requete: RequeteQuestion) -> ReponseQuestion:
         """
         Traite une question réglementaire via le pipeline multi-agent.
 
@@ -381,7 +398,7 @@ class Orchestrateur:
             requete: Question et paramètres de l'utilisateur.
 
         Returns:
-            ReponsQuestion avec réponse, preuves et niveau de confiance.
+            ReponseQuestion avec réponse, preuves et niveau de confiance.
         """
         request_id = uuid4()
         agents_executes: list[SortieAgent] = []
@@ -410,7 +427,7 @@ class Orchestrateur:
             )
             audit.hash_courant = audit.calculer_hash()
             await self._persister_audit(audit)
-            return ReponsQuestion(
+            return ReponseQuestion(
                 request_id=request_id,
                 reponse=reponse,
                 niveau_confiance=NiveauConfiance.INCERTAIN,
@@ -429,7 +446,7 @@ class Orchestrateur:
             agents_executes.append(sortie_retriever)
         except Exception as exc:
             logger.error("Retrieval échoué : %s", exc)
-            return ReponsQuestion(
+            return ReponseQuestion(
                 request_id=request_id,
                 reponse="Le service de recherche est temporairement indisponible.",
                 niveau_confiance=NiveauConfiance.INCERTAIN,
@@ -579,7 +596,7 @@ class Orchestrateur:
         audit.hash_courant = audit.calculer_hash()
         await self._persister_audit(audit)
 
-        return ReponsQuestion(
+        return ReponseQuestion(
             request_id=request_id,
             reponse=reponse_texte,
             evidences=evidences,
@@ -593,14 +610,88 @@ class Orchestrateur:
     # ------------------------------------------------------------------
 
     async def ingerer(self, requete: RequeteIngestion) -> ReponseIngestion:
-        """Délègue l'ingestion au pipeline scripts/ingest.py via sous-processus."""
-        logger.info("Ingestion déclenchée : source=%s", requete.source)
-        # TODO : appel au pipeline d'ingestion via Mac B
+        """
+        Ingère un document réglementaire dans Qdrant (chunking + embedding +
+        upsert), en réutilisant la logique de scripts/ingest.py.
+
+        requete.contenu_json est requis et validé comme DocumentReglementaire —
+        l'ingestion depuis une URL (requete.url) n'est pas implémentée et lève
+        une ValueError explicite plutôt qu'un faux succès.
+
+        Si le document (document_id) existe déjà dans la collection Qdrant,
+        l'appel échoue avec DocumentDejaIndexeError sauf si
+        requete.forcer_reindexation=True, auquel cas les chunks existants
+        sont supprimés puis remplacés.
+
+        Args:
+            requete: Requête d'ingestion (source, contenu_json, forcer_reindexation).
+
+        Returns:
+            ReponseIngestion avec le nombre réel de chunks indexés.
+
+        Raises:
+            ValueError: contenu_json absent ou invalide vis-à-vis du schéma
+                DocumentReglementaire.
+            DocumentDejaIndexeError: document déjà indexé sans forcer_reindexation.
+        """
+        logger.info(
+            "Ingestion déclenchée : source=%s forcer_reindexation=%s",
+            requete.source, requete.forcer_reindexation,
+        )
+
+        if self.mode == "mock":
+            document_id = (requete.contenu_json or {}).get("id", "mock")
+            return ReponseIngestion(
+                document_id=str(document_id),
+                chunks_indexes=0,
+                hash_document="",
+                nouvelle_version=False,
+            )
+
+        return await asyncio.to_thread(self._ingerer_sync, requete)
+
+    def _ingerer_sync(self, requete: RequeteIngestion) -> ReponseIngestion:
+        """
+        Partie synchrone (bloquante) de l'ingestion — validation, vérification
+        d'existence, chunking, embedding MLX et upsert Qdrant. Exécutée hors
+        de la boucle asyncio via asyncio.to_thread dans ingerer().
+        """
+        from src.models import DocumentReglementaire
+
+        if not requete.contenu_json:
+            raise ValueError(
+                "contenu_json requis — l'ingestion depuis une URL n'est pas "
+                "implémentée. Fournir le document au format DocumentReglementaire "
+                "canonique (voir scripts/pdf_to_json.py)."
+            )
+
+        try:
+            doc = DocumentReglementaire(**requete.contenu_json)
+        except Exception as exc:
+            raise ValueError(f"contenu_json invalide : {exc}") from exc
+
+        if not doc.hash_document:
+            doc.hash_document = doc.calculer_hash()
+
+        ingester = self._obtenir_ingester()
+        nb_existants = ingester.compter_chunks_existants(doc.id)
+
+        if nb_existants > 0 and not requete.forcer_reindexation:
+            raise DocumentDejaIndexeError(
+                f"Document '{doc.id}' déjà indexé ({nb_existants} chunks) — "
+                f"renvoyer avec forcer_reindexation=true pour le remplacer."
+            )
+
+        if nb_existants > 0:
+            ingester.supprimer_chunks_document(doc.id)
+
+        nb_chunks = ingester.ingest_document(doc)
+
         return ReponseIngestion(
-            document_id="inconnu",
-            chunks_indexes=0,
-            hash_document="",
-            nouvelle_version=False,
+            document_id=doc.id,
+            chunks_indexes=nb_chunks,
+            hash_document=doc.hash_document,
+            nouvelle_version=nb_existants > 0,
         )
 
     # ------------------------------------------------------------------

@@ -36,6 +36,26 @@ import mlx.core as mx
 
 logger = logging.getLogger(__name__)
 
+# Longueur max (caractères) d'un texte envoyé à l'embedding. `max_length=512`
+# et `truncation=True` passés à emb_generate() agissent sur les *tokens*, pas
+# les caractères — sur un texte très long, la tokenisation elle-même peut
+# consommer une mémoire excessive avant que la troncature ne s'applique
+# (cause du crash mémoire observé en ingérant REACH sans chunking en amont).
+# Cette limite est un filet de sécurité : les appelants (Retriever, Ingester)
+# doivent chunker en amont ; elle protège contre un appel qui les court-circuite.
+TAILLE_MAX_TEXTE_EMBEDDING = 8000
+
+
+def _tronquer_pour_embedding(texte: str) -> str:
+    """Tronque un texte trop long avant embedding, avec avertissement."""
+    if len(texte) > TAILLE_MAX_TEXTE_EMBEDDING:
+        logger.warning(
+            "Texte tronqué de %d à %d caractères avant embedding.",
+            len(texte), TAILLE_MAX_TEXTE_EMBEDDING,
+        )
+        return texte[:TAILLE_MAX_TEXTE_EMBEDDING]
+    return texte
+
 
 # ---------------------------------------------------------------------------
 # Structures de résultats
@@ -264,6 +284,7 @@ class MLXEmbedding:
         """
         if not self._loaded:
             self.load()
+        texte = _tronquer_pour_embedding(texte)
         try:
             from mlx_embeddings import generate as emb_generate
             sortie = emb_generate(
@@ -305,6 +326,7 @@ class MLXEmbedding:
         except Exception as exc:
             raise RuntimeError(f"mlx-embeddings non disponible : {exc}") from exc
 
+        textes = [_tronquer_pour_embedding(t) for t in textes]
         vecteurs: list[list[float]] = []
         total = len(textes)
 
