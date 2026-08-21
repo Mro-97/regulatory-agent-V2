@@ -106,6 +106,19 @@ def _classifier_requete(question: str, date_contexte: Optional[date]) -> str:
 # Orchestrateur
 # ---------------------------------------------------------------------------
 
+# Mapping agent → machine d'exécution (contexte projet § 3).
+# Source unique de vérité utilisée dans l'audit trail (SortieAgent.machine).
+# Modifier ici si l'architecture distribuée change.
+_MACHINE_PAR_AGENT: dict[str, str] = {
+    "Orchestrateur": "Mac_A",
+    "Retriever":     "Mac_B",
+    "Temporal":      "Mac_B",
+    "Explainer":     "Mac_B",
+    "Citation":      "Mac_B",
+    "Conflict":      "Mac_C",
+}
+_MACHINE_INCONNUE = "inconnue"
+
 
 class Orchestrateur:
     """
@@ -175,6 +188,30 @@ class Orchestrateur:
             decode_responses=True,
         )
 
+    @staticmethod
+    def _machine_pour_agent(nom_agent: str) -> str:
+        """
+        Retourne la machine d'exécution attendue pour un agent donné.
+
+        Utilisée pour renseigner SortieAgent.machine dans l'audit trail.
+        Un nom d'agent inconnu déclenche un warning et retourne "inconnue"
+        plutôt que de renvoyer une machine erronée par défaut.
+
+        Args:
+            nom_agent: Nom de l'agent (ex. "Retriever", "Temporal").
+
+        Returns:
+            Étiquette de machine ("Mac_A" / "Mac_B" / "Mac_C" / "inconnue").
+        """
+        machine = _MACHINE_PAR_AGENT.get(nom_agent)
+        if machine is None:
+            logger.warning(
+                "Agent '%s' absent du mapping _MACHINE_PAR_AGENT — audit imprécis.",
+                nom_agent,
+            )
+            return _MACHINE_INCONNUE
+        return machine
+
     # ------------------------------------------------------------------
     # Étapes du pipeline — mode real
     # ------------------------------------------------------------------
@@ -204,7 +241,7 @@ class Orchestrateur:
 
         sortie = SortieAgent(
             nom_agent="Retriever",
-            machine="Mac_A",  # en test local ; sera Mac_B en prod
+            machine=self._machine_pour_agent("Retriever"),
             contenu={
                 "chunks_recuperes": len(evidences),
                 "date_contexte": date_contexte.isoformat() if date_contexte else None,
@@ -252,7 +289,7 @@ class Orchestrateur:
 
         sortie = SortieAgent(
             nom_agent="Temporal",
-            machine="Mac_A",
+            machine=self._machine_pour_agent("Temporal"),
             contenu=contenu,
         )
         return resultat.evidences_applicables, sortie
@@ -281,7 +318,7 @@ class Orchestrateur:
 
         sortie = SortieAgent(
             nom_agent="Explainer",
-            machine="Mac_A",
+            machine=self._machine_pour_agent("Explainer"),
             contenu={
                 "mode": resultat.mode,
                 "evidences_utilisees": len(evidences),
@@ -391,7 +428,7 @@ class Orchestrateur:
                 )
                 agents_executes.append(SortieAgent(
                     nom_agent="Conflict",
-                    machine="Mac_A",
+                    machine=self._machine_pour_agent("Conflict"),
                     contenu={
                         "niveau_global": resultat_conflit.niveau_global.value,
                         "conflits_detectes": len(resultat_conflit.conflits),
@@ -451,7 +488,7 @@ class Orchestrateur:
             resultat_citation = agent_citation.generate(evidences=evidences)
             agents_executes.append(SortieAgent(
                 nom_agent="Citation",
-                machine="Mac_A",
+                machine=self._machine_pour_agent("Citation"),
                 contenu={
                     "mode": resultat_citation.mode,
                     "verifiees": len(resultat_citation.citations_verifiees),
