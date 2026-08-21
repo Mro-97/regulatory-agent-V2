@@ -125,7 +125,12 @@ def main() -> None:
         client = QdrantClient(location=":memory:")
     else:
         logger.info("Connexion Qdrant : %s:%d", cfg.qdrant_host, cfg.qdrant_port)
-        client = QdrantClient(host=cfg.qdrant_host, port=cfg.qdrant_port)
+        client = QdrantClient(
+            host=cfg.qdrant_host,
+            port=cfg.qdrant_port,
+            https=cfg.qdrant_https,
+            api_key=cfg.qdrant_api_key or None,
+        )
 
     setup_collection(
         client=client,

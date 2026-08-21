@@ -10,13 +10,12 @@ import gc
 import json
 import logging
 import sys
-from pathlib import Path
 import uuid
-from datetime import date
-from typing import List, Optional
-import mlx_embeddings
+from pathlib import Path
+from typing import List
+
 from qdrant_client import QdrantClient
-from qdrant_client.models import VectorParams, Distance, PointStruct
+from qdrant_client.models import Distance, PointStruct, VectorParams
 
 # Ajouter le chemin du projet au PYTHONPATH
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -29,7 +28,12 @@ logger = logging.getLogger(__name__)
 
 class Ingester:
     def __init__(self, collection_name: str = "regulatory_chunks", recreate: bool = False):
-        self.client = QdrantClient(host=cfg.qdrant_host, port=cfg.qdrant_port)
+        self.client = QdrantClient(
+            host=cfg.qdrant_host,
+            port=cfg.qdrant_port,
+            https=cfg.qdrant_https,
+            api_key=cfg.qdrant_api_key or None,
+        )
         self.collection_name = collection_name
         self.embedding_model = self._load_embedding_model()
 
@@ -40,19 +44,19 @@ class Ingester:
         """Charge le modèle d'embedding MLX (bge-m3) via mlx_utils."""
         from src.mlx_utils import get_embedding
         model = get_embedding(cfg.modele_embedding)
-        logger.info(f"Modèle d'embedding : {cfg.modele_embedding}")
+        logger.info("Modèle d'embedding : %s", cfg.modele_embedding)
         return model
 
     def _recreate_collection(self):
         """Supprime et recrée la collection Qdrant."""
         if self.client.collection_exists(self.collection_name):
             self.client.delete_collection(self.collection_name)
-            logger.info(f"🗑️ Collection '{self.collection_name}' supprimée")
+            logger.info("Collection '%s' supprimée", self.collection_name)
         self.client.create_collection(
             collection_name=self.collection_name,
             vectors_config=VectorParams(size=1024, distance=Distance.COSINE),
         )
-        logger.info(f"✅ Collection '{self.collection_name}' créée (dim=1024)")
+        logger.info("Collection '%s' créée (dim=1024)", self.collection_name)
 
     def embed_chunk(self, text: str) -> List[float]:
         """Génère un embedding pour un chunk de texte via MLXEmbedding (bge-m3)."""
@@ -102,9 +106,6 @@ class Ingester:
     
     def ingest_json(self, json_path: Path, batch_size: int = 50) -> None:
         """Ingere un fichier JSON dans Qdrant par lots."""
-        import gc
-        from qdrant_client.models import PointStruct
-
         with open(json_path, "r", encoding="utf-8") as f:
             data = json.load(f)
 
@@ -115,14 +116,14 @@ class Ingester:
             try:
                 doc = DocumentReglementaire(**data_item)
             except Exception as e:
-                logger.error(f"Erreur validation : {e}")
+                logger.error("Erreur validation : %s", e)
                 continue
 
             chunks = self.chunk_document(doc)
             if not chunks:
                 continue
 
-            logger.info(f"Document : {doc.id} — {len(chunks)} chunks")
+            logger.info("Document : %s — %d chunks", doc.id, len(chunks))
 
             for i in range(0, len(chunks), batch_size):
                 lot = chunks[i:i + batch_size]
@@ -147,21 +148,24 @@ class Ingester:
                             }
                         ))
                     except Exception as e:
-                        logger.error(f"Erreur embedding : {e}")
+                        logger.error("Erreur embedding : %s", e)
                         continue
 
                 if points:
                     try:
                         self.client.upsert(collection_name=self.collection_name, points=points, wait=True)
                         total_ingeres += len(points)
-                        logger.info(f"  Lot {i//batch_size+1} : {len(points)} chunks ({total_ingeres} total)")
+                        logger.info(
+                            "Lot %d : %d chunks (%d total)",
+                            i // batch_size + 1, len(points), total_ingeres,
+                        )
                     except Exception as e:
-                        logger.error(f"Erreur upsert : {e}")
+                        logger.error("Erreur upsert : %s", e)
 
                 del points, lot
                 gc.collect()
 
-        logger.info(f"Ingestion terminee : {total_ingeres} chunks")
+        logger.info("Ingestion terminee : %d chunks", total_ingeres)
 
 
 def main():

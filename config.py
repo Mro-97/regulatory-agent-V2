@@ -37,9 +37,34 @@ class Parametres(BaseSettings):
     # ------------------------------------------------------------------
     # Serveur API (Mac A)
     # ------------------------------------------------------------------
-    api_host: str = Field(default="0.0.0.0")
+    api_host: str = Field(default="127.0.0.1", description="Bind. Utiliser 0.0.0.0 uniquement derrière un proxy.")
     api_port: int = Field(default=8000)
     api_workers: int = Field(default=1)
+
+    # ------------------------------------------------------------------
+    # Sécurité API
+    # ------------------------------------------------------------------
+    api_key: str = Field(
+        default="",
+        description="Clé API partagée (en-tête X-API-Key). Vide = accès refusé (fail-closed).",
+    )
+    cors_origins_str: str = Field(
+        default="http://localhost,http://127.0.0.1",
+        alias="CORS_ORIGINS",
+        description="Origines navigateur autorisées (CORS), séparées par des virgules.",
+    )
+    exposer_docs: bool = Field(
+        default=False,
+        description="Expose /docs et /redoc (Swagger). Désactivé par défaut.",
+    )
+    taille_max_requete_octets: int = Field(
+        default=2_097_152, description="Taille maximale du corps de requête (2 Mo)."
+    )
+    question_max_length: int = Field(default=4000, description="Longueur max d'une question.")
+
+    # Rate limiting (par IP)
+    rate_limit_max_requetes: int = Field(default=30)
+    rate_limit_fenetre_secondes: int = Field(default=60)
 
     # ------------------------------------------------------------------
     # Modèles MLX — Mac A (orchestrateur)
@@ -51,20 +76,12 @@ class Parametres(BaseSettings):
 
     # ------------------------------------------------------------------
     # Modèle d'embedding dédié — Mac B
-    # Utilisé par le Retriever ET le pipeline d'ingestion.
-    # DOIT être identique dans les deux pour que les vecteurs soient compatibles.
     # ------------------------------------------------------------------
     modele_embedding: str = Field(
         default="models/bge-m3-mlx",
-        description=(
-            "Nom du modèle d'embedding dans le registre mlx-embedding-models. "
-            "bge-m3 : multilingue, dimension 1024, compatible French regulatory text."
-        ),
+        description="Nom du modèle d'embedding dans le registre mlx-embedding-models.",
     )
-    embedding_dimension: int = Field(
-        default=1024,
-        description="Dimension des vecteurs produits par modele_embedding.",
-    )
+    embedding_dimension: int = Field(default=1024)
 
     # ------------------------------------------------------------------
     # Modèles MLX de génération — Mac B
@@ -72,22 +89,10 @@ class Parametres(BaseSettings):
     mac_b_host: str = Field(default="192.168.1.11")
     mac_b_port: int = Field(default=8001)
 
-    modele_retriever: str = Field(
-        default="mlx-community/Mistral-7B-Instruct-v0.3-4bit",
-        description="Modèle de génération pour le Retriever (Mac B).",
-    )
-    modele_temporal: str = Field(
-        default="mlx-community/Qwen2.5-7B-Instruct-4bit",
-        description="Modèle de génération pour l'agent Temporal (Mac B).",
-    )
-    modele_explainer: str = Field(
-        default="mlx-community/Qwen2.5-7B-Instruct-4bit",
-        description="Modèle de génération pour l'Explainer (Mac B).",
-    )
-    modele_citation: str = Field(
-        default="mlx-community/Mistral-7B-Instruct-v0.3-4bit",
-        description="Modèle de génération pour l'agent Citation (Mac B).",
-    )
+    modele_retriever: str = Field(default="mlx-community/Mistral-7B-Instruct-v0.3-4bit")
+    modele_temporal: str = Field(default="mlx-community/Qwen2.5-7B-Instruct-4bit")
+    modele_explainer: str = Field(default="mlx-community/Qwen2.5-7B-Instruct-4bit")
+    modele_citation: str = Field(default="mlx-community/Mistral-7B-Instruct-v0.3-4bit")
 
     # ------------------------------------------------------------------
     # Modèles MLX de génération — Mac C
@@ -95,10 +100,7 @@ class Parametres(BaseSettings):
     mac_c_host: str = Field(default="192.168.1.12")
     mac_c_port: int = Field(default=8002)
 
-    modele_conflit: str = Field(
-        default="mlx-community/DeepSeek-R1-Distill-Qwen-14B-4bit",
-        description="Modèle de génération pour l'agent Conflict (Mac C).",
-    )
+    modele_conflit: str = Field(default="mlx-community/DeepSeek-R1-Distill-Qwen-14B-4bit")
 
     # ------------------------------------------------------------------
     # Génération MLX — paramètres par défaut
@@ -112,6 +114,8 @@ class Parametres(BaseSettings):
     # ------------------------------------------------------------------
     qdrant_host: str = Field(default="192.168.1.11")
     qdrant_port: int = Field(default=6333)
+    qdrant_https: bool = Field(default=False)
+    qdrant_api_key: str = Field(default="")
     qdrant_collection: str = Field(default="regulatory_chunks")
     qdrant_vecteur_taille: int = Field(default=1024)
     qdrant_top_k: int = Field(default=15)
@@ -121,14 +125,16 @@ class Parametres(BaseSettings):
     # ------------------------------------------------------------------
     redis_host: str = Field(default="127.0.0.1")
     redis_port: int = Field(default=6379)
+    redis_password: str = Field(default="")
     redis_db: int = Field(default=0)
     redis_ttl_cache: int = Field(default=3600)
 
     # ------------------------------------------------------------------
-    # PostgreSQL (Mac C)
+    # PostgreSQL (Mac C) — DSN via .env uniquement, jamais de valeur en dur
     # ------------------------------------------------------------------
     postgres_dsn: str = Field(
-        default="postgresql://raguser:ragpass@192.168.1.12:5432/regulatory",
+        default="",
+        description="DSN PostgreSQL ex. postgresql://user:motdepasse@hôte:5432/base.",
     )
 
     # ------------------------------------------------------------------
@@ -141,25 +147,39 @@ class Parametres(BaseSettings):
     # Watcher
     # ------------------------------------------------------------------
     watcher_intervalle_heures: int = Field(default=6)
+    watcher_follow_redirects: bool = Field(
+        default=False,
+        description="Suivre les redirections HTTP (réduit la surface SSRF).",
+    )
+
+    # ------------------------------------------------------------------
+    # Audit
+    # ------------------------------------------------------------------
+    audit_local_path: Path = Field(default=Path("data/audit.jsonl"))
 
     # ------------------------------------------------------------------
     # Chemins locaux
     # ------------------------------------------------------------------
     @property
-    def racine(self):
+    def racine(self) -> Path:
         return Path(__file__).parent
 
     @property
-    def dossier_data_raw(self):
+    def dossier_data_raw(self) -> Path:
         return self.racine / "data" / "raw"
 
     @property
-    def dossier_data_indexed(self):
+    def dossier_data_indexed(self) -> Path:
         return self.racine / "data" / "indexed"
 
     @property
-    def dossier_data_pending(self):
+    def dossier_data_pending(self) -> Path:
         return self.racine / "data" / "pending"
+
+    @property
+    def cors_origins(self) -> list[str]:
+        """Origines CORS parsées depuis cors_origins_str."""
+        return [o.strip() for o in self.cors_origins_str.split(",") if o.strip()]
 
 
 cfg = Parametres()
