@@ -1,0 +1,588 @@
+{
+  "id": "EIDAS_2014_910_FULL",
+  "titre": "eIDAS - Reglement UE 910/2014",
+  "source": "EUR-Lex",
+  "url_source": null,
+  "publication_date": "2014-07-23",
+  "entry_into_force": "2016-07-01",
+  "repeal_date": null,
+  "version": "2016-07-01",
+  "themes": [
+    "numerique",
+    "identite_numerique",
+    "confiance"
+  ],
+  "chapitres": [
+    {
+      "id": "chap_i",
+      "titre": "DISPOSITIONS GÉNÉRALES",
+      "articles": [
+        {
+          "id": "art_2",
+          "titre": "Champ d’application",
+          "texte": "Champ d’application\n1. Le présent règlement s’applique aux schémas d’identification électronique qui ont été notifiés par un État membre et\naux prestataires de services de confiance établis dans l’Union.\n2. Le présent règlement ne s’applique pas à la fourniture de services de confiance utilisés exclusivement dans des\nsystèmes fermés résultant du droit national ou d’accords au sein d’un ensemble défini de participants.\n3. Le présent règlement n’affecte pas le droit national ou de l’Union relatif à la conclusion et à la validité des contrats\nou d’autres obligations juridiques ou procédurales d’ordre formel.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "bb75b19b930d184bfcc448f5fd86dcdb078e088fba785ad3afb0ee50470ea088"
+        },
+        {
+          "id": "art_3",
+          "titre": "Définitions",
+          "texte": "Définitions\nAux fins du présent règlement, on entend par:\n1. «identification électronique», le processus consistant à utiliser des données d’identification personnelle sous une forme\nélectronique représentant de manière univoque une personne physique ou morale, ou une personne physique\nreprésentant une personne morale;\n2. «moyen d’identification électronique», un élément matériel et/ou immatériel contenant des données d’identification\npersonnelle et utilisé pour s’authentifier pour un service en ligne;\n3. «données d’identification personnelle», un ensemble de données permettant d’établir l’identité d’une personne\nphysique ou morale, ou d’une personne physique représentant une personne morale;\n4. «schéma d’identification électronique», un système pour l’identification électronique en vertu duquel des moyens\nd’identification électronique sont délivrés à des personnes physiques ou morales, ou à des personnes physiques\nreprésentant des personnes morales;\n\nL 257/84 FR Journal officiel de l’Union européenne 28.8.2014\n5. «authentification», un processus électronique qui permet de confirmer l’identification électronique d’une personne\nphysique ou morale, ou l’origine et l’intégrité d’une donnée sous forme électronique;\n6. «partie utilisatrice», une personne physique ou morale qui se fie à une identification électronique ou à un service de\nconfiance;\n7. «organismes du secteur public», un État, une autorité régionale ou locale, un organisme de droit public ou une\nassociation constituée d’une ou de plusieurs de ces autorités ou d’un ou de plusieurs de ces organismes de droit\npublic, ou une entité privée mandatée par au moins un ou une de ces autorités, organismes, ou associations pour\nfournir des services publics lorsqu’elle agit en vertu de ce mandat;\n8. «organisme de droit public», un organisme au sens de l’article 2, paragraphe 1, point 4), de la directive 2014/24/UE\ndu Parlement européen et du Conseil ( 1 );\n9. «signataire», une personne physique qui crée une signature électronique;\n10. «signature électronique», des données sous forme électronique, qui sont jointes ou associées logiquement à d’autres\ndonnées sous forme électronique et que le signataire utilise pour signer;\n11. «signature électronique avancée», une signature électronique qui satisfait aux exigences énoncées à l’article 26:\n12. «signature électronique qualifiée», une signature électronique avancée qui est créée à l’aide d’un dispositif de création\nde signature électronique qualifié, et qui repose sur un certificat qualifié de signature électronique;\n13. «données de création de signature électronique», des données uniques qui sont utilisées par le signataire pour créer\nune signature électronique;\n14. «certificat de signature électronique», une attestation électronique qui associe les données de validation d’une signature\nélectronique à une personne physique et confirme au moins le nom ou le pseudonyme de cette personne;\n15. «certificat qualifié de signature électronique», un certificat de signature électronique, qui est délivré par un prestataire\nde services de confiance qualifié et qui satisfait aux exigences fixées à l’annexe I;\n16. «service de confiance», un service électronique normalement fourni contre rémunération qui consiste:\na) en la création, en la vérification et en la validation de signatures électroniques, de cachets électroniques ou\nd’horodatages électroniques, de services d’envoi recommandé électronique et de certificats relatifs à ces services; ou\nb) en la création, en la vérification et en la validation de certificats pour l’authentification de site internet; ou\nc) en la conservation de signatures électroniques, de cachets électroniques ou des certificats relatifs à ces services;\n17. «service de confiance qualifié», un service de confiance qui satisfait aux exigences du présent règlement;\n( 1 ) Directive 2014/24/UE du Parlement européen et du Conseil du 26 février 2014 sur la passation des marchés publics et abrogeant la\ndirective 2004/18/CE (JO L 94 du 28.3.2014, p. 65).\n\n28.8.2014 FR Journal officiel de l’Union européenne L 257/85\n18. «organisme d’évaluation de la conformité», un organisme défini à l’article 2, point 13), du règlement (CE)\nn o 765/2008, qui est accrédité conformément audit règlement comme étant compétent pour effectuer l’évaluation\nde la conformité d’un prestataire de services de confiance qualifié et des services de confiance qualifiés qu’il fournit;\n19. «prestataire de services de confiance», une personne physique ou morale qui fournit un ou plusieurs services de\nconfiance, en tant que prestataire de services de confiance qualifié ou non qualifié;\n20. «prestataire de services de confiance qualifié», un prestataire de services de confiance qui fournit un ou plusieurs\nservices de confiance qualifiés et a obtenu de l’organe de contrôle le statut qualifié;\n21. «produit», un dispositif matériel ou logiciel, ou les composants correspondants du dispositif matériel ou logiciel, qui\nsont destinés à être utilisés pour la fourniture de services de confiance;\n22. «dispositif de création de signature électronique», un dispositif logiciel ou matériel configuré servant à créer une\nsignature électronique;\n23. «dispositif de création de signature électronique qualifié», un dispositif de création de signature électronique qui\nsatisfait aux exigences énoncées à l’annexe II;\n24. «créateur de cachet», une personne morale qui crée un cachet électronique;\n25. «cachet électronique», des données sous forme électronique, qui sont jointes ou associées logiquement à d’autres\ndonnées sous forme électronique pour garantir l’origine et l’intégrité de ces dernières;\n26. «cachet électronique avancé», un cachet électronique qui satisfait aux exigences énoncées à l’article 36;\n27. «cachet électronique qualifié», un cachet électronique avancé qui est créé à l’aide d’un dispositif de création de cachet\nélectronique qualifié et qui repose sur un certificat qualifié de cachet électronique;\n28. «données de création de cachet électronique», des données uniques qui sont utilisées par le créateur du cachet\nélectronique pour créer un cachet électronique;\n29. «certificat de cachet électronique», une attestation électronique qui associe les données de validation d’un cachet\nélectronique à une personne morale et confirme le nom de cette personne;\n30. «certificat qualifié de cachet électronique», un certificat de cachet électronique, qui est délivré par un prestataire de\nservices de confiance qualifié et qui satisfait aux exigences fixées à l’annexe III;\n31. «dispositif de création de cachet électronique», un dispositif logiciel ou matériel configuré utilisé pour créer un cachet\nélectronique;\n32. «dispositif de création de cachet électronique qualifié», un dispositif de création de cachet électronique qui satisfait\nmutatis mutandis aux exigences fixées à l’annexe II;\n33. «horodatage électronique», des données sous forme électronique qui associent d’autres données sous forme électro­\nnique à un instant particulier et établissent la preuve que ces dernières données existaient à cet instant;\n34. «horodatage électronique qualifié», un horodatage électronique qui satisfait aux exigences fixées à l’article 42;\n\nL 257/86 FR Journal officiel de l’Union européenne 28.8.2014\n35. «document électronique», tout contenu conservé sous forme électronique, notamment un texte ou un enregistrement\nsonore, visuel ou audiovisuel;\n36. «service d’envoi recommandé électronique», un service qui permet de transmettre des données entre des tiers par voie\nélectronique, qui fournit des preuves concernant le traitement des données transmises, y compris la preuve de leur\nenvoi et de leur réception, et qui protège les données transmises contre les risques de perte, de vol, d’altération ou de\ntoute modification non autorisée;\n37. «service d’envoi recommandé électronique qualifié», un service d’envoi recommandé électronique qui satisfait aux\nexigences fixées à l’article 44;\n38. «certificat d’authentification de site internet«, une attestation qui permet d’authentifier un site internet et associe celui-\nci à la personne physique ou morale à laquelle le certificat est délivré;\n39. «certificat qualifié d’authentification de site internet«, un certificat d’authentification de site internet, qui est délivré par\nun prestataire de services de confiance qualifié et qui satisfait aux exigences fixées à l’annexe IV;\n40. «données de validation», des données qui servent à valider une signature électronique ou un cachet électronique;\n41. «validation», le processus de vérification et de confirmation de la validité d’une signature ou d’un cachet électronique.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "e2bd2eed1c1a14049df1440832a27029cec755d95a54f3074ec701360fc939a9"
+        },
+        {
+          "id": "art_4",
+          "titre": "Principe du marché intérieur",
+          "texte": "Principe du marché intérieur\n1. Il n’y a pas de restriction à la fourniture de services de confiance, sur le territoire d’un État membre, par un\nprestataire de services de confiance établi dans un autre État membre pour des raisons qui relèvent des domaines couverts\npar le présent règlement.\n2. Les produits et les services de confiance qui sont conformes au présent règlement sont autorisés à circuler librement\nau sein du marché intérieur.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "c12b7ee6229870f6b2e75a523f23add7fc744cb8cb708abe103dcee615fa94b6"
+        },
+        {
+          "id": "art_5",
+          "titre": "Protection et traitement des données à caractère personnel",
+          "texte": "Protection et traitement des données à caractère personnel\n1. Le traitement de données à caractère personnel est effectué conformément à la directive 95/46/CE.\n2. Sans préjudice de l’effet juridique donné aux pseudonymes au titre du droit national, l’utilisation de pseudonymes\ndans les transactions électroniques n’est pas interdite.\nCHAPITRE II\nIDENTIFICATION ÉLECTRONIQUE",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "5a465f3b3178e2bb329789e9334b8ebc1862ec96373ef485bc74ae1c9f28571d"
+        },
+        {
+          "id": "art_6",
+          "titre": "Reconnaissance mutuelle",
+          "texte": "Reconnaissance mutuelle\n1. Lorsqu’une identification électronique à l’aide d’un moyen d’identification électronique et d’une authentification est\nexigée en vertu du droit national ou de pratiques administratives nationales pour accéder à un service en ligne fourni par\nun organisme du secteur public dans un État membre, le moyen d’identification électronique délivré dans un autre État\nmembre est reconnu dans le premier État membre aux fins de l’authentification transfrontalière pour ce service en ligne, à\ncondition que les conditions suivantes soient remplies:\na) la délivrance de ce moyen d’identification électronique relève d’un schéma d’identification électronique qui figure sur la\nliste publiée par la Commission en vertu de l’article 9;\n\n28.8.2014 FR Journal officiel de l’Union européenne L 257/87\nb) le niveau de garantie de ce moyen d’identification électronique correspond à un niveau de garantie égal ou supérieur à\ncelui requis par l’organisme du secteur public concerné pour accéder à ce service en ligne dans le premier État\nmembre, à condition que le niveau de garantie de ce moyen d’identification électronique corresponde au niveau de\ngarantie substantiel ou élevé;\nc) l’organisme du secteur public concerné utilise le niveau de garantie substantiel ou élevé pour ce qui concerne l’accès à\nce service en ligne.\nCette reconnaissance intervient au plus tard douze mois après la publication par la Commission de la liste visée au point\na) du premier alinéa.\n2. Un moyen d’identification électronique dont la délivrance relève d’un schéma d’identification électronique figurant\nsur la liste publiée par la Commission en vertu de l’article 9 et qui correspond au niveau de garantie faible peut être\nreconnu par des organismes du secteur public aux fins de l’authentification transfrontalière du service fourni en ligne par\nces organismes.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "f30c5ee12e6d7c0c43e0082f37984c3130b4b6ab2a40a4356656a6962bf78a33"
+        },
+        {
+          "id": "art_7",
+          "titre": "Éligibilité pour la notification des schémas d’identification électronique",
+          "texte": "Éligibilité pour la notification des schémas d’identification électronique\nUn schéma d’identification électronique est éligible aux fins de notification en vertu de l’article 9, paragraphe 1, si toutes\nles conditions suivantes sont remplies:\na) les moyens d’identification électronique relevant du schéma d’identification électronique sont délivrés:\ni) par l’État membre notifiant;\nii) dans le cadre d’un mandat de l’État membre notifiant; ou\niii) indépendamment de l’État membre notifiant et sont reconnus par cet État membre;\nb) les moyens d’identification électronique relevant du schéma d’identification électronique peuvent être utilisés pour\naccéder au moins à un service qui est fourni par un organisme du secteur public et qui exige l’identification\nélectronique dans l’État membre notifiant;\nc) le schéma d’identification électronique et les moyens d’identification électronique délivrés dans ce cadre répondent aux\nexigences d’au moins un des niveaux de garantie prévus dans l’acte d’exécution visé à l’article 8, paragraphe 3;\nd) l’État membre notifiant veille à ce que les données d’identification personnelle représentant de manière univoque la\npersonne en question soient attribuées conformément aux spécifications techniques, aux normes et aux procédures\npour le niveau de garantie concerné prévues dans l’acte d’exécution visé à l’article 8, paragraphe 3, à la personne\nphysique ou morale visée à l’article 3, point 1), au moment de la délivrance du moyen d’identification électronique\nrelevant de ce schéma;\ne) la partie délivrant le moyen d’identification électronique relevant de ce schéma veille à ce que le moyen d’identification\nélectronique soit attribué à la personne visée au point d) du présent article conformément aux spécifications tech­\nniques, aux normes et aux procédures pour le niveau de garantie concerné prévues dans l’acte d’exécution visé à\nl’article 8, paragraphe 3;\nf) l’État membre notifiant veille à ce qu’une authentification en ligne soit disponible afin de permettre à toute partie\nutilisatrice établie sur le territoire d’un autre État membre de confirmer les données d’identification personnelle reçues\nsous forme électronique.\n\nL 257/88 FR Journal officiel de l’Union européenne 28.8.2014\nPour les parties utilisatrices autres que des organismes du secteur public, l’État membre notifiant peut définir les\nconditions d’accès à cette authentification. Cette authentification transfrontalière est fournie gratuitement lorsqu’elle est\neffectuée en liaison avec un service en ligne fourni par un organisme du secteur public.\nLes États membres n’imposent aucune exigence technique disproportionnée aux parties utilisatrices qui envisagent de\nprocéder à cette authentification, lorsque de telles exigences empêchent ou entravent sensiblement l’interopérabilité des\nschémas d’identification électronique notifiés;\ng) six mois au moins avant la notification en vertu de l’article 9, paragraphe 1, l’État membre notifiant fournit aux autres\nÉtats membres aux fins de l’obligation au titre de l’article 12, paragraphe 5, une description de ce schéma confor­\nmément aux modalités de procédure établies par les actes d’exécution visés à l’article 12, paragraphe 7.\nh) le schéma d’identification électronique satisfait aux exigences de l’acte d’exécution visé à l’article 12, paragraphe 8.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "b44a946adff4903a751f321a87aacae301f9182b7ce3bea23c2f10b31b13f66e"
+        },
+        {
+          "id": "art_8",
+          "titre": "Niveaux de garantie des schémas d’identification électronique",
+          "texte": "Niveaux de garantie des schémas d’identification électronique\n1. Un schéma d’identification électronique notifié en vertu de l’article 9, paragraphe 1, détermine les spécifications des\nniveaux de garantie faible, substantiel et/ou élevé des moyens d’identification électronique délivrés dans le cadre dudit\nschéma.\n2. Les niveaux de garantie faible, substantiel et élevé satisfont, respectivement, aux critères suivants:\na) le niveau de garantie faible renvoie à un moyen d’identification électronique dans le cadre d’un schéma d’identification\nélectronique qui accorde un degré limité de fiabilité à l’identité revendiquée ou prétendue d’une personne, et est\ncaractérisé sur la base de spécifications techniques, de normes et de procédures y afférents, y compris les contrôles\ntechniques, dont l’objectif est de réduire le risque d’utilisation abusive ou d’altération de l’identité;\nb) le niveau de garantie substantiel renvoie à un moyen d’identification électronique dans le cadre d’un schéma d’iden­\ntification électronique qui accorde un degré substantiel de fiabilité à l’identité revendiquée ou prétendue d’une\npersonne, et est caractérisé sur la base de spécifications techniques, de normes et de procédures y afférents, y\ncompris les contrôles techniques, dont l’objectif est de réduire substantiellement le risque d’utilisation abusive ou\nd’altération de l’identité;\nc) le niveau de garantie élevé renvoie à un moyen d’identification électronique dans le cadre d’un schéma d’identification\nélectronique qui accorde un niveau de fiabilité à l’identité revendiquée ou prétendue d’une personne plus élevé qu’un\nmoyen d’identification électronique ayant le niveau de garantie substantiel, et est caractérisé sur la base de spécifica­\ntions techniques, de normes et de procédures y afférents, y compris les contrôles techniques, dont l’objectif est\nd’empêcher l’utilisation abusive ou l’altération de l’identité.\n3. Au plus tard le 18 septembre 2015, compte tenu des normes internationales pertinentes et sous réserve du\nparagraphe 2, la Commission fixe, au moyen d’actes d’exécution, les spécifications techniques, normes et procédures\nminimales sur la base desquelles les niveaux de garantie faible, substantiel et élevé sont spécifiés pour les moyens\nd’identification électronique aux fins du paragraphe 1.\nCes spécifications techniques, normes et procédures minimales sont fixées par référence à la fiabilité et à la qualité des\néléments suivants:\na) la procédure visant à prouver et vérifier l’identité des personnes physiques ou morales demandant la délivrance de\nmoyens d’identification électronique;\n\n28.8.2014 FR Journal officiel de l’Union européenne L 257/89\nb) la procédure de délivrance des moyens d’identification électronique demandés;\nc) le mécanisme d’authentification au moyen duquel la personne physique ou morale utilise le moyen d’identification\nélectronique pour confirmer son identité à une partie utilisatrice;\nd) l’entité délivrant les moyens d’identification électronique;\ne) tout autre organisme associé à la demande de délivrance de moyens d’identification électronique; et\nf) les spécifications techniques et de sécurité des moyens d’identification électronique délivrés.\nCes actes d’exécution sont adoptés en conformité avec la procédure d’examen visée à l’article 48, paragraphe 2.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "16cd203ab7e3fe922f0be81211c0229c084c1975c61d02123e6a4f95057248e0"
+        },
+        {
+          "id": "art_9",
+          "titre": "Notification",
+          "texte": "Notification\n1. L’État membre notifiant notifie les informations suivantes à la Commission et lui communique toute modification\nultérieure qui leur est apportée dans les meilleurs délais:\na) une description du schéma d’identification électronique, y compris ses niveaux de garantie et l’entité ou les entités qui\ndélivrent les moyens d’identification électronique relevant de ce schéma;\nb) le régime de contrôle applicable et des informations sur la responsabilité en ce qui concerne les aspects suivants:\ni) la partie qui délivre le moyen d’identification électronique; et\nii) la partie qui gère la procédure d’authentification;\nc) l’autorité ou les autorités responsables du schéma d’identification électronique;\nd) des informations sur l’entité ou les entités qui gèrent l’enregistrement des données d’identification personnelle uniques;\ne) une description de la façon dont il est satisfait aux exigences énoncées dans l’acte d’exécution visé à l’article 12,\nparagraphe 8;\nf) une description de l’authentification visée à l’article 7, point f);\ng) les dispositions concernant la suspension ou la révocation du schéma d’identification électronique notifié, de l’au­\nthentification ou des parties compromises concernées.\n2. Un an à compter de la date d’application des actes d’exécution visés à l’article 8, paragraphe 3, et à l’article 12,\nparagraphe 8, la Commission publie au Journal officiel de l’Union européenne la liste des schémas d’identification électronique\nqui ont été notifiés en vertu du paragraphe 1, et les informations essentielles à leur sujet.\n3. Si la Commission reçoit une notification après expiration du délai visé au paragraphe 2, elle publie au Journal officiel\nde l’Union européenne les modifications apportées à la liste visée au paragraphe 2 dans les deux mois à compter de la date\nde réception de cette notification.\n\nL 257/90 FR Journal officiel de l’Union européenne 28.8.2014\n4. Un État membre peut soumettre à la Commission une demande visant à retirer de la liste visée au paragraphe 2 le\nschéma d’identification électronique qu’il a notifié. La Commission publie au Journal officiel de l’Union européenne les\nmodifications correspondantes apportées à la liste dans un délai d’un mois à compter de la date de réception de la\ndemande de l’État membre.\n5. La Commission peut définir, au moyen d’actes d’exécution, les circonstances, les formats et les procédures pour les\nnotifications au titre du paragraphe 1. Ces actes d’exécution sont adoptés en conformité avec la procédure d’examen visée\nà l’article 48, paragraphe 2.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "22a69478a4b53ba962a609c6677dd07291a78702855821c888b663d7e06a47e0"
+        },
+        {
+          "id": "art_10",
+          "titre": "Atteinte à la sécurité",
+          "texte": "Atteinte à la sécurité\n1. En cas d’atteinte ou d’altération partielle du schéma d’identification électronique notifié en application de l’article 9,\nparagraphe 1, ou de l’authentification visée à l’article 7, point f), telle qu’elle affecte la fiabilité de l’authentification\ntransfrontalière de ce schéma, l’État membre notifiant suspend ou révoque, immédiatement, cette authentification trans­\nfrontalière ou les éléments altérés en cause, et en informe les autres États membres et la Commission.\n2. Lorsqu’il a été remédié à l’atteinte ou à l’altération visée au paragraphe 1, l’État membre notifiant rétablit l’authen­\ntification transfrontalière et en informe les autres États membres et la Commission dans les meilleurs délais.\n3. S’il n’est pas remédié à l’atteinte ou à l’altération visée au paragraphe 1 dans un délai de trois mois à compter de la\nsuspension ou de la révocation, l’État membre notifiant notifie le retrait du schéma d’identification électronique aux autres\nÉtats membres et à la Commission.\nLa Commission publie, dans les meilleurs délais, au Journal officiel de l’Union européenne, les modifications correspondantes\napportées à la liste visée à l’article 9, paragraphe 2.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "bc8e10bbf3530ed115287b25a6871225b065ef6fe3644fae3d4d41df38bd04e4"
+        },
+        {
+          "id": "art_11",
+          "titre": "Responsabilité",
+          "texte": "Responsabilité\n1. L’État membre notifiant est responsable du dommage causé intentionnellement ou par négligence à toute personne\nphysique ou morale en raison d’un manquement aux obligations qui lui incombent en vertu de l’article 7, points d) et f),\ndans le cas d’une transaction transfrontalière.\n2. La partie qui délivre le moyen d’identification électronique est responsable du dommage causé intentionnellement\nou par négligence à toute personne physique ou morale en raison d’un manquement aux obligations qui lui incombent en\nvertu de l’article 7, point e), dans le cas d’une transaction transfrontalière.\n3. La partie qui gère la procédure d’authentification est responsable du dommage causé intentionnellement ou par\nnégligence à toute personne physique ou morale pour ne pas avoir assuré la gestion correcte de l’authentification visée à\nl’article 7, point f), dans le cas d’une transaction transfrontalière.\n4. Les paragraphes 1, 2 et 3 s’appliquent conformément aux dispositions nationales en matière de responsabilité.\n5. Les paragraphes 1, 2 et 3 sont sans préjudice de la responsabilité incombant, au titre du droit national, aux parties à\nune transaction effectuée à l’aide de moyens d’identification électronique relevant du schéma d’identification électronique\nnotifié en vertu de l’article 9, paragraphe 1.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "c02ff4f8282a4f48a42aca2741d3835bdaab5267c8274a7eebb7e83228f6d8b8"
+        },
+        {
+          "id": "art_12",
+          "titre": "Coopération et interopérabilité",
+          "texte": "Coopération et interopérabilité\n1. Les schémas nationaux d’identification électronique notifiés en vertu de l’article 9, paragraphe 1, sont interopérables.\n2. Aux fins du paragraphe 1, un cadre d’interopérabilité est établi.\n\n28.8.2014 FR Journal officiel de l’Union européenne L 257/91\n3. Le cadre d’interopérabilité satisfait aux critères suivants:\na) il vise à être neutre du point de vue technologique et n’opère pas de discrimination entre l’une ou l’autre des solutions\ntechniques nationales particulières destinées à l’identification électronique au sein d’un État membre;\nb) il suit les normes européennes et internationales, dans la mesure du possible;\nc) il facilite la mise en œuvre du principe du respect de la vie privée dès la conception; et\nd) il garantit que les données à caractère personnel sont traitées conformément à la directive 95/46/CE.\n4. Le cadre d’interopérabilité est composé:\na) d’une référence aux exigences techniques minimales liées aux niveaux de garantie prévus à l’article 8;\nb) d’une table de correspondance entre les niveaux de garantie nationaux des schémas d’identification électronique\nnotifiés et les niveaux de garantie au titre de l’article 8;\nc) d’une référence aux exigences techniques minimales en matière d’interopérabilité;\nd) d’une référence à un ensemble minimal de données d’identification personnelle représentant de manière univoque une\npersonne physique ou morale, qui est disponible dans les schémas d’identification électronique;\ne) de règles de procédure;\nf) de dispositions pour le règlement des litiges; et\ng) de normes opérationnelles communes de sécurité.\n5. Les États membres coopèrent en ce qui concerne:\na) l’interopérabilité des schémas d’identification électronique notifiés en application de l’article 9, paragraphe 1, et des\nschémas d’identification électronique que les États membres entendent notifier; et\nb) la sécurité des schémas d’identification électronique.\n6. La coopération entre les États membres consiste:\na) en un échange d’informations, d’expériences et de bonnes pratiques en ce qui concerne les schémas d’identification\nélectronique, notamment les exigences techniques liées à l’interopérabilité et aux niveaux de garantie;\nb) en un échange d’informations, d’expériences et de bonnes pratiques en ce qui concerne l’utilisation des niveaux de\ngarantie des schémas d’identification électronique prévus à l’article 8;\nc) en une évaluation par les pairs des schémas d’identification électronique relevant du présent règlement; et\nd) en un examen des évolutions pertinentes dans le secteur de l’identification électronique.\n\nL 257/92 FR Journal officiel de l’Union européenne 28.8.2014\n7. Au plus tard le 18 mars 2015, la Commission fixe, au moyen d’actes d’exécution, les modalités de procédure\nnécessaires pour faciliter la coopération entre les États membres visée aux paragraphes 5 et 6, en vue de favoriser un\nniveau élevé de confiance et de sécurité approprié au degré de risque.\n8. Au plus tard le 18 septembre 2015, aux fins de fixer des conditions uniformes d’exécution de l’obligation prévue au\nparagraphe 1, la Commission adopte, sous réserve des critères énoncés au paragraphe 3 et compte tenu des résultats de la\ncoopération entre les États membres, des actes d’exécution sur le cadre d’interopérabilité énoncé au paragraphe 4.\n9. Les actes d’exécution visés aux paragraphes 7 et 8 du présent article sont adoptés en conformité avec la procédure\nd’examen visés à l’article 48, paragraphe 2.\nCHAPITRE III\nSERVICES DE CONFIANCE\nSECTION 1\nDispositions générales",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "c58629e83a981c77a52ddda73262000cf9d11fe57a3ce0f1e2d544f258952ead"
+        },
+        {
+          "id": "art_13",
+          "titre": "Responsabilité et charge de la preuve",
+          "texte": "Responsabilité et charge de la preuve\n1. Sans préjudice du paragraphe 2, les prestataires de services de confiance sont responsables des dommages causés\nintentionnellement ou par négligence à toute personne physique ou morale en raison d’un manquement aux obligations\nprévues par le présent règlement.\nIl incombe à la personne physique ou morale qui invoque les dommages visés au premier alinéa de prouver que le\nprestataire de services de confiance non qualifié a agi intentionnellement ou par négligence.\nUn prestataire de services de confiance qualifié est présumé avoir agi intentionnellement ou par négligence, à moins qu’il\nne prouve que les dommages visés au premier alinéa ont été causés sans intention ni négligence de sa part.\n2. Lorsque les prestataires de services de confiance informent dûment leurs clients au préalable des limites qui existent\nà l’utilisation des services qu’ils fournissent et que ces limites peuvent être reconnues par des tiers, les prestataires de\nservices de confiance ne peuvent être tenus responsables des dommages découlant de l’utilisation des services au-delà des\nlimites indiquées.\n3. Les paragraphes 1 et 2 s’appliquent conformément aux règles nationales en matière de responsabilité.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "16eaed86f5d0cbc2441a91dbd94a15cf1cfdf0d8f06852d106c1a68f332ce0ca"
+        },
+        {
+          "id": "art_14",
+          "titre": "Aspects internationaux",
+          "texte": "Aspects internationaux\n1. Les services de confiance fournis par des prestataires de services de confiance établis dans un pays tiers sont\nreconnus comme équivalents, sur le plan juridique, à des services de confiance qualifiés fournis par des prestataires de\nservices de confiance qualifiés établis dans l’Union lorsque les services de confiance provenant du pays tiers sont reconnus\nen vertu d’un accord conclu entre l’Union et le pays tiers concerné ou une organisation internationale conformément à\nl’article 218 du traité sur le fonctionnement de l’Union européenne.\n\n28.8.2014 FR Journal officiel de l’Union européenne L 257/93\n2. Les accords visés au paragraphe 1 garantissent, en particulier, que:\na) les exigences applicables aux prestataires de services de confiance qualifiés établis dans l’Union et les services de\nconfiance qualifiés qu’ils fournissent sont respectés par les prestataires de services de confiance dans le pays tiers ou\npar les organisations internationales avec lesquels l’accord est conclu, et par les services de confiance qu’ils fournissent;\nb) les services de confiance qualifiés fournis par des prestataires de services de confiance qualifiés établis dans l’Union\nsont reconnus comme équivalents, sur le plan juridique, à des services de confiance fournis par des prestataires de\nservices de confiance dans le pays tiers ou par l’organisation internationale avec lequels l’accord est conclu.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "4bbbb8d60646c586a29b2e0ff28d9194121f1114c2f683e75601c4adee0bc989"
+        },
+        {
+          "id": "art_15",
+          "titre": "Accessibilité aux personnes handicapées",
+          "texte": "Accessibilité aux personnes handicapées\nDans la mesure du possible, les services de confiance fournis, ainsi que les produits destinés à un utilisateur final qui\nservent à fournir ces services, sont accessibles aux personnes handicapées.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "9910eab83221dccc025c49f0138619d45bcc8e9fed8e8389ded9524e48341dfa"
+        },
+        {
+          "id": "art_16",
+          "titre": "Sanctions",
+          "texte": "Sanctions\nLes États membres fixent le régime des sanctions applicables aux violations du présent règlement. Les sanctions prévues\nsont effectives, proportionnées et dissuasives.\nSECTION 2\nContrôle",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "62c41bbf3a8d83603929835fc2ac399f2965a67af7ca839d0b1ff65d4dae018a"
+        },
+        {
+          "id": "art_17",
+          "titre": "Organe de contrôle",
+          "texte": "Organe de contrôle\n1. Les États membres désignent un organe de contrôle établi sur leur territoire ou, d’un commun accord avec un autre\nÉtat membre, un organe de contrôle établi dans cet autre État membre. Cet organe est chargé des tâches de contrôle dans\nl’État membre qui a procédé à la désignation.\nLes organes de contrôle sont investis des pouvoirs nécessaires et dotés des ressources adéquates pour l’exercice de leurs\ntâches.\n2. Les États membres notifient à la Commission le nom et l’adresse de l’organe de contrôle qu’ils ont désigné.\n3. Le rôle de l’organe de contrôle est le suivant:\na) contrôler les prestataires de services de confiance qualifiés établis sur le territoire de l’État membre qui a procédé à la\ndésignation afin de s’assurer, par des activités de contrôle a priori et a posteriori, que ces prestataires de services de\nconfiance qualifiés et les services de confiance qualifiés qu’ils fournissent satisfont aux exigences fixées dans le présent\nrèglement;\nb) prendre des mesures, si nécessaire, en ce qui concerne les prestataires de services de confiance non qualifiés établis sur\nle territoire de l’État membre qui a procédé à la désignation, par des activités de contrôle a posteriori, lorsqu’il est\ninformé que ces prestataires de services de confiance non qualifiés ou les services de confiance qu’ils fournissent ne\nsatisferaient pas aux exigences fixées dans le présent règlement.\n\nL 257/94 FR Journal officiel de l’Union européenne 28.8.2014\n4. Aux fins du paragraphe 3 et sous réserve des limites qu’il prévoit, les tâches de l’organe de contrôle consistent\nnotamment:\na) à coopérer avec d’autres organes de contrôle et à leur apporter assistance conformément à l’article 18;\nb) à analyser les rapports d’évaluation de la conformité visés à l’article 20, paragraphe 1, et à l’article 21, paragraphe 1;\nc) à informer d’autres organes de contrôle et le public d’atteintes à la sécurité ou de pertes d’intégrité conformément à\nl’article 19, paragraphe 2;\nd) à présenter un rapport à la Commission sur ses principales activités conformément au paragraphe 6 du présent article;\ne) à procéder à des audits ou à demander à un organisme d’évaluation de la conformité d’effectuer une évaluation de la\nconformité des prestataires de services de confiance qualifiés conformément à l’article 20, paragraphe 2;\nf) à coopérer avec les autorités chargées de la protection des données, en particulier en les informant, dans les meilleurs\ndélais, des résultats des audits des prestataires de services de confiance qualifiés lorsqu’il apparaît que des règles en\nmatière de protection des données à caractère personnel ont été violées;\ng) à accorder le statut qualifié aux prestataires de services de confiance et aux services qu’ils fournissent et à retirer ce\nstatut conformément aux articles 20 et 21;\nh) à informer l’organisme chargé de la liste nationale de confiance visée à l’article 22, paragraphe 3, de ses décisions\nd’accorder ou de retirer le statut qualifié, à moins que cet organisme ne soit également l’organe de contrôle;\ni) à vérifier l’existence et l’application correcte de dispositions relatives aux plans d’arrêt d’activité lorsque le prestataire de\nservices de confiance qualifié cesse son activité, y compris la façon dont les informations restent accessibles confor­\nmément à l’article 24, paragraphe 2, point h);\nj) à exiger que les prestataires de services de confiance corrigent tout manquement aux obligations fixées par le présent\nrèglement.\n5. Les États membres peuvent exiger de l’organe de contrôle qu’il établisse, gère et actualise une infrastructure de\nconfiance conformément aux conditions prévues par le droit national.\n6. Au plus tard le 31 mars de chaque année, chaque organe de contrôle soumet à la Commission un rapport sur ses\nprincipales activités de l’année civile précédente, accompagné d’un résumé des notifications d’atteinte à la sécurité reçues\nde prestataires de services de confiance conformément à l’article 19, paragraphe 2.\n7. La Commission met le rapport annuel visé au paragraphe 6 à la disposition des États membres.\n8. La Commission peut définir, au moyen d’actes d’exécution, les formats et procédures applicables aux fins du rapport\nvisé au paragraphe 6. Ces actes d’exécution sont adoptés en conformité avec la procédure d’examen visée à l’article 48,\nparagraphe 2.\n\n28.8.2014 FR Journal officiel de l’Union européenne L 257/95",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "be08944652bfad8e783c0ae0a36326a0cd2b7c2643a6fe07ed39f1f04d29c002"
+        },
+        {
+          "id": "art_18",
+          "titre": "Assistance mutuelle",
+          "texte": "Assistance mutuelle\n1. Les organes de contrôle coopèrent en vue d’échanger des bonnes pratiques.\nUn organe de contrôle fournit, après réception d’une demande justifiée d’un autre organe de contrôle, à cet organe une\nassistance afin que les activités des organes de contrôle puissent être exécutées de façon cohérente. L’assistance mutuelle\npeut notamment couvrir des demandes d’informations et des mesures de contrôle, telles que des demandes de procéder à\ndes inspections liées aux rapports d’évaluation de la conformité visés aux articles 20 et 21.\n2. Un organe de contrôle saisi d’une demande d’assistance peut refuser cette demande sur la base de l’un ou l’autre des\nmotifs suivants:\na) l’organe de contrôle n’est pas compétent pour fournir l’assistance demandée;\nb) l’assistance demandée n’est pas proportionnée aux activités de contrôle de l’organe de contrôle effectuées conformé­\nment à l’article 17;\nc) la fourniture de l’assistance demandée serait incompatible avec le présent règlement.\n3. Le cas échéant, les États membres peuvent autoriser leurs organes de contrôle respectifs à mener des enquêtes\nconjointes faisant intervenir des membres des organes de contrôle d’autres États membres. Les modalités et procédures\nconcernant ces actions conjointes sont approuvées et établies par les États membres concernés conformément à leur droit\nnational.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "1dc50933696532cd7682e061a06e1e58893af1e672da20186d2ec2a2b8652090"
+        },
+        {
+          "id": "art_19",
+          "titre": "Exigences de sécurité applicables aux prestataires de services de confiance",
+          "texte": "Exigences de sécurité applicables aux prestataires de services de confiance\n1. Les prestataires de services de confiance qualifiés et non qualifiés prennent les mesures techniques et organisation­\nnelles adéquates pour gérer les risques liés à la sécurité des services de confiance qu’ils fournissent. Compte tenu des\névolutions technologiques les plus récentes, ces mesures garantissent que le niveau de sécurité est proportionné au degré\nde risque. Des mesures sont notamment prises en vue de prévenir et de limiter les conséquences d’incidents liés à la\nsécurité et d’informer les parties concernées des effets préjudiciables de tels incidents.\n2. Les prestataires de services de confiance qualifiés et non qualifiés notifient, dans les meilleurs délais et en tout état\nde cause dans un délai de vingt-quatre heures après en avoir eu connaissance, à l’organe de contrôle et, le cas échéant, à\nd’autres organismes concernés, tels que l’organisme national compétent en matière de sécurité de l’information ou\nl’autorité chargée de la protection des données, toute atteinte à la sécurité ou toute perte d’intégrité ayant une incidence\nimportante sur le service de confiance fourni ou sur les données à caractère personnel qui y sont conservées.\nLorsque l’atteinte à la sécurité ou la perte d’intégrité est susceptible de porter préjudice à une personne physique ou\nmorale à laquelle le service de confiance a été fourni, le prestataire de services de confiance notifie aussi, dans les meilleurs\ndélais, à la personne physique ou morale l’atteinte à la sécurité ou la perte d’intégrité.\nLe cas échéant, notamment lorsqu’une atteinte à la sécurité ou une perte d’intégrité concerne deux États membres ou plus,\nl’organe de contrôle notifié informe les organes de contrôle des autres États membres concernés ainsi que l'ENISA.\nL’organe de contrôle notifié informe le public ou exige du prestataire de services de confiance qu’il le fasse, dès lors qu’il\nconstate qu’il est dans l’intérêt public de divulguer l’atteinte à la sécurité ou la perte d’intégrité.\n3. Une fois par an, l’organe de contrôle fournit à l'ENISA un résumé des notifications d’atteinte à la sécurité et de perte\nd’intégrité reçues de prestataires de services de confiance.\n\nL 257/96 FR Journal officiel de l’Union européenne 28.8.2014\n4. La Commission peut, au moyen d’actes d’exécution:\na) préciser davantage les mesures visées au paragraphe 1; et\nb) définir les formats et procédures, y compris les délais, applicables aux fins du paragraphe 2.\nCes actes d’exécution sont adoptés en conformité avec la procédure d’examen visée à l’article 48, paragraphe 2.\nSECTION 3\nServices de confiance qualifiés",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "8d23c71b06cd448f24ca5817606e934a883b0a5a715fd6799967872587d59674"
+        },
+        {
+          "id": "art_20",
+          "titre": "Contrôle des prestataires de services de confiance qualifiés",
+          "texte": "Contrôle des prestataires de services de confiance qualifiés\n1. Les prestataires de services de confiance qualifiés font l’objet, au moins tous les vingt-quatre mois, d’un audit\neffectué à leurs frais par un organisme d’évaluation de la conformité. Le but de l’audit est de confirmer que les prestataires\nde services de confiance qualifiés et les services de confiance qualifiés qu’ils fournissent remplissent les exigences fixées par\nle présent règlement. Les prestataires de services de confiance qualifiés transmettent le rapport d’évaluation de la\nconformité à l’organe de contrôle dans un délai de trois jours ouvrables qui suivent sa réception.\n2. Sans préjudice du paragraphe 1, l’organe de contrôle peut à tout moment, soumettre les prestataires de services de\nconfiance qualifiés à un audit ou demander à un organisme d’évaluation de la conformité de procéder à une évaluation de\nla conformité des prestataires de services de confiance qualifiés, aux frais de ces prestataires de services de confiance, afin\nde confirmer que les prestataires et les services de confiance qualifiés qu’ils fournissent remplissent les exigences fixées par\nle présent règlement. L’organe de contrôle informe les autorités chargées de la protection des données des résultats de ses\naudits lorsqu’il apparaît que les règles en matière de protection des données à caractère personnel ont été violées.\n3. Lorsque l’organe de contrôle exige du prestataire de services de confiance qualifié qu’il corrige un manquement aux\nexigences prévues par le présent règlement et que le prestataire n’agit pas en conséquence, et le cas échéant dans un délai\nfixé par l’organe de contrôle, l’organe de contrôle, tenant compte, en particulier, de l’ampleur, de la durée et des\nconséquences de ce manquement, peut retirer à ce prestataire ou au service affecté le statut qualifié et informe l’organisme\nvisé à l’article 22, paragraphe 3, aux fins de la mise à jour des listes de confiance visées à l’article 22, paragraphe 1.\nL’organe de contrôle informe le prestataire de services de confiance qualifié du retrait de son statut qualifié ou du retrait\ndu statut qualifié du service concerné.\n4. La Commission peut, au moyen d’actes d’exécution, déterminer les numéros de référence des normes suivantes:\na) accréditation des organismes d’évaluation de la conformité et rapports d’évaluation de la conformité visés au para­\ngraphe 1;\nb) règles d’audit en fonction desquelles les organismes d’évaluation de la conformité procéderont à leur évaluation de la\nconformité des prestataires de services de confiance qualifiés visés au paragraphe 1.\nCes actes d’exécution sont adoptés en conformité avec la procédure d’examen visée à l’article 48, paragraphe 2.\n\n28.8.2014 FR Journal officiel de l’Union européenne L 257/97",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "874ba860ca2483887b590b0cd1f49cc95cdcde1e888a6039bc7313fd89279d8e"
+        },
+        {
+          "id": "art_21",
+          "titre": "Lancement d’un service de confiance qualifié",
+          "texte": "Lancement d’un service de confiance qualifié\n1. Lorsque des prestataires de services de confiance, sans statut qualifié, ont l’intention de commencer à offrir des\nservices de confiance qualifiés, ils soumettent à l’organe de contrôle une notification de leur intention accompagnée d’un\nrapport d’évaluation de la conformité délivré par un organisme d’évaluation de la conformité.\n2. L’organe de contrôle vérifie que le prestataire de services de confiance et les services de confiance qu’il fournit\nrespectent les exigences fixées par le présent règlement, en particulier les exigences en ce qui concerne les prestataires de\nservices de confiance qualifiés et les services de confiance qualifiés qu’ils fournissent.\nSi l’organe de contrôle conclut que le prestataire de services de confiance et les services de confiance qu’il fournit\nrespectent les exigences visées au premier alinéa, l’organe de contrôle accorde le statut qualifié au prestataire de services\nde confiance et aux services de confiance qu’il fournit et informe l’organisme visé à l’article 22, paragraphe 3, aux fins de\nla mise à jour des listes de confiance visées à l’article 22, paragraphe 1, au plus tard trois mois suivant la notification\nconformément au paragraphe 1 du présent article.\nSi la vérification n’est pas terminée dans un délai de trois mois à compter de la notification, l’organe de contrôle en\ninforme le prestataire de services de confiance en précisant les raisons du retard et le délai nécessaire pour terminer la\nvérification.\n3. Les prestataires de services de confiance qualifiés peuvent commencer à fournir le service de confiance qualifié une\nfois que le statut qualifié est indiqué sur les listes de confiance visées à l’article 22, paragraphe 1.\n4. La Commission peut définir, au moyen d’actes d’exécution, les formats et les procédures applicables aux fins des\nparagraphes 1 et 2. Ces actes d’exécution sont adoptés en conformité avec la procédure d’examen visée à l’article 48,\nparagraphe 2.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "7f54fb7a301a1dda249e60304cb4bba721f023b9169986990d805654ca0a9b0b"
+        },
+        {
+          "id": "art_22",
+          "titre": "Listes de confiance",
+          "texte": "Listes de confiance\n1. Chaque État membre établit, tient à jour et publie des listes de confiance, y compris des informations relatives aux\nprestataires de services de confiance qualifiés dont il est responsable, ainsi que des informations relatives aux services de\nconfiance qualifiés qu’ils fournissent.\n2. Les États membres établissent, tiennent à jour et publient, de façon sécurisée et sous une forme adaptée au\ntraitement automatisé, les listes de confiance visées au paragraphe 1 portant une signature électronique ou un cachet\nélectronique.\n3. Les États membres communiquent à la Commission, dans les meilleurs délais, des informations relatives à l’orga­\nnisme chargé d’établir, de tenir à jour et de publier les listes nationales de confiance, ainsi que des détails précisant où ces\nlistes sont publiées, indiquant les certificats utilisés pour apposer une signature électronique ou un cachet électronique sur\nces listes et signalant les modifications apportées à ces listes.\n4. La Commission met à la disposition du public, par l’intermédiaire d’un canal sécurisé, les informations visées au\nparagraphe 3 sous une forme portant une signature électronique ou un cachet électronique adaptée au traitement\nautomatisé.\n5. Au plus tard le 18 septembre 2015, la Commission précise, au moyen d’actes d’exécution, les informations visées au\nparagraphe 1 et définit les spécifications techniques et les formats des listes de confiance applicables aux fins des\nparagraphes 1 à 4. Ces actes d’exécution sont adoptés en conformité avec la procédure d’examen visée à l’article 48,\nparagraphe 2.\n\nL 257/98 FR Journal officiel de l’Union européenne 28.8.2014",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "7afd6d55edfd74c15a8842d42767e9dd426c75dc3c9c4a5581c266cfe41ed133"
+        },
+        {
+          "id": "art_23",
+          "titre": "Label de confiance de l’Union pour les services de confiance qualifiés",
+          "texte": "Label de confiance de l’Union pour les services de confiance qualifiés\n1. Une fois que le statut qualifié visé à l’article 21, paragraphe 2, deuxième alinéa, a été indiqué sur la liste de confiance\nvisée à l’article 22, paragraphe 1, les prestataires de service de confiance qualifiés peuvent utiliser le label de confiance de\nl’Union pour indiquer d’une manière simple, claire et reconnaissable les services de confiance qualifiés qu’ils fournissent.\n2. Lorsqu’ils utilisent le label de confiance de l’Union pour les services de confiance qualifiés visé au paragraphe 1, les\nprestataires de services de confiance qualifiés veillent à ce qu’un lien vers la liste de confiance concernée soit disponible\nsur leur site internet.\n3. Au plus tard le 1 er juillet 2015, la Commission prévoit, au moyen d’actes d’exécution, les spécifications relatives à la\nforme et notamment à la présentation, à la composition, à la taille et à la conception du label de confiance de l’Union\npour les services de confiance qualifiés. Ces actes d’exécution sont adoptés en conformité avec la procédure d’examen\nvisée à l’article 48, paragraphe 2.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "7d1ce9adb3208bc2e36039378f76a9fb21417c5d1ff0e09fd7ef7bd266b0fac4"
+        },
+        {
+          "id": "art_24",
+          "titre": "Exigences applicables aux prestataires de services de confiance qualifiés",
+          "texte": "Exigences applicables aux prestataires de services de confiance qualifiés\n1. Lorsqu’un prestataire de services de confiance qualifié délivre un certificat qualifié pour un service de confiance, il\nvérifie, par des moyens appropriés et conformément au droit national, l’identité et, le cas échéant, tous les attributs\nspécifiques de la personne physique ou morale à laquelle il délivre le certificat qualifié.\nLes informations visées au premier alinéa sont vérifiées par le prestataire de services de confiance qualifié directement ou\nen en ayant recours à un tiers conformément au droit national:\na) par la présence en personne de la personne physique ou du représentant autorisé de la personne morale; ou\nb) à distance, à l’aide de moyens d’identification électronique pour lesquels, avant la délivrance du certificat qualifié, la\npersonne physique ou un représentant autorisé de la personne morale s’est présenté en personne et qui satisfont aux\nexigences énoncées à l’article 8 en ce qui concerne les niveaux de garantie substantiel et élevé; ou\nc) au moyen d’un certificat de signature électronique qualifié ou d’un cachet électronique qualifié délivré conformément\nau point a) ou b); ou\nd) à l’aide d’autres méthodes d’identification reconnues au niveau national qui fournissent une garantie équivalente en\ntermes de fiabilité à la présence en personne. La garantie équivalente est confirmée par un organisme d’évaluation de la\nconformité.\n2. Un prestataire de services de confiance qualifié qui fournit des services de confiance qualifiés:\na) informe l’organe de contrôle de toute modification dans la fourniture de ses services de confiance qualifiés et de son\nintention éventuelle de cesser ces activités;\nb) emploie du personnel et, le cas échéant, des sous-traitants qui possèdent l’expertise, la fiabilité, l’expérience et les\nqualifications nécessaires, qui ont reçu une formation appropriée en ce qui concerne les règles en matière de sécurité et\nde protection des données à caractère personnel et appliquent des procédures administratives et de gestion corres­\npondant à des normes européennes ou internationales;\nc) en ce qui concerne le risque de responsabilité pour dommages conformément à l’article 13, maintient des ressources\nfinancières suffisantes et/ou contracte une assurance responsabilité appropriée, conformément au droit national;\n\n28.8.2014 FR Journal officiel de l’Union européenne L 257/99\nd) avant d’établir une relation contractuelle, informe, de manière claire et exhaustive, toute personne désireuse d’utiliser\nun service de confiance qualifié des conditions précises relatives à l’utilisation de ce service, y compris toute limite\nquant à son utilisation;\ne) utilise des systèmes et des produits fiables qui sont protégés contre les modifications et assure la sécurité technique et\nla fiabilité des processus qu’ils prennent en charge;\nf) utilise des systèmes fiables pour stocker les données qui lui sont fournies, sous une forme vérifiable de manière que:\ni) les données ne soient publiquement disponibles pour des traitements qu’après avoir obtenu le consentement de la\npersonne concernée par ces données;\nii) seules des personnes autorisées puissent introduire des données et modifier les données conservées;\niii) l’authenticité des données puisse être vérifiée;\ng) prend des mesures appropriées contre la falsification et le vol de données;\nh) enregistre et maintient accessibles pour une durée appropriée, y compris après que les activités du prestataire de\nservices de confiance qualifié ont cessé, toutes les informations pertinentes concernant les données délivrées et reçues\npar le prestataire de services de confiance qualifié, aux fins notamment de pouvoir fournir des preuves en justice et aux\nfins d’assurer la continuité du service. Ces enregistrements peuvent être effectués par voie électronique;\ni) a un plan actualisé d’arrêt d’activité afin d’assurer la continuité du service conformément aux dispositions vérifiées par\nl’organe de contrôle au titre de l’article 17, paragraphe 4, point i);\nj) assure le traitement licite de données à caractère personnel conformément à la directive 95/46/CE;\nk) au cas où le prestataire de services de confiance qualifié délivre des certificats qualifiés, établit et tient à jour une base\nde données relative aux certificats.\n3. Lorsqu’un prestataire de services de confiance qualifié qui délivre des certificats qualifiés décide de révoquer un\ncertificat, il enregistre cette révocation dans sa base de données relative aux certificats et publie le statut de révocation du\ncertificat en temps utile, et en tout état de cause dans les vingt-quatre heures suivant la réception de la demande. Cette\nrévocation devient effective immédiatement dès sa publication.\n4. En ce qui concerne le paragraphe 3, les prestataires de services de confiance qualifiés qui délivrent des certificats\nqualifiés fournissent à toute partie utilisatrice des informations sur la validité ou le statut de révocation des certificats\nqualifiés qu’ils ont délivrés. Ces informations sont disponibles, au moins par certificat, à tout moment et au-delà de la\npériode de validité du certificat, sous une forme automatisée qui est fiable, gratuite et efficace.\n5. La Commission peut, au moyen d’actes d’exécution, déterminer les numéros de référence des normes applicables aux\nsystèmes et produits fiables, qui satisfont aux exigences du paragraphe 2, points e) et f), du présent article. Les systèmes et\nles produits fiables sont présumés satisfaire aux exigences fixées au présent article lorsqu’ils respectent ces normes. Ces\nactes d’exécution sont adoptés en conformité avec la procédure d’examen visée à l’article 48, paragraphe 2.\n\nL 257/100 FR Journal officiel de l’Union européenne 28.8.2014\nSECTION 4\nSignatures électroniques",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "a101a69b62b257b944fc9c14404b556095ec0ccc62d6b12d33b4f0840ee46efa"
+        },
+        {
+          "id": "art_25",
+          "titre": "Effets juridiques des signatures électroniques",
+          "texte": "Effets juridiques des signatures électroniques\n1. L’effet juridique et la recevabilité d’une signature électronique comme preuve en justice ne peuvent être refusés au\nseul motif que cette signature se présente sous une forme électronique ou qu’elle ne satisfait pas aux exigences de la\nsignature électronique qualifiée.\n2. L’effet juridique d’une signature électronique qualifiée est équivalent à celui d’une signature manuscrite.\n3. Une signature électronique qualifiée qui repose sur un certificat qualifié délivré dans un État membre est reconnue\nen tant que signature électronique qualifiée dans tous les autres États membres.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "e92699d520051df908257098b2ae4087b962bb5e9d9a8c8da8b7ef88a475f8f9"
+        },
+        {
+          "id": "art_26",
+          "titre": "Exigences relatives à une signature électronique avancée",
+          "texte": "Exigences relatives à une signature électronique avancée\nUne signature électronique avancée satisfait aux exigences suivantes:\na) être liée au signataire de manière univoque;\nb) permettre d’identifier le signataire;\nc) avoir été créée à l’aide de données de création de signature électronique que le signataire peut, avec un niveau de\nconfiance élevé, utiliser sous son contrôle exclusif; et\nd) être liée aux données associées à cette signature de telle sorte que toute modification ultérieure des données soit\ndétectable.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "0402ef793a4928492995f16aa5f059a7df492d41c451188be3c5d7a09c29fc23"
+        },
+        {
+          "id": "art_27",
+          "titre": "Signatures électroniques dans les services publics",
+          "texte": "Signatures électroniques dans les services publics\n1. Si un État membre exige une signature électronique avancée pour utiliser un service en ligne offert par un\norganisme du secteur public ou pour l’utiliser au nom de cet organisme, il reconnaît les signatures électroniques avancées,\nles signatures électroniques avancées qui reposent sur un certificat qualifié de signature électronique et les signatures\nélectroniques qualifiées au moins dans les formats ou utilisant les méthodes définis dans les actes d’exécution visés au\nparagraphe 5.\n2. Si un État membre exige une signature électronique avancée qui repose sur un certificat qualifié pour utiliser un\nservice en ligne proposé par un organisme du secteur public ou pour l’utiliser au nom de cet organisme, il reconnaît les\nsignatures électroniques avancées qui reposent sur un certificat qualifié et les signatures électroniques qualifiées au moins\ndans les formats ou utilisant les méthodes définis dans les actes d’exécution visés au paragraphe 5.\n3. Les États membres n’exigent pas, pour une utilisation transfrontalière dans un service en ligne offert par un\norganisme du secteur public, de signature électronique présentant un niveau de sécurité supérieur à celui de la signature\nélectronique qualifiée.\n4. La Commission peut, au moyen d’actes d’exécution, déterminer les numéros de référence des normes applicables aux\nsignatures électroniques avancées. Une signature électronique avancée est présumée satisfaire aux exigences applicables\naux signatures électroniques avancées visées aux paragraphes 1 et 2 du présent article et à l’article 26 lorsqu’elle\nrespecte ces normes. Ces actes d’exécution sont adoptés en conformité avec la procédure d’examen visée à l’article 48,\nparagraphe 2.\n\n28.8.2014 FR Journal officiel de l’Union européenne L 257/101\n5. Au plus tard le 18 septembre 2015, et compte tenu des pratiques et des normes ainsi que des actes juridiques de\nl’Union en vigueur, la Commission définit, au moyen d’actes d’exécution, les formats de référence des signatures élec­\ntroniques avancées ou les méthodes de référence lorsque d’autres formats sont utilisés. Ces actes d’exécution sont adoptés\nen conformité avec la procédure d’examen visée à l’article 48, paragraphe 2.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "a0f45e8ac3c78577f96382457f41bd32a3824f2f5e5bd307da53c15f35860c9f"
+        },
+        {
+          "id": "art_28",
+          "titre": "Certificats qualifiés de signature électronique",
+          "texte": "Certificats qualifiés de signature électronique\n1. Les certificats qualifiés de signature électronique satisfont aux exigences fixées à l’annexe I.\n2. Les certificats qualifiés de signature électronique ne font l’objet d’aucune exigence obligatoire allant au-delà des\nexigences fixées à l’annexe I.\n3. Les certificats qualifiés de signature électronique peuvent comprendre des attributs spécifiques supplémentaires non\nobligatoires. Ces attributs n’affectent pas l’interopérabilité et la reconnaissance des signatures électroniques qualifiées.\n4. Si un certificat qualifié de signature électronique a été révoqué après la première activation, il perd sa validité à\ncompter du moment de sa révocation et il ne peut en aucun cas recouvrer son statut antérieur.\n5. Sous réserve des conditions suivantes, les États membres peuvent établir des règles nationales relatives à la suspen­\nsion temporaire d’un certificat qualifié de signature électronique:\na) si un certificat qualifié de signature électronique a été temporairement suspendu, ce certificat perd sa validité pendant\nla période de suspension.\nb) la période de suspension est clairement indiquée dans la base de données relative aux certificats et le statut de\nsuspension est visible, pendant la période de suspension, auprès du service fournissant les informations sur le\nstatut du certificat.\n6. La Commission peut, au moyen d’actes d’exécution, déterminer les numéros de référence des normes applicables aux\ncertificats qualifiés de signature électronique. Un certificat qualifié de signature électronique est présumé satisfaire aux\nexigences fixées à l’annexe I lorsqu’il respecte ces normes. Ces actes d’exécution sont adoptés en conformité avec la\nprocédure d’examen visée à l’article 48, paragraphe 2.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "4d58989dff6c372aa6e5e4ab824b47012f56f51119fa7fafe5f0e632641fcc0c"
+        },
+        {
+          "id": "art_29",
+          "titre": "Exigences applicables aux dispositifs de création de signature électronique qualifiés",
+          "texte": "Exigences applicables aux dispositifs de création de signature électronique qualifiés\n1. Les dispositifs de création de signature électronique qualifiés respectent les exigences fixées à l’annexe II.\n2. La Commission peut, au moyen d’actes d’exécution, déterminer les numéros de référence des normes applicables aux\ndispositifs de création de signature électronique qualifiés. Un dispositif de création de signature électronique qualifié est\nprésumé satisfaire aux exigences fixées à l’annexe II lorsqu’il respecte ces normes. Ces actes d’exécution sont adoptés en\nconformité avec la procédure d’examen visée à l’article 48, paragraphe 2.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "afaf9f86b5685f3101a729f9de9d7a008116fb1ce853c648150521f0ce3bfc23"
+        },
+        {
+          "id": "art_30",
+          "titre": "Certification des dispositifs de création de signature électronique qualifiés",
+          "texte": "Certification des dispositifs de création de signature électronique qualifiés\n1. La conformité des dispositifs de création de signature électronique qualifiés avec les exigences fixées à l’annexe II est\ncertifiée par les organismes publics ou privés compétents désignés par les États membres.\n\nL 257/102 FR Journal officiel de l’Union européenne 28.8.2014\n2. Les États membres notifient à la Commission le nom et l’adresse de l’organisme public ou privé visé au paragraphe\n1. La Commission met ces informations à la disposition des États membres.\n3. La certification visée au paragraphe 1 est fondée sur l’un des éléments suivants:\na) un processus d’évaluation de la sécurité mis en œuvre conformément à l’une des normes relatives à l’évaluation de la\nsécurité des produits informatiques figurant sur la liste établie conformément au deuxième alinéa; ou\nb) un processus autre que le processus visé au point a), à condition qu’il recoure à des niveaux de sécurité comparables et\nque l’organisme public ou privé visé au paragraphe 1 notifie ce processus à la Commission. Ledit processus ne peut\nêtre utilisé qu’en l’absence des normes visées au point a) ou lorsqu’un processus d’évaluation de la sécurité visé au\npoint a) est en cours.\nLa Commission établit, au moyen d’actes d’exécution, une liste de normes relatives à l’évaluation de la sécurité des\nproduits informatiques visés au point a). Ces actes d’exécution sont adoptés en conformité avec la procédure d’examen\nvisée à l’article 48, paragraphe 2.\n4. La Commission est habilitée à adopter des actes délégués, en conformité avec l’article 47, en ce qui concerne la\ndéfinition de critères spécifiques que doivent respecter les organismes désignés visés au paragraphe 1 du présent article.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "e08cb103a9800d2fe78978de848cc271b29d3c7152310b1427c8731dffa79486"
+        },
+        {
+          "id": "art_31",
+          "titre": "Publication d’une liste des dispositifs de création de signature électronique qualifiés certifiés",
+          "texte": "Publication d’une liste des dispositifs de création de signature électronique qualifiés certifiés\n1. Les États membres notifient à la Commission, dans les meilleurs délais et au plus tard un mois après la conclusion\nde la certification, des informations sur les dispositifs de création de signature électronique qualifiés qui ont été certifiés\npar les organismes visés à l’article 30, paragraphe 1. Ils notifient également à la Commission, dans les meilleurs délais et\nau plus tard un mois après l’annulation de la certification, des informations sur les dispositifs de création de signature\nélectronique qui ne sont plus certifiés.\n2. Sur la base des informations reçues, la Commission établit, publie et met à jour une liste des dispositifs de création\nde signature électronique qualifiés certifiés.\n3. La Commission peut définir, au moyen d’actes d’exécution, les formats et les procédures applicables aux fins du\nparagraphe 1. Ces actes d’exécution sont adoptés en conformité avec la procédure d’examen visée à l’article 48, para­\ngraphe 2.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "ac52cde521165331c91f4cf56f2bafccfebc9a281ce916613274e0908268ced7"
+        },
+        {
+          "id": "art_32",
+          "titre": "Exigences applicables à la validation des signatures électroniques qualifiées",
+          "texte": "Exigences applicables à la validation des signatures électroniques qualifiées\n1. Le processus de validation d’une signature électronique qualifiée confirme la validité d’une signature électronique\nqualifiée à condition que:\na) le certificat sur lequel repose la signature ait été, au moment de la signature, un certificat qualifié de signature\nélectronique conforme à l’annexe I;\nb) le certificat qualifié ait été délivré par un prestataire de services de confiance qualifié et était valide au moment de la\nsignature;\nc) les données de validation de la signature correspondent aux données communiquées à la partie utilisatrice;\n\n28.8.2014 FR Journal officiel de l’Union européenne L 257/103\nd) l’ensemble unique de données représentant le signataire dans le certificat soit correctement fourni à la partie utilisa­\ntrice;\ne) l’utilisation d’un pseudonyme soit clairement indiquée à la partie utilisatrice, si un pseudonyme a été utilisé au moment\nde la signature;\nf) la signature électronique ait été créée par un dispositif de création de signature électronique qualifié;\ng) l’intégrité des données signées n’ait pas été compromise;\nh) les exigences prévues à l’article 26 aient été satisfaites au moment de la signature.\n2. Le système utilisé pour valider la signature électronique qualifiée fournit à la partie utilisatrice le résultat correct du\nprocessus de validation et permet à celle-ci de détecter tout problème pertinent relatif à la sécurité.\n3. La Commission peut, au moyen d’actes d’exécution, déterminer les numéros de référence des normes applicables à la\nvalidation des signatures électroniques qualifiées. La validation des signatures électroniques qualifiées est présumée satis­\nfaire aux exigences fixées au paragraphe 1 lorsqu’elle respecte ces normes. Ces actes d’exécution sont adoptés en\nconformité avec la procédure d’examen visée à l’article 48, paragraphe 2.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "d0538391b5b57551ea3c6cca524439302515ab07077a670ff7431ab2c3764c0f"
+        },
+        {
+          "id": "art_33",
+          "titre": "Service de validation qualifié des signatures électroniques qualifiées",
+          "texte": "Service de validation qualifié des signatures électroniques qualifiées\n1. Un service de validation qualifié des signatures électroniques qualifiées ne peut être fourni que par un prestataire de\nservices de confiance qualifié qui:\na) fournit une validation en conformité avec l’article 32, paragraphe 1; et\nb) permet aux parties utilisatrices de recevoir le résultat du processus de validation d’une manière automatisée, fiable,\nefficace et portant la signature électronique avancée ou le cachet électronique avancé du prestataire qui fournit le\nservice de validation qualifié.\n2. La Commission peut, au moyen d’actes d’exécution, déterminer les numéros de référence des normes applicables au\nservice de validation qualifié visé au paragraphe 1. Le service de validation de signatures électroniques qualifiées est\nprésumé satisfaire aux exigences fixées au paragraphe 1 lorsqu’il respecte ces normes. Ces actes d’exécution sont adoptés\nen conformité avec la procédure d’examen visée à l’article 48, paragraphe 2.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "2fc501b0486362c83166784c0c35ac357435b053ef6783db96a02e8d600d1298"
+        },
+        {
+          "id": "art_34",
+          "titre": "Service de conservation qualifié des signatures électroniques qualifiées",
+          "texte": "Service de conservation qualifié des signatures électroniques qualifiées\n1. Un service de conservation qualifié des signatures électroniques qualifiées ne peut être fourni que par un prestataire\nde services de confiance qualifié qui utilise des procédures et des technologies permettant d’étendre la fiabilité des\nsignatures électroniques qualifiées au-delà de la période de validité technologique.\n2. La Commission peut, au moyen d’actes d’exécution, déterminer les numéros de référence des normes applicables au\nservice de conservation qualifié des signatures électroniques qualifiées. Le service de conservation qualifié des signatures\nélectroniques qualifiées est présumé satisfaire aux exigences fixées au paragraphe 1 lorsqu’il respecte ces normes. Ces actes\nd’exécution sont adoptés en conformité avec la procédure d’examen visée à l’article 48, paragraphe 2.\n\nL 257/104 FR Journal officiel de l’Union européenne 28.8.2014\nSECTION 5\nCachets électroniques",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "29896c282641c8122e430f5df19d6dd5bd0a6508ef9d1eddc2c507fe8c837809"
+        },
+        {
+          "id": "art_35",
+          "titre": "Effets juridiques des cachets électroniques",
+          "texte": "Effets juridiques des cachets électroniques\n1. L’effet juridique et la recevabilité d’un cachet électronique comme preuve en justice ne peuvent être refusés au seul\nmotif que ce cachet se présente sous une forme électronique ou qu’il ne satisfait pas aux exigences du cachet électronique\nqualifié.\n2. Un cachet électronique qualifié bénéficie d’une présomption d’intégrité des données et d’exactitude de l’origine des\ndonnées auxquelles le cachet électronique qualifié est lié.\n3. Un cachet électronique qualifié qui repose sur un certificat qualifié délivré dans un État membre est reconnu en tant\nque cachet électronique qualifié dans tous les autres États membres.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "002916a17c0dbcac900cba8193b9f72d851298a6004ec983c468e7479a06651e"
+        },
+        {
+          "id": "art_36",
+          "titre": "Exigences du cachet électronique avancé",
+          "texte": "Exigences du cachet électronique avancé\nUn cachet électronique avancé satisfait aux exigences suivantes:\na) être lié au créateur du cachet de manière univoque;\nb) permettre d’identifier le créateur du cachet;\nc) avoir été créé à l’aide de données de création de cachet électronique que le créateur du cachet peut, avec un niveau de\nconfiance élevé, utiliser sous son contrôle pour créer un cachet électronique; et\nd) être lié aux données auxquelles il est associé de telle sorte que toute modification ultérieure des données soit\ndétectable.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "993952ac6cbe3a93c24bb719b57e40702923a1172cdc68af78f76e2ef06d4193"
+        },
+        {
+          "id": "art_37",
+          "titre": "Cachets électroniques dans les services publics",
+          "texte": "Cachets électroniques dans les services publics\n1. Si un État membre exige un cachet électronique avancé pour utiliser un service en ligne offert par un organisme du\nsecteur public ou pour l’utiliser au nom de cet organisme, il reconnaît les cachets électroniques avancés, les cachets\nélectroniques avancés qui reposent sur un certificat qualifié de cachet électronique et les cachets électroniques qualifiés au\nmoins dans les formats ou utilisant les méthodes définis dans les actes d’exécutions visés au paragraphe 5.\n2. Si un État membre exige un cachet électronique avancé qui repose sur un certificat qualifié pour utiliser un service\nen ligne proposé par un organisme du secteur public ou pour l’utiliser au nom de cet organisme, il reconnaît les cachets\nélectroniques avancés qui reposent sur un certificat qualifié et les cachets électroniques qualifiés au moins dans les formats\nou utilisant les méthodes définis dans les actes d’exécution visés au paragraphe 5.\n3. Les États membres n’exigent pas, pour l’utilisation transfrontalière dans un service en ligne offert par un organisme\ndu secteur public, de cachet électronique présentant un niveau de sécurité supérieur à celui du cachet électronique qualifié.\n4. La Commission peut, au moyen d’actes d’exécution, déterminer les numéros de référence des normes applicables aux\ncachets électroniques avancés. Un cachet électronique avancé est présumé satisfaire aux exigences applicables aux cachets\nélectroniques avancés visées aux paragraphes 1 et 2 du présent article et à l’article 36 lorsqu’il respecte ces normes. Ces\nactes d’exécution sont adoptés en conformité avec la procédure d’examen visée à l’article 48, paragraphe 2.\n\n28.8.2014 FR Journal officiel de l’Union européenne L 257/105\n5. Au plus tard le 18 septembre 2015, et compte tenu des pratiques et des normes ainsi que des actes juridiques de\nl’Union en vigueur, la Commission définit, au moyen d’actes d’exécution, les formats de référence des cachets électro­\nniques avancés ou les méthodes de référence lorsque d’autres formats sont utilisés. Ces actes d’exécution sont adoptés en\nconformité avec la procédure d’examen visée à l’article 48, paragraphe 2.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "83bcf492c28c12e904b36b6a8a770d89dc05b27b8236c503f898c5407d9532ca"
+        },
+        {
+          "id": "art_38",
+          "titre": "Certificats qualifiés de cachet électronique",
+          "texte": "Certificats qualifiés de cachet électronique\n1. Les certificats qualifiés de cachet électronique satisfont aux exigences fixées à l’annexe III.\n2. Les certificats qualifiés de cachet électronique ne font l’objet d’aucune exigence obligatoire allant au-delà des\nexigences fixées à l’annexe III.\n3. Les certificats qualifiés de cachet électronique peuvent comprendre des attributs spécifiques supplémentaires non\nobligatoires. Ces attributs n’affectent pas l’interopérabilité et la reconnaissance des cachets électroniques qualifiés.\n4. Si un certificat qualifié de cachet électronique a été révoqué après la première activation, il perd sa validité à compter\ndu moment de sa révocation et il ne peut en aucun cas recouvrer son statut antérieur.\n5. Sous réserve des conditions suivantes, les États membres peuvent établir des règles nationales relatives à la suspen­\nsion temporaire de certificats qualifiés de cachet électronique:\na) si un certificat qualifié de cachet électronique a été temporairement suspendu, ce certificat perd sa validité pendant la\npériode de suspension;\nb) la période de suspension est clairement indiquée dans la base de données relative aux certificats et le statut de\nsuspension est visible, pendant la période de suspension, auprès du service fournissant les informations sur le\nstatut du certificat.\n6. La Commission peut, au moyen d’actes d’exécution, déterminer les numéros de référence des normes applicables aux\ncertificats qualifiés de cachet électronique. Un certificat qualifié de cachet électronique est présumé satisfaire aux exigences\nfixées à l’annexe III lorsqu’il respecte ces normes. Ces actes d’exécution sont adoptés en conformité avec la procédure\nd’examen visée à l’article 48, paragraphe 2.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "368e74d1e47509772f2ed921f33e25912f5e116cb348a0c0d48f26dd1d9a3f96"
+        },
+        {
+          "id": "art_39",
+          "titre": "Dispositifs de création de cachet électronique qualifiés",
+          "texte": "Dispositifs de création de cachet électronique qualifiés\n1. L’article 29 s’applique mutatis mutandis aux exigences applicables aux dispositifs de création de cachet électronique\nqualifiés.\n2. L’article 30 s’applique mutatis mutandis à la certification des dispositifs de création de cachet électronique qualifiés.\n3. L’article 31 s’applique mutatis mutandis à la publication d’une liste de dispositifs de création de cachet électronique\nqualifiés.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "d6ec5f7feb2fe18878b226295009ab2b52fcdc940b9cbbcf515c23bb36f1d5bf"
+        },
+        {
+          "id": "art_40",
+          "titre": "Validation et conservation des cachets électroniques qualifiés",
+          "texte": "Validation et conservation des cachets électroniques qualifiés\nLes articles 32, 33 et 34 s’appliquent mutatis mutandis à la validation et à la conservation des cachets électroniques\nqualifiés.\n\nL 257/106 FR Journal officiel de l’Union européenne 28.8.2014\nSECTION 6\nHorodatage électronique",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "08f1687d5f052d572f39f3ffb04fac5946f9a4336df9fcec212ff3de70124794"
+        },
+        {
+          "id": "art_41",
+          "titre": "Effet juridique des horodatages électroniques",
+          "texte": "Effet juridique des horodatages électroniques\n1. L’effet juridique et la recevabilité d’un horodatage électronique comme preuve en justice ne peuvent être refusés au\nseul motif que cet horodatage se présente sous une forme électronique ou qu’il ne satisfait pas aux exigences de\nl’horodatage électronique qualifié.\n2. Un horodatage électronique qualifié bénéficie d’une présomption d’exactitude de la date et de l’heure qu’il indique et\nd’intégrité des données auxquelles se rapportent cette date et cette heure.\n3. Un horodatage électronique qualifié délivré dans un État membre est reconnu en tant qu’horodatage électronique\nqualifié dans tous les États membres.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "4611157d5a8b5aceefe68e45b7fe6e0bb5dca6706dce5ac19421434fe6d84f0f"
+        },
+        {
+          "id": "art_42",
+          "titre": "Exigences applicables aux horodatages électroniques qualifiés",
+          "texte": "Exigences applicables aux horodatages électroniques qualifiés\n1. Un horodatage électronique qualifié satisfait aux exigences suivantes:\na) il lie la date et l’heure aux données de manière à raisonnablement exclure la possibilité de modification indétectable\ndes données;\nb) il est fondé sur une horloge exacte liée au temps universel coordonné; et\nc) il est signé au moyen d’une signature électronique avancée ou cacheté au moyen d’un cachet électronique avancé du\nprestataire de services de confiance qualifié, ou par une méthode équivalente.\n2. La Commission peut, au moyen d’actes d’exécution, établir les numéros de référence des normes en ce qui concerne\nl’établissement du lien entre la date et l’heure et les données, et les horloges exactes. L’établissement du lien entre la date\net l’heure et les données et les horloges exactes sont présumés satisfaire aux exigences fixées au paragraphe 1 lorsqu’ils\nrespectent ces normes. Ces actes d’exécution sont adoptés en conformité avec la procédure d’examen visée à l’article 48,\nparagraphe 2.\nSECTION 7\nServices d’envoi recommandé électronique",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "484a7196cab527c950aa9218597af08880b8684ba292a79b7af51fff3dac78ca"
+        },
+        {
+          "id": "art_43",
+          "titre": "Effet juridique d’un service d’envoi recommandé électronique",
+          "texte": "Effet juridique d’un service d’envoi recommandé électronique\n1. L’effet juridique et la recevabilité des données envoyées et reçues à l’aide d’un service d’envoi recommandé élec­\ntronique comme preuves en justice ne peuvent être refusés au seul motif que ce service se présente sous une forme\nélectronique ou qu’il ne satisfait pas aux exigences du service d’envoi recommandé électronique qualifié.\n2. Les données envoyées et reçues au moyen d’un service d’envoi recommandé électronique qualifié bénéficient d’une\nprésomption quant à l’intégrité des données, à l’envoi de ces données par l’expéditeur identifié et à leur réception par le\ndestinataire identifié, et à l’exactitude de la date et de l’heure de l’envoi et de la réception indiquées par le service d’envoi\nrecommandé électronique qualifié.\n\n28.8.2014 FR Journal officiel de l’Union européenne L 257/107",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "55dd2e412048741b1706d0c29978bdb58416709610759b44e88b0d939f4d1ad3"
+        },
+        {
+          "id": "art_44",
+          "titre": "Exigences applicables aux services d’envoi recommandé électronique qualifiés",
+          "texte": "Exigences applicables aux services d’envoi recommandé électronique qualifiés\n1. Les services d’envoi recommandé électronique qualifiés satisfont aux exigences suivantes:\na) ils sont fournis par un ou plusieurs prestataires de services de confiance qualifiés;\nb) ils garantissent l’identification de l’expéditeur avec un degré de confiance élevé;\nc) ils garantissent l’identification du destinataire avant la fourniture des données;\nd) l’envoi et la réception de données sont sécurisés par une signature électronique avancée ou par un cachet électronique\navancé d’un prestataire de services de confiance qualifié, de manière à exclure toute possibilité de modification\nindétectable des données;\ne) toute modification des données nécessaire pour l’envoi ou la réception de celles-ci est clairement signalée à l’expéditeur\net au destinataire des données;\nf) la date et l’heure d’envoi, de réception et toute modification des données sont indiquées par un horodatage élec­\ntronique qualifié.\nDans le cas où les données sont transférées entre deux prestataires de services de confiance qualifiés ou plus, les exigences\nfixées aux points a) à f) s’appliquent à tous les prestataires de services de confiance qualifiés.\n2. La Commission peut, au moyen d’actes d’exécution, déterminer les numéros de référence des normes applicables aux\nprocessus d’envoi et de réception de données. Le processus d’envoi et de réception de données est présumé satisfaire aux\nexigences fixées au paragraphe 1 lorsqu’il respecte ces normes. Ces actes d’exécution sont adoptés en conformité avec la\nprocédure d’examen visée à l’article 48, paragraphe 2.\nSECTION 8\nAuthentification de site internet",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "82143b69c8edcbdeacd2792bddc2bac0cec0d912557ecd2cfb62f6e8efff3260"
+        },
+        {
+          "id": "art_45",
+          "titre": "Exigences applicables aux certificats qualifiés d’authentification de site internet",
+          "texte": "Exigences applicables aux certificats qualifiés d’authentification de site internet\n1. Les certificats qualifiés d’authentification de site internet satisfont aux exigences fixées à l’annexe IV.\n2. La Commission peut, au moyen d’actes d’exécution, déterminer les numéros de référence des normes applicables aux\ncertificats qualifiés d’authentification de site internet. Un certificat qualifié d’authentification de site internet est présumé\nsatisfaire aux exigences fixées à l’annexe IV lorsqu’il respecte ces normes. Ces actes d’exécution sont adoptés en conformité\navec la procédure d’examen visée à l’article 48, paragraphe 2.\nCHAPITRE IV\nDOCUMENTS ÉLECTRONIQUES",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "6274a50b0e88329947de043cd1aa4aedb9c712e0b73cb9428ea9dc1632b0c25f"
+        },
+        {
+          "id": "art_46",
+          "titre": "Effets juridiques des documents électroniques",
+          "texte": "Effets juridiques des documents électroniques\nL’effet juridique et la recevabilité d’un document électronique comme preuve en justice ne peuvent être refusés au seul\nmotif que ce document se présente sous une forme électronique.\n\nL 257/108 FR Journal officiel de l’Union européenne 28.8.2014\nCHAPITRE V\nDÉLÉGATIONS DE POUVOIR ET DISPOSITIONS D’EXÉCUTION",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "8f044561919024f5c395c103ac5295e1996eb3b47433b8e94ee5120d564fde1d"
+        },
+        {
+          "id": "art_47",
+          "titre": "Exercice de la délégation",
+          "texte": "Exercice de la délégation\n1. Le pouvoir d’adopter des actes délégués conféré à la Commission est soumis aux conditions fixées au présent article.\n2. Le pouvoir d’adopter des actes délégués visé à l’article 30, paragraphe 4, est conféré à la Commission pour une\ndurée indéterminée à compter du 17 septembre 2014.\n3. La délégation de pouvoir visée à l’article 30, paragraphe 4, peut être révoquée à tout moment par le Parlement\neuropéen ou le Conseil. La décision de révocation met fin à la délégation de pouvoir qui y est précisée. La révocation\nprend effet le jour suivant celui de la publication de ladite décision au Journal officiel de l’Union européenne ou à une date\nultérieure qui est précisée dans ladite décision. Elle ne porte pas atteinte à la validité des actes délégués déjà en vigueur.\n4. Aussitôt qu’elle adopte un acte délégué, la Commission le notifie au Parlement européen et au Conseil simultané­\nment.\n5. Un acte délégué adopté en vertu de l’article 30, paragraphe 4, n’entre en vigueur que si le Parlement européen ou le\nConseil n’a pas exprimé d’objections dans un délai de deux mois à compter de la notification de cet acte au Parlement\neuropéen et au Conseil ou si, avant l’expiration de ce délai, le Parlement européen et le Conseil ont tous deux informé la\nCommission de leur intention de ne pas exprimer d’objections. Ce délai est prolongé de deux mois à l’initiative du\nParlement européen ou du Conseil.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "4dbd44227487c89a6cddb722ee274e2726c832f608998149c51ec8733cf1ef6a"
+        },
+        {
+          "id": "art_48",
+          "titre": "Comité",
+          "texte": "Comité\n1. La Commission est assistée par un comité. Ledit comité est un comité au sens du règlement (UE) n o 182/2011.\n2. Lorsqu’il est fait référence au présent paragraphe, l’article 5 du règlement (UE) n o 182/2011 s’applique.\nCHAPITRE VI\nDISPOSITIONS FINALES",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "47a91795094096a6571523757f61cb4dea60d42cd6de150f3eb44518ad86c149"
+        },
+        {
+          "id": "art_49",
+          "titre": "Réexamen",
+          "texte": "Réexamen\nLa Commission procède à un réexamen de l’application du présent règlement et rend compte au Parlement européen et\nau Conseil, au plus tard le 1 er juillet 2020. La Commission évalue, en particulier, s’il convient de modifier le champ\nd’application du présent règlement ou ses dispositions spécifiques, y compris l’article 6, l’article 7, point f) et les articles\n34, 43, 44 et 45, compte tenu de l’expérience acquise dans l’application du présent règlement ainsi que de l’évolution des\ntechnologies, du marché et du contexte juridique.\nLe rapport visé au premier alinéa est, au besoin, accompagné de propositions législatives.\nEn outre, la Commission présente au Parlement européen et au Conseil, tous les quatre ans après la présentation du\nrapport visé au premier alinéa, un rapport sur les progrès accomplis dans la réalisation des objectifs du présent règlement.\n\n28.8.2014 FR Journal officiel de l’Union européenne L 257/109",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "cedfa173461466dfd475114450c590b4dfb871fac9df0b9796a50ac24048769d"
+        },
+        {
+          "id": "art_50",
+          "titre": "Abrogation",
+          "texte": "Abrogation\n1. La directive 1999/93/CE est abrogée avec effet au 1 er juillet 2016.\n2. Les références faites à la directive abrogée s’entendent comme faites au présent règlement.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "053ea60c8b87e9bd318b368ffa12cc03f9504a180c145a86a88aa82fe3cedaac"
+        },
+        {
+          "id": "art_51",
+          "titre": "Mesures transitoires",
+          "texte": "Mesures transitoires\n1. Les dispositifs sécurisés de création de signature dont la conformité a été déterminée conformément à l’article 3,\nparagraphe 4, de la directive 1999/93/CE sont considérés comme des dispositifs de création de signature électronique\nqualifiés au titre du présent règlement.\n2. Les certificats qualifiés délivrés aux personnes physiques au titre de la directive 1999/93/CE sont considérés comme\ndes certificats qualifiés de signature électronique au titre du présent règlement jusqu’à leur expiration.\n3. Un prestataire de services de certification qui délivre des certificats qualifiés au titre de la directive 1999/93/CE\nsoumet un rapport d’évaluation de la conformité à l’organe de contrôle le plus rapidement possible, et au plus tard le 1 er\njuillet 2017. Jusqu’à la présentation d’un tel rapport d’évaluation de la conformité et l’achèvement de l’évaluation par\nl’organe de contrôle, ce prestataire de services de certification est considéré comme un prestataire de services de confiance\nqualifié au titre du présent règlement.\n4. Si un prestataire de services de certification qui délivre des certificats qualifiés au titre de la directive 1999/93/CE ne\nsoumet pas de rapport d’évaluation de la conformité à l’organe de contrôle dans le délai visé au paragraphe 3, ce\nprestataire de services de certification n’est pas considéré comme un prestataire de services de confiance qualifié au\ntitre du présent règlement à partir du 2 juillet 2017.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "65f0f342545449bf36734d109c59ab033be5126f06b835667faa712c35fa7c50"
+        },
+        {
+          "id": "art_52",
+          "titre": "Entrée en vigueur",
+          "texte": "Entrée en vigueur\n1. Le présent règlement entre en vigueur le vingtième jour suivant celui de sa publication au Journal officiel de l’Union\neuropéenne.\n2. Le présent règlement est applicable à partir du 1e r juillet 2016, à l’exception des dispositions suivantes:\na) l’article 8, paragraphe 3, l’article 9, paragraphe 5, l’article 12, paragraphes 2 à 9, l’article 17, paragraphe 8, l’article 19,\nparagraphe 4, l’article 20, paragraphe 4, l’article 21, paragraphe 4, l’article 22, paragraphe 5, l’article 23, paragraphe 3,\nl’article 24, paragraphe 5, l’article 27, paragraphes 4 et 5, l’article 28, paragraphe 6, l’article 29, paragraphe 2,\nl’article 30, paragraphes 3 et 4, l’article 31, paragraphe 3, l’article 32, paragraphe 3, l’article 33, paragraphe 2,\nl’article 34, paragraphe 2, l’article 37, paragraphes 4 et 5, l’article 38, paragraphe 6, l’article 42, paragraphe 2,\nl’article 44, paragraphe 2, l’article 45, paragraphe 2, et les articles 47 et 48 sont applicables à partir du 17 septembre\n2014;\nb) l’article 7, l’article 8, paragraphes 1 et 2, les articles 9, 10, 11, et l’article 12, paragraphe 1, sont applicables à compter\nde la date d’application des actes d’exécution visés à l’article 8, paragraphe 3, et à l’article 12, paragraphe 8;\nc) l’article 6 s’applique après trois ans à compter de la date d’application des actes d’exécution visés à l’article 8,\nparagraphe 3 et à l’article 12, paragraphe 8.\n3. Lorsque le schéma d’identification électronique notifié est inscrit sur la liste publiée par la Commission en appli­\ncation de l’article 9 avant la date visée au paragraphe 2, point c), du présent article, la reconnaissance des moyens\nd’identification électronique dans le cadre de ce schéma en application de l’article 6 a lieu au plus tard douze mois après\nla publication dudit schéma, mais pas avant la date visée au paragraphe 2, point c), du présent article.\n\nL 257/110 FR Journal officiel de l’Union européenne 28.8.2014\n4. Nonobstant le paragraphe 2, point c), du présent article, un État membre peut décider que des moyens d’identi­\nfication électronique relevant d’un schéma d’identification électronique notifié en application de l’article 9, paragraphe 1,\npar un autre État membre sont reconnus dans le premier État membre à compter de la date d’application des actes\nd’exécution visés à l’article 8, paragraphe 3, et à l’article 12, paragraphe 8. Les États membres concernés informent la\nCommission. La Commission rend publiques ces informations.\nLe présent règlement est obligatoire dans tous ses éléments et directement applicable dans tout\nÉtat membre.\nFait à Bruxelles, le 23 juillet 2014.\nPar le Parlement européen Par le Conseil\nLe président Le président\nM. SCHULZ S. GOZI\n\n28.8.2014 FR Journal officiel de l’Union européenne L 257/111\nANNEXE I\nEXIGENCES APPLICABLES AUX CERTIFICATS QUALIFIÉS DE SIGNATURE ÉLECTRONIQUE\nLes certificats qualifiés de signature électronique contiennent:\na) une mention indiquant, au moins sous une forme adaptée au traitement automatisé, que le certificat a été délivré\ncomme certificat qualifié de signature électronique;\nb) un ensemble de données représentant sans ambiguïté le prestataire de services de confiance qualifié délivrant les\ncertificats qualifiés, comprenant au moins l’État membre dans lequel ce prestataire est établi, et:\n— pour une personne morale: le nom et, le cas échéant, le numéro d’immatriculation tels qu’ils figurent dans les\nregistres officiels,\n— pour une personne physique: le nom de la personne;\nc) au moins le nom du signataire ou un pseudonyme; si un pseudonyme est utilisé, cela est clairement indiqué;\nd) des données de validation de la signature électronique qui correspondent aux données de création de la signature\nélectronique;\ne) des précisions sur le début et la fin de la période de validité du certificat;\nf) le code d’identité du certificat, qui doit être unique pour le prestataire de services de confiance qualifié;\ng) la signature électronique avancée ou le cachet électronique avancé du prestataire de services de confiance qualifié\ndélivrant le certificat;\nh) l’endroit où peut être obtenu gratuitement le certificat sur lequel reposent la signature électronique avancée ou le\ncachet électronique avancé mentionnés au point g);\ni) l’emplacement des services qui peuvent être utilisés pour connaître le statut de validité du certificat qualifié;\nj) lorsque les données de création de la signature électronique associées aux données de validation de la signature\nélectronique se trouvent dans un dispositif de création de signature électronique qualifié, une mention l’indiquant,\nau moins sous une forme adaptée au traitement automatisé.\n\nL 257/112 FR Journal officiel de l’Union européenne 28.8.2014\nANNEXE II\nEXIGENCES APPLICABLES AUX DISPOSITIFS DE CRÉATION DE SIGNATURE ÉLECTRONIQUE QUALIFIÉS\n1. Les dispositifs de création de signature électronique qualifiés garantissent au moins, par des moyens techniques et des\nprocédures appropriés, que:\na) la confidentialité des données de création de signature électronique utilisées pour créer la signature électronique est\nsuffisamment assurée;\nb) les données de création de signature électronique utilisées pour créer la signature électronique ne peuvent être\npratiquement établies qu’une seule fois;\nc) l’on peut avoir l’assurance suffisante que les données de création de signature électronique utilisées pour créer la\nsignature électronique ne peuvent être trouvées par déduction et que la signature électronique est protégée de\nmanière fiable contre toute falsification par les moyens techniques actuellement disponibles;\nd) les données de création de signature électronique utilisées pour créer la signature électronique peuvent être\nprotégées de manière fiable par le signataire légitime contre leur utilisation par d’autres.\n2. Les dispositifs de création de signature électronique qualifiés ne modifient pas les données à signer et n’empêchent pas\nla présentation de ces données au signataire avant la signature.\n3. La génération ou la gestion de données de création de signature électronique pour le compte du signataire peut être\nseulement confiée à un prestataire de services de confiance qualifié.\n4. Sans préjudice du paragraphe 1, point d), un prestataire de services de confiance qualifié gérant des données de\ncréation de signature électronique pour le compte d’un signataire ne peut reproduire les données de création de\nsignature électronique qu’à des fins de sauvegarde, sous réserve du respect des exigences suivantes:\na) le niveau de sécurité des ensembles de données reproduits doit être équivalent à celui des ensembles de données\nd’origine;\nb) le nombre d’ensembles de données reproduits n’excède pas le minimum nécessaire pour assurer la continuité du\nservice.\n\n28.8.2014 FR Journal officiel de l’Union européenne L 257/113\nANNEXE III\nEXIGENCES APPLICABLES AUX CERTIFICATS QUALIFIÉS DE CACHET ÉLECTRONIQUE\nLes certificats qualifiés de cachet électronique contiennent:\na) une mention indiquant, au moins sous une forme adaptée au traitement automatisé, que le certificat a été délivré\ncomme certificat qualifié de cachet électronique;\nb) un ensemble de données représentant sans ambiguïté le prestataire de services de confiance qualifié délivrant les\ncertificats qualifiés, comprenant au moins l’État membre dans lequel ce prestataire est établi et:\n— pour une personne morale: le nom et, le cas échéant, le numéro d’immatriculation tels qu’ils figurent dans les\nregistres officiels,\n— pour une personne physique: le nom de la personne;\nc) au moins le nom du créateur du cachet et, le cas échéant, son numéro d’immatriculation tels qu’ils figurent dans les\nregistres officiels;\nd) des données de validation du cachet électronique, qui correspondent aux données de création du cachet électronique;\ne) des précisions sur le début et la fin de la période de validité du certificat;\nf) le code d’identité du certificat, qui doit être unique pour le prestataire de services de confiance qualifié;\ng) la signature électronique avancée ou le cachet électronique avancé du prestataire de services de confiance qualifié\ndélivrant le certificat;\nh) l’endroit où peut être obtenu gratuitement le certificat sur lequel reposent la signature électronique avancée ou le\ncachet électronique avancé mentionnés au point g);\ni) l’emplacement des services qui peuvent être utilisés pour connaître le statut de validité du certificat qualifié;\nj) lorsque les données de création du cachet électronique associées aux données de validation du cachet électronique se\ntrouvent dans un dispositif de création de cachet électronique qualifié, une mention l’indiquant, au moins sous une\nforme adaptée au traitement automatisé.\n\nL 257/114 FR Journal officiel de l’Union européenne 28.8.2014\nANNEXE IV\nEXIGENCES APPLICABLES AUX CERTIFICATS QUALIFIÉS D’AUTHENTIFICATION DE SITE INTERNET\nLes certificats qualifiés d’authentification de site internet contiennent:\na) une mention indiquant, au moins sous une forme adaptée au traitement automatisé, que le certificat a été délivré\ncomme certificat qualifié d’authentification de site internet;\nb) un ensemble de données représentant sans ambiguïté le prestataire de services de confiance qualifié délivrant les\ncertificats qualifiés, comprenant au moins l’État membre dans lequel ce prestataire est établi et:\n— pour une personne morale: le nom et, le cas échéant, le numéro d’immatriculation tels qu’ils figurent dans les\nregistres officiels,\n— pour une personne physique: le nom de la personne;\nc) pour les personnes physiques: au moins le nom de la personne à qui le certificat a été délivré, ou un pseudonyme. Si\nun pseudonyme est utilisé, cela est clairement indiqué;\npour les personnes morales: au moins le nom de la personne morale à laquelle le certificat est délivré et, le cas\néchéant, son numéro d’immatriculation, tels qu’ils figurent dans les registres officiels;\nd) des éléments de l’adresse, dont au moins la ville et l’État, de la personne physique ou morale à laquelle le certificat est\ndélivré et, le cas échéant, ces éléments tels qu’ils figurent dans les registres officiels;\ne) le(s) nom(s) de domaine exploité(s) par la personne physique ou morale à laquelle le certificat est délivré;\nf) des précisions sur le début et la fin de la période de validité du certificat;\ng) le code d’identité du certificat, qui doit être unique pour le prestataire de services de confiance qualifié;\nh) la signature électronique avancée ou le cachet électronique avancé du prestataire de services de confiance qualifié\ndélivrant le certificat;\ni) l’endroit où peut être obtenu gratuitement le certificat sur lequel reposent la signature électronique avancée ou le\ncachet électronique avancé visés au point h);\nj) l’emplacement des services de statut de validité des certificats qui peuvent être utilisés pour connaître le statut de\nvalidité du certificat qualifié.",
+          "validite": {
+            "valid_from": "2016-07-01",
+            "valid_to": null
+          },
+          "citations": [],
+          "hash_contenu": "ea2cd15122386f1d92e42e49dad06a9e382bf77b8c905588f427265e5bcf1069"
+        }
+      ]
+    }
+  ],
+  "textes_lies": [],
+  "hash_document": "457da04f103f279e125520bea4c5da9616e8bbb6d15d44dd39646788e7d4423e",
+  "date_indexation": null,
+  "metadonnees_supplementaires": {}
+}
