@@ -198,6 +198,8 @@ class Orchestrateur:
         evidences = retriever.retrieve(
             question=question,
             date_contexte=date_contexte,
+            filtres_themes=filtres_themes,
+            filtres_sources=filtres_sources,
         )
 
         sortie = SortieAgent(
@@ -206,6 +208,8 @@ class Orchestrateur:
             contenu={
                 "chunks_recuperes": len(evidences),
                 "date_contexte": date_contexte.isoformat() if date_contexte else None,
+                "filtres_themes": filtres_themes,
+                "filtres_sources": [s.value for s in filtres_sources],
             },
             duree_ms=int(
                 (datetime.now(timezone.utc) - debut).total_seconds() * 1000
