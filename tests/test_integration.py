@@ -326,6 +326,75 @@ class TestOrchestrateurMock:
         assert _classifier_requete("Incohérence entre les textes", None) == "conflit"
 
 
+class TestOrchestrateurNonBloquant:
+    def test_retrieval_bloquant_ne_gele_pas_la_boucle_asyncio(self, monkeypatch):
+        """
+        Le retrieval (embedding + Qdrant, synchrone et potentiellement long)
+        doit être déporté dans un thread (asyncio.to_thread) — sinon il
+        gèlerait toute la boucle asyncio, donc /health, /pending et le
+        Watcher, pendant toute sa durée.
+
+        On simule un retrieval lent (time.sleep) et on vérifie qu'une tâche
+        asyncio légère lancée en parallèle continue de progresser à
+        intervalles réguliers pendant ce temps, au lieu d'être bloquée
+        jusqu'à la fin du retrieval.
+        """
+        import time
+
+        from src.models import SortieAgent
+        from src.orchestrator import Orchestrateur
+
+        orchestrateur = Orchestrateur(mode="real")
+
+        class RetrieverLent:
+            def retrieve(self, **kwargs):
+                time.sleep(0.3)
+                return []
+
+        monkeypatch.setattr(orchestrateur, "_obtenir_retriever", lambda: RetrieverLent())
+
+        async def etape_explainer_rapide(question, evidences, type_pipeline, date_ref=None):
+            return (
+                "réponse simulée",
+                NiveauConfiance.ELEVE,
+                SortieAgent(nom_agent="Explainer", machine="Mac_B", contenu={}),
+            )
+
+        monkeypatch.setattr(orchestrateur, "_etape_explainer", etape_explainer_rapide)
+
+        async def _run():
+            t0 = time.monotonic()
+            marqueurs: list[float] = []
+
+            async def tache_legere():
+                for _ in range(6):
+                    marqueurs.append(time.monotonic() - t0)
+                    await asyncio.sleep(0.05)
+
+            await asyncio.gather(
+                orchestrateur.traiter(RequeteQuestion(question="Question test retrieval lent ?")),
+                tache_legere(),
+            )
+            return marqueurs
+
+        marqueurs = asyncio.run(_run())
+
+        # Le premier marqueur doit apparaître quasi immédiatement (~0 s).
+        # Si le retrieval bloquait la boucle, tache_legere() n'aurait pu
+        # démarrer qu'après les 0.3 s de sleep — ce test échouerait alors
+        # avec marqueurs[0] proche de 0.3 au lieu de proche de 0.
+        assert marqueurs[0] < 0.15, (
+            f"tache_legere() n'a démarré qu'après {marqueurs[0]:.3f}s — "
+            f"la boucle asyncio semble avoir été bloquée par le retrieval."
+        )
+        # Et elle doit continuer à progresser régulièrement pendant que le
+        # retrieval tourne en arrière-plan dans son thread.
+        ecarts = [b - a for a, b in zip(marqueurs, marqueurs[1:])]
+        assert all(ecart < 0.2 for ecart in ecarts), (
+            f"tache_legere() n'a pas progressé régulièrement : {ecarts}"
+        )
+
+
 # ---------------------------------------------------------------------------
 # Test audit trail
 # ---------------------------------------------------------------------------

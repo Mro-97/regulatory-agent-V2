@@ -30,6 +30,7 @@ Dépendances : httpx, redis, pydantic >= 2.7
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import os
@@ -156,6 +157,13 @@ class Orchestrateur:
         self._retriever = None
         self._client_http: Optional[httpx.AsyncClient] = None
 
+        # Sérialise l'usage du registre MLX (_CacheGeneration) : un seul
+        # modèle de génération est actif à la fois (swap/unload sur bascule
+        # d'agent). Sans ce verrou, deux requêtes /ask concurrentes
+        # déportées en thread (voir _executer_bloquant) pourraient faire
+        # basculer/décharger le modèle en pleine génération de l'autre.
+        self._verrou_agents = asyncio.Lock()
+
         logger.info("Orchestrateur initialisé — mode=%s", self.mode)
 
     # ------------------------------------------------------------------
@@ -175,6 +183,29 @@ class Orchestrateur:
         if self._client_http is None or self._client_http.is_closed:
             self._client_http = httpx.AsyncClient(timeout=60.0)
         return self._client_http
+
+    async def _executer_bloquant(self, fonction, /, *args, **kwargs):
+        """
+        Exécute un appel synchrone potentiellement long (chargement/inférence
+        MLX) dans un thread séparé, pour ne jamais geler la boucle asyncio
+        (sinon /health, /pending et le Watcher deviennent indisponibles
+        pendant toute la durée du retrieval + de la génération LLM).
+
+        Protégé par _verrou_agents : le registre MLX (_CacheGeneration)
+        ne garde qu'un seul modèle actif à la fois et le décharge lors
+        d'un changement d'agent — deux appels concurrents non sérialisés
+        pourraient faire basculer le modèle pendant qu'une autre requête
+        génère encore avec lui.
+
+        Args:
+            fonction: Callable synchrone à exécuter (méthode d'agent).
+            *args, **kwargs: Transmis tels quels à `fonction`.
+
+        Returns:
+            La valeur de retour de `fonction`.
+        """
+        async with self._verrou_agents:
+            return await asyncio.to_thread(fonction, *args, **kwargs)
 
     async def _nouveau_client_redis(self):
         """Client Redis asynchrone avec authentification depuis la config."""
@@ -232,7 +263,11 @@ class Orchestrateur:
         debut = datetime.now(timezone.utc)
         retriever = self._obtenir_retriever()
 
-        evidences = retriever.retrieve(
+        # Déporté en thread (embedding MLX + requête Qdrant, bloquant) —
+        # ne touche pas le registre de modèles de génération, donc pas
+        # besoin de _verrou_agents ici.
+        evidences = await asyncio.to_thread(
+            retriever.retrieve,
             question=question,
             date_contexte=date_contexte,
             filtres_themes=filtres_themes,
@@ -270,7 +305,8 @@ class Orchestrateur:
 
         # use_llm=False par défaut sur Mac A (16 Go) — activer sur Mac B
         agent = AgentTemporel(use_llm=True)
-        resultat = agent.analyser(
+        resultat = await self._executer_bloquant(
+            agent.analyser,
             question=question,
             evidences=evidences,
             date_contexte=date_contexte,
@@ -309,7 +345,8 @@ class Orchestrateur:
 
         # use_llm=False par défaut — activer quand Qwen est disponible
         agent = AgentExplainer(use_llm=True)
-        resultat = agent.expliquer(
+        resultat = await self._executer_bloquant(
+            agent.expliquer,
             question=question,
             evidences=evidences,
             date_ref=date_ref,
@@ -421,7 +458,8 @@ class Orchestrateur:
                 # use_llm=False par défaut — DeepSeek-R1 14B réservé
                 # aux cas critiques confirmés par un opérateur
                 agent_conflit = AgentConflit(use_llm=True)
-                resultat_conflit = agent_conflit.analyser(
+                resultat_conflit = await self._executer_bloquant(
+                    agent_conflit.analyser,
                     question=requete.question,
                     evidences=evidences,
                     date_ref=requete.date_contexte,
@@ -485,7 +523,9 @@ class Orchestrateur:
         try:
             from src.agents.citation import AgentCitation
             agent_citation = AgentCitation(use_llm=True)
-            resultat_citation = agent_citation.generate(evidences=evidences)
+            resultat_citation = await self._executer_bloquant(
+                agent_citation.generate, evidences=evidences
+            )
             agents_executes.append(SortieAgent(
                 nom_agent="Citation",
                 machine=self._machine_pour_agent("Citation"),
