@@ -58,6 +58,36 @@ if __name__ == "__main__":
         cfg.app_nom, cfg.app_version, cfg.api_host, cfg.api_port,
     )
 
+    # -----------------------------------------------------------
+    # Vérifications de compatibilité avec uvicorn.Server programmatique
+    # -----------------------------------------------------------
+    # `reload=True` ne fonctionne qu'avec `uvicorn.run(...)` en CLI :
+    # il fork un process superviseur qui watche les fichiers, ce qui
+    # casse la boucle asyncio du Watcher démarré ici. On journalise et
+    # on tourne sans reload.
+    if cfg.debug:
+        logger.warning(
+            "DEBUG=true — le rechargement à chaud (reload) est incompatible "
+            "avec le mode programmatique (uvicorn.Server + asyncio). "
+            "L'API tourne SANS reload. Pour bénéficier du reload, arrêter "
+            "ce process et lancer : "
+            "'uvicorn main:app --reload --host %s --port %d' "
+            "(le Watcher devra alors être démarré séparément).",
+            cfg.api_host, cfg.api_port,
+        )
+
+    # `workers=N` est ignoré par uvicorn.Server programmatique : seul
+    # `uvicorn.run(...)` ou gunicorn savent forker plusieurs workers.
+    # On force à 1 et on journalise si l'utilisateur en a demandé plus.
+    if cfg.api_workers > 1:
+        logger.warning(
+            "API_WORKERS=%d ignoré en mode programmatique — un seul worker tourne. "
+            "Pour du multi-process en production, utiliser gunicorn : "
+            "'gunicorn main:app -k uvicorn.workers.UvicornWorker -w %d "
+            "--bind %s:%d' (le Watcher devra alors tourner dans un process séparé).",
+            cfg.api_workers, cfg.api_workers, cfg.api_host, cfg.api_port,
+        )
+
     async def run():
         # Initialisation audit
         await initialiser_audit()
@@ -65,13 +95,13 @@ if __name__ == "__main__":
         # Watcher en arrière-plan (ne bloque pas l'API)
         watcher_task = asyncio.create_task(demarrer_watcher())
 
-        # Serveur uvicorn
+        # Serveur uvicorn — mode programmatique, 1 worker, sans reload.
+        # Le multi-worker et le reload nécessitent uvicorn CLI ou gunicorn
+        # (voir warnings au-dessus).
         config = uvicorn.Config(
             app="main:app",
             host=cfg.api_host,
             port=cfg.api_port,
-            workers=cfg.api_workers,
-            reload=cfg.debug,
             log_level="debug" if cfg.debug else "info",
         )
         server = uvicorn.Server(config)
