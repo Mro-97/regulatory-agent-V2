@@ -32,6 +32,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
+import re
 from dataclasses import dataclass, field
 from datetime import date
 from enum import Enum
@@ -44,6 +45,29 @@ if TYPE_CHECKING:
     from src.mlx_utils import MLXInference
 
 logger = logging.getLogger(__name__)
+
+# Guillemets typographiques (ouvrants/fermants, simples/doubles) → forme droite,
+# pour que la vérification d'ancrage ne soit pas sensible au style de citation
+# utilisé par le LLM (Mistral 7B reformate parfois « ... » en " ... ").
+_GUILLEMETS = str.maketrans({
+    "«": '"', "»": '"', "“": '"', "”": '"', "„": '"',
+    "‘": "'", "’": "'", "‚": "'",
+})
+
+_ESPACES_MULTIPLES = re.compile(r"\s+")
+
+
+def _normaliser_pour_comparaison(texte: str) -> str:
+    """
+    Normalise un texte pour la comparaison d'ancrage citation/chunk.
+
+    Neutralise les écarts purement typographiques (espaces multiples,
+    retours à la ligne, guillemets courbes vs droits) qui ne changent pas
+    le contenu réglementaire mais font échouer une comparaison littérale.
+    """
+    texte = texte.translate(_GUILLEMETS)
+    texte = _ESPACES_MULTIPLES.sub(" ", texte)
+    return texte.strip()
 
 
 # ---------------------------------------------------------------------------
@@ -218,7 +242,9 @@ class AgentCitation:
                 continue
 
             # Vérification de l'extrait : doit être contenu dans le texte source
-            if cit.extrait.strip() not in chunk.texte_extrait:
+            # (comparaison normalisée — insensible aux espaces multiples,
+            # retours à la ligne et guillemets typographiques)
+            if _normaliser_pour_comparaison(cit.extrait) not in _normaliser_pour_comparaison(chunk.texte_extrait):
                 cit.statut = StatutCitation.DOUTEUSE
                 douteuses.append(cit)
                 logger.warning(
