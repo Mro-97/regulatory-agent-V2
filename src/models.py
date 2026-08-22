@@ -19,6 +19,8 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field, model_validator
 
+from config import cfg
+
 # Taille maximale d'un contenu JSON soumis à /ingest (octets sérialisés).
 TAILLE_MAX_CONTENU_JSON = 1_000_000
 
@@ -368,7 +370,7 @@ class RequeteQuestion(BaseModel):
     question: str = Field(
         ...,
         min_length=3,
-        max_length=4000,
+        max_length=cfg.question_max_length,
         description="Question réglementaire.",
     )
     date_contexte: Optional[date] = Field(
