@@ -9,7 +9,11 @@ sous forme d'objets EvidenceRecuperee.
 Filtrage temporel en deux passes :
   Passe A — valid_from <= date_ref ET valid_to >= date_ref
   Passe B — valid_from <= date_ref ET valid_to = null (en vigueur indéfiniment)
-Les deux passes sont fusionnées et triées par score.
+Les deux passes sont fusionnées avec un budget top_k réparti équitablement
+entre elles (repêchage si une passe manque de candidats), pour qu'une
+disposition transitoire pertinente (passe A) ne soit jamais totalement
+évincée par les dispositions permanentes (passe B) au seul motif d'un score
+de similarité légèrement inférieur.
 
 Dépendances : qdrant-client >= 1.9, mlx-lm >= 0.16 (MIT/Apache).
 """
@@ -17,6 +21,7 @@ Dépendances : qdrant-client >= 1.9, mlx-lm >= 0.16 (MIT/Apache).
 from __future__ import annotations
 
 import logging
+import math
 from datetime import date, datetime, timezone
 from typing import Optional
 
@@ -285,7 +290,9 @@ class Retriever:
         Deux passes Qdrant :
           Passe A : valid_from <= date_ref ET valid_to >= date_ref
           Passe B : valid_from <= date_ref ET valid_to = null
-        Les résultats sont fusionnés (dédupliqués) et triés par score.
+        Le budget top_k est réparti équitablement entre les deux passes
+        (avec repêchage si l'une des deux manque de candidats), puis le
+        résultat final est trié par score décroissant.
 
         Args:
             question:        Question réglementaire en langage naturel.
@@ -338,9 +345,10 @@ class Retriever:
         )
 
         # --- Étape 4 : deux passes de recherche ---
-        points_bruts: list[ScoredPoint] = []
-        ids_vus: set[str] = set()
-
+        # Sur-échantillonnage à top_k complet par passe : nécessaire pour
+        # permettre le repêchage (étape suivante) sans jamais perdre de
+        # candidat valide.
+        resultats_par_passe: dict[str, list[ScoredPoint]] = {}
         for label, filtre in [
             ("valid_to_present", filtre_passe_a),
             ("valid_to_null", filtre_passe_b),
@@ -348,20 +356,54 @@ class Retriever:
             try:
                 resultats = self._rechercher(vecteur, limite=self._top_k, filtre=filtre)
                 logger.debug("Passe %s — %d résultats", label, len(resultats))
-                for point in resultats:
-                    if str(point.id) not in ids_vus:
-                        ids_vus.add(str(point.id))
-                        points_bruts.append(point)
+                resultats_par_passe[label] = resultats
             except RuntimeError as exc:
                 logger.warning("Passe %s échouée : %s", label, exc)
+                resultats_par_passe[label] = []
+
+        # --- Étape 5 : budget top_k réparti équitablement entre les passes ---
+        # Le budget n'est appliqué qu'une seule fois (par passe), et non plus
+        # une seconde fois au global : évite qu'une passe à score
+        # systématiquement plus élevé (ex. dispositions permanentes) n'évince
+        # totalement l'autre (ex. dispositions transitoires) du résultat.
+        part_a = math.ceil(self._top_k / 2)
+        part_b = self._top_k - part_a
+
+        points_bruts: list[ScoredPoint] = []
+        ids_vus: set[str] = set()
+
+        def _ajouter(points: list[ScoredPoint], limite: int) -> int:
+            ajoutes = 0
+            for point in points:
+                if ajoutes >= limite:
+                    break
+                if str(point.id) not in ids_vus:
+                    ids_vus.add(str(point.id))
+                    points_bruts.append(point)
+                    ajoutes += 1
+            return ajoutes
+
+        pris_a = _ajouter(resultats_par_passe["valid_to_present"], part_a)
+        pris_b = _ajouter(resultats_par_passe["valid_to_null"], part_b)
+
+        # Repêchage : si une passe n'a pas fourni assez de candidats pour
+        # honorer sa part (ex. peu de dispositions transitoires en base),
+        # on complète avec les meilleurs candidats restants de l'autre
+        # passe, jusqu'à top_k au total.
+        restant = self._top_k - (pris_a + pris_b)
+        if restant > 0:
+            candidats_restants = (
+                resultats_par_passe["valid_to_present"][pris_a:]
+                + resultats_par_passe["valid_to_null"][pris_b:]
+            )
+            candidats_restants.sort(key=lambda p: p.score, reverse=True)
+            _ajouter(candidats_restants, restant)
 
         if not points_bruts:
             logger.warning("Aucun chunk trouvé pour : %r", question[:80])
             return []
 
-        # --- Étape 5 : tri et limitation ---
         points_bruts.sort(key=lambda p: p.score, reverse=True)
-        points_bruts = points_bruts[: self._top_k]
 
         # --- Étape 6 : conversion ---
         evidences: list[EvidenceRecuperee] = []
