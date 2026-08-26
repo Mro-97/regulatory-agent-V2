@@ -21,7 +21,6 @@ Dépendances : qdrant-client >= 1.9, mlx-lm >= 0.16 (MIT/Apache).
 from __future__ import annotations
 
 import logging
-import math
 from datetime import date, datetime, timezone
 from typing import Optional
 
@@ -361,43 +360,47 @@ class Retriever:
                 logger.warning("Passe %s échouée : %s", label, exc)
                 resultats_par_passe[label] = []
 
-        # --- Étape 5 : budget top_k réparti équitablement entre les passes ---
-        # Le budget n'est appliqué qu'une seule fois (par passe), et non plus
-        # une seconde fois au global : évite qu'une passe à score
-        # systématiquement plus élevé (ex. dispositions permanentes) n'évince
-        # totalement l'autre (ex. dispositions transitoires) du résultat.
-        part_a = math.ceil(self._top_k / 2)
-        part_b = self._top_k - part_a
+        # --- Étape 5 : représentation garantie + arbitrage global par score ---
+        # 1) Chaque passe NON VIDE obtient au moins un slot — c'est ce qui
+        #    empêche l'éviction complète d'une passe par des scores plus élevés
+        #    de l'autre (régression B7).
+        # 2) Les slots restants sont distribués aux meilleurs candidats
+        #    (toutes passes confondues) — évite qu'un quota rigide n'évince
+        #    un candidat à haut score au profit d'un candidat à bas score
+        #    dans l'autre passe (B3).
+        res_a = resultats_par_passe["valid_to_present"]
+        res_b = resultats_par_passe["valid_to_null"]
 
         points_bruts: list[ScoredPoint] = []
         ids_vus: set[str] = set()
 
-        def _ajouter(points: list[ScoredPoint], limite: int) -> int:
-            ajoutes = 0
-            for point in points:
-                if ajoutes >= limite:
+        def _prendre(point: ScoredPoint) -> bool:
+            if str(point.id) in ids_vus:
+                return False
+            ids_vus.add(str(point.id))
+            points_bruts.append(point)
+            return True
+
+        # Représentation garantie : un point de chaque passe non vide,
+        # dans la limite du top_k.
+        for source in (res_a, res_b):
+            if len(points_bruts) >= self._top_k:
+                break
+            for point in source:
+                if _prendre(point):
                     break
-                if str(point.id) not in ids_vus:
-                    ids_vus.add(str(point.id))
-                    points_bruts.append(point)
-                    ajoutes += 1
-            return ajoutes
 
-        pris_a = _ajouter(resultats_par_passe["valid_to_present"], part_a)
-        pris_b = _ajouter(resultats_par_passe["valid_to_null"], part_b)
-
-        # Repêchage : si une passe n'a pas fourni assez de candidats pour
-        # honorer sa part (ex. peu de dispositions transitoires en base),
-        # on complète avec les meilleurs candidats restants de l'autre
-        # passe, jusqu'à top_k au total.
-        restant = self._top_k - (pris_a + pris_b)
-        if restant > 0:
-            candidats_restants = (
-                resultats_par_passe["valid_to_present"][pris_a:]
-                + resultats_par_passe["valid_to_null"][pris_b:]
-            )
-            candidats_restants.sort(key=lambda p: p.score, reverse=True)
-            _ajouter(candidats_restants, restant)
+        # Complément par score global : on parcourt les meilleurs candidats
+        # restants, toutes passes confondues.
+        candidats_restants = sorted(
+            list(res_a) + list(res_b),
+            key=lambda p: p.score,
+            reverse=True,
+        )
+        for point in candidats_restants:
+            if len(points_bruts) >= self._top_k:
+                break
+            _prendre(point)
 
         if not points_bruts:
             logger.warning("Aucun chunk trouvé pour : %r", question[:80])
