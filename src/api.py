@@ -314,10 +314,11 @@ async def interface(request: Request):
     description="Vérifie que l'API est opérationnelle. Retourne l'horodatage et la version.",
 )
 async def health() -> dict[str, object]:
+    # M4 : /health est public — on n'expose ni le nom d'application ni la
+    # version (fingerprinting). Le statut audit reste utile aux sondes
+    # d'exploitation locales et ne révèle pas d'info versionnée.
     reponse: dict[str, object] = {
         "statut": "ok",
-        "app": cfg.app_nom,
-        "version": cfg.app_version,
         "horodatage": datetime.now(timezone.utc).isoformat(),
     }
     try:

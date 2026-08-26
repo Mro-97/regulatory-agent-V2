@@ -67,6 +67,13 @@ class TestAuthentification:
         assert rep.status_code == 200
         assert rep.json()["statut"] == "ok"
 
+    def test_health_ne_fuit_ni_app_ni_version(self, client):
+        """M4 : /health public — ne doit exposer ni le nom ni la version
+        de l'application (fingerprinting)."""
+        donnees = client.get("/health").json()
+        assert "app" not in donnees
+        assert "version" not in donnees
+
     def test_interface_web_ne_fuit_pas_la_cle_api(self, client):
         """C1 : la page HTML publique / ne doit JAMAIS embarquer la clé API.
         Elle est saisie côté navigateur et stockée en sessionStorage.
