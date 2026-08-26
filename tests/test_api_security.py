@@ -45,10 +45,16 @@ class TestAuthentification:
         assert rep.status_code == 200
         assert rep.json()["statut"] == "ok"
 
-    def test_interface_web_publique(self, client):
+    def test_interface_web_ne_fuit_pas_la_cle_api(self, client):
+        """C1 : la page HTML publique / ne doit JAMAIS embarquer la clé API.
+        Elle est saisie côté navigateur et stockée en sessionStorage.
+        Voir web/static/app.js — fonction _obtenirCle()."""
         rep = client.get("/")
         assert rep.status_code == 200
-        assert "__API_KEY__" in rep.text
+        assert "__API_KEY__" not in rep.text
+        assert "{{ api_key }}" not in rep.text
+        if cfg.api_key:
+            assert cfg.api_key not in rep.text
 
     def test_ask_sans_cle_refuse(self, client):
         rep = client.post("/ask", json={"question": "Obligations RGPD ?"})

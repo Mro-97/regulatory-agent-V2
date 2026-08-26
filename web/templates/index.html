@@ -100,7 +100,8 @@
     <div class="view" id="view-parametres"><div class="view-header"><div><h1>Paramètres</h1><p>Configuration du système</p></div></div><div class="params-grid"><div class="param-card"><h3>Infrastructure</h3><div class="param-row"><span>API</span><span class="param-val">0.0.0.0:8000</span></div><div class="param-row"><span>Inférence</span><span class="param-val">MLX Apple Silicon</span></div><div class="param-row"><span>Embedding</span><span class="param-val">bge-m3 dim=1024</span></div><div class="param-row"><span>Base vectorielle</span><span class="param-val">Qdrant</span></div><div class="param-row"><span>Cache</span><span class="param-val">Redis</span></div></div><div class="param-card"><h3>Modèles LLM</h3><div class="param-row"><span>Retriever</span><span class="param-val">Mistral 7B 4-bit</span></div><div class="param-row"><span>Explainer</span><span class="param-val">Qwen 2.5 7B 4-bit</span></div><div class="param-row"><span>Conflit</span><span class="param-val">DeepSeek-R1 14B</span></div><div class="param-row"><span>Données</span><span class="param-val">100% local</span></div></div><div class="param-card"><h3>Watcher</h3><div class="param-row"><span>Intervalle</span><span class="param-val">6 heures</span></div><div class="param-row"><span>Sources</span><span class="param-val">5 configurées</span></div><div class="param-row"><span>Mode</span><span class="param-val">Alerte + validation</span></div></div></div></div>
   </div>
   <div class="toast-zone" id="toast-zone"></div>
-  <script>window.__API_KEY__ = "{{ api_key }}";</script>
+  <!-- C1: la clé API n'est plus injectée dans le HTML. Elle est saisie
+       par prompt() puis stockée en sessionStorage (cf. web/static/app.js). -->
   <script src="/static/app.js"></script>
 </body>
 </html>

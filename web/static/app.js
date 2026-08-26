@@ -1,6 +1,17 @@
 "use strict";
 const API={ask:"/ask",pending:"/pending",approve:"/approve",reject:"/reject",health:"/health"};
-const API_KEY=window.__API_KEY__||"";
+// C1: la clé API n'est plus injectée dans le HTML. L'utilisateur la saisit
+// une fois par onglet, elle est conservée en sessionStorage (jamais persistée).
+function _demanderCle(){
+  const saisie=window.prompt("Clé API (X-API-Key) — conservée uniquement pour cet onglet :","");
+  if(saisie){try{sessionStorage.setItem("apiKey",saisie);}catch(_){}}
+  return saisie||"";
+}
+function _obtenirCle(){
+  let k="";try{k=sessionStorage.getItem("apiKey")||"";}catch(_){}
+  return k||_demanderCle();
+}
+const API_KEY=_obtenirCle();
 const API_HEADERS={"Content-Type":"application/json","X-API-Key":API_KEY};
 let enCours=false,sessionQueries=0,filtreActif="all",tachesData=[],activiteSession=[],historiqueSession=[];
 const chatMessages=document.getElementById("chat-messages"),champQuestion=document.getElementById("champ-question"),champDate=document.getElementById("champ-date"),btnEnvoyer=document.getElementById("btn-envoyer"),toastZone=document.getElementById("toast-zone");

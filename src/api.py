@@ -227,11 +227,11 @@ OrchestrateurDep = Annotated[Orchestrateur, Depends(obtenir_orchestrateur)]
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 async def interface(request: Request):
-    return templates.TemplateResponse(
-        request=request,
-        name="index.html",
-        context={"api_key": cfg.api_key},
-    )
+    # C1 : la clé API n'est JAMAIS embarquée dans la page (elle serait
+    # visible via `view source` pour tout visiteur non authentifié).
+    # Le frontend la demande à l'utilisateur au premier chargement de
+    # l'onglet et la stocke en sessionStorage.
+    return templates.TemplateResponse(request=request, name="index.html")
 
 
 # ---------------------------------------------------------------------------
