@@ -25,3 +25,9 @@ models/
 .env
 data/qdrant_storage/
 qdrant
+.claude/
+
+# Fichiers privés Claude (ne pas versionner)
+.claude/
+CLAUDE.md
+docs/CONTEXTE_PROJET.md
