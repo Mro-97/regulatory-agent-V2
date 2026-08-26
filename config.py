@@ -108,6 +108,14 @@ class Parametres(BaseSettings):
     mlx_max_tokens: int = Field(default=1024)
     mlx_temperature: float = Field(default=0.1)
     mlx_top_p: float = Field(default=0.9)
+    mlx_timeout_seconds: float = Field(
+        default=60.0,
+        description=(
+            "Délai maximum (secondes) accordé à un appel MLX (generate / encode). "
+            "0 ou négatif = pas de timeout. Empêche un modèle bloqué ou un "
+            "prompt pathologique de figer l'API indéfiniment."
+        ),
+    )
 
     # ------------------------------------------------------------------
     # Qdrant (Mac B)
