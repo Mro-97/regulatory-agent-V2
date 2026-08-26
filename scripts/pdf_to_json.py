@@ -241,14 +241,30 @@ def construire_document(
     articles_bruts = detecter_articles(texte)
     chapitres_bruts = detecter_chapitres(texte)
 
-    # Si des chapitres ont été détectés, on regroupe les articles
-    # dans leur chapitre respectif. Sinon, un seul chapitre.
-    if chapitres_bruts:
+    # Si tous les marqueurs de chapitre suivent tous les articles, on est
+    # face à une TOC/pied de document, pas à une vraie partition : on tombe
+    # en mode chapitre unique. Idem s'il n'y a aucun chapitre détecté.
+    max_art_debut = max((a.get("debut", 0) for a in articles_bruts), default=0)
+    min_chap_debut = min((c["debut"] for c in chapitres_bruts), default=0)
+    chapitres_structurels = [
+        c for c in chapitres_bruts if c["debut"] <= max_art_debut
+    ]
+
+    if chapitres_bruts and chapitres_structurels:
+        # Dédupliquer les marqueurs répétés (headers de page) en conservant
+        # la première occurrence de chaque id, dans l'ordre du texte.
+        vus: set[str] = set()
+        chapitres_uniques: list[dict] = []
+        for c in chapitres_structurels:
+            if c["id"] not in vus:
+                vus.add(c["id"])
+                chapitres_uniques.append(c)
+
         # Attribution de chaque article au chapitre dont le début précède
         # immédiatement le sien (le dernier chapitre dont "debut" <= article["debut"]).
-        chapitres_map: dict[str, list] = {c["id"]: [] for c in chapitres_bruts}
-        chap_ids = [c["id"] for c in chapitres_bruts]
-        chap_debuts = [c["debut"] for c in chapitres_bruts]
+        chapitres_map: dict[str, list] = {c["id"]: [] for c in chapitres_uniques}
+        chap_ids = [c["id"] for c in chapitres_uniques]
+        chap_debuts = [c["debut"] for c in chapitres_uniques]
 
         for art in articles_bruts:
             art_debut = art.get("debut", 0)
@@ -261,7 +277,7 @@ def construire_document(
             chapitres_map[chap_id].append(art)
 
         chapitres: list[Chapitre] = []
-        for c in chapitres_bruts:
+        for c in chapitres_uniques:
             arts = chapitres_map.get(c["id"], [])
             if not arts:
                 continue
