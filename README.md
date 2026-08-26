@@ -1,149 +1,72 @@
 # Regulatory Agent V2
 
-Système local de veille réglementaire et d'assistance IA — 100 % local, sans API externe.
+**Système local de veille réglementaire et d'assistance IA pour l'industrie.**
 
-## Architecture
+[![License: Proprietary](https://img.shields.io/badge/License-Proprietary-red.svg)](https://github.com/Mro-97/regulatory-agent-V2)
+[![Python 3.13](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/)
+[![MLX](https://img.shields.io/badge/MLX-Apple_Silicon-purple.svg)](https://github.com/ml-explore/mlx)
 
-| Machine | Rôle | Port | LLM |
-|---|---|---|---|
-| mini-1 (M4 16 Go) | Hub / API / Redis / Interface (Mac A) | 8000 | — |
-| m4pro1 (M4 Pro 24 Go) | Moteur / Retrieval (Mac B) | 8001 | Mistral 7B + Qwen 2.5 7B |
-| m4pro2 (M4 Pro 24 Go) | Expert / Conflit (Mac C) | 8002 | Mistral 7B + Qwen 2.5 7B + DeepSeek-R1 14B |
+---
 
-Qdrant est exposé sur le port **6333** (config `QDRANT_PORT`), Redis sur **6379** (config `REDIS_PORT`).
+## 📌 Présentation
 
-## Prérequis
+Regulatory Agent V2 est un système **100 % local** de veille réglementaire et d'assistance IA destiné aux ingénieurs, techniciens, responsables QHSE, DPO et RSSI.
 
-- macOS Apple Silicon (M4 / M4 Pro)
-- Python 3.13 via uv
-- Qdrant (binaire standalone)
-- Redis (compilé depuis les sources)
-- Tailscale (accès distant)
+Il permet de :
+- **Rechercher** des informations réglementaires en langage naturel.
+- **Identifier** la version applicable d'un texte à une date donnée.
+- **Détecter** les modifications réglementaires (Watcher).
+- **Valider** les décisions critiques avec un humain dans la boucle.
+- **Auditer** l'intégralité des requêtes (traçabilité SHA-256).
 
-## Installation rapide
+**Architecture** : Le système est conçu pour fonctionner sur une **seule machine** (Mac Mini `m4pro2` ou MacBook M4 Pro). L'ancienne architecture distribuée (3 Mac Mini) est abandonnée.
 
-    curl -LsSf https://astral.sh/uv/install.sh | sh
-    source $HOME/.local/bin/env
-    uv python install 3.13
-    git clone https://github.com/Mro-97/regulatory-agent-V2 ~/regulatory-agent
-    cd ~/regulatory-agent
-    uv venv --python 3.13 venv && source venv/bin/activate
-    uv pip install -r requirements.txt
-    mkdir -p data/{raw,indexed,pending,qdrant_storage} logs models/bge-m3-mlx
-    cp .env.example .env   # puis renseigner API_KEY, POSTGRES_DSN…
+---
 
-## Sécurité — à lire avant de démarrer
+## ⚙️ Prérequis matériels
 
-- **Authentification :** tous les endpoints (sauf `/health` et l'interface web) exigent
-  l'en-tête `X-API-Key`. La clé est définie par `API_KEY` dans `.env`.
-  Sans clé configurée, l'API refuse tout accès (fail-closed).
-- **Exposition :** par défaut l'API écoute sur `127.0.0.1`. Utiliser `0.0.0.0`
-  uniquement derrière un proxy TLS (Caddy/Tailscale HTTPS). Les ports Qdrant/Redis
-  ne doivent jamais être exposés hors boucle locale.
-- **Credentials :** `POSTGRES_DSN`, `REDIS_PASSWORD`, `QDRANT_API_KEY` passent par
-  `.env` (jamais dans le code). Aucune valeur sensible n'est codée en dur.
-- **Swagger :** `/docs` et `/redoc` sont désactivés par défaut (`EXPOSER_DOCS=false`).
-- **CORS :** restreint aux origines de `CORS_ORIGINS`; les mutations vérifient l'en-tête
-  `Origin`. Rate limiting (par IP) sur `/ask` et `/ingest`.
-- **Générer une clé :** `openssl rand -hex 32`
+- **Mac Apple Silicon** (M4 Pro recommandé) — 24 Go de RAM minimum.
+- **Environnement** : Python 3.13 (via `uv`), Git, Homebrew (optionnel).
+- **Stockage** : ~20 Go pour les modèles MLX et le corpus réglementaire.
 
-## Démarrage des services
+---
 
-    # Qdrant (toutes les machines — port 6333)
-    cd ~/regulatory-agent && ./qdrant > /tmp/qdrant.log 2>&1 &
+## 🛠️ Stack technique
 
-    # Redis (tous)
-    ~/redis-stable/src/redis-server --daemonize yes --port 6379 --requirepass <mot-de-passe>
+| Composant | Technologie |
+| :--- | :--- |
+| **Langage** | Python 3.13 |
+| **API** | FastAPI + Uvicorn |
+| **Inférence** | MLX (Apple Silicon) |
+| **Base vectorielle** | Qdrant |
+| **Cache / Files d'attente** | Redis |
+| **Base de données (audit)** | PostgreSQL (en cours) |
+| **Embeddings** | bge-m3 (dim 1024) |
+| **Modèles LLM** | Llama 3.2 3B, Mistral 7B, Qwen 2.5 7B, DeepSeek-R1 14B |
 
-    # API
-    cd ~/regulatory-agent && source venv/bin/activate && python3 main.py
+---
 
-## Ingestion du corpus
+## 🔐 Sécurité
 
-    # Initialiser Qdrant
-    python3 scripts/setup_qdrant.py
+- **Authentification** : Clé API (`X-API-Key`) requise sur tous les endpoints métier.
+- **Rate limiting** : Limitation des requêtes par IP sur `/ask` et `/ingest`.
+- **Sanitisation** : Nettoyage des prompts pour éviter les injections.
+- **CORS** : Restreint à l'origine de l'interface web.
+- **Audit trail** : Chaînage SHA-256 pour chaque requête.
+- **Swagger désactivé** par défaut en production.
 
-    # Ingérer un JSON
-    python3 scripts/ingest.py --json data/raw/mon_document.json
+---
 
-    # Ingérer un PDF
-    python3 scripts/pdf_to_json.py --fichier doc.pdf --id MON_ID --source EUR-Lex --publication 2024-01-01 --vigueur 2024-06-01
-    python3 scripts/ingest.py --json data/raw/MON_ID.json
+## 🚀 Installation
 
-    # Corpus complet
-    bash scripts/ingerer_datasets.sh
+```bash
+# 1. Cloner le dépôt
+git clone https://github.com/Mro-97/regulatory-agent-V2.git
+cd regulatory-agent-V2
 
-## Accès via Tailscale
+# 2. Créer l'environnement virtuel (avec uv)
+uv venv --python 3.13
+source venv/bin/activate
 
-    ssh -L 9001:127.0.0.1:8000 mro@mini-1 -N &
-    ssh -L 9002:127.0.0.1:8001 mro@m4pro1 -N &
-    ssh -L 9003:127.0.0.1:8002 mro@m4pro2 -N &
-
-    open http://127.0.0.1:9001
-
-    curl -s -X POST http://127.0.0.1:9001/ask \
-      -H "Content-Type: application/json" \
-      -H "X-API-Key: $API_KEY" \
-      -d '{"question":"Obligations de sécurité RGPD ?"}' | python3 -m json.tool
-
-## Endpoints API
-
-| Endpoint | Méthode | Description |
-|---|---|---|
-| /health | GET | État du système |
-| /ask | POST | Poser une question réglementaire |
-| /pending | GET | Tâches en attente de validation |
-| /approve | POST | Approuver une tâche |
-| /reject | POST | Rejeter une tâche |
-| /docs | GET | Documentation Swagger |
-
-## Tests
-
-    python3 -m pytest tests/ -q --tb=short
-    bash scripts/tests_rag.sh
-
-Les tests de sécurité (`tests/test_api_security.py`) couvrent : authentification,
-CORS, anti-CSRF, rate limiting, limites de taille, masquage des erreurs.
-
-## Modèles LLM
-
-| Agent | Modèle | Machine |
-|---|---|---|
-| Embedding | bge-m3 (safetensors MLX) | Tous |
-| Retriever | Mistral 7B Instruct v0.3 4-bit | m4pro1, m4pro2 |
-| Temporal | Qwen 2.5 7B Instruct 4-bit | m4pro1, m4pro2 |
-| Explainer | Qwen 2.5 7B Instruct 4-bit | m4pro1, m4pro2 |
-| Citation | Mistral 7B Instruct v0.3 4-bit | m4pro1, m4pro2 |
-| Conflit | DeepSeek-R1-Distill-Qwen-14B 4-bit | m4pro2 |
-
-## Sources surveillées
-
-- EUR-Lex, Légifrance, ANSSI, CNIL, INERIS
-
-## Structure
-
-    regulatory-agent-V2/
-    ├── config.py
-    ├── main.py
-    ├── requirements.txt
-    ├── src/
-    │   ├── models.py
-    │   ├── mlx_utils.py
-    │   ├── orchestrator.py
-    │   ├── api.py
-    │   ├── audit.py
-    │   ├── watcher.py
-    │   └── agents/
-    │       ├── retriever.py
-    │       ├── temporal.py
-    │       ├── explainer.py
-    │       ├── citation.py
-    │       └── conflit.py
-    ├── scripts/
-    ├── tests/
-    ├── web/
-    └── data/
-
-## Licence
-
-Propriétaire — Usage interne uniquement.
+# 3. Installer les dépendances
+uv pip install -r requirements.txt
