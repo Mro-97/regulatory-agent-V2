@@ -159,6 +159,20 @@ class Parametres(BaseSettings):
         default=False,
         description="Suivre les redirections HTTP (réduit la surface SSRF).",
     )
+    watcher_max_essais: int = Field(
+        default=3,
+        description=(
+            "Nombre de tentatives par URL en cas d'échec réseau ou d'erreur 5xx. "
+            "1 = pas de reprise, comportement d'avant."
+        ),
+    )
+    watcher_backoff_secondes: float = Field(
+        default=2.0,
+        description=(
+            "Base du backoff exponentiel entre tentatives : "
+            "attente = base * 2^(tentative-1) secondes."
+        ),
+    )
 
     # ------------------------------------------------------------------
     # Audit

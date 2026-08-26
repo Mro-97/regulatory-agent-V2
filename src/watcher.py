@@ -219,6 +219,59 @@ class Watcher:
             )
         return self._client_http
 
+    async def _fetch_avec_retry(self, url: str, source: SourceReglementaire) -> Optional[str]:
+        """
+        Récupère une URL avec reprise sur échec réseau ou erreur 5xx.
+
+        Politique : `cfg.watcher_max_essais` tentatives, backoff exponentiel
+        de base `cfg.watcher_backoff_secondes`. Les erreurs 4xx (permanentes)
+        ne sont PAS réessayées.
+
+        Args:
+            url: URL cible.
+            source: Source pour le journal.
+
+        Returns:
+            Corps de la réponse (str) si succès, None si toutes les
+            tentatives ont échoué.
+        """
+        max_essais = max(1, int(cfg.watcher_max_essais))
+        base = max(0.0, float(cfg.watcher_backoff_secondes))
+        derniere_erreur: Optional[Exception] = None
+
+        for essai in range(1, max_essais + 1):
+            try:
+                client = await self._http()
+                rep = await client.get(url)
+                rep.raise_for_status()
+                return rep.text
+            except httpx.HTTPStatusError as exc:
+                # 4xx : ressource déplacée/supprimée/interdite — pas de retry.
+                statut = exc.response.status_code
+                if 400 <= statut < 500:
+                    logger.warning(
+                        "Source indisponible (%s) : %s — %s (pas de retry)",
+                        source.value, url, exc,
+                    )
+                    return None
+                derniere_erreur = exc
+            except Exception as exc:
+                derniere_erreur = exc
+
+            if essai < max_essais:
+                attente = base * (2 ** (essai - 1))
+                logger.warning(
+                    "Watcher — essai %d/%d échoué pour %s (%s), nouvelle tentative dans %.1fs",
+                    essai, max_essais, url, derniere_erreur, attente,
+                )
+                await asyncio.sleep(attente)
+
+        logger.error(
+            "Watcher — %d tentatives épuisées pour %s : %s",
+            max_essais, url, derniere_erreur,
+        )
+        return None
+
     async def verifier_url(
         self,
         url: str,
@@ -234,16 +287,8 @@ class Watcher:
         Returns:
             AlerteWatcher si modification détectée, None sinon.
         """
-        try:
-            client = await self._http()
-            rep = await client.get(url)
-            rep.raise_for_status()
-            contenu_brut = rep.text
-        except httpx.HTTPStatusError as exc:
-            logger.warning("Source indisponible (%s) : %s — %s", source.value, url, exc)
-            return None
-        except Exception as exc:
-            logger.warning("Erreur fetch Watcher (%s) : %s", url, exc)
+        contenu_brut = await self._fetch_avec_retry(url, source)
+        if contenu_brut is None:
             return None
 
         contenu_normalise = normaliser_contenu(contenu_brut)
