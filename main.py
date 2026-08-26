@@ -52,11 +52,39 @@ async def initialiser_audit() -> None:
         logger.warning("Audit non initialisé (non bloquant) : %s", exc)
 
 
+def valider_configuration_demarrage() -> list[str]:
+    """
+    Vérifie au démarrage les invariants critiques de configuration.
+
+    L'ancien comportement fail-closed s'appliquait à CHAQUE requête (503 sur
+    tous les endpoints protégés) sans jamais l'annoncer au démarrage. Un
+    déploiement avec `.env` incomplet passait donc en apparence sans erreur.
+    Cette fonction rend le défaut détectable dès le boot : la liste des
+    erreurs retournée est utilisée par `main` pour refuser le démarrage.
+
+    Returns:
+        Liste des messages d'erreur. Vide si la configuration est valide.
+    """
+    erreurs: list[str] = []
+    if not cfg.api_key or not cfg.api_key.strip():
+        erreurs.append(
+            "API_KEY vide — définir la variable API_KEY dans .env avant démarrage. "
+            "Sans clé, l'API applique un fail-closed (503) sur chaque requête."
+        )
+    return erreurs
+
+
 if __name__ == "__main__":
     logger.info(
         "Démarrage %s v%s sur %s:%d",
         cfg.app_nom, cfg.app_version, cfg.api_host, cfg.api_port,
     )
+
+    erreurs_conf = valider_configuration_demarrage()
+    if erreurs_conf:
+        for _err in erreurs_conf:
+            logger.critical("Configuration invalide : %s", _err)
+        sys.exit(2)
 
     # -----------------------------------------------------------
     # Vérifications de compatibilité avec uvicorn.Server programmatique
