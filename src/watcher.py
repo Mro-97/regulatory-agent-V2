@@ -71,7 +71,9 @@ SOURCES_CONFIG: list[_SourceConfig] = [
     _SourceConfig(
         source=SourceReglementaire.ANSSI,
         urls=[
-            "https://cyber.gouv.fr/uploads/2023/01/anssi-guide-nis2.pdf",
+            # Portail ANSSI/DINUM dédié au suivi NIS2 — répond 200 direct
+            # (compatible watcher_follow_redirects=false).
+            "https://messervices.cyber.gouv.fr/nis2",
         ],
     ),
 ]

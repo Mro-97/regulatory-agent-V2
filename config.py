@@ -153,7 +153,15 @@ class Parametres(BaseSettings):
     # ------------------------------------------------------------------
     # Watcher
     # ------------------------------------------------------------------
-    watcher_intervalle_heures: int = Field(default=6)
+    watcher_intervalle_heures: int = Field(
+        default=48,
+        description=(
+            "Intervalle de veille en heures (défaut 48 h). Les textes de "
+            "loi ne changent pas quotidiennement — une fréquence trop haute "
+            "génère des alertes bruyantes (contenu HTML dynamique) sans "
+            "bénéfice."
+        ),
+    )
     watcher_follow_redirects: bool = Field(
         default=False,
         description="Suivre les redirections HTTP (réduit la surface SSRF).",
