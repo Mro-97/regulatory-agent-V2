@@ -23,9 +23,18 @@ storage/
 test.pdf
 models/
 .env
+.env.bak
+.env.bak-*
+.env.orig
 data/qdrant_storage/
+qdrant_storage/
 qdrant
-.claude/
+
+# Redis (persistance locale quand Redis est lancé depuis le repo)
+dump.rdb
+
+# Backups manuels
+*.bak
 
 # Fichiers privés Claude (ne pas versionner)
 .claude/
