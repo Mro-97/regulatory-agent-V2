@@ -71,7 +71,7 @@ SOURCES_CONFIG: list[_SourceConfig] = [
     _SourceConfig(
         source=SourceReglementaire.ANSSI,
         urls=[
-            "https://www.ssi.gouv.fr/uploads/2023/01/anssi-guide-nis2.pdf",
+            "https://cyber.gouv.fr/uploads/2023/01/anssi-guide-nis2.pdf",
         ],
     ),
 ]
