@@ -1,5 +1,5 @@
 {
-  "id": "CNIL_GUIDE_SECU_2023",
+  "id": "CNIL_GUIDE_SECU_2023_FICHES",
   "titre": "Guide de la sécurité des données personnelles — CNIL 2023",
   "source": "CNIL",
   "url_source": "https://www.cnil.fr/fr/la-securite-des-donnees-personnelles",
@@ -7,7 +7,12 @@
   "entry_into_force": "2023-03-01",
   "repeal_date": null,
   "version": "2023-03-01",
-  "themes": ["securite", "protection_donnees", "bonnes_pratiques", "technique"],
+  "themes": [
+    "securite",
+    "protection_donnees",
+    "bonnes_pratiques",
+    "technique"
+  ],
   "chapitres": [
     {
       "id": "chap1",
@@ -17,56 +22,99 @@
           "id": "fiche_1",
           "titre": "Sensibiliser les utilisateurs",
           "texte": "Les utilisateurs sont les premières cibles des cyberattaques. Il est indispensable de les sensibiliser aux risques liés à la sécurité informatique et de les former aux bonnes pratiques. Cette sensibilisation doit porter notamment sur : la création et la gestion des mots de passe (utiliser des mots de passe d'au moins 12 caractères combinant majuscules, minuscules, chiffres et caractères spéciaux) ; la gestion des accès (ne pas partager ses identifiants, verrouiller sa session en cas d'absence) ; la vigilance face aux courriels suspects (phishing) ; la mise à jour régulière des logiciels ; la déclaration des incidents de sécurité au responsable de la sécurité des systèmes d'information.",
-          "validite": {"valid_from": "2023-03-01", "valid_to": null},
-          "citations": ["fiche_2", "fiche_3"]
+          "validite": {
+            "valid_from": "2023-03-01",
+            "valid_to": null
+          },
+          "citations": [
+            "fiche_2",
+            "fiche_3"
+          ]
         },
         {
           "id": "fiche_2",
           "titre": "Authentifier les utilisateurs",
           "texte": "L'authentification est le processus permettant de vérifier l'identité d'un utilisateur avant de lui accorder l'accès à un système ou à des données. Les mesures recommandées sont : mettre en place une politique de gestion des mots de passe robuste (longueur minimale de 12 caractères, complexité, renouvellement) ; utiliser l'authentification multifacteur (MFA) pour les accès aux données sensibles et aux systèmes critiques ; ne jamais stocker les mots de passe en clair (utiliser des fonctions de hachage robustes comme bcrypt ou Argon2) ; limiter le nombre de tentatives d'authentification échouées ; utiliser des solutions de gestion des identités et des accès (IAM) pour les organisations de taille importante.",
-          "validite": {"valid_from": "2023-03-01", "valid_to": null},
-          "citations": ["fiche_1", "fiche_3"]
+          "validite": {
+            "valid_from": "2023-03-01",
+            "valid_to": null
+          },
+          "citations": [
+            "fiche_1",
+            "fiche_3"
+          ]
         },
         {
           "id": "fiche_3",
           "titre": "Gérer les habilitations",
           "texte": "La gestion des habilitations consiste à définir et à contrôler les droits d'accès des utilisateurs aux systèmes et aux données. Les mesures recommandées sont : appliquer le principe du moindre privilège (chaque utilisateur ne doit avoir accès qu'aux données strictement nécessaires à l'exercice de ses fonctions) ; maintenir un annuaire des utilisateurs et de leurs droits à jour ; supprimer les accès dès qu'ils ne sont plus nécessaires (départ d'un employé, changement de poste) ; réaliser des audits réguliers des droits d'accès ; séparer les environnements de développement, de test et de production.",
-          "validite": {"valid_from": "2023-03-01", "valid_to": null},
-          "citations": ["fiche_2"]
+          "validite": {
+            "valid_from": "2023-03-01",
+            "valid_to": null
+          },
+          "citations": [
+            "fiche_2"
+          ]
         },
         {
           "id": "fiche_4",
           "titre": "Tracer les accès et gérer les incidents",
           "texte": "La traçabilité des accès permet de détecter les comportements anormaux, d'analyser les incidents de sécurité et d'apporter des preuves en cas de litige. Les mesures recommandées sont : journaliser les accès aux données à caractère personnel et les opérations effectuées (qui a accédé à quoi, quand et depuis quel poste) ; conserver les journaux pendant une durée adaptée (généralement 6 mois à 1 an) ; protéger les journaux contre la modification et l'effacement ; mettre en place une procédure de gestion des incidents de sécurité (détection, qualification, traitement, notification à la CNIL si nécessaire) ; tester régulièrement les procédures de réponse aux incidents.",
-          "validite": {"valid_from": "2023-03-01", "valid_to": null},
-          "citations": ["fiche_5"]
+          "validite": {
+            "valid_from": "2023-03-01",
+            "valid_to": null
+          },
+          "citations": [
+            "fiche_5"
+          ]
         },
         {
           "id": "fiche_5",
           "titre": "Sécuriser les postes de travail",
           "texte": "Les postes de travail sont des points d'entrée privilégiés pour les attaquants. Les mesures recommandées sont : activer le chiffrement du disque dur (BitLocker, FileVault) ; maintenir le système d'exploitation et les logiciels à jour (appliquer les correctifs de sécurité dès que possible) ; installer un antivirus et un pare-feu ; désactiver les ports et services inutilisés ; configurer le verrouillage automatique de session après une courte période d'inactivité ; sauvegarder régulièrement les données.",
-          "validite": {"valid_from": "2023-03-01", "valid_to": null},
+          "validite": {
+            "valid_from": "2023-03-01",
+            "valid_to": null
+          },
           "citations": []
         },
         {
           "id": "fiche_6",
           "titre": "Sécuriser l'informatique mobile",
           "texte": "Les appareils mobiles (smartphones, tablettes, ordinateurs portables) présentent des risques spécifiques en raison de leur mobilité et de leur exposition à des réseaux non sécurisés. Les mesures recommandées sont : chiffrer les données stockées sur les appareils mobiles ; activer le verrouillage par code PIN ou biométrie ; mettre en place une solution de gestion des appareils mobiles (MDM) ; interdire le stockage de données sensibles sur des supports amovibles non chiffrés ; mettre en place une procédure de déclaration de perte ou de vol ; utiliser un VPN pour les connexions depuis des réseaux publics.",
-          "validite": {"valid_from": "2023-03-01", "valid_to": null},
-          "citations": ["fiche_5"]
+          "validite": {
+            "valid_from": "2023-03-01",
+            "valid_to": null
+          },
+          "citations": [
+            "fiche_5"
+          ]
         },
         {
           "id": "fiche_7",
           "titre": "Pseudonymiser et chiffrer les données",
           "texte": "La pseudonymisation consiste à remplacer les données directement identifiantes par des pseudonymes, de façon à ce que les données ne puissent plus être attribuées à une personne physique sans recourir à des informations supplémentaires. Le chiffrement permet de rendre les données illisibles pour toute personne ne disposant pas de la clé de déchiffrement. Ces deux techniques sont recommandées par l'article 32 du RGPD. Les mesures recommandées sont : utiliser des algorithmes de chiffrement robustes et reconnus (AES-256 pour le chiffrement symétrique, RSA-4096 ou elliptic curve pour le chiffrement asymétrique) ; gérer les clés de chiffrement de manière sécurisée ; mettre en œuvre le chiffrement en transit (TLS 1.2 minimum) et au repos.",
-          "validite": {"valid_from": "2023-03-01", "valid_to": null},
-          "citations": ["fiche_5"]
+          "validite": {
+            "valid_from": "2023-03-01",
+            "valid_to": null
+          },
+          "citations": [
+            "fiche_5"
+          ]
         }
       ]
     }
   ],
   "textes_lies": [
-    {"ref": "RGPD_2016_679", "relation": "complete", "commentaire": "Guide pratique d'application de l'article 32 du RGPD"},
-    {"ref": "NIS2_2022_2555", "relation": "reference", "commentaire": "Référence aux mesures de sécurité NIS2"}
+    {
+      "ref": "RGPD_2016_679",
+      "relation": "complete",
+      "commentaire": "Guide pratique d'application de l'article 32 du RGPD"
+    },
+    {
+      "ref": "NIS2_2022_2555",
+      "relation": "reference",
+      "commentaire": "Référence aux mesures de sécurité NIS2"
+    }
   ]
 }
