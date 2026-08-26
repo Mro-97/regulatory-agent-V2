@@ -1,12 +1,7 @@
 #!/usr/bin/env python3
-"""Ingestion d'un JSON réglementaire dans Qdrant.
-
-Usage:
-    python scripts/ingest.py --json data/raw/test_rgpd.json --collection regulatory_chunks
-"""
+"""Ingestion d'un JSON réglementaire dans Qdrant avec chunking (600, overlap 50)."""
 
 import argparse
-import gc
 import json
 import logging
 import sys
@@ -15,9 +10,8 @@ from pathlib import Path
 from typing import List
 
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, PointStruct, VectorParams
+from qdrant_client.models import VectorParams, Distance, PointStruct
 
-# Ajouter le chemin du projet au PYTHONPATH
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from config import cfg
 from src.models import DocumentReglementaire, MetadonneesChunk
@@ -25,15 +19,14 @@ from src.models import DocumentReglementaire, MetadonneesChunk
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
+# Paramètres de chunking (modifiables)
+CHUNK_SIZE = 600
+OVERLAP = 50
+
 
 class Ingester:
     def __init__(self, collection_name: str = "regulatory_chunks", recreate: bool = False):
-        self.client = QdrantClient(
-            host=cfg.qdrant_host,
-            port=cfg.qdrant_port,
-            https=cfg.qdrant_https,
-            api_key=cfg.qdrant_api_key or None,
-        )
+        self.client = QdrantClient(url=f"http://{cfg.qdrant_host}:{cfg.qdrant_port}")
         self.collection_name = collection_name
         self.embedding_model = self._load_embedding_model()
 
@@ -41,174 +34,147 @@ class Ingester:
             self._recreate_collection()
 
     def _load_embedding_model(self):
-        """Charge le modèle d'embedding MLX (bge-m3) via mlx_utils."""
-        from src.mlx_utils import get_embedding
-        model = get_embedding(cfg.modele_embedding)
-        logger.info("Modèle d'embedding : %s", cfg.modele_embedding)
+        from sentence_transformers import SentenceTransformer
+        model = SentenceTransformer('all-MiniLM-L6-v2')
+        logger.info("Modèle d'embedding : all-MiniLM-L6-v2 (dim=384)")
         return model
 
     def _recreate_collection(self):
-        """Supprime et recrée la collection Qdrant."""
         if self.client.collection_exists(self.collection_name):
             self.client.delete_collection(self.collection_name)
             logger.info("Collection '%s' supprimée", self.collection_name)
         self.client.create_collection(
             collection_name=self.collection_name,
-            vectors_config=VectorParams(size=1024, distance=Distance.COSINE),
+            vectors_config=VectorParams(size=384, distance=Distance.COSINE),
         )
-        logger.info("Collection '%s' créée (dim=1024)", self.collection_name)
+        logger.info("Collection '%s' créée (dim=384)", self.collection_name)
 
     def embed_chunk(self, text: str) -> List[float]:
-        """Génère un embedding pour un chunk de texte via MLXEmbedding (bge-m3)."""
-        vecteur = self.embedding_model.encode(text)
-        if isinstance(vecteur, list):
-            return vecteur
-        if hasattr(vecteur, "tolist"):
-            return vecteur.tolist()
-        return list(vecteur)
+        vec = self.embedding_model.encode(text)
+        # SentenceTransformer renvoie un ndarray ; les mocks de tests renvoient
+        # directement une liste. Accepter les deux sans conversion agressive.
+        return vec.tolist() if hasattr(vec, "tolist") else list(vec)
+
+    def chunk_text(self, text: str) -> List[str]:
+        """Découpe un texte en chunks de CHUNK_SIZE caractères avec chevauchement OVERLAP."""
+        chunks = []
+        start = 0
+        while start < len(text):
+            end = min(start + CHUNK_SIZE, len(text))
+            chunks.append(text[start:end])
+            if end >= len(text):
+                break
+            start += CHUNK_SIZE - OVERLAP
+        return chunks
 
     def chunk_document(self, doc: DocumentReglementaire) -> List[MetadonneesChunk]:
-        """Découpe un document en chunks de 700 caractères avec chevauchement de 50."""
         chunks = []
-        TAILLE = 700
-        CHEVAUCHEMENT = 50
-
         for chapitre in doc.chapitres:
             for article in chapitre.articles:
-                texte = article.texte or ""
-                if not texte.strip():
-                    continue
-
-                # Découpage en chunks avec chevauchement
-                debut = 0
-                position = 0
-                while debut < len(texte):
-                    fin = min(debut + TAILLE, len(texte))
-                    morceau = texte[debut:fin].strip()
-                    if morceau:
-                        chunk_id = f"{doc.id}_{article.id}_{position}"
-                        chunks.append(MetadonneesChunk(
-                            chunk_id=str(uuid.uuid4()),
-                            document_id=doc.id,
-                            chapitre_id=chapitre.id,
-                            article_id=article.id,
-                            source=doc.source,
-                            themes=doc.themes,
-                            valid_from=article.validite.valid_from,
-                            valid_to=article.validite.valid_to,
-                            texte_chunk=morceau,
-                            position_dans_article=position,
-                        ))
-                        position += 1
-                    debut += TAILLE - CHEVAUCHEMENT
-
+                # Découper l'article en chunks
+                text_chunks = self.chunk_text(article.texte)
+                for idx, chunk_text in enumerate(text_chunks):
+                    chunk = MetadonneesChunk(
+                        chunk_id=f"{doc.id}_{article.id}_part{idx+1}",
+                        document_id=doc.id,
+                        chapitre_id=chapitre.id,
+                        article_id=article.id,
+                        source=doc.source,
+                        themes=doc.themes,
+                        valid_from=article.validite.valid_from,
+                        valid_to=article.validite.valid_to,
+                        texte_chunk=chunk_text,
+                        position_dans_article=idx,
+                    )
+                    chunks.append(chunk)
         return chunks
-    
-    def compter_chunks_existants(self, document_id: str) -> int:
-        """Compte les chunks déjà indexés pour un document_id donné."""
-        from qdrant_client.http.models import FieldCondition, Filter, MatchValue
 
-        resultat = self.client.count(
-            collection_name=self.collection_name,
-            count_filter=Filter(
-                must=[FieldCondition(key="document_id", match=MatchValue(value=document_id))]
-            ),
-            exact=True,
-        )
-        return resultat.count
-
-    def supprimer_chunks_document(self, document_id: str) -> None:
-        """Supprime tous les chunks déjà indexés pour un document_id donné."""
-        from qdrant_client.http.models import FieldCondition, Filter, FilterSelector, MatchValue
-
-        self.client.delete(
-            collection_name=self.collection_name,
-            points_selector=FilterSelector(
-                filter=Filter(
-                    must=[FieldCondition(key="document_id", match=MatchValue(value=document_id))]
-                )
-            ),
-        )
-        logger.info("Chunks existants supprimés pour document_id=%s", document_id)
-
-    def ingest_document(self, doc: DocumentReglementaire, batch_size: int = 50) -> int:
+    def ingest_document(self, doc: DocumentReglementaire) -> int:
         """
-        Chunk, embed et upsert un DocumentReglementaire déjà validé.
+        Indexe un DocumentReglementaire déjà en mémoire dans Qdrant.
 
         Args:
-            doc:        Document à ingérer.
-            batch_size: Taille des lots d'upsert.
+            doc: Document à indexer.
 
         Returns:
-            Nombre de chunks effectivement indexés.
+            Nombre de points effectivement indexés.
         """
         chunks = self.chunk_document(doc)
-        if not chunks:
+        logger.info("%d chunks générés pour %s", len(chunks), doc.id)
+
+        points = []
+        for chunk in chunks:
+            vector = self.embed_chunk(chunk.texte_chunk)
+            point = PointStruct(
+                id=str(uuid.uuid4()),
+                vector=vector,
+                payload={
+                    **chunk.model_dump(mode="json"),
+                    "original_id": chunk.chunk_id,
+                },
+            )
+            points.append(point)
+
+        if not points:
+            logger.warning("Aucun point à indexer pour %s", doc.id)
             return 0
 
-        logger.info("Document : %s — %d chunks", doc.id, len(chunks))
-        total_ingeres = 0
+        self.client.upsert(collection_name=self.collection_name, points=points)
+        logger.info("%d points indexés dans Qdrant", len(points))
+        return len(points)
 
-        for i in range(0, len(chunks), batch_size):
-            lot = chunks[i:i + batch_size]
-            points = []
-            for chunk in lot:
-                try:
-                    vecteur = self.embed_chunk(chunk.texte_chunk)
-                    points.append(PointStruct(
-                        id=str(uuid.uuid4()),
-                        vector=vecteur,
-                        payload={
-                            "chunk_id": chunk.chunk_id,
-                            "document_id": chunk.document_id,
-                            "chapitre_id": chunk.chapitre_id,
-                            "article_id": chunk.article_id,
-                            "source": chunk.source.value,
-                            "themes": chunk.themes,
-                            "valid_from": chunk.valid_from.isoformat(),
-                            "valid_to": chunk.valid_to.isoformat() if chunk.valid_to else None,
-                            "texte_chunk": chunk.texte_chunk,
-                            "position_dans_article": chunk.position_dans_article,
-                        }
-                    ))
-                except Exception as e:
-                    logger.error("Erreur embedding : %s", e)
-                    continue
+    def compter_chunks_existants(self, document_id: str) -> int:
+        """
+        Compte le nombre de chunks déjà présents pour un document_id donné.
 
-            if points:
-                try:
-                    self.client.upsert(collection_name=self.collection_name, points=points, wait=True)
-                    total_ingeres += len(points)
-                    logger.info(
-                        "Lot %d : %d chunks (%d total)",
-                        i // batch_size + 1, len(points), total_ingeres,
-                    )
-                except Exception as e:
-                    logger.error("Erreur upsert : %s", e)
+        Utilisé par l'orchestrateur pour décider si une nouvelle ingestion
+        doit renvoyer 409 (déjà indexé) ou remplacer les points existants.
+        """
+        from qdrant_client.models import Filter, FieldCondition, MatchValue
 
-            del points, lot
-            gc.collect()
+        filtre = Filter(
+            must=[FieldCondition(key="document_id", match=MatchValue(value=document_id))]
+        )
+        try:
+            resultat = self.client.count(
+                collection_name=self.collection_name,
+                count_filter=filtre,
+                exact=True,
+            )
+            return int(resultat.count)
+        except Exception as exc:
+            # Collection inexistante = 0 chunks. On journalise pour tout autre cas.
+            logger.debug("compter_chunks_existants(%s) : %s", document_id, exc)
+            return 0
 
-        return total_ingeres
+    def supprimer_chunks_document(self, document_id: str) -> int:
+        """
+        Supprime tous les points Qdrant portant un `document_id` donné.
 
-    def ingest_json(self, json_path: Path, batch_size: int = 50) -> None:
-        """Ingere un fichier JSON dans Qdrant par lots."""
+        Retourne le nombre de points supprimés (avant suppression).
+        """
+        from qdrant_client.models import Filter, FieldCondition, MatchValue, FilterSelector
+
+        avant = self.compter_chunks_existants(document_id)
+        if avant == 0:
+            return 0
+        filtre = Filter(
+            must=[FieldCondition(key="document_id", match=MatchValue(value=document_id))]
+        )
+        self.client.delete(
+            collection_name=self.collection_name,
+            points_selector=FilterSelector(filter=filtre),
+        )
+        logger.info("Supprimé %d chunk(s) pour document_id=%s", avant, document_id)
+        return avant
+
+    def ingest_json(self, json_path: Path) -> None:
+        """Chemin d'entrée CLI : charge un JSON puis appelle `ingest_document`."""
         with open(json_path, "r", encoding="utf-8") as f:
             data = json.load(f)
-
-        documents = data if isinstance(data, list) else [data]
-        total_ingeres = 0
-
-        for data_item in documents:
-            try:
-                doc = DocumentReglementaire(**data_item)
-            except Exception as e:
-                logger.error("Erreur validation : %s", e)
-                continue
-
-            total_ingeres += self.ingest_document(doc, batch_size=batch_size)
-
-        logger.info("Ingestion terminee : %d chunks", total_ingeres)
+        doc = DocumentReglementaire(**data)
+        logger.info("Document chargé : %s - %s", doc.id, doc.titre)
+        self.ingest_document(doc)
 
 
 def main():
@@ -216,11 +182,10 @@ def main():
     parser.add_argument("--json", required=True, help="Chemin vers le fichier JSON")
     parser.add_argument("--collection", default="regulatory_chunks", help="Nom de la collection Qdrant")
     parser.add_argument("--recreate", action="store_true", help="Recréer la collection")
-    parser.add_argument("--batch-size", type=int, default=50, help="Taille des lots")
     args = parser.parse_args()
 
     ingester = Ingester(collection_name=args.collection, recreate=args.recreate)
-    ingester.ingest_json(Path(args.json), batch_size=args.batch_size)
+    ingester.ingest_json(Path(args.json))
 
 
 if __name__ == "__main__":
