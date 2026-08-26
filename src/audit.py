@@ -293,18 +293,32 @@ class GestionnaireAudit:
         if not CHEMIN_AUDIT_LOCAL.exists():
             return {"total": total, "valides": valides, "invalides": invalides, "erreurs": erreurs}
 
-        def _lire_dernieres_lignes() -> list[str]:
-            lignes = CHEMIN_AUDIT_LOCAL.read_text(encoding="utf-8").strip().splitlines()
-            return lignes[-limite:]
+        def _lire_dernieres_lignes() -> tuple[Optional[str], list[str]]:
+            """Retourne (hash d'ancrage, lignes de la fenêtre).
 
-        lignes = await asyncio.to_thread(_lire_dernieres_lignes)
+            Si le fichier contient plus de `limite` lignes, la ligne juste
+            avant la fenêtre est lue séparément pour extraire son
+            hash_courant : c'est l'ancre qui permet de vérifier la liaison
+            de chaîne de la PREMIÈRE ligne de la fenêtre. Sans ça, un bloc
+            auto-cohérent inséré en tête de fenêtre passait inaperçu.
+            """
+            toutes = CHEMIN_AUDIT_LOCAL.read_text(encoding="utf-8").strip().splitlines()
+            fenetre = toutes[-limite:]
+            ancre: Optional[str] = None
+            if len(toutes) > limite:
+                try:
+                    ancre = json.loads(toutes[-limite - 1]).get("hash_courant")
+                except Exception:
+                    ancre = None
+            return ancre, fenetre
+
+        hash_ancre, lignes = await asyncio.to_thread(_lire_dernieres_lignes)
 
         # hash_courant de l'enregistrement précédent dans la fenêtre lue.
-        # Inconnu pour la première ligne lue (son prédécesseur réel peut être
-        # hors fenêtre si le fichier contient plus de `limite` lignes) —
-        # on ne vérifie donc la liaison qu'à partir de la deuxième ligne.
-        hash_precedent_attendu: Optional[str] = None
-        precedent_connu = False
+        # Si un ancre a pu être lue (fichier plus long que la fenêtre), la
+        # liaison de la première ligne de la fenêtre est vérifiée contre elle.
+        hash_precedent_attendu: Optional[str] = hash_ancre
+        precedent_connu = hash_ancre is not None
 
         for i, ligne in enumerate(lignes):
             total += 1
