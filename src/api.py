@@ -170,14 +170,21 @@ async def limite_taille_requete(request: Request, call_next):
 
 
 def verifier_auth(request: Request) -> None:
-    """Exige une clé API valide (fail-closed : API_KEY vide = refus)."""
-    if not cfg.api_key:
+    """Exige une clé API valide (fail-closed : API_KEY vide = refus).
+
+    Un `.strip()` défensif est appliqué des deux côtés : sinon un copier-coller
+    de la clé qui embarque un espace ou un retour ligne (typique quand on
+    colle depuis un .env dans un prompt) tombe systématiquement en 401
+    (`hmac.compare_digest` étant strict au caractère près).
+    """
+    attendue = (cfg.api_key or "").strip()
+    if not attendue:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Authentification non configurée.",
         )
-    fournie = request.headers.get("X-API-Key", "")
-    if not fournie or not hmac.compare_digest(fournie, cfg.api_key):
+    fournie = request.headers.get("X-API-Key", "").strip()
+    if not fournie or not hmac.compare_digest(fournie, attendue):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Clé API invalide.",

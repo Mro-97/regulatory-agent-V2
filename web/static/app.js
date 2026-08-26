@@ -2,17 +2,35 @@
 const API={ask:"/ask",pending:"/pending",approve:"/approve",reject:"/reject",health:"/health"};
 // C1: la clé API n'est plus injectée dans le HTML. L'utilisateur la saisit
 // une fois par onglet, elle est conservée en sessionStorage (jamais persistée).
-function _demanderCle(){
-  const saisie=window.prompt("Clé API (X-API-Key) — conservée uniquement pour cet onglet :","");
-  if(saisie){try{sessionStorage.setItem("apiKey",saisie);}catch(_){}}
-  return saisie||"";
+// Sur 401, apiFetch purge la clé, re-prompte, et retente UNE seule fois.
+function _demanderCle(msg){
+  const t=msg||"Clé API (X-API-Key) — conservée uniquement pour cet onglet :";
+  const saisie=window.prompt(t,"");
+  const k=(saisie||"").trim();
+  if(k){try{sessionStorage.setItem("apiKey",k);}catch(_){}}
+  return k;
 }
 function _obtenirCle(){
-  let k="";try{k=sessionStorage.getItem("apiKey")||"";}catch(_){}
+  let k="";try{k=(sessionStorage.getItem("apiKey")||"").trim();}catch(_){}
   return k||_demanderCle();
 }
-const API_KEY=_obtenirCle();
-const API_HEADERS={"Content-Type":"application/json","X-API-Key":API_KEY};
+let API_KEY=_obtenirCle();
+async function apiFetch(url,opts){
+  opts=opts||{};
+  const h=Object.assign({},opts.headers||{},{"X-API-Key":API_KEY});
+  if(opts.body&&!h["Content-Type"])h["Content-Type"]="application/json";
+  const r=await fetch(url,Object.assign({},opts,{headers:h}));
+  if(r.status===401){
+    try{sessionStorage.removeItem("apiKey");}catch(_){}
+    const k=_demanderCle("Clé API invalide — veuillez la ressaisir :");
+    if(!k)return r;
+    API_KEY=k;
+    const h2=Object.assign({},opts.headers||{},{"X-API-Key":API_KEY});
+    if(opts.body&&!h2["Content-Type"])h2["Content-Type"]="application/json";
+    return await fetch(url,Object.assign({},opts,{headers:h2}));
+  }
+  return r;
+}
 let enCours=false,sessionQueries=0,filtreActif="all",tachesData=[],activiteSession=[],historiqueSession=[];
 const chatMessages=document.getElementById("chat-messages"),champQuestion=document.getElementById("champ-question"),champDate=document.getElementById("champ-date"),btnEnvoyer=document.getElementById("btn-envoyer"),toastZone=document.getElementById("toast-zone");
 
@@ -43,8 +61,8 @@ function toast(msg,type="info",dur=3500){
 }
 
 async function majKPIs(){
-  try{const r=await fetch(API.pending,{headers:{"X-API-Key":API_KEY}});if(r.ok){const d=await r.json();const total=d.total??0;document.getElementById("kpi-pending").textContent=total;const badge=document.getElementById("nav-badge");if(total>0){badge.textContent=total;badge.style.display="inline-flex";document.getElementById("kpi-pending-sub").textContent=`${total} critique${total>1?"s":""}`;}else{badge.style.display="none";document.getElementById("kpi-pending-sub").textContent="aucun en attente";}rendrPendingPreview(d.taches||[]);}}catch{}
-  try{const r=await fetch(API.health,{headers:{"X-API-Key":API_KEY},signal:AbortSignal.timeout(3000)});if(r.ok){document.getElementById("sys-dot").className="sys-dot";document.getElementById("sys-label").textContent="SYSTÈME OPÉRATIONNEL";document.getElementById("sys-sub").textContent="Tous les services sont actifs";}else throw new Error();}catch{document.getElementById("sys-dot").className="sys-dot error";document.getElementById("sys-label").textContent="SYSTÈME HORS LIGNE";document.getElementById("sys-sub").textContent="API inaccessible";}
+  try{const r=await apiFetch(API.pending);if(r.ok){const d=await r.json();const total=d.total??0;document.getElementById("kpi-pending").textContent=total;const badge=document.getElementById("nav-badge");if(total>0){badge.textContent=total;badge.style.display="inline-flex";document.getElementById("kpi-pending-sub").textContent=`${total} critique${total>1?"s":""}`;}else{badge.style.display="none";document.getElementById("kpi-pending-sub").textContent="aucun en attente";}rendrPendingPreview(d.taches||[]);}}catch{}
+  try{const r=await apiFetch(API.health,{signal:AbortSignal.timeout(3000)});if(r.ok){document.getElementById("sys-dot").className="sys-dot";document.getElementById("sys-label").textContent="SYSTÈME OPÉRATIONNEL";document.getElementById("sys-sub").textContent="Tous les services sont actifs";}else throw new Error();}catch{document.getElementById("sys-dot").className="sys-dot error";document.getElementById("sys-label").textContent="SYSTÈME HORS LIGNE";document.getElementById("sys-sub").textContent="API inaccessible";}
   document.getElementById("kpi-analyses").textContent=sessionQueries;
   if(historiqueSession.length>0){const map={élevé:95,moyen:70,faible:40,incertain:30};const moy=Math.round(historiqueSession.reduce((s,h)=>s+(map[h.conf]||50),0)/historiqueSession.length);document.getElementById("kpi-conf").textContent=moy+"%";document.getElementById("kpi-bar").style.width=moy+"%";document.getElementById("kpi-conf-sub").textContent=`session en cours`;}
 }
@@ -113,7 +131,7 @@ async function envoyerQuestion(){
   ajouterMsgUser(question);ajouterTyping();const ts=new Date().toISOString();
   try{
     const body={question};if(date)body.date_contexte=date;
-    const r=await fetch(API.ask,{method:"POST",headers:API_HEADERS,body:JSON.stringify(body)});
+    const r=await apiFetch(API.ask,{method:"POST",body:JSON.stringify(body)});
     supprimerTyping();
     if(!r.ok){const e=await r.json().catch(()=>({}));afficherErreurChat(e.detail||`Erreur ${r.status}`);toast(e.detail||"Erreur serveur","error");return;}
     const data=await r.json();sessionQueries++;
@@ -127,7 +145,7 @@ async function envoyerQuestion(){
 document.getElementById("btn-new-chat").addEventListener("click",()=>{chatMessages.innerHTML=`<div class="chat-welcome" id="chat-welcome"><div class="welcome-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div><h2>Que souhaitez-vous analyser ?</h2><p>Le système interroge le corpus réglementaire indexé,<br>identifie les versions applicables et cite chaque source précisément.</p><div class="chips"><button class="chip" data-q="Quelles sont les obligations de notification d'une violation de données selon le RGPD ?">Notification violation · RGPD art. 33</button><button class="chip" data-q="Quelles mesures de sécurité techniques sont requises par l'article 32 du RGPD ?">Mesures sécurité · art. 32</button><button class="chip" data-q="Y a-t-il une contradiction entre les délais de notification du RGPD et de NIS2 ?">Conflit RGPD / NIS2</button><button class="chip" data-q="Quelles sont les obligations des entités essentielles selon NIS2 ?">Entités essentielles · NIS2</button></div></div>`;activerChips();});
 
 async function chargerTaches(){
-  try{const r=await fetch(API.pending,{headers:{"X-API-Key":API_KEY}});if(!r.ok)return;const d=await r.json();tachesData=d.taches||[];const pf=d.par_file||{};
+  try{const r=await apiFetch(API.pending);if(!r.ok)return;const d=await r.json();tachesData=d.taches||[];const pf=d.par_file||{};
   document.getElementById("vk-total").textContent=d.total??0;document.getElementById("vk-responses").textContent=pf.pending_responses??0;document.getElementById("vk-alerts").textContent=pf.pending_alerts??0;document.getElementById("vk-links").textContent=pf.pending_links??0;
   const badge=document.getElementById("nav-badge");if((d.total||0)>0){badge.textContent=d.total;badge.style.display="inline-flex";}else badge.style.display="none";
   rendrVal();rendrPendingPreview(tachesData);}catch{}
@@ -152,7 +170,7 @@ function rendrVal(){
 
 async function decider(id,action,el){
   const ep=action==="approve"?API.approve:API.reject;
-  try{const r=await fetch(ep,{method:"POST",headers:API_HEADERS,body:JSON.stringify({tache_id:id})});
+  try{const r=await apiFetch(ep,{method:"POST",body:JSON.stringify({tache_id:id})});
   if(!r.ok){toast("Erreur lors du traitement","error");return;}
   toast(action==="approve"?"Tâche approuvée":"Tâche rejetée","success");
   el.style.transition="opacity 180ms,transform 180ms";el.style.opacity="0";el.style.transform="translateX(12px)";
