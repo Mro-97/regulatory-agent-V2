@@ -125,7 +125,7 @@ class VersionArticle(BaseModel):
 
     id: str = Field(..., description="Identifiant unique de cette version d'article.")
     titre: str = Field(..., max_length=500, description="Titre ou intitulé de l'article.")
-    texte: str = Field(..., max_length=100_000, description="Contenu textuel complet de l'article.")
+    texte: str = Field(..., description="Contenu textuel complet de l'article.")
     validite: IntervalleValidite = Field(..., description="Fenêtre temporelle de validité.")
     citations: list[str] = Field(
         default_factory=list,
