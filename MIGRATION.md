@@ -147,6 +147,28 @@ Bloqué
 
 ---
 
+## Audit sécurité — C2 non résolu côté code                       [BLOQUÉ hors code]
+
+Symptôme
+  - Redis lie `*:6379` sur m4pro2 sans mot de passe. Confirmé
+    (commande : `lsof -nP -iTCP:6379 -sTCP:LISTEN`).
+  - Le fichier `redis.conf` n'est pas versionné (config OS locale).
+  - `cfg.redis_password` est vide dans `.env`.
+
+Impact
+  - Tout client atteignant m4pro2 sur Tailscale/LAN peut se connecter à
+    Redis, lire/modifier les files `pending_alerts`, `pending_links`,
+    `pending_responses`, `pending_weights`. Contournement complet de la
+    validation humaine.
+
+Correction requise (action utilisateur, exige sudo ou édition redis.conf)
+  1. Éditer `~/redis-stable/redis.conf` (ou l'équivalent) sur m4pro2 :
+     - `bind 127.0.0.1 ::1`
+     - `requirepass <MOT-DE-PASSE-FORT>`
+  2. Relancer Redis (`redis-cli shutdown` puis redémarrage) après avoir
+     copié le mot de passe dans `.env` sous `REDIS_PASSWORD=…`.
+  3. Vérifier : `lsof -nP -iTCP:6379 -sTCP:LISTEN` ne montre plus `*:6379`.
+
 ## Reste à faire (état 2026-08-26)
 
 - Bloc 2 — INVENTAIRE.md des 3 machines (dont vérif token `ghp_` dans
