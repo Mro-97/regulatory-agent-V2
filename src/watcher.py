@@ -319,9 +319,9 @@ class Watcher:
             hash_nouveau=hash_nouveau,
             horodatage_detection=datetime.now(timezone.utc),
             description_modification=(
-                f"Modification détectée sur {source.value}. "
-                f"Hash avant : {hash_precedent[:16]}… "
-                f"Hash après : {hash_nouveau[:16]}…"
+                f"Modification détectée — source {source.value} — "
+                f"URL : {url} — "
+                f"empreinte SHA-256 : {hash_precedent[:12]}… → {hash_nouveau[:12]}…"
             ),
         )
 
