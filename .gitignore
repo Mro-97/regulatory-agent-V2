@@ -6,11 +6,13 @@ __pycache__/
 *.pyo
 .DS_Store
 
-# Données — on conserve le corpus raw (commité), pas les artefacts générés
+# Données — on conserve le corpus raw en JSON (commité), pas les artefacts générés
 data/indexed/*
 data/pending/*
 data/audit.jsonl
 data/watcher_hashes.json
+data/raw/*.pdf
+data/raw/*.hash
 logs/
 *.log
 
