@@ -118,13 +118,28 @@ async def en_tetes_securite(request: Request, call_next):
 
 @app.middleware("http")
 async def limite_taille_requete(request: Request, call_next):
-    """Rejette les requêtes dont le Content-Length dépasse la limite configurée."""
+    """Rejette les requêtes trop volumineuses.
+
+    Deux vecteurs à couvrir :
+      - `Content-Length` déclaré et supérieur à la limite → 413.
+      - `Transfer-Encoding: chunked` (ou toute valeur ≠ identity) sur une
+        méthode qui accepte un corps : sans `Content-Length`, la limite
+        précédente était contournable. Les navigateurs légitimes
+        n'émettent jamais de body chunked côté client — on refuse (411).
+    """
     longueur = request.headers.get("Content-Length")
     if longueur and longueur.isdigit() and int(longueur) > cfg.taille_max_requete_octets:
         return JSONResponse(
             status_code=413,
             content={"detail": "Requête trop volumineuse."},
         )
+    if request.method in {"POST", "PUT", "PATCH", "DELETE"}:
+        te = (request.headers.get("Transfer-Encoding") or "").strip().lower()
+        if te and te != "identity":
+            return JSONResponse(
+                status_code=411,
+                content={"detail": "Transfer-Encoding non autorisé — Content-Length requis."},
+            )
     return await call_next(request)
 
 

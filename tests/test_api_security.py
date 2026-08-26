@@ -29,6 +29,28 @@ from src.api import LimiteurDebit
 CLE = "cle-de-test-0123456789abcdef"
 
 
+class TestTransferEncoding:
+    """H1 : rejeter Transfer-Encoding non-identity sur les mutations."""
+
+    def test_chunked_sur_ask_refuse(self, client):
+        rep = client.post(
+            "/ask",
+            headers={
+                "X-API-Key": cfg.api_key or CLE,
+                "Content-Type": "application/json",
+                "Transfer-Encoding": "chunked",
+            },
+            content=b'{"question":"test"}',
+        )
+        assert rep.status_code == 411, rep.text
+        assert "Transfer-Encoding" in rep.json()["detail"]
+
+    def test_get_health_avec_TE_ignore(self, client):
+        # GET n'est pas concerné par la protection (pas de body attendu).
+        rep = client.get("/health", headers={"Transfer-Encoding": "chunked"})
+        assert rep.status_code == 200
+
+
 @pytest.fixture(scope="module")
 def client() -> TestClient:
     return TestClient(api_module.app)
