@@ -77,10 +77,15 @@ class Parametres(BaseSettings):
     )
 
     modele_embedding: str = Field(
-        default="models/bge-m3-mlx",
-        description="Nom du modèle d'embedding dans le registre mlx-embedding-models.",
+        default="sentence-transformers/all-MiniLM-L6-v2",
+        description=(
+            "Modèle d'embedding. Deux backends dans MLXEmbedding : "
+            "'sentence-transformers/<id>' (repli utilisé quand mlx_embeddings "
+            "déclenche 'There is no Stream(gpu, 2)') ou un identifiant natif "
+            "mlx-embeddings ('BAAI/bge-m3', 'models/bge-m3-mlx')."
+        ),
     )
-    embedding_dimension: int = Field(default=1024)
+    embedding_dimension: int = Field(default=384)
 
     mac_b_host: str = Field(default="127.0.0.1", description="Rétrocompat — architecture unique.")
     mac_b_port: int = Field(default=8001)

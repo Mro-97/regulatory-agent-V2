@@ -289,26 +289,39 @@ class MLXEmbedding:
         """
         Args:
             model_name: Identifiant HuggingFace du modèle d'embedding.
+                        - "sentence-transformers/<id>" : bascule sur le backend
+                          sentence-transformers (repli utilisé quand
+                          `mlx_embeddings.generate` déclenche
+                          "There is no Stream(gpu, 2)").
+                        - autrement : `mlx_embeddings` (voie native MLX).
                         Défaut : 'BAAI/bge-m3'.
         """
         self.model_name = model_name
+        self._st_mode = model_name.startswith("sentence-transformers/")
         self._model = None
         self._processor = None
         self._loaded = False
 
     def load(self) -> None:
-        """Charge le modèle via mlx_embeddings.load(). Idempotent."""
+        """Charge le modèle. Idempotent."""
         if self._loaded:
             return
         logger.info("Chargement du modèle d'embedding : %s", self.model_name)
         debut = time.time()
         try:
-            from mlx_embeddings import load as emb_load
-            self._model, self._processor = emb_load(self.model_name)
+            if self._st_mode:
+                from sentence_transformers import SentenceTransformer
+                nom_court = self.model_name.split("/", 1)[1]
+                self._model = SentenceTransformer(nom_court)
+                self._processor = None
+            else:
+                from mlx_embeddings import load as emb_load
+                self._model, self._processor = emb_load(self.model_name)
             self._loaded = True
             logger.info(
-                "Modèle d'embedding chargé en %.1f s : %s",
+                "Modèle d'embedding chargé en %.1f s : %s (%s)",
                 time.time() - debut, self.model_name,
+                "sentence-transformers" if self._st_mode else "mlx-embeddings",
             )
         except Exception as exc:
             self._model = None
@@ -348,6 +361,11 @@ class MLXEmbedding:
         texte = _tronquer_pour_embedding(texte)
         timeout = timeout_seconds if timeout_seconds is not None else cfg.mlx_timeout_seconds
         try:
+            if self._st_mode:
+                vecteur = _executer_avec_timeout(
+                    self._model.encode, timeout, texte
+                )
+                return vecteur.tolist()
             from mlx_embeddings import generate as emb_generate
             sortie = _executer_avec_timeout(
                 emb_generate,
