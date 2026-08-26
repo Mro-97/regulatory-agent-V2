@@ -35,7 +35,7 @@ class Parametres(BaseSettings):
     debug: bool = Field(default=False)
 
     # ------------------------------------------------------------------
-    # Serveur API (Mac A)
+    # Serveur API — architecture unique m4pro2 (§3.1 CONTEXTE_PROJET)
     # ------------------------------------------------------------------
     api_host: str = Field(default="127.0.0.1", description="Bind. Utiliser 0.0.0.0 uniquement derrière un proxy.")
     api_port: int = Field(default=8000)
@@ -67,26 +67,22 @@ class Parametres(BaseSettings):
     rate_limit_fenetre_secondes: int = Field(default=60)
 
     # ------------------------------------------------------------------
-    # Modèles MLX — Mac A (orchestrateur)
+    # Modèles MLX — chargement local sur m4pro2, un seul actif à la fois
+    # (§2.6 + §5 CONTEXTE_PROJET). Les *_host restent à 127.0.0.1 pour
+    # rétrocompat des tests qui liraient encore ces champs.
     # ------------------------------------------------------------------
     modele_orchestrateur: str = Field(
         default="mlx-community/Llama-3.2-3B-Instruct-4bit",
-        description="Modèle MLX de génération pour l'orchestrateur (Mac A).",
+        description="Modèle MLX de génération pour le routage.",
     )
 
-    # ------------------------------------------------------------------
-    # Modèle d'embedding dédié — Mac B
-    # ------------------------------------------------------------------
     modele_embedding: str = Field(
         default="models/bge-m3-mlx",
         description="Nom du modèle d'embedding dans le registre mlx-embedding-models.",
     )
     embedding_dimension: int = Field(default=1024)
 
-    # ------------------------------------------------------------------
-    # Modèles MLX de génération — Mac B
-    # ------------------------------------------------------------------
-    mac_b_host: str = Field(default="192.168.1.11")
+    mac_b_host: str = Field(default="127.0.0.1", description="Rétrocompat — architecture unique.")
     mac_b_port: int = Field(default=8001)
 
     modele_retriever: str = Field(default="mlx-community/Mistral-7B-Instruct-v0.3-4bit")
@@ -94,10 +90,7 @@ class Parametres(BaseSettings):
     modele_explainer: str = Field(default="mlx-community/Qwen2.5-7B-Instruct-4bit")
     modele_citation: str = Field(default="mlx-community/Mistral-7B-Instruct-v0.3-4bit")
 
-    # ------------------------------------------------------------------
-    # Modèles MLX de génération — Mac C
-    # ------------------------------------------------------------------
-    mac_c_host: str = Field(default="192.168.1.12")
+    mac_c_host: str = Field(default="127.0.0.1", description="Rétrocompat — architecture unique.")
     mac_c_port: int = Field(default=8002)
 
     modele_conflit: str = Field(default="mlx-community/DeepSeek-R1-Distill-Qwen-14B-4bit")
@@ -108,11 +101,19 @@ class Parametres(BaseSettings):
     mlx_max_tokens: int = Field(default=1024)
     mlx_temperature: float = Field(default=0.1)
     mlx_top_p: float = Field(default=0.9)
+    mlx_timeout_seconds: float = Field(
+        default=60.0,
+        description=(
+            "Délai maximum (secondes) accordé à un appel MLX (generate / encode). "
+            "0 ou négatif = pas de timeout. Empêche un modèle bloqué ou un "
+            "prompt pathologique de figer l'API indéfiniment."
+        ),
+    )
 
     # ------------------------------------------------------------------
-    # Qdrant (Mac B)
+    # Qdrant — local sur m4pro2 (§3.1 CONTEXTE_PROJET)
     # ------------------------------------------------------------------
-    qdrant_host: str = Field(default="192.168.1.11")
+    qdrant_host: str = Field(default="127.0.0.1")
     qdrant_port: int = Field(default=6333)
     qdrant_https: bool = Field(default=False)
     qdrant_api_key: str = Field(default="")
@@ -121,7 +122,7 @@ class Parametres(BaseSettings):
     qdrant_top_k: int = Field(default=15)
 
     # ------------------------------------------------------------------
-    # Redis (Mac A)
+    # Redis — local sur m4pro2 (§3.1 CONTEXTE_PROJET)
     # ------------------------------------------------------------------
     redis_host: str = Field(default="127.0.0.1")
     redis_port: int = Field(default=6379)
@@ -130,11 +131,12 @@ class Parametres(BaseSettings):
     redis_ttl_cache: int = Field(default=3600)
 
     # ------------------------------------------------------------------
-    # PostgreSQL (Mac C) — DSN via .env uniquement, jamais de valeur en dur
+    # PostgreSQL — local sur m4pro2 (§3.1 CONTEXTE_PROJET). DSN via .env
+    # uniquement, jamais de valeur en dur.
     # ------------------------------------------------------------------
     postgres_dsn: str = Field(
         default="",
-        description="DSN PostgreSQL ex. postgresql://user:motdepasse@hôte:5432/base.",
+        description="DSN PostgreSQL ex. postgresql://user:motdepasse@127.0.0.1:5432/base.",
     )
 
     # ------------------------------------------------------------------
@@ -150,6 +152,20 @@ class Parametres(BaseSettings):
     watcher_follow_redirects: bool = Field(
         default=False,
         description="Suivre les redirections HTTP (réduit la surface SSRF).",
+    )
+    watcher_max_essais: int = Field(
+        default=3,
+        description=(
+            "Nombre de tentatives par URL en cas d'échec réseau ou d'erreur 5xx. "
+            "1 = pas de reprise, comportement d'avant."
+        ),
+    )
+    watcher_backoff_secondes: float = Field(
+        default=2.0,
+        description=(
+            "Base du backoff exponentiel entre tentatives : "
+            "attente = base * 2^(tentative-1) secondes."
+        ),
     )
 
     # ------------------------------------------------------------------

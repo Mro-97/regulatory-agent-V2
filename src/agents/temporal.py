@@ -43,6 +43,39 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+# Bornes considérées comme raisonnables pour une date réglementaire.
+# Empêche de propager silencieusement une date(1, 1, 1) ou une année 9999
+# arrivée dans une requête, qui produirait un résultat "INCERTAIN"
+# techniquement vrai mais faussement rassurant.
+_DATE_MIN_RAISONNABLE = date(1900, 1, 1)
+_DATE_MAX_RAISONNABLE = date(2100, 12, 31)
+
+
+def _valider_date_contexte(valeur: object) -> Optional[date]:
+    """
+    Normalise et valide une date de contexte réglementaire.
+
+    Accepte None, un `date`, ou un `datetime` (converti en date UTC).
+    Rejette tout autre type et toute date hors [1900-01-01, 2100-12-31].
+    Ces bornes sont volontairement larges — elles écartent les valeurs
+    aberrantes (année 1 ou 9999) sans contraindre l'usage légitime.
+    """
+    if valeur is None:
+        return None
+    if isinstance(valeur, datetime):
+        valeur = valeur.date()
+    if not isinstance(valeur, date):
+        raise ValueError(
+            f"date_contexte doit être une date, reçu {type(valeur).__name__}"
+        )
+    if not (_DATE_MIN_RAISONNABLE <= valeur <= _DATE_MAX_RAISONNABLE):
+        raise ValueError(
+            f"date_contexte {valeur} hors intervalle raisonnable "
+            f"[{_DATE_MIN_RAISONNABLE}, {_DATE_MAX_RAISONNABLE}]"
+        )
+    return valeur
+
+
 # ---------------------------------------------------------------------------
 # Structures de sortie
 # ---------------------------------------------------------------------------
@@ -355,7 +388,8 @@ class AgentTemporel:
         Returns:
             ResultatTemporel avec les preuves filtrées et annotations.
         """
-        # --- Étape 1 : date de référence ---
+        # --- Étape 1 : validation puis résolution de la date de référence ---
+        date_contexte = _valider_date_contexte(date_contexte)
         date_ref = date_contexte or datetime.now(timezone.utc).date()
         logger.info(
             "Analyse temporelle — date_ref=%s question=%r",

@@ -29,12 +29,63 @@ from __future__ import annotations
 import gc
 import logging
 import time
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from dataclasses import dataclass
-from typing import Optional
+from typing import Callable, Optional, TypeVar
 
 import mlx.core as mx
 
+from config import cfg
+
 logger = logging.getLogger(__name__)
+
+
+class MLXTimeoutError(RuntimeError):
+    """Levée quand un appel MLX dépasse le délai configuré."""
+
+
+T = TypeVar("T")
+
+# Un unique executor dédié aux appels MLX bornés dans le temps. Un thread
+# unique suffit : MLX sérialise déjà l'accès aux poids sur le device.
+_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="mlx-timed")
+
+
+def _executer_avec_timeout(
+    fn: Callable[..., T],
+    timeout_seconds: Optional[float],
+    *args,
+    **kwargs,
+) -> T:
+    """
+    Exécute `fn` en imposant une borne supérieure de temps.
+
+    MLX ne fournit pas d'interruption coopérative : un appel bloqué ne
+    peut pas être annulé côté device. Le thread continue en tâche de
+    fond, mais l'appelant récupère la main via `future.result(timeout=)`.
+    Cette borne empêche un modèle figé ou un prompt pathologique de
+    figer l'API indéfiniment.
+
+    Args:
+        fn: Fonction à exécuter (synchrone).
+        timeout_seconds: Délai maximum. None, 0, ou négatif = pas de timeout.
+        *args, **kwargs: Passés à fn.
+
+    Returns:
+        Le résultat de fn.
+
+    Raises:
+        MLXTimeoutError: Si fn dépasse `timeout_seconds`.
+    """
+    if timeout_seconds is None or timeout_seconds <= 0:
+        return fn(*args, **kwargs)
+    future = _executor.submit(fn, *args, **kwargs)
+    try:
+        return future.result(timeout=timeout_seconds)
+    except FuturesTimeoutError as exc:
+        raise MLXTimeoutError(
+            f"Appel MLX dépassé après {timeout_seconds}s"
+        ) from exc
 
 # Longueur max (caractères) d'un texte envoyé à l'embedding. `max_length=512`
 # et `truncation=True` passés à emb_generate() agissent sur les *tokens*, pas
@@ -142,18 +193,27 @@ class MLXInference:
         max_tokens: int = 512,
         temperature: Optional[float] = None,
         top_p: Optional[float] = None,
+        timeout_seconds: Optional[float] = None,
     ) -> ResultatGeneration:
-        """Génère du texte. Charge le modèle si nécessaire."""
+        """Génère du texte. Charge le modèle si nécessaire.
+
+        Args:
+            timeout_seconds: Délai max. None = utilise cfg.mlx_timeout_seconds.
+                             0 ou négatif = pas de borne (comportement d'avant).
+        """
         if not self._loaded:
             self.load()
         temp = temperature if temperature is not None else self.temperature
         tp = top_p if top_p is not None else self.top_p
+        timeout = timeout_seconds if timeout_seconds is not None else cfg.mlx_timeout_seconds
         debut = time.time()
         try:
             from mlx_lm import generate as mlx_generate
             from mlx_lm.sample_utils import make_sampler
             sampler = make_sampler(temp=temp, top_p=tp)
-            texte = mlx_generate(
+            texte = _executer_avec_timeout(
+                mlx_generate,
+                timeout,
                 self._model, self._tokenizer,
                 prompt=prompt, max_tokens=max_tokens,
                 sampler=sampler, verbose=False,
@@ -272,12 +332,13 @@ class MLXEmbedding:
     def est_charge(self) -> bool:
         return self._loaded
 
-    def encode(self, texte: str) -> list[float]:
+    def encode(self, texte: str, timeout_seconds: Optional[float] = None) -> list[float]:
         """
         Calcule l'embedding d'un texte.
 
         Args:
             texte: Texte à encoder.
+            timeout_seconds: Délai max. None = utilise cfg.mlx_timeout_seconds.
 
         Returns:
             Vecteur normalisé (liste de floats, dimension 1024 pour bge-m3).
@@ -285,9 +346,12 @@ class MLXEmbedding:
         if not self._loaded:
             self.load()
         texte = _tronquer_pour_embedding(texte)
+        timeout = timeout_seconds if timeout_seconds is not None else cfg.mlx_timeout_seconds
         try:
             from mlx_embeddings import generate as emb_generate
-            sortie = emb_generate(
+            sortie = _executer_avec_timeout(
+                emb_generate,
+                timeout,
                 self._model,
                 self._processor,
                 texts=texte,
