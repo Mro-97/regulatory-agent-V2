@@ -71,6 +71,16 @@ def valider_configuration_demarrage() -> list[str]:
             "API_KEY vide — définir la variable API_KEY dans .env avant démarrage. "
             "Sans clé, l'API applique un fail-closed (503) sur chaque requête."
         )
+    if cfg.api_workers > 1 and cfg.rate_limit_max_requetes > 0:
+        # M2 : le rate limiter est mono-process (LimiteurDebit en mémoire) —
+        # en multi-worker chaque worker a son propre compteur, la limite
+        # effective est multipliée par le nombre de workers.
+        erreurs.append(
+            f"api_workers={cfg.api_workers} > 1 avec rate_limit_max_requetes>0 : "
+            "le rate limiter en mémoire n'est pas partagé entre workers, "
+            "la limite effective est multipliée par le nombre de workers. "
+            "Utiliser un backend Redis partagé ou fixer api_workers=1."
+        )
     return erreurs
 
 

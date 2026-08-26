@@ -177,18 +177,50 @@ def verifier_origine(request: Request) -> None:
 
 
 class LimiteurDebit:
-    """Limiteur de débit en mémoire (fenêtre glissante), clé = adresse IP."""
+    """Limiteur de débit en mémoire (fenêtre glissante), clé = adresse IP.
 
-    def __init__(self, max_requetes: int, fenetre_secondes: int) -> None:
+    Le suivi est plafonné à `max_cles` entrées distinctes ; les entrées
+    dont tous les horodatages sont hors fenêtre sont purgées à chaque
+    appel. Sans ce plafond, un port-scan ou un flood d'IP sources faisait
+    croître `_horodatages` indéfiniment (fuite mémoire).
+
+    Le limiteur est un objet mono-process : en multi-worker (gunicorn -w N),
+    la limite effective est × N. `main.valider_configuration_demarrage()`
+    signale ce cas au boot.
+    """
+
+    def __init__(
+        self,
+        max_requetes: int,
+        fenetre_secondes: int,
+        max_cles: int = 10_000,
+    ) -> None:
         self.max_requetes = max_requetes
         self.fenetre_secondes = fenetre_secondes
+        self.max_cles = max_cles
         self._horodatages: defaultdict[str, list[float]] = defaultdict(list)
         self._verrou = Lock()
+
+    def _purger(self, borne: float) -> None:
+        """Retire les clés dont tous les horodatages sont hors fenêtre."""
+        obsoletes = [
+            k for k, ts in self._horodatages.items()
+            if not ts or max(ts) <= borne
+        ]
+        for k in obsoletes:
+            del self._horodatages[k]
 
     def autoriser(self, cle: str) -> bool:
         maintenant = time.monotonic()
         borne = maintenant - self.fenetre_secondes
         with self._verrou:
+            # Purge opportuniste quand le dictionnaire dépasse le plafond.
+            if len(self._horodatages) >= self.max_cles:
+                self._purger(borne)
+                if len(self._horodatages) >= self.max_cles and cle not in self._horodatages:
+                    # Toujours saturé : on refuse la nouvelle clé plutôt que
+                    # de laisser croître à l'infini.
+                    return False
             valeurs = [t for t in self._horodatages[cle] if t > borne]
             self._horodatages[cle] = valeurs
             if len(valeurs) >= self.max_requetes:
