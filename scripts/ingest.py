@@ -26,7 +26,13 @@ OVERLAP = 50
 
 class Ingester:
     def __init__(self, collection_name: str = "regulatory_chunks", recreate: bool = False):
-        self.client = QdrantClient(url=f"http://{cfg.qdrant_host}:{cfg.qdrant_port}")
+        # F1 : respecter cfg.qdrant_https + cfg.qdrant_api_key. `url=` seul
+        # hardcodait http:// et ignorait la clé Qdrant même si présente.
+        scheme = "https" if cfg.qdrant_https else "http"
+        self.client = QdrantClient(
+            url=f"{scheme}://{cfg.qdrant_host}:{cfg.qdrant_port}",
+            api_key=cfg.qdrant_api_key or None,
+        )
         self.collection_name = collection_name
         self.embedding_model = self._load_embedding_model()
 
