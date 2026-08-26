@@ -103,6 +103,24 @@ templates = Jinja2Templates(directory=str(DOSSIER_TEMPLATES))
 # ---------------------------------------------------------------------------
 
 
+_CSP_POLITIQUE = (
+    # M3 : défense en profondeur — restreint les origines de scripts,
+    # styles, images et connexions du frontend. Autorise fonts Google
+    # (utilisées par le template index.html). `'unsafe-inline'` sur les
+    # styles reste toléré pour les SVG/style inline du template ; on
+    # évite `unsafe-inline` sur les scripts.
+    "default-src 'self'; "
+    "script-src 'self'; "
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+    "font-src 'self' https://fonts.gstatic.com; "
+    "img-src 'self' data:; "
+    "connect-src 'self'; "
+    "frame-ancestors 'none'; "
+    "base-uri 'none'; "
+    "form-action 'self'"
+)
+
+
 @app.middleware("http")
 async def en_tetes_securite(request: Request, call_next):
     """Ajoute les en-têtes de sécurité à toutes les réponses."""
@@ -113,6 +131,9 @@ async def en_tetes_securite(request: Request, call_next):
     reponse.headers.setdefault(
         "Strict-Transport-Security", "max-age=31536000; includeSubDomains"
     )
+    reponse.headers.setdefault("Content-Security-Policy", _CSP_POLITIQUE)
+    reponse.headers.setdefault("Cross-Origin-Opener-Policy", "same-origin")
+    reponse.headers.setdefault("Cross-Origin-Resource-Policy", "same-site")
     return reponse
 
 

@@ -307,3 +307,16 @@ class TestEnTetesSecurite:
         assert rep.headers.get("x-frame-options") == "DENY"
         assert rep.headers.get("referrer-policy") == "strict-origin-when-cross-origin"
         assert "max-age" in rep.headers.get("strict-transport-security", "")
+
+    def test_csp_present_et_strict(self, client):
+        """M3 : politique CSP en place, sans 'unsafe-inline' sur les scripts."""
+        rep = client.get("/health")
+        csp = rep.headers.get("content-security-policy", "")
+        assert csp, "Content-Security-Policy manquant"
+        assert "default-src 'self'" in csp
+        assert "frame-ancestors 'none'" in csp
+        # unsafe-inline peut apparaître sur style-src mais JAMAIS sur script-src.
+        assert "script-src 'self'" in csp
+        script_dir = next(d for d in csp.split(";") if d.strip().startswith("script-src"))
+        assert "unsafe-inline" not in script_dir
+        assert "unsafe-eval" not in script_dir
