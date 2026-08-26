@@ -39,7 +39,6 @@ from datetime import date, datetime, timezone
 from typing import Optional
 from uuid import UUID, uuid4
 
-import httpx
 
 from config import cfg
 from src.models import (
@@ -164,7 +163,8 @@ class Orchestrateur:
         # Agents — instanciés en lazy lors du premier appel
         self._retriever = None
         self._ingester = None
-        self._client_http: Optional[httpx.AsyncClient] = None
+        # M5 : le client HTTP inter-machines (Mac B / Mac C) est supprimé
+        # avec l'architecture unique. Voir aussi `_http()`, retiré.
 
         # Sérialise l'usage du registre MLX (_CacheGeneration) : un seul
         # modèle de génération est actif à la fois (swap/unload sur bascule
@@ -194,12 +194,6 @@ class Orchestrateur:
             self._ingester = Ingester(collection_name=cfg.qdrant_collection)
             logger.info("Ingester réel initialisé.")
         return self._ingester
-
-    async def _http(self) -> httpx.AsyncClient:
-        """Client HTTP partagé pour les appels Mac B / Mac C."""
-        if self._client_http is None or self._client_http.is_closed:
-            self._client_http = httpx.AsyncClient(timeout=60.0)
-        return self._client_http
 
     async def _executer_bloquant(self, fonction, /, *args, **kwargs):
         """
