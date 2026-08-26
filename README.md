@@ -1,10 +1,4 @@
-Voici le **README complet mis à jour**, avec toutes les corrections (B1 à B9), l’architecture unique, le détail des agents, et le tableau des bugs complet.
-
-Tu peux le copier-coller directement sur GitHub (remplace tout le contenu actuel).
-
----
-
-```markdown
+ 
 # Regulatory Agent V2
 
 **Système local de veille réglementaire et d'assistance IA pour l'industrie.**
