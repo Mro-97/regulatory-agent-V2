@@ -128,3 +128,103 @@ async def etape_explainer(
         },
     )
     return resultat.reponse, resultat.niveau_confiance, sortie
+
+
+async def etape_conflit(
+    orchestrator: Orchestrateur,
+    question: str,
+    date_contexte: date | None,
+    evidences: list[EvidenceRecuperee],
+    request_id: object,
+) -> SortieAgent | None:
+    """Étape 2b : détection de conflit (activée quand type_pipeline == 'conflit').
+
+    Ajoute la SortieAgent à retourner à l'orchestrateur (ou None si l'agent
+    a échoué) et soumet une TacheValidation LIENS quand la détection élève
+    le niveau à PROBABLE / CRITIQUE. Le paramètre `request_id` transite
+    dans la tâche à des fins de traçabilité (rattachée à la requête d'origine).
+    """
+    from uuid import UUID
+
+    from src.agents.conflit import AgentConflit
+    from src.models import TacheValidation, TypeFilePendante
+
+    request_uuid = request_id if isinstance(request_id, UUID) else UUID(str(request_id))
+
+    try:
+        # use_llm=True : sous architecture unique m4pro2 (24 Go), le budget
+        # RAM tolère l'analyse LLM des conflits potentiels.
+        agent_conflit = AgentConflit(use_llm=True)
+        resultat_conflit = await orchestrator._executer_bloquant(
+            agent_conflit.analyser,
+            question=question,
+            evidences=evidences,
+            date_ref=date_contexte,
+        )
+        sortie = SortieAgent(
+            nom_agent="Conflict",
+            machine=orchestrator._machine_pour_agent("Conflict"),
+            contenu={
+                "niveau_global": resultat_conflit.niveau_global.value,
+                "conflits_detectes": len(resultat_conflit.conflits),
+                "mode": resultat_conflit.mode,
+            },
+        )
+        if resultat_conflit.necessite_validation_humaine:
+            tache_conflit = TacheValidation(
+                type_file=TypeFilePendante.LIENS,
+                request_id=request_uuid,
+                contenu={
+                    "question": question,
+                    "conflits": [
+                        {
+                            "doc_a": c.evidence_a.document_id,
+                            "art_a": c.evidence_a.article_id,
+                            "doc_b": c.evidence_b.document_id,
+                            "art_b": c.evidence_b.article_id,
+                            "niveau": c.niveau.value,
+                            "description": c.description,
+                        }
+                        for c in resultat_conflit.conflits
+                    ],
+                },
+            )
+            await orchestrator._enregistrer_tache_redis(tache_conflit)
+            logger.warning(
+                "Conflit %s soumis à validation humaine.",
+                resultat_conflit.niveau_global.value,
+            )
+    except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
+        logger.warning("Agent Conflict échoué, ignoré : %s", exc)
+        return None
+    return sortie
+
+
+async def etape_citation(
+    orchestrator: Orchestrateur,
+    evidences: list[EvidenceRecuperee],
+) -> SortieAgent | None:
+    """Étape 4 : génération et vérification des citations."""
+    from src.agents.citation import AgentCitation
+
+    try:
+        agent_citation = AgentCitation(use_llm=True)
+        resultat_citation = await orchestrator._executer_bloquant(
+            agent_citation.generate,
+            evidences=evidences,
+        )
+        sortie = SortieAgent(
+            nom_agent="Citation",
+            machine=orchestrator._machine_pour_agent("Citation"),
+            contenu={
+                "mode": resultat_citation.mode,
+                "verifiees": len(resultat_citation.citations_verifiees),
+                "douteuses": len(resultat_citation.citations_douteuses),
+            },
+        )
+        if resultat_citation.avertissement:
+            logger.warning("Citation : %s", resultat_citation.avertissement)
+    except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
+        logger.warning("Agent Citation échoué, ignoré : %s", exc)
+        return None
+    return sortie

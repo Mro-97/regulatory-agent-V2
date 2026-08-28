@@ -353,56 +353,17 @@ class Orchestrateur:
         # Mode real — Étape 2b : Détection de conflit (si applicable)
         # ----------------------------------------------------------
         if type_pipeline == "conflit" and len(evidences) >= 2:
-            try:
-                from src.agents.conflit import AgentConflit
+            from src.orchestrator_pipeline import etape_conflit
 
-                # use_llm=False par défaut — DeepSeek-R1 14B réservé
-                # aux cas critiques confirmés par un opérateur
-                agent_conflit = AgentConflit(use_llm=True)
-                resultat_conflit = await self._executer_bloquant(
-                    agent_conflit.analyser,
-                    question=requete.question,
-                    evidences=evidences,
-                    date_ref=requete.date_contexte,
-                )
-                agents_executes.append(
-                    SortieAgent(
-                        nom_agent="Conflict",
-                        machine=self._machine_pour_agent("Conflict"),
-                        contenu={
-                            "niveau_global": resultat_conflit.niveau_global.value,
-                            "conflits_detectes": len(resultat_conflit.conflits),
-                            "mode": resultat_conflit.mode,
-                        },
-                    )
-                )
-                # Soumettre à validation humaine si conflit probable/critique
-                if resultat_conflit.necessite_validation_humaine:
-                    tache_conflit = TacheValidation(
-                        type_file=TypeFilePendante.LIENS,
-                        request_id=request_id,
-                        contenu={
-                            "question": requete.question,
-                            "conflits": [
-                                {
-                                    "doc_a": c.evidence_a.document_id,
-                                    "art_a": c.evidence_a.article_id,
-                                    "doc_b": c.evidence_b.document_id,
-                                    "art_b": c.evidence_b.article_id,
-                                    "niveau": c.niveau.value,
-                                    "description": c.description,
-                                }
-                                for c in resultat_conflit.conflits
-                            ],
-                        },
-                    )
-                    await self._enregistrer_tache_redis(tache_conflit)
-                    logger.warning(
-                        "Conflit %s soumis à validation humaine.",
-                        resultat_conflit.niveau_global.value,
-                    )
-            except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
-                logger.warning("Agent Conflict échoué, ignoré : %s", exc)
+            sortie_conflit = await etape_conflit(
+                self,
+                question=requete.question,
+                date_contexte=requete.date_contexte,
+                evidences=evidences,
+                request_id=request_id,
+            )
+            if sortie_conflit is not None:
+                agents_executes.append(sortie_conflit)
 
         # ----------------------------------------------------------
         # Mode real — Étape 3 : Explication
@@ -427,28 +388,11 @@ class Orchestrateur:
         # ----------------------------------------------------------
         # Mode real — Étape 4 : Citations
         # ----------------------------------------------------------
-        try:
-            from src.agents.citation import AgentCitation
+        from src.orchestrator_pipeline import etape_citation
 
-            agent_citation = AgentCitation(use_llm=True)
-            resultat_citation = await self._executer_bloquant(
-                agent_citation.generate, evidences=evidences
-            )
-            agents_executes.append(
-                SortieAgent(
-                    nom_agent="Citation",
-                    machine=self._machine_pour_agent("Citation"),
-                    contenu={
-                        "mode": resultat_citation.mode,
-                        "verifiees": len(resultat_citation.citations_verifiees),
-                        "douteuses": len(resultat_citation.citations_douteuses),
-                    },
-                )
-            )
-            if resultat_citation.avertissement:
-                logger.warning("Citation : %s", resultat_citation.avertissement)
-        except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
-            logger.warning("Agent Citation échoué, ignoré : %s", exc)
+        sortie_citation = await etape_citation(self, evidences=evidences)
+        if sortie_citation is not None:
+            agents_executes.append(sortie_citation)
 
         # ----------------------------------------------------------
         # Validation humaine
