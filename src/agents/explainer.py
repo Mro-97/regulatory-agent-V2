@@ -80,7 +80,7 @@ class AgentExplainer:
 
     def __init__(self, use_llm: bool = False) -> None:
         self.use_llm = use_llm
-        self._modele: Optional["MLXInference"] = None
+        self._modele: MLXInference | None = None
         logger.info("AgentExplainer initialisé — use_llm=%s", use_llm)
 
     # ------------------------------------------------------------------
@@ -91,7 +91,7 @@ class AgentExplainer:
         self,
         question: str,
         evidences: list[EvidenceRecuperee],
-        date_ref: Optional[date],
+        date_ref: date | None,
         type_pipeline: str,
     ) -> ResultatExplication:
         """
@@ -222,7 +222,7 @@ class AgentExplainer:
         self,
         question: str,
         evidences: list[EvidenceRecuperee],
-        date_ref: Optional[date],
+        date_ref: date | None,
         type_pipeline: str,
     ) -> ResultatExplication:
         """
@@ -324,7 +324,7 @@ class AgentExplainer:
         self,
         question: str,
         evidences: list[EvidenceRecuperee],
-        date_ref: Optional[date] = None,
+        date_ref: date | None = None,
         type_pipeline: str = "courante",
     ) -> ResultatExplication:
         """

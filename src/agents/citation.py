@@ -101,7 +101,7 @@ class CitationReglementaire:
     document_id: str
     article_id: str
     valid_from: date
-    valid_to: Optional[date]
+    valid_to: date | None
     extrait: str  # passage exact cité (max 200 chars)
     chunk_id: str  # identifiant du chunk source
     statut: StatutCitation = StatutCitation.NON_VERIFIEE
@@ -132,7 +132,7 @@ class ResultatCitation:
     citations_verifiees: list[CitationReglementaire]
     citations_douteuses: list[CitationReglementaire]
     mode: str  # "deterministe" ou "llm"
-    avertissement: Optional[str] = None
+    avertissement: str | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -153,7 +153,7 @@ class AgentCitation:
 
     def __init__(self, use_llm: bool = False) -> None:
         self.use_llm = use_llm
-        self._modele: Optional["MLXInference"] = None
+        self._modele: MLXInference | None = None
         logger.info("AgentCitation initialisé — use_llm=%s", use_llm)
 
     # ------------------------------------------------------------------
@@ -394,7 +394,7 @@ class AgentCitation:
     def generate(
         self,
         evidences: list[EvidenceRecuperee],
-        reponse_explainer: Optional[str] = None,
+        reponse_explainer: str | None = None,
     ) -> ResultatCitation:
         """
         Génère et vérifie les citations pour une réponse réglementaire.

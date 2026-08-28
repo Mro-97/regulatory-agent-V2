@@ -25,7 +25,7 @@ import hashlib
 import json
 import logging
 import re
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 from pathlib import Path
 from typing import Optional
 
@@ -206,7 +206,7 @@ class Watcher:
 
     def __init__(self) -> None:
         self._hashes = charger_hashes_connus()
-        self._client_http: Optional[httpx.AsyncClient] = None
+        self._client_http: httpx.AsyncClient | None = None
         self._en_cours = False
         logger.info("Watcher initialisé — %d hashes connus.", len(self._hashes))
 
@@ -227,7 +227,7 @@ class Watcher:
 
     async def _fetch_avec_retry(
         self, url: str, source: SourceReglementaire
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Récupère une URL avec reprise sur échec réseau ou erreur 5xx.
 
@@ -245,7 +245,7 @@ class Watcher:
         """
         max_essais = max(1, int(cfg.watcher_max_essais))
         base = max(0.0, float(cfg.watcher_backoff_secondes))
-        derniere_erreur: Optional[Exception] = None
+        derniere_erreur: Exception | None = None
 
         for essai in range(1, max_essais + 1):
             try:
@@ -292,7 +292,7 @@ class Watcher:
         self,
         url: str,
         source: SourceReglementaire,
-    ) -> Optional[AlerteWatcher]:
+    ) -> AlerteWatcher | None:
         """
         Vérifie une URL et retourne une AlerteWatcher si le contenu a changé.
 
@@ -334,7 +334,7 @@ class Watcher:
             url_detectee=url,
             hash_precedent=hash_precedent,
             hash_nouveau=hash_nouveau,
-            horodatage_detection=datetime.now(timezone.utc),
+            horodatage_detection=datetime.now(UTC),
             description_modification=(
                 f"Modification détectée — source {source.value} — "
                 f"URL : {url} — "

@@ -35,7 +35,7 @@ import json
 import logging
 import os
 import re
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timezone, UTC
 from typing import Optional
 from uuid import UUID, uuid4
 
@@ -85,7 +85,7 @@ _MOTS_CLES_CONFLIT = re.compile(
 )
 
 
-def _classifier_requete(question: str, date_contexte: Optional[date]) -> str:
+def _classifier_requete(question: str, date_contexte: date | None) -> str:
     """
     Détermine le type de pipeline à exécuter.
 
@@ -143,7 +143,7 @@ class Orchestrateur:
       - Utile pour les tests de l'API sans infrastructure.
     """
 
-    def __init__(self, mode: Optional[str] = None) -> None:
+    def __init__(self, mode: str | None = None) -> None:
         """
         Initialise l'orchestrateur sans charger aucun agent en mémoire.
 
@@ -255,7 +255,7 @@ class Orchestrateur:
     async def _etape_retrieval(
         self,
         question: str,
-        date_contexte: Optional[date],
+        date_contexte: date | None,
         filtres_themes: list[str],
         filtres_sources: list[SourceReglementaire],
     ) -> tuple[list[EvidenceRecuperee], SortieAgent]:
@@ -265,7 +265,7 @@ class Orchestrateur:
         Returns:
             Tuple (evidences, sortie_agent).
         """
-        debut = datetime.now(timezone.utc)
+        debut = datetime.now(UTC)
         retriever = self._obtenir_retriever()
 
         # Déporté en thread (embedding MLX + requête Qdrant, bloquant) —
@@ -288,14 +288,14 @@ class Orchestrateur:
                 "filtres_themes": filtres_themes,
                 "filtres_sources": [s.value for s in filtres_sources],
             },
-            duree_ms=int((datetime.now(timezone.utc) - debut).total_seconds() * 1000),
+            duree_ms=int((datetime.now(UTC) - debut).total_seconds() * 1000),
         )
         return evidences, sortie
 
     async def _etape_temporal(
         self,
         question: str,
-        date_contexte: Optional[date],
+        date_contexte: date | None,
         evidences: list[EvidenceRecuperee],
     ) -> tuple[list[EvidenceRecuperee], SortieAgent]:
         """
@@ -565,7 +565,7 @@ class Orchestrateur:
             or niveau_confiance in (NiveauConfiance.FAIBLE, NiveauConfiance.INCERTAIN)
         )
 
-        tache_validation_id: Optional[UUID] = None
+        tache_validation_id: UUID | None = None
         if soumettre_validation:
             tache = TacheValidation(
                 type_file=TypeFilePendante.REPONSES,
@@ -729,10 +729,10 @@ class Orchestrateur:
         self,
         tache_id: UUID,
         decision: StatutValidation,
-        commentaire: Optional[str] = None,
+        commentaire: str | None = None,
     ) -> ReponseDecisionValidation:
         """Applique une décision humaine à une tâche Redis."""
-        horodatage = datetime.now(timezone.utc)
+        horodatage = datetime.now(UTC)
         try:
             client = await self._nouveau_client_redis()
             tache_trouvee = False

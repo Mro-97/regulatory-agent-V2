@@ -21,7 +21,7 @@ Dépendances : qdrant-client >= 1.9, mlx-lm >= 0.16 (MIT/Apache).
 from __future__ import annotations
 
 import logging
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timezone, UTC
 from typing import Optional
 
 from config import cfg
@@ -52,8 +52,8 @@ class Retriever:
 
     def __init__(
         self,
-        qdrant_client: Optional[QdrantClient] = None,
-        top_k: Optional[int] = None,
+        qdrant_client: QdrantClient | None = None,
+        top_k: int | None = None,
     ) -> None:
         """
         Initialise le Retriever sans charger le modèle en mémoire.
@@ -146,7 +146,7 @@ class Retriever:
         """
         return IsNullCondition(is_null=PayloadField(key="valid_to"))
 
-    def _filtre_themes(self, themes: list[str]) -> Optional[FieldCondition]:
+    def _filtre_themes(self, themes: list[str]) -> FieldCondition | None:
         """
         Condition : le payload 'themes' (array) contient au moins un des thèmes demandés.
 
@@ -162,8 +162,8 @@ class Retriever:
         return FieldCondition(key="themes", match=MatchAny(any=themes_valides))
 
     def _filtre_sources(
-        self, sources: list["SourceReglementaire"]
-    ) -> Optional[FieldCondition]:
+        self, sources: list[SourceReglementaire]
+    ) -> FieldCondition | None:
         """
         Condition : le payload 'source' correspond à l'une des sources demandées.
 
@@ -186,7 +186,7 @@ class Retriever:
         self,
         vecteur: list[float],
         limite: int,
-        filtre: Optional[Filter] = None,
+        filtre: Filter | None = None,
     ) -> list[ScoredPoint]:
         """
         Exécute une recherche vectorielle dans Qdrant.
@@ -222,7 +222,7 @@ class Retriever:
     # Conversion des résultats
     # ------------------------------------------------------------------
 
-    def _point_vers_evidence(self, point) -> Optional[EvidenceRecuperee]:
+    def _point_vers_evidence(self, point) -> EvidenceRecuperee | None:
         """
         Convertit un ScoredPoint Qdrant en EvidenceRecuperee.
 
@@ -279,9 +279,9 @@ class Retriever:
     def retrieve(
         self,
         question: str,
-        date_contexte: Optional[date] = None,
-        filtres_themes: Optional[list[str]] = None,
-        filtres_sources: Optional[list["SourceReglementaire"]] = None,
+        date_contexte: date | None = None,
+        filtres_themes: list[str] | None = None,
+        filtres_sources: list[SourceReglementaire] | None = None,
     ) -> list[EvidenceRecuperee]:
         """
         Recherche les passages réglementaires pertinents pour une question.
@@ -323,7 +323,7 @@ class Retriever:
             return []
 
         # --- Étape 2 : date de référence ---
-        date_ref = date_contexte or datetime.now(timezone.utc).date()
+        date_ref = date_contexte or datetime.now(UTC).date()
 
         # --- Étape 3 : construction des filtres ---
         cond_from = self._filtre_valid_from(date_ref)

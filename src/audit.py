@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 CHEMIN_AUDIT_LOCAL = Path(cfg.audit_local_path)
 
 # Hash du dernier enregistrement — maintenu en mémoire pour le chaînage
-_hash_precedent: Optional[str] = None
+_hash_precedent: str | None = None
 _hash_lock = asyncio.Lock()
 
 
@@ -80,7 +80,7 @@ class GestionnaireAudit:
     rend les hash suivants invalides — détection de falsification.
     """
 
-    def __init__(self, postgres_dsn: Optional[str] = None) -> None:
+    def __init__(self, postgres_dsn: str | None = None) -> None:
         self.postgres_dsn = postgres_dsn
         self._pool = None
         self._postgres_ok = False
@@ -134,7 +134,7 @@ class GestionnaireAudit:
             logger.warning("PostgreSQL indisponible, mode local uniquement : %s", exc)
             self._postgres_ok = False
 
-    def _charger_dernier_hash_local(self) -> Optional[str]:
+    def _charger_dernier_hash_local(self) -> str | None:
         """Retourne le dernier hash_courant du fichier JSONL local, ou None."""
         try:
             if not CHEMIN_AUDIT_LOCAL.exists():
@@ -306,7 +306,7 @@ class GestionnaireAudit:
                 "erreurs": erreurs,
             }
 
-        def _lire_dernieres_lignes() -> tuple[Optional[str], list[str]]:
+        def _lire_dernieres_lignes() -> tuple[str | None, list[str]]:
             """Retourne (hash d'ancrage, lignes de la fenêtre).
 
             Si le fichier contient plus de `limite` lignes, la ligne juste
@@ -317,7 +317,7 @@ class GestionnaireAudit:
             """
             toutes = CHEMIN_AUDIT_LOCAL.read_text(encoding="utf-8").strip().splitlines()
             fenetre = toutes[-limite:]
-            ancre: Optional[str] = None
+            ancre: str | None = None
             if len(toutes) > limite:
                 try:
                     ancre = json.loads(toutes[-limite - 1]).get("hash_courant")
@@ -330,7 +330,7 @@ class GestionnaireAudit:
         # hash_courant de l'enregistrement précédent dans la fenêtre lue.
         # Si un ancre a pu être lue (fichier plus long que la fenêtre), la
         # liaison de la première ligne de la fenêtre est vérifiée contre elle.
-        hash_precedent_attendu: Optional[str] = hash_ancre
+        hash_precedent_attendu: str | None = hash_ancre
         precedent_connu = hash_ancre is not None
 
         for i, ligne in enumerate(lignes):
@@ -397,7 +397,7 @@ class GestionnaireAudit:
 
 
 # Instance globale — utilisée par l'orchestrateur
-_gestionnaire: Optional[GestionnaireAudit] = None
+_gestionnaire: GestionnaireAudit | None = None
 
 
 async def obtenir_gestionnaire() -> GestionnaireAudit:

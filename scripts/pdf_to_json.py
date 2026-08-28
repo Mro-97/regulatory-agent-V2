@@ -245,7 +245,7 @@ def construire_document(
     publication_date: date,
     entry_into_force: date,
     themes: list[str],
-    url_source: Optional[str] = None,
+    url_source: str | None = None,
 ) -> DocumentReglementaire:
     """
     Construit un DocumentReglementaire depuis le texte extrait.

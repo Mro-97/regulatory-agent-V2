@@ -31,7 +31,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timezone, UTC
 from typing import TYPE_CHECKING, Optional
 
 from config import cfg
@@ -51,7 +51,7 @@ _DATE_MIN_RAISONNABLE = date(1900, 1, 1)
 _DATE_MAX_RAISONNABLE = date(2100, 12, 31)
 
 
-def _valider_date_contexte(valeur: object) -> Optional[date]:
+def _valider_date_contexte(valeur: object) -> date | None:
     """
     Normalise et valide une date de contexte réglementaire.
 
@@ -90,8 +90,8 @@ class EvidenceTemporelle:
 
     evidence: EvidenceRecuperee
     applicable: bool
-    raison_exclusion: Optional[str] = None
-    explication: Optional[str] = None
+    raison_exclusion: str | None = None
+    explication: str | None = None
 
 
 @dataclass
@@ -103,7 +103,7 @@ class ResultatTemporel:
     evidences_exclues: list[EvidenceTemporelle]
     chevauchements: list[str] = field(default_factory=list)
     lacunes: list[str] = field(default_factory=list)
-    explication_llm: Optional[str] = None
+    explication_llm: str | None = None
     niveau_confiance: NiveauConfiance = NiveauConfiance.ELEVE
 
 
@@ -130,7 +130,7 @@ class AgentTemporel:
             use_llm: Active l'annotation LLM pour les cas ambigus.
         """
         self.use_llm = use_llm
-        self._modele: Optional["MLXInference"] = None
+        self._modele: MLXInference | None = None
         logger.info("AgentTemporel initialisé — use_llm=%s", use_llm)
 
     # ------------------------------------------------------------------
@@ -379,7 +379,7 @@ class AgentTemporel:
         self,
         question: str,
         evidences: list[EvidenceRecuperee],
-        date_contexte: Optional[date] = None,
+        date_contexte: date | None = None,
     ) -> ResultatTemporel:
         """
         Analyse temporelle complète d'une liste de preuves.
@@ -402,7 +402,7 @@ class AgentTemporel:
         """
         # --- Étape 1 : validation puis résolution de la date de référence ---
         date_contexte = _valider_date_contexte(date_contexte)
-        date_ref = date_contexte or datetime.now(timezone.utc).date()
+        date_ref = date_contexte or datetime.now(UTC).date()
         logger.info(
             "Analyse temporelle — date_ref=%s question=%r",
             date_ref,
@@ -435,7 +435,7 @@ class AgentTemporel:
             confiance = NiveauConfiance.ELEVE
 
         # --- Étape 5 : annotation LLM si activée ---
-        explication_llm: Optional[str] = None
+        explication_llm: str | None = None
         if self.use_llm and (chevauchements or lacunes or not applicables):
             logger.info("Cas ambigu détecté — annotation LLM activée.")
             explication_llm = self._annoter_avec_llm(

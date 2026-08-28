@@ -60,13 +60,13 @@ class Ingester:
         )
         logger.info("Collection '%s' créée (dim=384)", self.collection_name)
 
-    def embed_chunk(self, text: str) -> List[float]:
+    def embed_chunk(self, text: str) -> list[float]:
         vec = self.embedding_model.encode(text)
         # SentenceTransformer renvoie un ndarray ; les mocks de tests renvoient
         # directement une liste. Accepter les deux sans conversion agressive.
         return vec.tolist() if hasattr(vec, "tolist") else list(vec)
 
-    def chunk_text(self, text: str) -> List[str]:
+    def chunk_text(self, text: str) -> list[str]:
         """Découpe un texte en chunks de CHUNK_SIZE caractères avec chevauchement OVERLAP."""
         chunks = []
         start = 0
@@ -78,7 +78,7 @@ class Ingester:
             start += CHUNK_SIZE - OVERLAP
         return chunks
 
-    def chunk_document(self, doc: DocumentReglementaire) -> List[MetadonneesChunk]:
+    def chunk_document(self, doc: DocumentReglementaire) -> list[MetadonneesChunk]:
         chunks = []
         for chapitre in doc.chapitres:
             for article in chapitre.articles:
@@ -190,7 +190,7 @@ class Ingester:
 
     def ingest_json(self, json_path: Path) -> None:
         """Chemin d'entrée CLI : charge un JSON puis appelle `ingest_document`."""
-        with open(json_path, "r", encoding="utf-8") as f:
+        with open(json_path, encoding="utf-8") as f:
             data = json.load(f)
         doc = DocumentReglementaire(**data)
         logger.info("Document chargé : %s - %s", doc.id, doc.titre)

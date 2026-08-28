@@ -12,7 +12,7 @@ Licence : propriétaire — Regulatory Agent V2.
 
 import hashlib
 import json
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timezone, UTC
 from enum import Enum
 from typing import Any, Optional
 from uuid import UUID, uuid4
@@ -94,7 +94,7 @@ class IntervalleValidite(BaseModel):
         ...,
         description="Date à partir de laquelle cette version est applicable (incluse).",
     )
-    valid_to: Optional[date] = Field(
+    valid_to: date | None = Field(
         default=None,
         description="Date jusqu'à laquelle cette version est applicable (incluse). None = en vigueur.",
     )
@@ -139,7 +139,7 @@ class VersionArticle(BaseModel):
         default_factory=list,
         description="Identifiants des articles référencés par cet article.",
     )
-    hash_contenu: Optional[str] = Field(
+    hash_contenu: str | None = Field(
         default=None,
         description="Empreinte SHA-256 du texte, calculée automatiquement.",
     )
@@ -160,7 +160,7 @@ class Chapitre(BaseModel):
     """Subdivision d'un texte réglementaire (chapitre, section, titre, annexe)."""
 
     id: str = Field(..., description="Identifiant unique du chapitre.")
-    titre: Optional[str] = Field(
+    titre: str | None = Field(
         default=None, max_length=500, description="Intitulé du chapitre."
     )
     articles: list[VersionArticle] = Field(
@@ -178,7 +178,7 @@ class TexteLie(BaseModel):
 
     ref: str = Field(..., description="Identifiant du texte cible dans le corpus.")
     relation: RelationType = Field(..., description="Nature de la relation.")
-    commentaire: Optional[str] = Field(
+    commentaire: str | None = Field(
         default=None, max_length=2000, description="Précision libre."
     )
 
@@ -198,12 +198,12 @@ class DocumentReglementaire(BaseModel):
         ..., max_length=500, description="Titre officiel complet du texte."
     )
     source: SourceReglementaire = Field(..., description="Source institutionnelle.")
-    url_source: Optional[str] = Field(
+    url_source: str | None = Field(
         default=None, description="URL canonique sur le site source."
     )
     publication_date: date = Field(..., description="Date de publication officielle.")
     entry_into_force: date = Field(..., description="Date d'entrée en vigueur.")
-    repeal_date: Optional[date] = Field(
+    repeal_date: date | None = Field(
         default=None, description="Date d'abrogation. None = en vigueur."
     )
     version: str = Field(..., description="Étiquette de version ISO 8601 (YYYY-MM-DD).")
@@ -214,10 +214,10 @@ class DocumentReglementaire(BaseModel):
     textes_lies: list[TexteLie] = Field(
         default_factory=list, description="Relations avec d'autres textes."
     )
-    hash_document: Optional[str] = Field(
+    hash_document: str | None = Field(
         default=None, description="Hash SHA-256 du document."
     )
-    date_indexation: Optional[datetime] = Field(
+    date_indexation: datetime | None = Field(
         default=None, description="Horodatage UTC d'indexation Qdrant."
     )
     metadonnees_supplementaires: dict[str, Any] = Field(
@@ -259,14 +259,14 @@ class MetadonneesChunk(BaseModel):
 
     chunk_id: str = Field(..., description="Identifiant unique du chunk.")
     document_id: str = Field(..., description="Document source.")
-    chapitre_id: Optional[str] = Field(default=None, description="Chapitre source.")
+    chapitre_id: str | None = Field(default=None, description="Chapitre source.")
     article_id: str = Field(..., description="Version d'article source.")
     source: SourceReglementaire = Field(..., description="Source institutionnelle.")
     themes: list[str] = Field(
         default_factory=list, description="Thèmes hérités du document."
     )
     valid_from: date = Field(..., description="Début de validité.")
-    valid_to: Optional[date] = Field(default=None, description="Fin de validité.")
+    valid_to: date | None = Field(default=None, description="Fin de validité.")
     texte_chunk: str = Field(..., description="Contenu textuel du chunk.")
     position_dans_article: int = Field(
         default=0, ge=0, description="Indice du chunk dans l'article."
@@ -293,9 +293,9 @@ class EvidenceRecuperee(BaseModel):
     document_id: str = Field(..., description="Document source.")
     article_id: str = Field(..., description="Version d'article source.")
     texte_extrait: str = Field(..., description="Contenu textuel exact du chunk.")
-    score_similarite: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    score_similarite: float | None = Field(default=None, ge=0.0, le=1.0)
     valid_from: date = Field(..., description="Début de validité.")
-    valid_to: Optional[date] = Field(default=None, description="Fin de validité.")
+    valid_to: date | None = Field(default=None, description="Fin de validité.")
 
 
 class SortieAgent(BaseModel):
@@ -303,9 +303,9 @@ class SortieAgent(BaseModel):
 
     nom_agent: str = Field(..., description="Nom de l'agent.")
     machine: str = Field(..., description="Machine d'exécution.")
-    horodatage: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    horodatage: datetime = Field(default_factory=lambda: datetime.now(UTC))
     contenu: dict[str, Any] = Field(default_factory=dict)
-    duree_ms: Optional[int] = Field(default=None, ge=0)
+    duree_ms: int | None = Field(default=None, ge=0)
 
 
 class EnregistrementAudit(BaseModel):
@@ -315,9 +315,9 @@ class EnregistrementAudit(BaseModel):
     """
 
     request_id: UUID = Field(default_factory=uuid4)
-    horodatage: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    horodatage: datetime = Field(default_factory=lambda: datetime.now(UTC))
     user_query: str = Field(..., description="Question brute de l'utilisateur.")
-    date_contexte: Optional[date] = Field(
+    date_contexte: date | None = Field(
         default=None, description="Date réglementaire de contexte."
     )
     documents_recuperes: list[str] = Field(default_factory=list)
@@ -326,10 +326,10 @@ class EnregistrementAudit(BaseModel):
     reponse_finale: str = Field(default="")
     niveau_confiance: NiveauConfiance = Field(default=NiveauConfiance.INCERTAIN)
     necessite_validation_humaine: bool = Field(default=False)
-    hash_precedent: Optional[str] = Field(
+    hash_precedent: str | None = Field(
         default=None, description="Hash du record précédent."
     )
-    hash_courant: Optional[str] = Field(default=None, description="Hash de ce record.")
+    hash_courant: str | None = Field(default=None, description="Hash de ce record.")
 
     def calculer_hash(self) -> str:
         """Hash SHA-256 de cet enregistrement (hors hash_courant)."""
@@ -350,12 +350,12 @@ class TacheValidation(BaseModel):
     type_file: TypeFilePendante = Field(..., description="File Redis de destination.")
     statut: StatutValidation = Field(default=StatutValidation.EN_ATTENTE)
     horodatage_creation: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc)
+        default_factory=lambda: datetime.now(UTC)
     )
-    horodatage_traitement: Optional[datetime] = Field(default=None)
-    request_id: Optional[UUID] = Field(default=None)
+    horodatage_traitement: datetime | None = Field(default=None)
+    request_id: UUID | None = Field(default=None)
     contenu: dict[str, Any] = Field(default_factory=dict)
-    commentaire_validateur: Optional[str] = Field(default=None, max_length=2000)
+    commentaire_validateur: str | None = Field(default=None, max_length=2000)
     escaladee: bool = Field(default=False)
 
 
@@ -367,14 +367,14 @@ class AlerteWatcher(BaseModel):
         ..., description="Source où la modification a été détectée."
     )
     url_detectee: str = Field(..., description="URL du document modifié.")
-    document_id_concerne: Optional[str] = Field(default=None)
+    document_id_concerne: str | None = Field(default=None)
     hash_precedent: str = Field(..., description="Hash SHA-256 avant modification.")
     hash_nouveau: str = Field(..., description="Hash SHA-256 après modification.")
     horodatage_detection: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc)
+        default_factory=lambda: datetime.now(UTC)
     )
-    description_modification: Optional[str] = Field(default=None, max_length=2000)
-    tache_validation_id: Optional[UUID] = Field(default=None)
+    description_modification: str | None = Field(default=None, max_length=2000)
+    tache_validation_id: UUID | None = Field(default=None)
 
 
 # ---------------------------------------------------------------------------
@@ -391,7 +391,7 @@ class RequeteQuestion(BaseModel):
         max_length=cfg.question_max_length,
         description="Question réglementaire.",
     )
-    date_contexte: Optional[date] = Field(
+    date_contexte: date | None = Field(
         default=None, description="Date de contexte réglementaire."
     )
     filtres_themes: list[str] = Field(default_factory=list)
@@ -407,15 +407,15 @@ class ReponseQuestion(BaseModel):
     evidences: list[EvidenceRecuperee] = Field(default_factory=list)
     niveau_confiance: NiveauConfiance
     en_attente_validation: bool = Field(default=False)
-    tache_validation_id: Optional[UUID] = Field(default=None)
+    tache_validation_id: UUID | None = Field(default=None)
 
 
 class RequeteIngestion(BaseModel):
     """Corps de la requête POST /ingest."""
 
     source: SourceReglementaire
-    url: Optional[str] = Field(default=None, max_length=2048)
-    contenu_json: Optional[dict[str, Any]] = Field(default=None)
+    url: str | None = Field(default=None, max_length=2048)
+    contenu_json: dict[str, Any] | None = Field(default=None)
     forcer_reindexation: bool = Field(default=False)
 
     @model_validator(mode="after")
@@ -451,7 +451,7 @@ class RequeteDecisionValidation(BaseModel):
     """Corps des requêtes POST /approve et POST /reject."""
 
     tache_id: UUID
-    commentaire: Optional[str] = Field(default=None, max_length=2000)
+    commentaire: str | None = Field(default=None, max_length=2000)
 
 
 class ReponseDecisionValidation(BaseModel):

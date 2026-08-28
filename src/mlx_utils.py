@@ -32,7 +32,8 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import TimeoutError as FuturesTimeoutError
 from dataclasses import dataclass
-from typing import Callable, Optional, TypeVar
+from typing import Optional, TypeVar
+from collections.abc import Callable
 
 import mlx.core as mx
 from config import cfg
@@ -53,7 +54,7 @@ _executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="mlx-timed")
 
 def _executer_avec_timeout(
     fn: Callable[..., T],
-    timeout_seconds: Optional[float],
+    timeout_seconds: float | None,
     *args,
     **kwargs,
 ) -> T:
@@ -198,9 +199,9 @@ class MLXInference:
         self,
         prompt: str,
         max_tokens: int = 512,
-        temperature: Optional[float] = None,
-        top_p: Optional[float] = None,
-        timeout_seconds: Optional[float] = None,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        timeout_seconds: float | None = None,
     ) -> ResultatGeneration:
         """Génère du texte. Charge le modèle si nécessaire.
 
@@ -255,7 +256,7 @@ class MLXInference:
         self,
         messages: list[dict[str, str]],
         max_tokens: int = 512,
-        temperature: Optional[float] = None,
+        temperature: float | None = None,
     ) -> ResultatGeneration:
         """Génère depuis une liste de messages avec chat template."""
         if not self._loaded:
@@ -273,7 +274,7 @@ class MLXInference:
             )
         return self.generate(prompt, max_tokens=max_tokens, temperature=temperature)
 
-    def __enter__(self) -> "MLXInference":
+    def __enter__(self) -> MLXInference:
         self.load()
         return self
 
@@ -367,7 +368,7 @@ class MLXEmbedding:
         return self._loaded
 
     def encode(
-        self, texte: str, timeout_seconds: Optional[float] = None
+        self, texte: str, timeout_seconds: float | None = None
     ) -> list[float]:
         """
         Calcule l'embedding d'un texte.
@@ -460,7 +461,7 @@ class MLXEmbedding:
 
         return vecteurs
 
-    def __enter__(self) -> "MLXEmbedding":
+    def __enter__(self) -> MLXEmbedding:
         self.load()
         return self
 
@@ -481,7 +482,7 @@ class _CacheGeneration:
 
     def __init__(self) -> None:
         self._instances: dict[str, MLXInference] = {}
-        self._actif: Optional[str] = None
+        self._actif: str | None = None
 
     def get(
         self,

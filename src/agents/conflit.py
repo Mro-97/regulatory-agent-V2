@@ -82,7 +82,7 @@ class ResultatConflit:
 
     conflits: list[ConflitDetecte]
     niveau_global: NiveauConflit
-    analyse_llm: Optional[str] = None
+    analyse_llm: str | None = None
     mode: str = "deterministe"
     necessite_validation_humaine: bool = False
 
@@ -106,7 +106,7 @@ def _contient_terme(texte: str, pattern: str) -> bool:
     return bool(re.search(pattern, texte, re.IGNORECASE))
 
 
-def _detecter_tension_lexicale(texte_a: str, texte_b: str) -> Optional[str]:
+def _detecter_tension_lexicale(texte_a: str, texte_b: str) -> str | None:
     """
     Détecte une tension lexicale entre deux textes.
     Retourne une description si une contradiction est repérée, None sinon.
@@ -159,7 +159,7 @@ class AgentConflit:
 
     def __init__(self, use_llm: bool = False) -> None:
         self.use_llm = use_llm
-        self._modele: Optional["MLXInference"] = None
+        self._modele: MLXInference | None = None
         logger.info("AgentConflit initialisé — use_llm=%s", use_llm)
 
     # ------------------------------------------------------------------
@@ -169,7 +169,7 @@ class AgentConflit:
     def _detecter_chevauchements(
         self,
         evidences: list[EvidenceRecuperee],
-        date_ref: Optional[date],
+        date_ref: date | None,
     ) -> list[ConflitDetecte]:
         """
         Détecte les chevauchements entre preuves de documents différents
@@ -428,7 +428,7 @@ class AgentConflit:
         return conflits_retenus, analyse
 
     @staticmethod
-    def _extraire_verdicts(analyse: str) -> Optional[dict[int, str]]:
+    def _extraire_verdicts(analyse: str) -> dict[int, str] | None:
         """
         Extrait le mapping {numero_conflit → verdict_normalisé} depuis la sortie LLM.
 
@@ -473,7 +473,7 @@ class AgentConflit:
 
     @staticmethod
     def _verdict_vers_niveau(
-        verdict: Optional[str], niveau_initial: NiveauConflit
+        verdict: str | None, niveau_initial: NiveauConflit
     ) -> NiveauConflit:
         """
         Applique le verdict LLM au niveau d'un conflit.
@@ -498,7 +498,7 @@ class AgentConflit:
         self,
         question: str,
         evidences: list[EvidenceRecuperee],
-        date_ref: Optional[date] = None,
+        date_ref: date | None = None,
     ) -> ResultatConflit:
         """
         Détecte et analyse les conflits dans une liste de preuves.
@@ -544,7 +544,7 @@ class AgentConflit:
             )
 
         # --- Analyse LLM si activée et conflits détectés ---
-        analyse_llm: Optional[str] = None
+        analyse_llm: str | None = None
         mode = "deterministe"
 
         if self.use_llm:

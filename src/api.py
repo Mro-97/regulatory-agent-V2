@@ -27,7 +27,7 @@ import hmac
 import logging
 import time
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 from pathlib import Path
 from threading import Lock
 from typing import Annotated
@@ -340,7 +340,7 @@ async def health() -> dict[str, object]:
     # d'exploitation locales et ne révèle pas d'info versionnée.
     reponse: dict[str, object] = {
         "statut": "ok",
-        "horodatage": datetime.now(timezone.utc).isoformat(),
+        "horodatage": datetime.now(UTC).isoformat(),
     }
     try:
         from src.audit import obtenir_gestionnaire

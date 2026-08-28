@@ -10,7 +10,7 @@ mais faussement rassurant.
 
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timezone, UTC
 
 import pytest
 from src.agents.temporal import AgentTemporel, _valider_date_contexte
@@ -32,7 +32,7 @@ def _evidence(valid_from: date, valid_to=None) -> EvidenceRecuperee:
 class TestValidationDateContexte:
     def test_datetime_normalise_en_date(self):
         # Ne doit pas lever, et doit produire une date.
-        d = _valider_date_contexte(datetime(2025, 6, 15, 12, 0, tzinfo=timezone.utc))
+        d = _valider_date_contexte(datetime(2025, 6, 15, 12, 0, tzinfo=UTC))
         assert d == date(2025, 6, 15)
 
     def test_date_dans_bornes_accepte(self):
@@ -66,7 +66,7 @@ class TestValidationDateContexte:
         res = agent.analyser(
             question="Q",
             evidences=ev,
-            date_contexte=datetime(2025, 6, 15, 12, 0, tzinfo=timezone.utc),
+            date_contexte=datetime(2025, 6, 15, 12, 0, tzinfo=UTC),
         )
         assert res.date_ref == date(2025, 6, 15)
         assert len(res.evidences_applicables) == 1
