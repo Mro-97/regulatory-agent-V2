@@ -306,7 +306,7 @@ class AgentCitation:
         """
         self._charger_modele()
         if self._modele is None:
-            raise RuntimeError("Modèle Citation non chargé")
+            raise RuntimeError("Modèle Citation non chargé")  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
 
         # Contexte des preuves pour le LLM
         contexte_preuves = "\n\n".join(

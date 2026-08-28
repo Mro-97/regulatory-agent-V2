@@ -335,7 +335,7 @@ class AgentConflit:
 
         self._charger_modele()
         if self._modele is None:
-            raise RuntimeError("Modèle Conflit non chargé")
+            raise RuntimeError("Modèle Conflit non chargé")  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
 
         # Limite d'analyse pour rester dans la fenêtre de contexte du modèle.
         conflits_analyses = conflits[:5]

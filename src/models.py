@@ -101,7 +101,7 @@ class IntervalleValidite(BaseModel):
     def verifier_coherence_dates(self) -> "IntervalleValidite":
         """Vérifie que valid_to >= valid_from lorsque les deux sont renseignés."""
         if self.valid_to is not None and self.valid_to < self.valid_from:
-            raise ValueError(
+            raise ValueError(  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
                 f"valid_to ({self.valid_to}) ne peut pas être antérieur à valid_from ({self.valid_from})."  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
             )
         return self
@@ -419,7 +419,7 @@ class RequeteIngestion(BaseModel):
         if self.contenu_json is not None:
             taille = len(json.dumps(self.contenu_json, ensure_ascii=False))
             if taille > TAILLE_MAX_CONTENU_JSON:
-                raise ValueError(
+                raise ValueError(  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
                     f"contenu_json trop volumineux ({taille} octets > {TAILLE_MAX_CONTENU_JSON})"  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
                 )
         return self

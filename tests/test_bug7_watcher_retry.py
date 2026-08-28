@@ -31,7 +31,7 @@ class _ClientMock:
     async def get(self, url: str):
         self.appels.append(url)
         if not self.sequence:
-            raise RuntimeError("Séquence mock épuisée")
+            raise RuntimeError("Séquence mock épuisée")  # noqa: TRY003
         prochain = self.sequence.pop(0)
         if isinstance(prochain, Exception):
             raise prochain

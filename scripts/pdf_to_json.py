@@ -105,7 +105,7 @@ def extraire_texte_pdf(chemin: Path) -> str:
         sys.exit(1)
 
     if not chemin.exists():
-        raise FileNotFoundError(f"Fichier introuvable : {chemin}")
+        raise FileNotFoundError(f"Fichier introuvable : {chemin}")  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
 
     logger.info("Extraction texte : %s", chemin.name)
     pages_texte: list[str] = []

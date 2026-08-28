@@ -63,11 +63,11 @@ def _valider_date_contexte(valeur: object) -> date | None:
     if isinstance(valeur, datetime):
         valeur = valeur.date()
     if not isinstance(valeur, date):
-        raise ValueError(
+        raise ValueError(  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
             f"date_contexte doit être une date, reçu {type(valeur).__name__}"
         )
     if not (_DATE_MIN_RAISONNABLE <= valeur <= _DATE_MAX_RAISONNABLE):
-        raise ValueError(
+        raise ValueError(  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
             f"date_contexte {valeur} hors intervalle raisonnable "
             f"[{_DATE_MIN_RAISONNABLE}, {_DATE_MAX_RAISONNABLE}]"
         )
@@ -305,7 +305,7 @@ class AgentTemporel:
         """
         self._charger_modele()
         if self._modele is None:
-            raise RuntimeError("Modèle Temporel non chargé")
+            raise RuntimeError("Modèle Temporel non chargé")  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
 
         # Construction du contexte temporel (sans texte complet)
         ctx_applicables = "\n".join(

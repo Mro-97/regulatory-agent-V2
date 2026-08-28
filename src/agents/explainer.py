@@ -239,7 +239,7 @@ class AgentExplainer:
         """
         self._charger_modele()
         if self._modele is None:
-            raise RuntimeError("Modèle Explainer non chargé")
+            raise RuntimeError("Modèle Explainer non chargé")  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
 
         contexte = self._construire_contexte(evidences)
         sources_citees = [
@@ -298,7 +298,7 @@ class AgentExplainer:
 
             # Vérification basique : la réponse ne doit pas être vide
             if not reponse:
-                raise ValueError("Réponse LLM vide.")
+                raise ValueError("Réponse LLM vide.")  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
 
             return ResultatExplication(
                 reponse=reponse,

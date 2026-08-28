@@ -759,7 +759,7 @@ class TestAuditTrail:
 
         class FausseAcquisition:
             async def __aenter__(self):
-                raise RuntimeError("connexion PostgreSQL indisponible")
+                raise RuntimeError("connexion PostgreSQL indisponible")  # noqa: TRY003
 
             async def __aexit__(self, *args):
                 return False

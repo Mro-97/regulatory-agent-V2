@@ -645,7 +645,7 @@ class Orchestrateur:
         from src.models import DocumentReglementaire
 
         if not requete.contenu_json:
-            raise ValueError(
+            raise ValueError(  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
                 "contenu_json requis — l'ingestion depuis une URL n'est pas "
                 "implémentée. Fournir le document au format DocumentReglementaire "
                 "canonique (voir scripts/pdf_to_json.py)."
@@ -654,7 +654,7 @@ class Orchestrateur:
         try:
             doc = DocumentReglementaire(**requete.contenu_json)
         except Exception as exc:
-            raise ValueError(f"contenu_json invalide : {exc}") from exc
+            raise ValueError(f"contenu_json invalide : {exc}") from exc  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
 
         if not doc.hash_document:
             doc.hash_document = doc.calculer_hash()
@@ -663,7 +663,7 @@ class Orchestrateur:
         nb_existants = ingester.compter_chunks_existants(doc.id)
 
         if nb_existants > 0 and not requete.forcer_reindexation:
-            raise DocumentDejaIndexeError(
+            raise DocumentDejaIndexeError(  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
                 f"Document '{doc.id}' déjà indexé ({nb_existants} chunks) — "
                 f"renvoyer avec forcer_reindexation=true pour le remplacer."
             )
@@ -744,7 +744,7 @@ class Orchestrateur:
 
             await client.aclose()
             if not tache_trouvee:
-                raise ValueError(f"Tâche introuvable : {tache_id}")
+                raise ValueError(f"Tâche introuvable : {tache_id}")  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
 
             return ReponseDecisionValidation(
                 tache_id=tache_id,
@@ -754,7 +754,7 @@ class Orchestrateur:
         except ValueError:
             raise
         except Exception as exc:
-            raise RuntimeError(f"Validation échouée : {exc}") from exc
+            raise RuntimeError(f"Validation échouée : {exc}") from exc  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
 
     # ------------------------------------------------------------------
     # Méthodes internes

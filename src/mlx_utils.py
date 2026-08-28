@@ -82,7 +82,7 @@ def _executer_avec_timeout(
     try:
         return future.result(timeout=timeout_seconds)
     except FuturesTimeoutError as exc:
-        raise MLXTimeoutError(f"Appel MLX dépassé après {timeout_seconds}s") from exc
+        raise MLXTimeoutError(f"Appel MLX dépassé après {timeout_seconds}s") from exc  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
 
 
 # Longueur max (caractères) d'un texte envoyé à l'embedding. `max_length=512`
@@ -174,7 +174,7 @@ class MLXInference:
             self._model = None
             self._tokenizer = None
             self._loaded = False
-            raise RuntimeError(
+            raise RuntimeError(  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
                 f"Impossible de charger '{self.model_name}' : {exc}"
             ) from exc
 
@@ -245,7 +245,7 @@ class MLXInference:
                 ),
             )
         except Exception as exc:
-            raise RuntimeError(
+            raise RuntimeError(  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
                 f"Génération échouée ({self.model_name}) : {exc}"
             ) from exc
 
@@ -344,7 +344,7 @@ class MLXEmbedding:
             self._model = None
             self._processor = None
             self._loaded = False
-            raise RuntimeError(
+            raise RuntimeError(  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
                 f"Impossible de charger le modèle d'embedding '{self.model_name}' : {exc}"  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
             ) from exc
 
@@ -401,7 +401,7 @@ class MLXEmbedding:
             mx.eval(vecteur)
             return vecteur.tolist()
         except Exception as exc:
-            raise RuntimeError(f"Embedding échoué ({self.model_name}) : {exc}") from exc
+            raise RuntimeError(f"Embedding échoué ({self.model_name}) : {exc}") from exc  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
 
     def encode_batch(
         self,
@@ -424,7 +424,7 @@ class MLXEmbedding:
         try:
             from mlx_embeddings import generate as emb_generate
         except Exception as exc:
-            raise RuntimeError(f"mlx-embeddings non disponible : {exc}") from exc
+            raise RuntimeError(f"mlx-embeddings non disponible : {exc}") from exc  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
 
         textes = [_tronquer_pour_embedding(t) for t in textes]
         vecteurs: list[list[float]] = []
@@ -448,7 +448,7 @@ class MLXEmbedding:
                 for vecteur in sortie.text_embeds:
                     vecteurs.append(vecteur.tolist())
             except Exception as exc:
-                raise RuntimeError(
+                raise RuntimeError(  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
                     f"Embedding batch échoué lot {debut}-{debut + len(lot)} : {exc}"
                 ) from exc
 

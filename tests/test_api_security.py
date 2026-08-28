@@ -285,7 +285,7 @@ class TestMasquageErreurs:
         from src.orchestrator import Orchestrateur
 
         def introuvable(self, tache_id, decision, commentaire=None):
-            raise ValueError("Tâche introuvable")
+            raise ValueError("Tâche introuvable")  # noqa: TRY003
 
         monkeypatch.setattr(Orchestrateur, "valider_tache", introuvable)
         rep = client.post(

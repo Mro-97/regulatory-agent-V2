@@ -203,7 +203,7 @@ class Retriever:
             return resultats.points
         except Exception as exc:
             logger.exception("Erreur Qdrant (%s) : %s", self._collection, exc)
-            raise RuntimeError(
+            raise RuntimeError(  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
                 f"Qdrant inaccessible (collection={self._collection}) : {exc}"
             ) from exc
 
@@ -434,4 +434,4 @@ def _parser_date(valeur: object) -> date:
         return valeur
     if isinstance(valeur, str):
         return date.fromisoformat(valeur[:10])
-    raise ValueError(f"Impossible de parser la date : {valeur!r}")
+    raise ValueError(f"Impossible de parser la date : {valeur!r}")  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
