@@ -99,7 +99,7 @@ def extraire_texte_pdf(chemin: Path) -> str:
     try:
         import pdfplumber
     except ImportError:
-        logger.error(
+        logger.exception(
             "pdfplumber requis : pip install pdfplumber --break-system-packages"
         )
         sys.exit(1)

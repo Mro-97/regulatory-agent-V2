@@ -308,7 +308,7 @@ class AgentExplainer:
             )
 
         except Exception as exc:
-            logger.error("Synthèse LLM échouée, bascule sur assemblage : %s", exc)
+            logger.exception("Synthèse LLM échouée, bascule sur assemblage : %s", exc)
             return self._assembler(question, evidences, date_ref, type_pipeline)
 
     # ------------------------------------------------------------------

@@ -127,7 +127,7 @@ def charger_hashes_connus() -> dict[str, str]:
     try:
         return json.loads(CHEMIN_HASHES.read_text(encoding="utf-8"))
     except Exception as exc:
-        logger.error("Lecture hashes Watcher échouée : %s", exc)
+        logger.exception("Lecture hashes Watcher échouée : %s", exc)
         return {}
 
 
@@ -140,7 +140,7 @@ def sauvegarder_hashes(hashes: dict[str, str]) -> None:
             encoding="utf-8",
         )
     except Exception as exc:
-        logger.error("Sauvegarde hashes Watcher échouée : %s", exc)
+        logger.exception("Sauvegarde hashes Watcher échouée : %s", exc)
 
 
 # ---------------------------------------------------------------------------
@@ -184,7 +184,7 @@ async def enregistrer_alerte_redis(alerte: AlerteWatcher) -> None:
             alerte.url_detectee,
         )
     except Exception as exc:
-        logger.error("Redis indisponible pour l'alerte Watcher : %s", exc)
+        logger.exception("Redis indisponible pour l'alerte Watcher : %s", exc)
 
 
 # ---------------------------------------------------------------------------
@@ -397,7 +397,7 @@ class Watcher:
             try:
                 await self.cycle_verification()
             except Exception as exc:
-                logger.error("Watcher — erreur cycle : %s", exc)
+                logger.exception("Watcher — erreur cycle : %s", exc)
 
             logger.info(
                 "Watcher — prochain cycle dans %d h.",

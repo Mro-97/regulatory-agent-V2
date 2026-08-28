@@ -377,7 +377,7 @@ class AgentCitation:
             return citations
 
         except Exception as exc:
-            logger.error("Extraction LLM échouée, bascule déterministe : %s", exc)
+            logger.exception("Extraction LLM échouée, bascule déterministe : %s", exc)
             return self._generer_depuis_evidences(evidences)
 
     # ------------------------------------------------------------------

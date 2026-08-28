@@ -386,7 +386,7 @@ class AgentConflit:
             )
             analyse = resultat.texte.strip()
         except Exception as exc:
-            logger.error("Analyse LLM échouée : %s", exc)
+            logger.exception("Analyse LLM échouée : %s", exc)
             return conflits, (
                 f"Analyse automatique indisponible. "
                 f"{len(conflits)} tension(s) détectée(s) manuellement."

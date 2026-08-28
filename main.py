@@ -37,7 +37,7 @@ async def demarrer_watcher() -> None:
         logger.info("Watcher démarré en arrière-plan.")
         await watcher.demarrer_boucle()
     except Exception as exc:
-        logger.error("Watcher échoué : %s", exc)
+        logger.exception("Watcher échoué : %s", exc)
 
 
 async def initialiser_audit() -> None:

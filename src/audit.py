@@ -220,7 +220,7 @@ class GestionnaireAudit:
             await asyncio.to_thread(self._ecrire_ligne_local, ligne)
             return True
         except Exception as exc:
-            logger.error("Écriture audit local échouée : %s", exc)
+            logger.exception("Écriture audit local échouée : %s", exc)
             return False
 
     def _ecrire_ligne_local(self, ligne: str) -> None:
@@ -260,7 +260,7 @@ class GestionnaireAudit:
                 )
             return True
         except Exception as exc:
-            logger.error("INSERT audit PostgreSQL échoué : %s", exc)
+            logger.exception("INSERT audit PostgreSQL échoué : %s", exc)
             return False
 
     async def verifier_integrite(

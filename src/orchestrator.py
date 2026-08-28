@@ -423,7 +423,7 @@ class Orchestrateur:
             )
             agents_executes.append(sortie_retriever)
         except Exception as exc:
-            logger.error("Retrieval échoué : %s", exc)
+            logger.exception("Retrieval échoué : %s", exc)
             return ReponseQuestion(
                 request_id=request_id,
                 reponse="Le service de recherche est temporairement indisponible.",
@@ -515,7 +515,7 @@ class Orchestrateur:
             )
             agents_executes.append(sortie_explainer)
         except Exception as exc:
-            logger.error("Explainer échoué : %s", exc)
+            logger.exception("Explainer échoué : %s", exc)
             reponse_texte = "Erreur lors de la génération de la réponse."
             niveau_confiance = NiveauConfiance.INCERTAIN
 
@@ -708,7 +708,7 @@ class Orchestrateur:
                 taches=taches,
             )
         except Exception as exc:
-            logger.error("Redis inaccessible : %s", exc)
+            logger.exception("Redis inaccessible : %s", exc)
             return ReponseTachesPendantes(total=0, par_file={}, taches=[])
 
     async def valider_tache(
@@ -768,7 +768,7 @@ class Orchestrateur:
             await client.lpush(tache.type_file.value, tache.model_dump_json())
             await client.aclose()
         except Exception as exc:
-            logger.error("Redis inaccessible, tâche non enregistrée : %s", exc)
+            logger.exception("Redis inaccessible, tâche non enregistrée : %s", exc)
 
     async def _persister_audit(self, audit: EnregistrementAudit) -> None:
         """Persiste l'enregistrement d'audit via src/audit.py.
@@ -787,7 +787,7 @@ class Orchestrateur:
                 audit.niveau_confiance.value,
             )
         except Exception as exc:
-            logger.error("Audit échoué (non bloquant) : %s", exc)
+            logger.exception("Audit échoué (non bloquant) : %s", exc)
             logger.info(
                 "AUDIT (log only) request_id=%s agents=%s confiance=%s",
                 audit.request_id,

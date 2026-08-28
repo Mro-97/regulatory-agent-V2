@@ -202,7 +202,7 @@ class Retriever:
             )
             return resultats.points
         except Exception as exc:
-            logger.error("Erreur Qdrant (%s) : %s", self._collection, exc)
+            logger.exception("Erreur Qdrant (%s) : %s", self._collection, exc)
             raise RuntimeError(
                 f"Qdrant inaccessible (collection={self._collection}) : {exc}"
             ) from exc
@@ -306,7 +306,7 @@ class Retriever:
         try:
             vecteur = self.embed_question(question)
         except RuntimeError as exc:
-            logger.error("Embedding impossible, retrieval annulé : %s", exc)
+            logger.exception("Embedding impossible, retrieval annulé : %s", exc)
             return []
 
         # --- Étape 2 : date de référence ---

@@ -360,7 +360,7 @@ class AgentTemporel:
             )
             return resultat.texte.strip()
         except Exception as exc:
-            logger.error("Annotation LLM échouée : %s", exc)
+            logger.exception("Annotation LLM échouée : %s", exc)
             return f"Analyse temporelle déterministe — {len(applicables)} version(s) applicable(s) à {date_ref}."
 
     # ------------------------------------------------------------------
