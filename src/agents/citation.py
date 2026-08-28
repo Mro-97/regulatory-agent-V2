@@ -35,7 +35,7 @@ import re
 from dataclasses import dataclass, field
 from datetime import date
 from enum import Enum
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from config import cfg
 from src.models import EvidenceRecuperee

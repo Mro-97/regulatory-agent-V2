@@ -30,8 +30,8 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from datetime import date, datetime, timezone, UTC
-from typing import TYPE_CHECKING, Optional
+from datetime import UTC, date, datetime
+from typing import TYPE_CHECKING
 
 from config import cfg
 from src.models import EvidenceRecuperee, NiveauConfiance

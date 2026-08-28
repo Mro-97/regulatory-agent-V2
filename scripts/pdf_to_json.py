@@ -438,7 +438,6 @@ def main() -> None:
     )
 
 
-from typing import Optional
 
 if __name__ == "__main__":
     main()

@@ -10,7 +10,7 @@ mais faussement rassurant.
 
 from __future__ import annotations
 
-from datetime import date, datetime, timezone, UTC
+from datetime import UTC, date, datetime
 
 import pytest
 from src.agents.temporal import AgentTemporel, _valider_date_contexte

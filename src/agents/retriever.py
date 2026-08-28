@@ -20,8 +20,7 @@ Dépendances : qdrant-client >= 1.9, mlx-lm >= 0.16 (MIT/Apache).
 from __future__ import annotations
 
 import logging
-from datetime import date, datetime, timezone, UTC
-from typing import Optional
+from datetime import UTC, date, datetime
 
 from config import cfg
 from qdrant_client import QdrantClient

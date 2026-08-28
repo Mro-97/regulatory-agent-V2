@@ -28,11 +28,11 @@ from __future__ import annotations
 import gc
 import logging
 import time
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import TimeoutError as FuturesTimeoutError
 from dataclasses import dataclass
-from typing import Optional, TypeVar
-from collections.abc import Callable
+from typing import TypeVar
 
 import mlx.core as mx
 from config import cfg

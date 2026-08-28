@@ -7,7 +7,6 @@ import logging
 import sys
 import uuid
 from pathlib import Path
-from typing import List
 
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, PointStruct, VectorParams

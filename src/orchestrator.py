@@ -34,8 +34,7 @@ import json
 import logging
 import os
 import re
-from datetime import date, datetime, timezone, UTC
-from typing import Optional
+from datetime import UTC, date, datetime
 from uuid import UUID, uuid4
 
 from config import cfg

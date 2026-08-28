@@ -24,9 +24,8 @@ import hashlib
 import json
 import logging
 import re
-from datetime import datetime, timezone, UTC
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Optional
 
 import httpx
 from config import cfg

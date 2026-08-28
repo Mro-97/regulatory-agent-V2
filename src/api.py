@@ -26,7 +26,7 @@ import hmac
 import logging
 import time
 from collections import defaultdict
-from datetime import datetime, timezone, UTC
+from datetime import UTC, datetime
 from pathlib import Path
 from threading import Lock
 from typing import Annotated

@@ -11,9 +11,9 @@ Licence : propriétaire — Regulatory Agent V2.
 
 import hashlib
 import json
-from datetime import date, datetime, timezone, UTC
+from datetime import UTC, date, datetime
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 from uuid import UUID, uuid4
 
 from config import cfg
