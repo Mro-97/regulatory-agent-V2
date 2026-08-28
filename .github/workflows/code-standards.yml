@@ -1,13 +1,12 @@
-# regulatory-code-standards §12 — pipeline CI (ADVISORY)
+# regulatory-code-standards §12 étape 5 — pipeline CI BLOQUANT
 #
-# Tant que la campagne de mise en conformité n'est pas terminée (étape 7),
-# chaque job est marqué `continue-on-error: true` et n'échoue pas la CI.
-# Il produit un rapport dans les logs pour suivre la progression.
-#
-# Étape 7 : retirer `continue-on-error`, ajouter `required: true` dans
-# la protection de branche, et la CI devient bloquante.
+# Bascule bloquante actée après l'étape 4 (mypy --strict = 0, ruff = 0,
+# tests 180/180). Chaque job échoue la CI en cas de régression.
+# radon / interrogate / vulture / pip-audit restent en `continue-on-error`
+# tant que l'étape 6 (extractions §10) et l'étape 7 (activation portes
+# secondaires) ne sont pas franchies.
 
-name: code-standards (advisory)
+name: code-standards
 
 on:
   push:
@@ -34,34 +33,37 @@ jobs:
           pip install ruff mypy radon vulture pip-audit interrogate import-linter pydantic pydantic-settings
 
       - name: Ruff format check
-        continue-on-error: true
         run: ruff format --check .
 
       - name: Ruff lint
-        continue-on-error: true
-        run: ruff check --statistics .
+        run: ruff check .
 
-      - name: mypy --strict
-        continue-on-error: true
+      - name: mypy --strict src/
         run: mypy --strict src/
 
-      - name: radon — complexité cyclomatique (seuil B)
+      - name: mypy --strict main.py
+        run: mypy --strict main.py
+
+      - name: mypy --strict scripts/
+        run: mypy --strict scripts/
+
+      - name: radon — complexité cyclomatique (seuil B, advisory §6)
         continue-on-error: true
         run: radon cc -s -n C src/
 
-      - name: radon — indice de maintenabilité (seuil B)
+      - name: radon — indice de maintenabilité (seuil B, advisory §6)
         continue-on-error: true
         run: radon mi -n B src/
 
-      - name: interrogate — docstrings ≥ 95%
+      - name: interrogate — docstrings ≥ 95% (advisory §6)
         continue-on-error: true
         run: interrogate -f 95 src/ || true
 
-      - name: vulture — code mort
+      - name: vulture — code mort (advisory §7)
         continue-on-error: true
         run: vulture src/ --min-confidence 80
 
-      - name: pip-audit — vulnérabilités dépendances
+      - name: pip-audit — vulnérabilités dépendances (advisory §7)
         continue-on-error: true
         run: pip-audit -r requirements.txt
 
