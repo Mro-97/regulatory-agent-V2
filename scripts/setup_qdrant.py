@@ -95,7 +95,7 @@ def setup_collection(
                 field_schema=schema,
             )
             logger.info("Index créé : %s (%s)", champ, schema.value)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
             # L'index existe déjà — ignoré
             logger.debug("Index '%s' déjà présent : %s", champ, exc)
 

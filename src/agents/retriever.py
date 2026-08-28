@@ -256,7 +256,7 @@ class Retriever:
                 valid_to=valid_to,
             )
 
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
             logger.warning("Conversion échouée pour point.id=%s : %s", point.id, exc)
             return None
 

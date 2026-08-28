@@ -440,7 +440,7 @@ class Orchestrateur:
                     evidences=evidences,
                 )
                 agents_executes.append(sortie_temporal)
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
                 logger.warning("Agent Temporal échoué, ignoré : %s", exc)
 
         # ----------------------------------------------------------
@@ -495,7 +495,7 @@ class Orchestrateur:
                         "Conflit %s soumis à validation humaine.",
                         resultat_conflit.niveau_global.value,
                     )
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
                 logger.warning("Agent Conflict échoué, ignoré : %s", exc)
 
         # ----------------------------------------------------------
@@ -541,7 +541,7 @@ class Orchestrateur:
             )
             if resultat_citation.avertissement:
                 logger.warning("Citation : %s", resultat_citation.avertissement)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
             logger.warning("Agent Citation échoué, ignoré : %s", exc)
 
         # ----------------------------------------------------------
@@ -697,7 +697,7 @@ class Orchestrateur:
                 for cle in cles:
                     try:
                         taches.append(TacheValidation(**json.loads(cle)))
-                    except Exception as exc:
+                    except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
                         logger.warning("Tâche non parsable : %s", exc)
 
             await client.aclose()
@@ -737,7 +737,7 @@ class Orchestrateur:
                             )
                             tache_trouvee = True
                             break
-                    except Exception as exc:
+                    except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
                         logger.warning("Erreur parsing tâche : %s", exc)
                 if tache_trouvee:
                     break

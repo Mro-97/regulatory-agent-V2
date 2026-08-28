@@ -440,7 +440,7 @@ class AgentConflit:
         for candidat in candidats:
             try:
                 donnees = json.loads(candidat)
-            except Exception:
+            except Exception:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
                 continue
 
             liste = donnees.get("verdicts") if isinstance(donnees, dict) else None

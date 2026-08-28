@@ -126,7 +126,7 @@ class GestionnaireAudit:
                 (_hash_precedent or "aucun")[:16],
             )
 
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
             logger.warning("PostgreSQL indisponible, mode local uniquement : %s", exc)
             self._postgres_ok = False
 
@@ -140,7 +140,7 @@ class GestionnaireAudit:
                 return None
             dernier = json.loads(lignes[-1])
             return dernier.get("hash_courant")
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
             logger.warning("Lecture du dernier hash local échouée : %s", exc)
             return None
 
@@ -314,7 +314,7 @@ class GestionnaireAudit:
             if len(toutes) > limite:
                 try:
                     ancre = json.loads(toutes[-limite - 1]).get("hash_courant")
-                except Exception:
+                except Exception:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
                     ancre = None
             return ancre, fenetre
 
@@ -369,7 +369,7 @@ class GestionnaireAudit:
 
                 hash_precedent_attendu = hash_attendu
                 precedent_connu = True
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
                 invalides += 1
                 erreurs.append({"ligne": i + 1, "erreur": str(exc)})
                 # Ligne illisible — le prédécesseur pour la suivante n'est plus fiable.

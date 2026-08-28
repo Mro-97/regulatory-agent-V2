@@ -47,7 +47,7 @@ async def initialiser_audit() -> None:
 
         gestionnaire = await obtenir_gestionnaire()
         logger.info("Gestionnaire d'audit initialisé.")
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
         logger.warning("Audit non initialisé (non bloquant) : %s", exc)
 
 

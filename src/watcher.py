@@ -260,7 +260,7 @@ class Watcher:
                     )
                     return None
                 derniere_erreur = exc
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
                 derniere_erreur = exc
 
             if essai < max_essais:

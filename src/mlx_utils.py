@@ -232,7 +232,7 @@ class MLXInference:
             duree = time.time() - debut
             try:
                 tokens_out = len(self._tokenizer.encode(texte))
-            except Exception:
+            except Exception:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
                 tokens_out = max(1, len(texte.split()))
             tps = tokens_out / duree if duree > 0 else 0.0
             return ResultatGeneration(
@@ -264,7 +264,7 @@ class MLXInference:
                 tokenize=False,
                 add_generation_prompt=True,
             )
-        except Exception:
+        except Exception:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
             prompt = (
                 "\n".join(f"{m['role'].upper()}: {m['content']}" for m in messages)
                 + "\nASSISTANT:"

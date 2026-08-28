@@ -152,7 +152,7 @@ class Ingester:
                 exact=True,
             )
             return int(resultat.count)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
             # Collection inexistante = 0 chunks. On journalise pour tout autre cas.
             logger.debug("compter_chunks_existants(%s) : %s", document_id, exc)
             return 0
