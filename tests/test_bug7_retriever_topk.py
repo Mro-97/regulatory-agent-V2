@@ -24,10 +24,10 @@ for nom in ("mlx", "mlx.core", "mlx_lm", "mlx_lm.sample_utils", "mlx_embeddings"
         sys.modules[nom] = types.ModuleType(nom)
 sys.modules["mlx.core"].eval = lambda *a, **k: None
 
-from datetime import date  # noqa: E402
-from unittest.mock import MagicMock  # noqa: E402
+from datetime import date
+from unittest.mock import MagicMock
 
-from src.agents.retriever import Retriever  # noqa: E402
+from src.agents.retriever import Retriever
 
 
 def _point(point_id: str, score: float, valid_to: str | None = None) -> SimpleNamespace:

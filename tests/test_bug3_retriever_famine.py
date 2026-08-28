@@ -28,7 +28,7 @@ for nom in ("mlx", "mlx.core", "mlx_lm", "mlx_lm.sample_utils", "mlx_embeddings"
         sys.modules[nom] = types.ModuleType(nom)
 sys.modules["mlx.core"].eval = lambda *a, **k: None
 
-from src.agents.retriever import Retriever  # noqa: E402
+from src.agents.retriever import Retriever
 
 
 def _point(point_id: str, score: float, valid_to: str | None) -> SimpleNamespace:

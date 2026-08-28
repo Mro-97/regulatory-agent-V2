@@ -11,14 +11,14 @@ for nom in ("mlx", "mlx.core", "mlx_lm", "mlx_lm.sample_utils", "mlx_embeddings"
         sys.modules[nom] = types.ModuleType(nom)
 sys.modules["mlx.core"].eval = lambda *a, **k: None
 
-import pytest  # noqa: E402
-from src.agents.conflit import (  # noqa: E402
+import pytest
+from src.agents.conflit import (
     AgentConflit,
     ConflitDetecte,
     NiveauConflit,
     _normaliser_verdict,
 )
-from src.models import EvidenceRecuperee  # noqa: E402
+from src.models import EvidenceRecuperee
 
 # ---------------------------------------------------------------------------
 # Fixtures

@@ -23,14 +23,14 @@ for nom in ("mlx", "mlx.core", "mlx_lm", "mlx_lm.sample_utils", "mlx_embeddings"
         sys.modules[nom] = types.ModuleType(nom)
 sys.modules["mlx.core"].eval = lambda *a, **k: None
 
-from datetime import date  # noqa: E402
-from unittest.mock import MagicMock, patch  # noqa: E402
+from datetime import date
+from unittest.mock import MagicMock, patch
 
-from src.models import (  # noqa: E402
+from src.models import (
     EvidenceRecuperee,
     NiveauConfiance,
 )
-from src.orchestrator import (  # noqa: E402
+from src.orchestrator import (
     _MACHINE,
     _MACHINE_INCONNUE,
     Orchestrateur,
