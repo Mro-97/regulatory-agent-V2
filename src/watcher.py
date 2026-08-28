@@ -24,8 +24,10 @@ import hashlib
 import json
 import logging
 import re
+from collections.abc import Awaitable
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any, cast
 
 import httpx
 from config import cfg
@@ -125,7 +127,10 @@ def charger_hashes_connus() -> dict[str, str]:
     if not CHEMIN_HASHES.exists():
         return {}
     try:
-        return json.loads(CHEMIN_HASHES.read_text(encoding="utf-8"))
+        return cast(
+            "dict[str, str]",
+            json.loads(CHEMIN_HASHES.read_text(encoding="utf-8")),
+        )
     except Exception as exc:
         logger.exception("Lecture hashes Watcher échouée : %s", exc)  # noqa: TRY401 — TODO §12 étape 4 : réviser le message en même temps que le typage
         return {}
@@ -176,7 +181,12 @@ async def enregistrer_alerte_redis(alerte: AlerteWatcher) -> None:
         )
         alerte.tache_validation_id = tache.tache_id
 
-        await client.lpush(TypeFilePendante.ALERTES.value, tache.model_dump_json())
+        # `redis.asyncio.Redis.lpush` a une signature générique
+        # `Awaitable[int] | int` selon le mode ; le client instancié plus
+        # haut est bien asynchrone.
+        await cast("Awaitable[Any]", client.lpush(
+            TypeFilePendante.ALERTES.value, tache.model_dump_json(),
+        ))
         await client.aclose()
         logger.info(
             "Alerte Watcher enregistrée dans Redis : source=%s url=%s",
