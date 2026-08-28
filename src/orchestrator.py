@@ -30,13 +30,12 @@ Dépendances : httpx, redis, pydantic >= 2.7
 from __future__ import annotations
 
 import asyncio
-import json
 import logging
 import os
 import platform
-from collections.abc import Awaitable, Callable
+from collections.abc import Callable
 from datetime import UTC, date, datetime
-from typing import TYPE_CHECKING, Any, TypeVar, cast
+from typing import TYPE_CHECKING, Any, TypeVar
 from uuid import UUID, uuid4
 
 from config import cfg
@@ -663,34 +662,12 @@ class Orchestrateur:
     # ------------------------------------------------------------------
 
     async def lister_taches_pendantes(self) -> ReponseTachesPendantes:
-        """Récupère les tâches en attente depuis Redis."""
-        try:
-            client = await self._nouveau_client_redis()
-            taches: list[TacheValidation] = []
-            par_file: dict[str, int] = {}
+        """Récupère les tâches en attente depuis Redis (délégué)."""
+        from src.orchestrator_validation import (
+            lister_taches_pendantes as _lister,
+        )
 
-            for file in TypeFilePendante:
-                # `redis.asyncio.Redis.lrange` a la même signature générique
-                # `Awaitable[list[Any]] | list[Any]` — cast au moment d'awaiter.
-                cles = await cast(
-                    "Awaitable[list[Any]]", client.lrange(file.value, 0, -1),
-                )
-                par_file[file.value] = len(cles)
-                for cle in cles:
-                    try:
-                        taches.append(TacheValidation(**json.loads(cle)))
-                    except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
-                        logger.warning("Tâche non parsable : %s", exc)
-
-            await client.aclose()
-            return ReponseTachesPendantes(
-                total=sum(par_file.values()),
-                par_file=par_file,
-                taches=taches,
-            )
-        except Exception as exc:
-            logger.exception("Redis inaccessible : %s", exc)  # noqa: TRY401 — TODO §12 étape 4 : réviser le message en même temps que le typage
-            return ReponseTachesPendantes(total=0, par_file={}, taches=[])
+        return await _lister(self._nouveau_client_redis)
 
     async def valider_tache(
         self,
@@ -698,66 +675,24 @@ class Orchestrateur:
         decision: StatutValidation,
         commentaire: str | None = None,
     ) -> ReponseDecisionValidation:
-        """Applique une décision humaine à une tâche Redis."""
-        horodatage = datetime.now(UTC)
-        try:
-            client = await self._nouveau_client_redis()
-            tache_trouvee = False
-            for file in TypeFilePendante:
-                # `redis.asyncio.Redis.lrange` a la même signature générique
-                # `Awaitable[list[Any]] | list[Any]` — cast au moment d'awaiter.
-                cles = await cast(
-                    "Awaitable[list[Any]]", client.lrange(file.value, 0, -1),
-                )
-                for cle in cles:
-                    try:
-                        donnees = json.loads(cle)
-                        if str(donnees.get("tache_id")) == str(tache_id):
-                            donnees["statut"] = decision.value
-                            donnees["horodatage_traitement"] = horodatage.isoformat()
-                            donnees["commentaire_validateur"] = commentaire
-                            await cast(
-                                "Awaitable[int]", client.lrem(file.value, 1, cle),
-                            )
-                            await cast("Awaitable[int]", client.lpush(
-                                f"traite_{file.value}",
-                                json.dumps(donnees, ensure_ascii=False),
-                            ))
-                            tache_trouvee = True
-                            break
-                    except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
-                        logger.warning("Erreur parsing tâche : %s", exc)
-                if tache_trouvee:
-                    break
+        """Applique une décision humaine à une tâche Redis (délégué)."""
+        from src.orchestrator_validation import valider_tache as _valider
 
-            await client.aclose()
-            if not tache_trouvee:
-                raise ValueError(f"Tâche introuvable : {tache_id}")  # noqa: TRY003, TRY301
-
-            return ReponseDecisionValidation(
-                tache_id=tache_id,
-                nouveau_statut=decision,
-                horodatage_traitement=horodatage,
-            )
-        except ValueError:
-            raise
-        except Exception as exc:
-            raise RuntimeError(f"Validation échouée : {exc}") from exc  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
+        return await _valider(
+            self._nouveau_client_redis, tache_id, decision, commentaire
+        )
 
     # ------------------------------------------------------------------
     # Méthodes internes
     # ------------------------------------------------------------------
 
     async def _enregistrer_tache_redis(self, tache: TacheValidation) -> None:
-        """Enregistre une tâche dans la file Redis appropriée."""
-        try:
-            client = await self._nouveau_client_redis()
-            await cast("Awaitable[int]", client.lpush(
-                tache.type_file.value, tache.model_dump_json(),
-            ))
-            await client.aclose()
-        except Exception as exc:
-            logger.exception("Redis inaccessible, tâche non enregistrée : %s", exc)  # noqa: TRY401 — TODO §12 étape 4 : réviser le message en même temps que le typage
+        """Enregistre une tâche dans la file Redis (délégué)."""
+        from src.orchestrator_validation import (
+            enregistrer_tache_redis as _enregistrer,
+        )
+
+        await _enregistrer(self._nouveau_client_redis, tache)
 
     async def _persister_audit(self, audit: EnregistrementAudit) -> None:
         """Persiste l'enregistrement d'audit via src/audit.py.
