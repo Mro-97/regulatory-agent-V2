@@ -1,10 +1,10 @@
-# regulatory-code-standards §12 étape 5 — pipeline CI BLOQUANT
+# regulatory-code-standards §12 étape 7 — pipeline CI BLOQUANT complet
 #
 # Bascule bloquante actée après l'étape 4 (mypy --strict = 0, ruff = 0,
-# tests 180/180). Chaque job échoue la CI en cas de régression.
-# radon / interrogate / vulture / pip-audit restent en `continue-on-error`
-# tant que l'étape 6 (extractions §10) et l'étape 7 (activation portes
-# secondaires) ne sont pas franchies.
+# tests 180/180) puis étendue en étape 7 aux portes secondaires §6/§7 :
+# radon cc (seuil C, refactor du Retriever préalable D→C), radon mi
+# (seuil B — tout à A actuellement), interrogate (95%), vulture,
+# pip-audit. Chaque job échoue désormais la CI en cas de régression.
 
 name: code-standards
 
@@ -47,24 +47,37 @@ jobs:
       - name: mypy --strict scripts/
         run: mypy --strict scripts/
 
-      - name: radon — complexité cyclomatique (seuil B, advisory §6)
-        continue-on-error: true
-        run: radon cc -s -n C src/
+      - name: radon — complexité cyclomatique (seuil C bloquant §6)
+        # radon lui-même n'échoue jamais sur le rang ; on rend le job
+        # bloquant en cherchant tout bloc de rang D, E ou F dans la
+        # sortie complète. Les blocs C(11-20) restent tolérés (dérogation
+        # étape 7 : refactor déterminé au cas par cas §12).
+        run: |
+          rapport=$(radon cc -s src/)
+          echo "$rapport"
+          if echo "$rapport" | grep -qE ' - [DEF] \([0-9]+\)$'; then
+            echo "::error::radon cc — bloc de complexité D/E/F détecté (seuil C)."
+            exit 1
+          fi
 
-      - name: radon — indice de maintenabilité (seuil B, advisory §6)
-        continue-on-error: true
-        run: radon mi -n B src/
+      - name: radon — indice de maintenabilité (seuil B bloquant §6)
+        # Idem : `radon mi -n B src/` liste les fichiers < B ; le job
+        # échoue s'il en trouve un.
+        run: |
+          rapport=$(radon mi -n B src/)
+          echo "$rapport"
+          if [ -n "$rapport" ]; then
+            echo "::error::radon mi — module d'indice de maintenabilité < B."
+            exit 1
+          fi
 
-      - name: interrogate — docstrings ≥ 95% (advisory §6)
-        continue-on-error: true
-        run: interrogate -f 95 src/ || true
+      - name: interrogate — docstrings ≥ 95% (bloquant §6)
+        run: interrogate -f 95 src/
 
-      - name: vulture — code mort (advisory §7)
-        continue-on-error: true
+      - name: vulture — code mort (bloquant §7)
         run: vulture src/ --min-confidence 80
 
-      - name: pip-audit — vulnérabilités dépendances (advisory §7)
-        continue-on-error: true
+      - name: pip-audit — vulnérabilités dépendances (bloquant §7)
         run: pip-audit -r requirements.txt
 
   tests:
