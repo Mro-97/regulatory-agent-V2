@@ -111,6 +111,7 @@ class GestionnaireAudit:
 
         try:
             import asyncpg
+
             self._pool = await asyncpg.create_pool(
                 self.postgres_dsn,
                 min_size=1,
@@ -127,8 +128,10 @@ class GestionnaireAudit:
                     _hash_precedent = row["hash_courant"]
 
             self._postgres_ok = True
-            logger.info("Audit PostgreSQL initialisé. Dernier hash : %s",
-                        (_hash_precedent or "aucun")[:16])
+            logger.info(
+                "Audit PostgreSQL initialisé. Dernier hash : %s",
+                (_hash_precedent or "aucun")[:16],
+            )
 
         except Exception as exc:
             logger.warning("PostgreSQL indisponible, mode local uniquement : %s", exc)
@@ -179,7 +182,8 @@ class GestionnaireAudit:
                 logger.error(
                     "Audit local NON persisté — request_id=%s hash=%s… "
                     "(la chaîne locale et le compteur interne divergent désormais)",
-                    audit.request_id, hash_courant[:16],
+                    audit.request_id,
+                    hash_courant[:16],
                 )
 
             # Persistance PostgreSQL (si disponible)
@@ -190,14 +194,17 @@ class GestionnaireAudit:
                     logger.error(
                         "Audit PostgreSQL NON persisté — request_id=%s hash=%s… "
                         "divergence local/PostgreSQL (total cumulé : %d)",
-                        audit.request_id, hash_courant[:16], self.desynchronisations,
+                        audit.request_id,
+                        hash_courant[:16],
+                        self.desynchronisations,
                     )
 
             _hash_precedent = hash_courant
 
         logger.info(
             "Audit — request_id=%s hash=%s…",
-            audit.request_id, hash_courant[:16],
+            audit.request_id,
+            hash_courant[:16],
         )
         return hash_courant
 
@@ -251,7 +258,9 @@ class GestionnaireAudit:
                     audit.user_query,
                     audit.date_contexte,
                     json.dumps([str(d) for d in audit.documents_recuperes]),
-                    json.dumps([a.model_dump(mode="json") for a in audit.agents_executes]),
+                    json.dumps(
+                        [a.model_dump(mode="json") for a in audit.agents_executes]
+                    ),
                     audit.reponse_finale,
                     audit.niveau_confiance.value,
                     audit.necessite_validation_humaine,
@@ -263,7 +272,9 @@ class GestionnaireAudit:
             logger.error("INSERT audit PostgreSQL échoué : %s", exc)
             return False
 
-    async def verifier_integrite(self, limite: int = 100) -> dict[str, int | list[dict[str, object]]]:
+    async def verifier_integrite(
+        self, limite: int = 100
+    ) -> dict[str, int | list[dict[str, object]]]:
         """
         Vérifie l'intégrité de la chaîne d'audit locale.
 
@@ -291,7 +302,12 @@ class GestionnaireAudit:
         erreurs: list[dict[str, object]] = []
 
         if not CHEMIN_AUDIT_LOCAL.exists():
-            return {"total": total, "valides": valides, "invalides": invalides, "erreurs": erreurs}
+            return {
+                "total": total,
+                "valides": valides,
+                "invalides": invalides,
+                "erreurs": erreurs,
+            }
 
         def _lire_dernieres_lignes() -> tuple[Optional[str], list[str]]:
             """Retourne (hash d'ancrage, lignes de la fenêtre).
@@ -331,7 +347,8 @@ class GestionnaireAudit:
 
                 auto_coherent = hash_calcule == hash_attendu
                 chaine_coherente = (
-                    not precedent_connu or hash_precedent_declare == hash_precedent_attendu
+                    not precedent_connu
+                    or hash_precedent_declare == hash_precedent_attendu
                 )
 
                 if auto_coherent and chaine_coherente:
@@ -349,10 +366,14 @@ class GestionnaireAudit:
                     else:
                         detail["type"] = "chaine_rompue"
                         detail["hash_precedent_declare"] = (
-                            hash_precedent_declare[:16] if hash_precedent_declare else None
+                            hash_precedent_declare[:16]
+                            if hash_precedent_declare
+                            else None
                         )
                         detail["hash_precedent_attendu"] = (
-                            hash_precedent_attendu[:16] if hash_precedent_attendu else None
+                            hash_precedent_attendu[:16]
+                            if hash_precedent_attendu
+                            else None
                         )
                     erreurs.append(detail)
 
@@ -364,7 +385,12 @@ class GestionnaireAudit:
                 # Ligne illisible — le prédécesseur pour la suivante n'est plus fiable.
                 precedent_connu = False
 
-        return {"total": total, "valides": valides, "invalides": invalides, "erreurs": erreurs}
+        return {
+            "total": total,
+            "valides": valides,
+            "invalides": invalides,
+            "erreurs": erreurs,
+        }
 
     async def fermer(self) -> None:
         """Ferme le pool PostgreSQL proprement."""
@@ -382,6 +408,7 @@ async def obtenir_gestionnaire() -> GestionnaireAudit:
     global _gestionnaire
     if _gestionnaire is None:
         from config import cfg
+
         _gestionnaire = GestionnaireAudit(
             postgres_dsn=cfg.postgres_dsn if cfg.postgres_dsn != "" else None
         )

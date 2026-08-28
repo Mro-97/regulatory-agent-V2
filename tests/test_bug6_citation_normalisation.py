@@ -61,8 +61,7 @@ class TestNormaliserPourComparaison:
             == '"mesures appropriées"'
         )
         assert (
-            _normaliser_pour_comparaison("‘test’ et “texte”")
-            == "'test' et \"texte\""
+            _normaliser_pour_comparaison("‘test’ et “texte”") == "'test' et \"texte\""
         )
 
     def test_espaces_peripheriques_retires(self):
@@ -96,7 +95,9 @@ class TestBug6CitationReformatee:
 
     def test_guillemets_typographiques_reste_verifiee(self):
         agent = AgentCitation(use_llm=False)
-        source = _ev('Le texte prévoit des "mesures appropriées" au sens de l\'article.')
+        source = _ev(
+            'Le texte prévoit des "mesures appropriées" au sens de l\'article.'
+        )
         cit = _cit("Le texte prévoit des «mesures appropriées» au sens de l'article.")
 
         verifiees, douteuses = agent.verify([cit], [source])

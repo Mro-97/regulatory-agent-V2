@@ -65,9 +65,18 @@ PATTERNS_ARTICLE = [
 
 # Patterns pour détecter les chapitres
 PATTERNS_CHAPITRE = [
-    re.compile(r"^CHAPITRE\s+(I{1,4}V?|[IVX]+|\d+)\s*[:\-–]?\s*(.*)$", re.IGNORECASE | re.MULTILINE),
-    re.compile(r"^TITRE\s+(I{1,4}V?|[IVX]+|\d+)\s*[:\-–]?\s*(.*)$", re.IGNORECASE | re.MULTILINE),
-    re.compile(r"^SECTION\s+(I{1,4}V?|[IVX]+|\d+)\s*[:\-–]?\s*(.*)$", re.IGNORECASE | re.MULTILINE),
+    re.compile(
+        r"^CHAPITRE\s+(I{1,4}V?|[IVX]+|\d+)\s*[:\-–]?\s*(.*)$",
+        re.IGNORECASE | re.MULTILINE,
+    ),
+    re.compile(
+        r"^TITRE\s+(I{1,4}V?|[IVX]+|\d+)\s*[:\-–]?\s*(.*)$",
+        re.IGNORECASE | re.MULTILINE,
+    ),
+    re.compile(
+        r"^SECTION\s+(I{1,4}V?|[IVX]+|\d+)\s*[:\-–]?\s*(.*)$",
+        re.IGNORECASE | re.MULTILINE,
+    ),
 ]
 
 
@@ -93,7 +102,9 @@ def extraire_texte_pdf(chemin: Path) -> str:
     try:
         import pdfplumber
     except ImportError:
-        logger.error("pdfplumber requis : pip install pdfplumber --break-system-packages")
+        logger.error(
+            "pdfplumber requis : pip install pdfplumber --break-system-packages"
+        )
         sys.exit(1)
 
     if not chemin.exists():
@@ -141,15 +152,26 @@ def detecter_articles(texte: str) -> list[dict]:
 
     for pattern in PATTERNS_ARTICLE:
         for match in pattern.finditer(texte):
-            positions.append({
-                "debut": match.start(),
-                "numero": match.group(1),
-                "titre_ligne": match.group(2).strip() if match.lastindex >= 2 else "",
-            })
+            positions.append(
+                {
+                    "debut": match.start(),
+                    "numero": match.group(1),
+                    "titre_ligne": match.group(2).strip()
+                    if match.lastindex >= 2
+                    else "",
+                }
+            )
 
     if not positions:
         logger.warning("Aucun article détecté — document traité comme un seul bloc.")
-        return [{"numero": "1", "titre": "Document complet", "texte": texte.strip(), "debut": 0}]
+        return [
+            {
+                "numero": "1",
+                "titre": "Document complet",
+                "texte": texte.strip(),
+                "debut": 0,
+            }
+        ]
 
     # Trier par position
     positions.sort(key=lambda p: p["debut"])
@@ -168,12 +190,14 @@ def detecter_articles(texte: str) -> list[dict]:
         if not corps:
             continue
 
-        articles.append({
-            "numero": pos["numero"],
-            "titre": titre,
-            "texte": corps,
-            "debut": debut_texte,
-        })
+        articles.append(
+            {
+                "numero": pos["numero"],
+                "titre": titre,
+                "texte": corps,
+                "debut": debut_texte,
+            }
+        )
 
     logger.info("%d article(s) détecté(s)", len(articles))
     return articles
@@ -197,11 +221,13 @@ def detecter_chapitres(texte: str) -> list[dict]:
     chapitres = []
     for pattern in PATTERNS_CHAPITRE:
         for match in pattern.finditer(texte):
-            chapitres.append({
-                "id": f"chap_{match.group(1).lower()}",
-                "titre": match.group(2).strip() if match.lastindex >= 2 else "",
-                "debut": match.start(),
-            })
+            chapitres.append(
+                {
+                    "id": f"chap_{match.group(1).lower()}",
+                    "titre": match.group(2).strip() if match.lastindex >= 2 else "",
+                    "debut": match.start(),
+                }
+            )
 
     chapitres.sort(key=lambda c: c["debut"])
     return chapitres
@@ -246,9 +272,7 @@ def construire_document(
     # en mode chapitre unique. Idem s'il n'y a aucun chapitre détecté.
     max_art_debut = max((a.get("debut", 0) for a in articles_bruts), default=0)
     min_chap_debut = min((c["debut"] for c in chapitres_bruts), default=0)
-    chapitres_structurels = [
-        c for c in chapitres_bruts if c["debut"] <= max_art_debut
-    ]
+    chapitres_structurels = [c for c in chapitres_bruts if c["debut"] <= max_art_debut]
 
     if chapitres_bruts and chapitres_structurels:
         # Dédupliquer les marqueurs répétés (headers de page) en conservant
@@ -290,11 +314,13 @@ def construire_document(
                 )
                 for a in arts
             ]
-            chapitres.append(Chapitre(
-                id=c["id"],
-                titre=c["titre"] or c["id"],
-                articles=versions,
-            ))
+            chapitres.append(
+                Chapitre(
+                    id=c["id"],
+                    titre=c["titre"] or c["id"],
+                    articles=versions,
+                )
+            )
     else:
         # Un seul chapitre
         versions = [
@@ -306,11 +332,13 @@ def construire_document(
             )
             for a in articles_bruts
         ]
-        chapitres = [Chapitre(
-            id="chap_principal",
-            titre="Dispositions",
-            articles=versions,
-        )]
+        chapitres = [
+            Chapitre(
+                id="chap_principal",
+                titre="Dispositions",
+                articles=versions,
+            )
+        ]
 
     doc = DocumentReglementaire(
         id=doc_id,
@@ -338,17 +366,33 @@ def main() -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("--fichier", required=True, type=Path, help="PDF source.")
-    parser.add_argument("--id", required=True, dest="doc_id", help="Identifiant du document (ex: RGPD_2016_679).")
+    parser.add_argument(
+        "--id",
+        required=True,
+        dest="doc_id",
+        help="Identifiant du document (ex: RGPD_2016_679).",
+    )
     parser.add_argument("--titre", default="", help="Titre officiel du document.")
-    parser.add_argument("--source", required=True,
+    parser.add_argument(
+        "--source",
+        required=True,
         choices=[s.value for s in SourceReglementaire],
-        help="Source institutionnelle.")
-    parser.add_argument("--publication", required=True, help="Date de publication (YYYY-MM-DD).")
-    parser.add_argument("--vigueur", required=True, help="Date d'entrée en vigueur (YYYY-MM-DD).")
+        help="Source institutionnelle.",
+    )
+    parser.add_argument(
+        "--publication", required=True, help="Date de publication (YYYY-MM-DD)."
+    )
+    parser.add_argument(
+        "--vigueur", required=True, help="Date d'entrée en vigueur (YYYY-MM-DD)."
+    )
     parser.add_argument("--themes", default="", help="Thèmes séparés par des virgules.")
     parser.add_argument("--url", default=None, help="URL canonique de la source.")
-    parser.add_argument("--sortie", default=None, type=Path,
-        help="Fichier JSON de sortie (défaut : data/raw/<id>.json).")
+    parser.add_argument(
+        "--sortie",
+        default=None,
+        type=Path,
+        help="Fichier JSON de sortie (défaut : data/raw/<id>.json).",
+    )
 
     args = parser.parse_args()
 
@@ -391,9 +435,13 @@ def main() -> None:
     total_articles = sum(len(c.articles) for c in doc.chapitres)
     logger.info(
         "JSON généré : %s | chapitres=%d articles=%d",
-        chemin_sortie, len(doc.chapitres), total_articles,
+        chemin_sortie,
+        len(doc.chapitres),
+        total_articles,
     )
-    logger.info("Prochaine étape : python3 scripts/ingest.py --fichier %s", chemin_sortie)
+    logger.info(
+        "Prochaine étape : python3 scripts/ingest.py --fichier %s", chemin_sortie
+    )
 
 
 from typing import Optional

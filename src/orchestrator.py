@@ -112,6 +112,7 @@ def _classifier_requete(question: str, date_contexte: Optional[date]) -> str:
 # la machine d'exécution, plus une étiquette « Mac_A/B/C » figée qui
 # renvoyait à l'ancienne architecture 3-machines abandonnée.
 import platform as _platform
+
 _MACHINE = _platform.node() or "inconnue"
 _MACHINE_INCONNUE = "inconnue"
 
@@ -179,6 +180,7 @@ class Orchestrateur:
         """Retourne le Retriever réel, créé au premier appel."""
         if self._retriever is None:
             from src.agents.retriever import Retriever
+
             self._retriever = Retriever()
             logger.info("Retriever réel initialisé.")
         return self._retriever
@@ -187,6 +189,7 @@ class Orchestrateur:
         """Retourne l'Ingester réel (scripts/ingest.py), créé au premier appel."""
         if self._ingester is None:
             from scripts.ingest import Ingester
+
             self._ingester = Ingester(collection_name=cfg.qdrant_collection)
             logger.info("Ingester réel initialisé.")
         return self._ingester
@@ -286,9 +289,7 @@ class Orchestrateur:
                 "filtres_themes": filtres_themes,
                 "filtres_sources": [s.value for s in filtres_sources],
             },
-            duree_ms=int(
-                (datetime.now(timezone.utc) - debut).total_seconds() * 1000
-            ),
+            duree_ms=int((datetime.now(timezone.utc) - debut).total_seconds() * 1000),
         )
         return evidences, sortie
 
@@ -394,7 +395,10 @@ class Orchestrateur:
         type_pipeline = _classifier_requete(requete.question, requete.date_contexte)
         logger.info(
             "Traitement request_id=%s mode=%s type=%s question=%r",
-            request_id, self.mode, type_pipeline, requete.question[:80],
+            request_id,
+            self.mode,
+            type_pipeline,
+            requete.question[:80],
         )
 
         # ----------------------------------------------------------
@@ -459,6 +463,7 @@ class Orchestrateur:
         if type_pipeline == "conflit" and len(evidences) >= 2:
             try:
                 from src.agents.conflit import AgentConflit
+
                 # use_llm=False par défaut — DeepSeek-R1 14B réservé
                 # aux cas critiques confirmés par un opérateur
                 agent_conflit = AgentConflit(use_llm=True)
@@ -468,15 +473,17 @@ class Orchestrateur:
                     evidences=evidences,
                     date_ref=requete.date_contexte,
                 )
-                agents_executes.append(SortieAgent(
-                    nom_agent="Conflict",
-                    machine=self._machine_pour_agent("Conflict"),
-                    contenu={
-                        "niveau_global": resultat_conflit.niveau_global.value,
-                        "conflits_detectes": len(resultat_conflit.conflits),
-                        "mode": resultat_conflit.mode,
-                    },
-                ))
+                agents_executes.append(
+                    SortieAgent(
+                        nom_agent="Conflict",
+                        machine=self._machine_pour_agent("Conflict"),
+                        contenu={
+                            "niveau_global": resultat_conflit.niveau_global.value,
+                            "conflits_detectes": len(resultat_conflit.conflits),
+                            "mode": resultat_conflit.mode,
+                        },
+                    )
+                )
                 # Soumettre à validation humaine si conflit probable/critique
                 if resultat_conflit.necessite_validation_humaine:
                     tache_conflit = TacheValidation(
@@ -509,7 +516,11 @@ class Orchestrateur:
         # Mode real — Étape 3 : Explication
         # ----------------------------------------------------------
         try:
-            reponse_texte, niveau_confiance, sortie_explainer = await self._etape_explainer(
+            (
+                reponse_texte,
+                niveau_confiance,
+                sortie_explainer,
+            ) = await self._etape_explainer(
                 question=requete.question,
                 evidences=evidences,
                 type_pipeline=type_pipeline,
@@ -526,19 +537,22 @@ class Orchestrateur:
         # ----------------------------------------------------------
         try:
             from src.agents.citation import AgentCitation
+
             agent_citation = AgentCitation(use_llm=True)
             resultat_citation = await self._executer_bloquant(
                 agent_citation.generate, evidences=evidences
             )
-            agents_executes.append(SortieAgent(
-                nom_agent="Citation",
-                machine=self._machine_pour_agent("Citation"),
-                contenu={
-                    "mode": resultat_citation.mode,
-                    "verifiees": len(resultat_citation.citations_verifiees),
-                    "douteuses": len(resultat_citation.citations_douteuses),
-                },
-            ))
+            agents_executes.append(
+                SortieAgent(
+                    nom_agent="Citation",
+                    machine=self._machine_pour_agent("Citation"),
+                    contenu={
+                        "mode": resultat_citation.mode,
+                        "verifiees": len(resultat_citation.citations_verifiees),
+                        "douteuses": len(resultat_citation.citations_douteuses),
+                    },
+                )
+            )
             if resultat_citation.avertissement:
                 logger.warning("Citation : %s", resultat_citation.avertissement)
         except Exception as exc:
@@ -623,7 +637,8 @@ class Orchestrateur:
         """
         logger.info(
             "Ingestion déclenchée : source=%s forcer_reindexation=%s",
-            requete.source, requete.forcer_reindexation,
+            requete.source,
+            requete.forcer_reindexation,
         )
 
         if self.mode == "mock":
@@ -777,6 +792,7 @@ class Orchestrateur:
         """
         try:
             from src.audit import obtenir_gestionnaire
+
             gestionnaire = await obtenir_gestionnaire()
             hash_courant = await gestionnaire.persister(audit)
             logger.info(

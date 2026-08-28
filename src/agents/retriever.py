@@ -74,7 +74,8 @@ class Retriever:
         self._top_k = top_k if top_k is not None else cfg.qdrant_top_k
         logger.info(
             "Retriever initialisé — collection=%s top_k=%d",
-            self._collection, self._top_k,
+            self._collection,
+            self._top_k,
         )
 
     # ------------------------------------------------------------------
@@ -119,9 +120,7 @@ class Retriever:
         """
         return FieldCondition(
             key="valid_from",
-            range=DatetimeRange(
-                lte=datetime.combine(date_ref, datetime.min.time())
-            ),
+            range=DatetimeRange(lte=datetime.combine(date_ref, datetime.min.time())),
         )
 
     def _filtre_valid_to_present(self, date_ref: date) -> FieldCondition:
@@ -136,9 +135,7 @@ class Retriever:
         """
         return FieldCondition(
             key="valid_to",
-            range=DatetimeRange(
-                gte=datetime.combine(date_ref, datetime.min.time())
-            ),
+            range=DatetimeRange(gte=datetime.combine(date_ref, datetime.min.time())),
         )
 
     def _filtre_valid_to_null(self) -> IsNullCondition:
@@ -240,20 +237,26 @@ class Retriever:
         """
         payload = point.payload or {}
 
-        champs_requis = ["chunk_id", "document_id", "article_id", "texte_chunk", "valid_from"]
+        champs_requis = [
+            "chunk_id",
+            "document_id",
+            "article_id",
+            "texte_chunk",
+            "valid_from",
+        ]
         for champ in champs_requis:
             if champ not in payload:
                 logger.warning(
                     "Chunk ignoré — champ manquant '%s' dans point.id=%s",
-                    champ, point.id,
+                    champ,
+                    point.id,
                 )
                 return None
 
         try:
             valid_from = _parser_date(payload["valid_from"])
             valid_to = (
-                _parser_date(payload["valid_to"])
-                if payload.get("valid_to") else None
+                _parser_date(payload["valid_to"]) if payload.get("valid_to") else None
             )
 
             return EvidenceRecuperee(
@@ -267,9 +270,7 @@ class Retriever:
             )
 
         except Exception as exc:
-            logger.warning(
-                "Conversion échouée pour point.id=%s : %s", point.id, exc
-            )
+            logger.warning("Conversion échouée pour point.id=%s : %s", point.id, exc)
             return None
 
     # ------------------------------------------------------------------
@@ -308,8 +309,11 @@ class Retriever:
         """
         logger.info(
             "Retrieval — question=%r date_contexte=%s top_k=%d themes=%s sources=%s",
-            question[:80], date_contexte, self._top_k,
-            filtres_themes or [], [s.value for s in (filtres_sources or [])],
+            question[:80],
+            date_contexte,
+            self._top_k,
+            filtres_themes or [],
+            [s.value for s in (filtres_sources or [])],
         )
 
         # --- Étape 1 : embedding ---
@@ -336,12 +340,8 @@ class Retriever:
         if cond_sources is not None:
             conditions_communes.append(cond_sources)
 
-        filtre_passe_a = Filter(
-            must=[cond_from, cond_to_present, *conditions_communes]
-        )
-        filtre_passe_b = Filter(
-            must=[cond_from, cond_to_null, *conditions_communes]
-        )
+        filtre_passe_a = Filter(must=[cond_from, cond_to_present, *conditions_communes])
+        filtre_passe_b = Filter(must=[cond_from, cond_to_null, *conditions_communes])
 
         # --- Étape 4 : deux passes de recherche ---
         # Sur-échantillonnage à top_k complet par passe : nécessaire pour
@@ -417,7 +417,8 @@ class Retriever:
 
         logger.info(
             "Retrieval terminé — %d/%d chunks retournés",
-            len(evidences), len(points_bruts),
+            len(evidences),
+            len(points_bruts),
         )
         return evidences
 

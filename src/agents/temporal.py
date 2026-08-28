@@ -87,6 +87,7 @@ class EvidenceTemporelle:
     Evidence enrichie d'une annotation temporelle.
     Wrappée autour d'EvidenceRecuperee — on ne modifie pas le modèle source.
     """
+
     evidence: EvidenceRecuperee
     applicable: bool
     raison_exclusion: Optional[str] = None
@@ -96,6 +97,7 @@ class EvidenceTemporelle:
 @dataclass
 class ResultatTemporel:
     """Résultat complet de l'agent temporel."""
+
     date_ref: date
     evidences_applicables: list[EvidenceRecuperee]
     evidences_exclues: list[EvidenceTemporelle]
@@ -167,27 +169,35 @@ class AgentTemporel:
                     f"Pas encore en vigueur à {date_ref} "
                     f"(entrée en vigueur : {ev.valid_from})"
                 )
-                exclues.append(EvidenceTemporelle(
-                    evidence=ev, applicable=False, raison_exclusion=raison,
-                ))
+                exclues.append(
+                    EvidenceTemporelle(
+                        evidence=ev,
+                        applicable=False,
+                        raison_exclusion=raison,
+                    )
+                )
                 continue
 
             # Borne supérieure (None = en vigueur indéfiniment)
             if ev.valid_to is not None and ev.valid_to < date_ref:
-                raison = (
-                    f"Abrogé avant {date_ref} "
-                    f"(fin de validité : {ev.valid_to})"
+                raison = f"Abrogé avant {date_ref} (fin de validité : {ev.valid_to})"
+                exclues.append(
+                    EvidenceTemporelle(
+                        evidence=ev,
+                        applicable=False,
+                        raison_exclusion=raison,
+                    )
                 )
-                exclues.append(EvidenceTemporelle(
-                    evidence=ev, applicable=False, raison_exclusion=raison,
-                ))
                 continue
 
             applicables.append(ev)
 
         logger.info(
             "Filtre temporel — date_ref=%s : %d applicables, %d exclues sur %d",
-            date_ref, len(applicables), len(exclues), len(evidences),
+            date_ref,
+            len(applicables),
+            len(exclues),
+            len(evidences),
         )
         return applicables, exclues
 
@@ -241,6 +251,7 @@ class AgentTemporel:
                 # Lacune : valid_to de A + 1 jour < valid_from de B
                 if a.valid_to is not None:
                     from datetime import timedelta
+
                     lendemain = a.valid_to + timedelta(days=1)
                     if lendemain < b.valid_from:
                         lacunes.append(
@@ -249,12 +260,12 @@ class AgentTemporel:
 
         if chevauchements:
             logger.warning(
-                "%d chevauchement(s) détecté(s) : %s", len(chevauchements), chevauchements
+                "%d chevauchement(s) détecté(s) : %s",
+                len(chevauchements),
+                chevauchements,
             )
         if lacunes:
-            logger.warning(
-                "%d lacune(s) détectée(s) : %s", len(lacunes), lacunes
-            )
+            logger.warning("%d lacune(s) détectée(s) : %s", len(lacunes), lacunes)
 
         return chevauchements, lacunes
 
@@ -266,6 +277,7 @@ class AgentTemporel:
         """Charge Qwen 2.5 7B via le registre MLX (lazy)."""
         if self._modele is None:
             from src.mlx_utils import get_model
+
             self._modele = get_model(
                 model_name=cfg.modele_temporal,
                 temperature=0.0,  # déterministe pour le raisonnement temporel
@@ -393,7 +405,8 @@ class AgentTemporel:
         date_ref = date_contexte or datetime.now(timezone.utc).date()
         logger.info(
             "Analyse temporelle — date_ref=%s question=%r",
-            date_ref, question[:80],
+            date_ref,
+            question[:80],
         )
 
         if not evidences:

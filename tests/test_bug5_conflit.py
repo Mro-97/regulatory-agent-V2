@@ -48,12 +48,14 @@ def deux_conflits():
 
     return [
         ConflitDetecte(
-            evidence_a=ev_a1, evidence_b=ev_b1,
+            evidence_a=ev_a1,
+            evidence_b=ev_b1,
             niveau=NiveauConflit.POTENTIEL,
             description="Tension notification",
         ),
         ConflitDetecte(
-            evidence_a=ev_a2, evidence_b=ev_b2,
+            evidence_a=ev_a2,
+            evidence_b=ev_b2,
             niveau=NiveauConflit.POTENTIEL,
             description="Tension doit/ne doit pas",
         ),
@@ -101,7 +103,7 @@ class TestBug5VerdictParConflit:
             '{"verdicts": ['
             '{"conflit": 1, "verdict": "CONFIRMÉ",   "justification": "vrai"},'
             '{"conflit": 2, "verdict": "INEXISTANT", "justification": "faux"}'
-            ']}'
+            "]}"
         )
         agent._modele.generate_avec_messages.return_value = sortie_llm
 
@@ -121,7 +123,7 @@ class TestBug5VerdictParConflit:
             '{"verdicts": ['
             '{"conflit": 1, "verdict": "CONFIRMÉ", "justification": "x"},'
             '{"conflit": 2, "verdict": "CONFIRMÉ", "justification": "y"}'
-            ']}'
+            "]}"
         )
         agent._modele.generate_avec_messages.return_value = sortie
 
@@ -137,7 +139,7 @@ class TestBug5VerdictParConflit:
             '{"verdicts": ['
             '{"conflit": 1, "verdict": "APPARENT",  "justification": "x"},'
             '{"conflit": 2, "verdict": "INEXISTANT","justification": "y"}'
-            ']}'
+            "]}"
         )
         agent._modele.generate_avec_messages.return_value = sortie
 
@@ -179,7 +181,7 @@ class TestBug5VerdictParConflit:
             '{"verdicts": ['
             '{"conflit": 1, "verdict": "CONFIRMÉ",   "justification": "x"},'
             '{"conflit": 2, "verdict": "INEXISTANT", "justification": "y"}'
-            ']}\n'
+            "]}\n"
             "J'espère que ça aide."
         )
         agent._modele.generate_avec_messages.return_value = sortie

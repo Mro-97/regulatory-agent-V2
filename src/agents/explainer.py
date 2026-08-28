@@ -56,6 +56,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ResultatExplication:
     """Résultat complet de l'agent Explainer."""
+
     reponse: str
     sources_citees: list[str]
     niveau_confiance: NiveauConfiance
@@ -177,6 +178,7 @@ class AgentExplainer:
         """Charge Qwen 2.5 7B via le registre MLX (lazy)."""
         if self._modele is None:
             from src.mlx_utils import get_model
+
             self._modele = get_model(
                 model_name=cfg.modele_explainer,
                 temperature=0.1,
@@ -340,7 +342,9 @@ class AgentExplainer:
         logger.info(
             "Explication — mode=%s type=%s evidences=%d question=%r",
             "llm" if self.use_llm else "assemblage",
-            type_pipeline, len(evidences), question[:80],
+            type_pipeline,
+            len(evidences),
+            question[:80],
         )
 
         if self.use_llm:

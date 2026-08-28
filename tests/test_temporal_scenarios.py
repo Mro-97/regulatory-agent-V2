@@ -40,7 +40,6 @@ def _paire_versions_rgpd() -> list[EvidenceRecuperee]:
 
 
 class TestTemporalFiltering:
-
     def test_version_applicable_avant_coupure(self):
         """Date antérieure à la coupure → doit retourner la version A."""
         agent = AgentTemporel()

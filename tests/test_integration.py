@@ -81,6 +81,7 @@ def doc_rgpd_json() -> dict:
 def client_qdrant_memoire():
     """Client Qdrant en mémoire pour les tests."""
     from qdrant_client import QdrantClient
+
     return QdrantClient(location=":memory:")
 
 
@@ -129,6 +130,7 @@ class TestPipelineIngestion:
 
         # Chunking via Ingester
         from scripts.ingest import Ingester
+
         ingester = Ingester.__new__(Ingester)
         chunks = ingester.chunk_document(doc)
         assert len(chunks) >= 2
@@ -163,19 +165,34 @@ class TestPipelineIngestion:
     def test_chunking_article_court(self):
         """Un article court doit produire un seul chunk."""
         from scripts.ingest import Ingester
-        from src.models import DocumentReglementaire, Chapitre, VersionArticle, IntervalleValidite, SourceReglementaire
+        from src.models import (
+            DocumentReglementaire,
+            Chapitre,
+            VersionArticle,
+            IntervalleValidite,
+            SourceReglementaire,
+        )
 
         doc = DocumentReglementaire(
-            id="test", titre="Test", source=SourceReglementaire.AUTRE,
-            publication_date=date(2020, 1, 1), entry_into_force=date(2020, 1, 1),
+            id="test",
+            titre="Test",
+            source=SourceReglementaire.AUTRE,
+            publication_date=date(2020, 1, 1),
+            entry_into_force=date(2020, 1, 1),
             version="2020-01-01",
-            chapitres=[Chapitre(id="c1", articles=[
-                VersionArticle(
-                    id="art_1", titre="Test",
-                    texte="Texte court.",
-                    validite=IntervalleValidite(valid_from=date(2020, 1, 1)),
+            chapitres=[
+                Chapitre(
+                    id="c1",
+                    articles=[
+                        VersionArticle(
+                            id="art_1",
+                            titre="Test",
+                            texte="Texte court.",
+                            validite=IntervalleValidite(valid_from=date(2020, 1, 1)),
+                        )
+                    ],
                 )
-            ])]
+            ],
         )
         ingester = Ingester.__new__(Ingester)
         chunks = ingester.chunk_document(doc)
@@ -185,25 +202,41 @@ class TestPipelineIngestion:
     def test_chunking_article_long(self):
         """Vérifie que chunk_document produit un chunk par article avec le texte complet."""
         from scripts.ingest import Ingester
-        from src.models import DocumentReglementaire, Chapitre, VersionArticle, IntervalleValidite, SourceReglementaire
+        from src.models import (
+            DocumentReglementaire,
+            Chapitre,
+            VersionArticle,
+            IntervalleValidite,
+            SourceReglementaire,
+        )
 
         texte_long = " ".join(["Texte réglementaire."] * 200)
         doc = DocumentReglementaire(
-            id="test", titre="Test", source=SourceReglementaire.AUTRE,
-            publication_date=date(2020, 1, 1), entry_into_force=date(2020, 1, 1),
+            id="test",
+            titre="Test",
+            source=SourceReglementaire.AUTRE,
+            publication_date=date(2020, 1, 1),
+            entry_into_force=date(2020, 1, 1),
             version="2020-01-01",
-            chapitres=[Chapitre(id="c1", articles=[
-                VersionArticle(
-                    id="art_1", titre="Art 1",
-                    texte=texte_long,
-                    validite=IntervalleValidite(valid_from=date(2020, 1, 1)),
-                ),
-                VersionArticle(
-                    id="art_2", titre="Art 2",
-                    texte="Second article.",
-                    validite=IntervalleValidite(valid_from=date(2020, 1, 1)),
-                ),
-            ])]
+            chapitres=[
+                Chapitre(
+                    id="c1",
+                    articles=[
+                        VersionArticle(
+                            id="art_1",
+                            titre="Art 1",
+                            texte=texte_long,
+                            validite=IntervalleValidite(valid_from=date(2020, 1, 1)),
+                        ),
+                        VersionArticle(
+                            id="art_2",
+                            titre="Art 2",
+                            texte="Second article.",
+                            validite=IntervalleValidite(valid_from=date(2020, 1, 1)),
+                        ),
+                    ],
+                )
+            ],
         )
         ingester = Ingester.__new__(Ingester)
         chunks = ingester.chunk_document(doc)
@@ -253,7 +286,9 @@ class TestIngestionReelle:
         ingester = self._ingester_en_memoire()
         orchestrateur._obtenir_ingester = lambda: ingester
 
-        requete = RequeteIngestion(source=SourceReglementaire.EUR_LEX, contenu_json=doc_rgpd_json)
+        requete = RequeteIngestion(
+            source=SourceReglementaire.EUR_LEX, contenu_json=doc_rgpd_json
+        )
 
         reponse = asyncio.run(orchestrateur.ingerer(requete))
 
@@ -270,7 +305,9 @@ class TestIngestionReelle:
         from src.orchestrator import Orchestrateur
 
         orchestrateur = Orchestrateur(mode="real")
-        requete = RequeteIngestion(source=SourceReglementaire.EUR_LEX, contenu_json=None)
+        requete = RequeteIngestion(
+            source=SourceReglementaire.EUR_LEX, contenu_json=None
+        )
 
         with pytest.raises(ValueError):
             asyncio.run(orchestrateur.ingerer(requete))
@@ -296,7 +333,9 @@ class TestIngestionReelle:
         orchestrateur = Orchestrateur(mode="real")
         ingester = self._ingester_en_memoire()
         orchestrateur._obtenir_ingester = lambda: ingester
-        requete = RequeteIngestion(source=SourceReglementaire.EUR_LEX, contenu_json=doc_rgpd_json)
+        requete = RequeteIngestion(
+            source=SourceReglementaire.EUR_LEX, contenu_json=doc_rgpd_json
+        )
 
         async def _run():
             await orchestrateur.ingerer(requete)  # première ingestion, OK
@@ -313,7 +352,9 @@ class TestIngestionReelle:
         ingester = self._ingester_en_memoire()
         orchestrateur._obtenir_ingester = lambda: ingester
 
-        requete = RequeteIngestion(source=SourceReglementaire.EUR_LEX, contenu_json=doc_rgpd_json)
+        requete = RequeteIngestion(
+            source=SourceReglementaire.EUR_LEX, contenu_json=doc_rgpd_json
+        )
         requete_force = RequeteIngestion(
             source=SourceReglementaire.EUR_LEX,
             contenu_json=doc_rgpd_json,
@@ -486,7 +527,9 @@ class TestOrchestrateurMock:
         assert _classifier_requete("Applicable en 2023", None) == "temporelle"
         assert _classifier_requete("Version du 15/06/2025", None) == "temporelle"
         assert _classifier_requete("Q", date(2023, 6, 15)) == "temporelle"
-        assert _classifier_requete("Contradiction entre NIS2 et RGPD", None) == "conflit"
+        assert (
+            _classifier_requete("Contradiction entre NIS2 et RGPD", None) == "conflit"
+        )
         assert _classifier_requete("Incohérence entre les textes", None) == "conflit"
 
 
@@ -515,9 +558,13 @@ class TestOrchestrateurNonBloquant:
                 time.sleep(0.3)
                 return []
 
-        monkeypatch.setattr(orchestrateur, "_obtenir_retriever", lambda: RetrieverLent())
+        monkeypatch.setattr(
+            orchestrateur, "_obtenir_retriever", lambda: RetrieverLent()
+        )
 
-        async def etape_explainer_rapide(question, evidences, type_pipeline, date_ref=None):
+        async def etape_explainer_rapide(
+            question, evidences, type_pipeline, date_ref=None
+        ):
             return (
                 "réponse simulée",
                 NiveauConfiance.ELEVE,
@@ -536,7 +583,9 @@ class TestOrchestrateurNonBloquant:
                     await asyncio.sleep(0.05)
 
             await asyncio.gather(
-                orchestrateur.traiter(RequeteQuestion(question="Question test retrieval lent ?")),
+                orchestrateur.traiter(
+                    RequeteQuestion(question="Question test retrieval lent ?")
+                ),
                 tache_legere(),
             )
             return marqueurs
@@ -687,7 +736,9 @@ class TestAuditTrail:
             lignes = chemin_test.read_text(encoding="utf-8").strip().splitlines()
             assert len(lignes) == 3
             lignes_trafiquees = [lignes[0], lignes[2]]
-            chemin_test.write_text("\n".join(lignes_trafiquees) + "\n", encoding="utf-8")
+            chemin_test.write_text(
+                "\n".join(lignes_trafiquees) + "\n", encoding="utf-8"
+            )
 
             resultat = await gestionnaire.verifier_integrite()
             assert resultat["total"] == 2

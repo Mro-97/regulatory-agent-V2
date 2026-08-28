@@ -32,6 +32,7 @@ TAILLE_MAX_CONTENU_JSON = 1_000_000
 
 class RelationType(str, Enum):
     """Type de relation entre deux textes réglementaires."""
+
     SE_CHEVAUCHE = "se_chevauche"
     ABROGE = "abroge"
     COMPLETE = "complete"
@@ -42,6 +43,7 @@ class RelationType(str, Enum):
 
 class SourceReglementaire(str, Enum):
     """Sources réglementaires reconnues par le système."""
+
     EUR_LEX = "EUR-Lex"
     LEGIFRANCE = "Légifrance"
     ANSSI = "ANSSI"
@@ -52,6 +54,7 @@ class SourceReglementaire(str, Enum):
 
 class StatutValidation(str, Enum):
     """Statut d'une tâche soumise à validation humaine."""
+
     EN_ATTENTE = "en_attente"
     APPROUVE = "approuvé"
     REJETE = "rejeté"
@@ -60,6 +63,7 @@ class StatutValidation(str, Enum):
 
 class TypeFilePendante(str, Enum):
     """Files Redis utilisées pour le human-in-the-loop."""
+
     LIENS = "pending_links"
     ALERTES = "pending_alerts"
     REPONSES = "pending_responses"
@@ -68,6 +72,7 @@ class TypeFilePendante(str, Enum):
 
 class NiveauConfiance(str, Enum):
     """Niveau de confiance associé à une réponse générée."""
+
     ELEVE = "élevé"
     MOYEN = "moyen"
     FAIBLE = "faible"
@@ -124,9 +129,13 @@ class VersionArticle(BaseModel):
     """
 
     id: str = Field(..., description="Identifiant unique de cette version d'article.")
-    titre: str = Field(..., max_length=500, description="Titre ou intitulé de l'article.")
+    titre: str = Field(
+        ..., max_length=500, description="Titre ou intitulé de l'article."
+    )
     texte: str = Field(..., description="Contenu textuel complet de l'article.")
-    validite: IntervalleValidite = Field(..., description="Fenêtre temporelle de validité.")
+    validite: IntervalleValidite = Field(
+        ..., description="Fenêtre temporelle de validité."
+    )
     citations: list[str] = Field(
         default_factory=list,
         description="Identifiants des articles référencés par cet article.",
@@ -152,7 +161,9 @@ class Chapitre(BaseModel):
     """Subdivision d'un texte réglementaire (chapitre, section, titre, annexe)."""
 
     id: str = Field(..., description="Identifiant unique du chapitre.")
-    titre: Optional[str] = Field(default=None, max_length=500, description="Intitulé du chapitre.")
+    titre: Optional[str] = Field(
+        default=None, max_length=500, description="Intitulé du chapitre."
+    )
     articles: list[VersionArticle] = Field(
         default_factory=list,
         description="Versions d'articles contenues dans ce chapitre.",
@@ -168,7 +179,9 @@ class TexteLie(BaseModel):
 
     ref: str = Field(..., description="Identifiant du texte cible dans le corpus.")
     relation: RelationType = Field(..., description="Nature de la relation.")
-    commentaire: Optional[str] = Field(default=None, max_length=2000, description="Précision libre.")
+    commentaire: Optional[str] = Field(
+        default=None, max_length=2000, description="Précision libre."
+    )
 
 
 class DocumentReglementaire(BaseModel):
@@ -182,7 +195,9 @@ class DocumentReglementaire(BaseModel):
         description="Identifiant unique du document. Convention : SIGLE_ANNEE_NUMERO.",
         examples=["RGPD_2016_679"],
     )
-    titre: str = Field(..., max_length=500, description="Titre officiel complet du texte.")
+    titre: str = Field(
+        ..., max_length=500, description="Titre officiel complet du texte."
+    )
     source: SourceReglementaire = Field(..., description="Source institutionnelle.")
     url_source: Optional[str] = Field(
         default=None, description="URL canonique sur le site source."
@@ -213,7 +228,9 @@ class DocumentReglementaire(BaseModel):
 
     def calculer_hash(self) -> str:
         """Hash SHA-256 du contenu réglementaire (hors hash_document et date_indexation)."""
-        donnees = self.model_dump(exclude={"hash_document", "date_indexation"}, mode="json")
+        donnees = self.model_dump(
+            exclude={"hash_document", "date_indexation"}, mode="json"
+        )
         payload = json.dumps(donnees, ensure_ascii=False, sort_keys=True)
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
@@ -246,7 +263,9 @@ class MetadonneesChunk(BaseModel):
     chapitre_id: Optional[str] = Field(default=None, description="Chapitre source.")
     article_id: str = Field(..., description="Version d'article source.")
     source: SourceReglementaire = Field(..., description="Source institutionnelle.")
-    themes: list[str] = Field(default_factory=list, description="Thèmes hérités du document.")
+    themes: list[str] = Field(
+        default_factory=list, description="Thèmes hérités du document."
+    )
     valid_from: date = Field(..., description="Début de validité.")
     valid_to: Optional[date] = Field(default=None, description="Fin de validité.")
     texte_chunk: str = Field(..., description="Contenu textuel du chunk.")
@@ -311,9 +330,7 @@ class EnregistrementAudit(BaseModel):
     hash_precedent: Optional[str] = Field(
         default=None, description="Hash du record précédent."
     )
-    hash_courant: Optional[str] = Field(
-        default=None, description="Hash de ce record."
-    )
+    hash_courant: Optional[str] = Field(default=None, description="Hash de ce record.")
 
     def calculer_hash(self) -> str:
         """Hash SHA-256 de cet enregistrement (hors hash_courant)."""
@@ -347,7 +364,9 @@ class AlerteWatcher(BaseModel):
     """Alerte générée par le Watcher lors de la détection d'une modification."""
 
     alerte_id: UUID = Field(default_factory=uuid4)
-    source: SourceReglementaire = Field(..., description="Source où la modification a été détectée.")
+    source: SourceReglementaire = Field(
+        ..., description="Source où la modification a été détectée."
+    )
     url_detectee: str = Field(..., description="URL du document modifié.")
     document_id_concerne: Optional[str] = Field(default=None)
     hash_precedent: str = Field(..., description="Hash SHA-256 avant modification.")

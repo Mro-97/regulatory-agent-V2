@@ -37,7 +37,10 @@ class Parametres(BaseSettings):
     # ------------------------------------------------------------------
     # Serveur API — architecture unique m4pro2 (§3.1 CONTEXTE_PROJET)
     # ------------------------------------------------------------------
-    api_host: str = Field(default="127.0.0.1", description="Bind. Utiliser 0.0.0.0 uniquement derrière un proxy.")
+    api_host: str = Field(
+        default="127.0.0.1",
+        description="Bind. Utiliser 0.0.0.0 uniquement derrière un proxy.",
+    )
     api_port: int = Field(default=8000)
     api_workers: int = Field(default=1)
 
@@ -60,7 +63,9 @@ class Parametres(BaseSettings):
     taille_max_requete_octets: int = Field(
         default=2_097_152, description="Taille maximale du corps de requête (2 Mo)."
     )
-    question_max_length: int = Field(default=4000, description="Longueur max d'une question.")
+    question_max_length: int = Field(
+        default=4000, description="Longueur max d'une question."
+    )
 
     # Rate limiting (par IP)
     rate_limit_max_requetes: int = Field(default=30)
@@ -91,7 +96,9 @@ class Parametres(BaseSettings):
     modele_temporal: str = Field(default="mlx-community/Qwen2.5-7B-Instruct-4bit")
     modele_explainer: str = Field(default="mlx-community/Qwen2.5-7B-Instruct-4bit")
     modele_citation: str = Field(default="mlx-community/Mistral-7B-Instruct-v0.3-4bit")
-    modele_conflit: str = Field(default="mlx-community/DeepSeek-R1-Distill-Qwen-14B-4bit")
+    modele_conflit: str = Field(
+        default="mlx-community/DeepSeek-R1-Distill-Qwen-14B-4bit"
+    )
 
     # ------------------------------------------------------------------
     # Génération MLX — paramètres par défaut

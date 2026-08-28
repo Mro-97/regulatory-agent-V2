@@ -35,6 +35,7 @@ async def demarrer_watcher() -> None:
     """Lance le Watcher en tâche de fond."""
     try:
         from src.watcher import Watcher
+
         watcher = Watcher()
         logger.info("Watcher démarré en arrière-plan.")
         await watcher.demarrer_boucle()
@@ -46,6 +47,7 @@ async def initialiser_audit() -> None:
     """Initialise le gestionnaire d'audit au démarrage."""
     try:
         from src.audit import obtenir_gestionnaire
+
         gestionnaire = await obtenir_gestionnaire()
         logger.info("Gestionnaire d'audit initialisé.")
     except Exception as exc:
@@ -87,7 +89,10 @@ def valider_configuration_demarrage() -> list[str]:
 if __name__ == "__main__":
     logger.info(
         "Démarrage %s v%s sur %s:%d",
-        cfg.app_nom, cfg.app_version, cfg.api_host, cfg.api_port,
+        cfg.app_nom,
+        cfg.app_version,
+        cfg.api_host,
+        cfg.api_port,
     )
 
     erreurs_conf = valider_configuration_demarrage()
@@ -111,7 +116,8 @@ if __name__ == "__main__":
             "ce process et lancer : "
             "'uvicorn main:app --reload --host %s --port %d' "
             "(le Watcher devra alors être démarré séparément).",
-            cfg.api_host, cfg.api_port,
+            cfg.api_host,
+            cfg.api_port,
         )
 
     # `workers=N` est ignoré par uvicorn.Server programmatique : seul
@@ -123,7 +129,10 @@ if __name__ == "__main__":
             "Pour du multi-process en production, utiliser gunicorn : "
             "'gunicorn main:app -k uvicorn.workers.UvicornWorker -w %d "
             "--bind %s:%d' (le Watcher devra alors tourner dans un process séparé).",
-            cfg.api_workers, cfg.api_workers, cfg.api_host, cfg.api_port,
+            cfg.api_workers,
+            cfg.api_workers,
+            cfg.api_host,
+            cfg.api_port,
         )
 
     async def run():

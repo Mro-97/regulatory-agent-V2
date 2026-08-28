@@ -83,9 +83,8 @@ def _executer_avec_timeout(
     try:
         return future.result(timeout=timeout_seconds)
     except FuturesTimeoutError as exc:
-        raise MLXTimeoutError(
-            f"Appel MLX dépassé après {timeout_seconds}s"
-        ) from exc
+        raise MLXTimeoutError(f"Appel MLX dépassé après {timeout_seconds}s") from exc
+
 
 # Longueur max (caractères) d'un texte envoyé à l'embedding. `max_length=512`
 # et `truncation=True` passés à emb_generate() agissent sur les *tokens*, pas
@@ -102,7 +101,8 @@ def _tronquer_pour_embedding(texte: str) -> str:
     if len(texte) > TAILLE_MAX_TEXTE_EMBEDDING:
         logger.warning(
             "Texte tronqué de %d à %d caractères avant embedding.",
-            len(texte), TAILLE_MAX_TEXTE_EMBEDDING,
+            len(texte),
+            TAILLE_MAX_TEXTE_EMBEDDING,
         )
         return texte[:TAILLE_MAX_TEXTE_EMBEDDING]
     return texte
@@ -116,6 +116,7 @@ def _tronquer_pour_embedding(texte: str) -> str:
 @dataclass
 class StatistiquesGeneration:
     """Métriques retournées avec chaque génération."""
+
     modele_id: str
     tokens_generes: int
     duree_secondes: float
@@ -125,6 +126,7 @@ class StatistiquesGeneration:
 @dataclass
 class ResultatGeneration:
     """Résultat complet d'un appel generate()."""
+
     texte: str
     statistiques: StatistiquesGeneration
 
@@ -164,14 +166,19 @@ class MLXInference:
         debut = time.time()
         try:
             from mlx_lm import load as mlx_load
+
             self._model, self._tokenizer = mlx_load(self.model_name)
             self._loaded = True
-            logger.info("Modèle chargé en %.1f s : %s", time.time() - debut, self.model_name)
+            logger.info(
+                "Modèle chargé en %.1f s : %s", time.time() - debut, self.model_name
+            )
         except Exception as exc:
             self._model = None
             self._tokenizer = None
             self._loaded = False
-            raise RuntimeError(f"Impossible de charger '{self.model_name}' : {exc}") from exc
+            raise RuntimeError(
+                f"Impossible de charger '{self.model_name}' : {exc}"
+            ) from exc
 
     def unload(self) -> None:
         """Libère le modèle. Idempotent."""
@@ -205,18 +212,24 @@ class MLXInference:
             self.load()
         temp = temperature if temperature is not None else self.temperature
         tp = top_p if top_p is not None else self.top_p
-        timeout = timeout_seconds if timeout_seconds is not None else cfg.mlx_timeout_seconds
+        timeout = (
+            timeout_seconds if timeout_seconds is not None else cfg.mlx_timeout_seconds
+        )
         debut = time.time()
         try:
             from mlx_lm import generate as mlx_generate
             from mlx_lm.sample_utils import make_sampler
+
             sampler = make_sampler(temp=temp, top_p=tp)
             texte = _executer_avec_timeout(
                 mlx_generate,
                 timeout,
-                self._model, self._tokenizer,
-                prompt=prompt, max_tokens=max_tokens,
-                sampler=sampler, verbose=False,
+                self._model,
+                self._tokenizer,
+                prompt=prompt,
+                max_tokens=max_tokens,
+                sampler=sampler,
+                verbose=False,
             )
             duree = time.time() - debut
             try:
@@ -234,7 +247,9 @@ class MLXInference:
                 ),
             )
         except Exception as exc:
-            raise RuntimeError(f"Génération échouée ({self.model_name}) : {exc}") from exc
+            raise RuntimeError(
+                f"Génération échouée ({self.model_name}) : {exc}"
+            ) from exc
 
     def generate_avec_messages(
         self,
@@ -247,12 +262,15 @@ class MLXInference:
             self.load()
         try:
             prompt = self._tokenizer.apply_chat_template(
-                messages, tokenize=False, add_generation_prompt=True,
+                messages,
+                tokenize=False,
+                add_generation_prompt=True,
             )
         except Exception:
-            prompt = "\n".join(
-                f"{m['role'].upper()}: {m['content']}" for m in messages
-            ) + "\nASSISTANT:"
+            prompt = (
+                "\n".join(f"{m['role'].upper()}: {m['content']}" for m in messages)
+                + "\nASSISTANT:"
+            )
         return self.generate(prompt, max_tokens=max_tokens, temperature=temperature)
 
     def __enter__(self) -> "MLXInference":
@@ -311,16 +329,19 @@ class MLXEmbedding:
         try:
             if self._st_mode:
                 from sentence_transformers import SentenceTransformer
+
                 nom_court = self.model_name.split("/", 1)[1]
                 self._model = SentenceTransformer(nom_court)
                 self._processor = None
             else:
                 from mlx_embeddings import load as emb_load
+
                 self._model, self._processor = emb_load(self.model_name)
             self._loaded = True
             logger.info(
                 "Modèle d'embedding chargé en %.1f s : %s (%s)",
-                time.time() - debut, self.model_name,
+                time.time() - debut,
+                self.model_name,
                 "sentence-transformers" if self._st_mode else "mlx-embeddings",
             )
         except Exception as exc:
@@ -345,7 +366,9 @@ class MLXEmbedding:
     def est_charge(self) -> bool:
         return self._loaded
 
-    def encode(self, texte: str, timeout_seconds: Optional[float] = None) -> list[float]:
+    def encode(
+        self, texte: str, timeout_seconds: Optional[float] = None
+    ) -> list[float]:
         """
         Calcule l'embedding d'un texte.
 
@@ -359,14 +382,15 @@ class MLXEmbedding:
         if not self._loaded:
             self.load()
         texte = _tronquer_pour_embedding(texte)
-        timeout = timeout_seconds if timeout_seconds is not None else cfg.mlx_timeout_seconds
+        timeout = (
+            timeout_seconds if timeout_seconds is not None else cfg.mlx_timeout_seconds
+        )
         try:
             if self._st_mode:
-                vecteur = _executer_avec_timeout(
-                    self._model.encode, timeout, texte
-                )
+                vecteur = _executer_avec_timeout(self._model.encode, timeout, texte)
                 return vecteur.tolist()
             from mlx_embeddings import generate as emb_generate
+
             sortie = _executer_avec_timeout(
                 emb_generate,
                 timeout,
@@ -413,8 +437,10 @@ class MLXEmbedding:
         total = len(textes)
 
         for debut in range(0, total, batch_size):
-            lot = textes[debut: debut + batch_size]
-            logger.debug("Embedding batch %d-%d / %d", debut + 1, debut + len(lot), total)
+            lot = textes[debut : debut + batch_size]
+            logger.debug(
+                "Embedding batch %d-%d / %d", debut + 1, debut + len(lot), total
+            )
             try:
                 sortie = emb_generate(
                     self._model,
@@ -465,13 +491,18 @@ class _CacheGeneration:
         top_p: float = 0.9,
     ) -> MLXInference:
         if self._actif and self._actif != model_name:
-            if self._instances.get(self._actif, None) and self._instances[self._actif].est_charge:
+            if (
+                self._instances.get(self._actif, None)
+                and self._instances[self._actif].est_charge
+            ):
                 logger.info("Swap modèle : %s → %s", self._actif, model_name)
                 self._instances[self._actif].unload()
         if model_name not in self._instances:
             self._instances[model_name] = MLXInference(
-                model_name=model_name, quantized=quantized,
-                temperature=temperature, top_p=top_p,
+                model_name=model_name,
+                quantized=quantized,
+                temperature=temperature,
+                top_p=top_p,
             )
         self._actif = model_name
         return self._instances[model_name]
@@ -516,8 +547,10 @@ def get_model(
 ) -> MLXInference:
     """Retourne un modèle de génération depuis le cache global."""
     return model_cache.get(
-        model_name=model_name, quantized=quantized,
-        temperature=temperature, top_p=top_p,
+        model_name=model_name,
+        quantized=quantized,
+        temperature=temperature,
+        top_p=top_p,
     )
 
 

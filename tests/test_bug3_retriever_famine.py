@@ -84,11 +84,11 @@ class TestB3PasDEvictionParScoreBas:
 
     def test_passe_a_reste_representee_scores_bas(self):
         """Régression du fix B7 : passe A évincée par scores B tous meilleurs."""
-        passe_a = [_point(f"a{i}", 0.50 - i * 0.01, valid_to="2030-01-01") for i in range(4)]
+        passe_a = [
+            _point(f"a{i}", 0.50 - i * 0.01, valid_to="2030-01-01") for i in range(4)
+        ]
         passe_b = [_point(f"b{i}", 0.90 - i * 0.01, valid_to=None) for i in range(4)]
         r = _retriever(passe_a, passe_b, top_k=4)
         evidences = r.retrieve(question="Q", date_contexte=date(2025, 6, 15))
         ids = {e.chunk_id for e in evidences}
-        assert any(x.startswith("a") for x in ids), (
-            f"Passe A totalement évincée: {ids}"
-        )
+        assert any(x.startswith("a") for x in ids), f"Passe A totalement évincée: {ids}"

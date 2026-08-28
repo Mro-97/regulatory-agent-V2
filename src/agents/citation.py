@@ -49,10 +49,18 @@ logger = logging.getLogger(__name__)
 # Guillemets typographiques (ouvrants/fermants, simples/doubles) → forme droite,
 # pour que la vérification d'ancrage ne soit pas sensible au style de citation
 # utilisé par le LLM (Mistral 7B reformate parfois « ... » en " ... ").
-_GUILLEMETS = str.maketrans({
-    "«": '"', "»": '"', "“": '"', "”": '"', "„": '"',
-    "‘": "'", "’": "'", "‚": "'",
-})
+_GUILLEMETS = str.maketrans(
+    {
+        "«": '"',
+        "»": '"',
+        "“": '"',
+        "”": '"',
+        "„": '"',
+        "‘": "'",
+        "’": "'",
+        "‚": "'",
+    }
+)
 
 _ESPACES_MULTIPLES = re.compile(r"\s+")
 
@@ -77,8 +85,9 @@ def _normaliser_pour_comparaison(texte: str) -> str:
 
 class StatutCitation(str, Enum):
     """Statut de vérification d'une citation."""
-    VERIFIEE = "vérifiée"       # ancrée dans les preuves récupérées
-    DOUTEUSE = "douteuse"       # non retrouvée dans les preuves
+
+    VERIFIEE = "vérifiée"  # ancrée dans les preuves récupérées
+    DOUTEUSE = "douteuse"  # non retrouvée dans les preuves
     NON_VERIFIEE = "non_vérifiée"  # vérification non encore effectuée
 
 
@@ -88,20 +97,19 @@ class CitationReglementaire:
     Référence exacte à un passage réglementaire.
     Chaque citation doit être rattachée à un chunk_id connu.
     """
+
     document_id: str
     article_id: str
     valid_from: date
     valid_to: Optional[date]
-    extrait: str                    # passage exact cité (max 200 chars)
-    chunk_id: str                   # identifiant du chunk source
+    extrait: str  # passage exact cité (max 200 chars)
+    chunk_id: str  # identifiant du chunk source
     statut: StatutCitation = StatutCitation.NON_VERIFIEE
     hash_extrait: str = field(default="")  # SHA-256 de l'extrait
 
     def __post_init__(self) -> None:
         if not self.hash_extrait:
-            self.hash_extrait = hashlib.sha256(
-                self.extrait.encode("utf-8")
-            ).hexdigest()
+            self.hash_extrait = hashlib.sha256(self.extrait.encode("utf-8")).hexdigest()
 
     def reference_courte(self) -> str:
         """Format court pour affichage : DOCUMENT / ARTICLE [DATE→DATE]."""
@@ -120,6 +128,7 @@ class CitationReglementaire:
 @dataclass
 class ResultatCitation:
     """Résultat complet de l'agent Citation."""
+
     citations_verifiees: list[CitationReglementaire]
     citations_douteuses: list[CitationReglementaire]
     mode: str  # "deterministe" ou "llm"
@@ -174,24 +183,25 @@ class AgentCitation:
         for ev in evidences:
             extrait = ev.texte_extrait.strip()[:max_extrait]
             if not extrait:
-                logger.warning(
-                    "Chunk %s ignoré : extrait vide.", ev.chunk_id
-                )
+                logger.warning("Chunk %s ignoré : extrait vide.", ev.chunk_id)
                 continue
 
-            citations.append(CitationReglementaire(
-                document_id=ev.document_id,
-                article_id=ev.article_id,
-                valid_from=ev.valid_from,
-                valid_to=ev.valid_to,
-                extrait=extrait,
-                chunk_id=ev.chunk_id,
-                statut=StatutCitation.NON_VERIFIEE,
-            ))
+            citations.append(
+                CitationReglementaire(
+                    document_id=ev.document_id,
+                    article_id=ev.article_id,
+                    valid_from=ev.valid_from,
+                    valid_to=ev.valid_to,
+                    extrait=extrait,
+                    chunk_id=ev.chunk_id,
+                    statut=StatutCitation.NON_VERIFIEE,
+                )
+            )
 
         logger.debug(
             "%d citation(s) générée(s) depuis %d preuve(s)",
-            len(citations), len(evidences),
+            len(citations),
+            len(evidences),
         )
         return citations
 
@@ -244,7 +254,9 @@ class AgentCitation:
             # Vérification de l'extrait : doit être contenu dans le texte source
             # (comparaison normalisée — insensible aux espaces multiples,
             # retours à la ligne et guillemets typographiques)
-            if _normaliser_pour_comparaison(cit.extrait) not in _normaliser_pour_comparaison(chunk.texte_extrait):
+            if _normaliser_pour_comparaison(
+                cit.extrait
+            ) not in _normaliser_pour_comparaison(chunk.texte_extrait):
                 cit.statut = StatutCitation.DOUTEUSE
                 douteuses.append(cit)
                 logger.warning(
@@ -258,7 +270,9 @@ class AgentCitation:
 
         logger.info(
             "Vérification : %d vérifiée(s), %d douteuse(s) sur %d",
-            len(verifiees), len(douteuses), len(citations),
+            len(verifiees),
+            len(douteuses),
+            len(citations),
         )
         return verifiees, douteuses
 
@@ -270,6 +284,7 @@ class AgentCitation:
         """Charge Mistral 7B via le registre MLX (lazy)."""
         if self._modele is None:
             from src.mlx_utils import get_model
+
             self._modele = get_model(
                 model_name=cfg.modele_citation,
                 temperature=0.0,
@@ -350,14 +365,16 @@ class AgentCitation:
             for chunk_id in chunk_ids_bruts:
                 ev = index_chunks.get(chunk_id)
                 if ev:
-                    citations.append(CitationReglementaire(
-                        document_id=ev.document_id,
-                        article_id=ev.article_id,
-                        valid_from=ev.valid_from,
-                        valid_to=ev.valid_to,
-                        extrait=ev.texte_extrait[:200],
-                        chunk_id=ev.chunk_id,
-                    ))
+                    citations.append(
+                        CitationReglementaire(
+                            document_id=ev.document_id,
+                            article_id=ev.article_id,
+                            valid_from=ev.valid_from,
+                            valid_to=ev.valid_to,
+                            extrait=ev.texte_extrait[:200],
+                            chunk_id=ev.chunk_id,
+                        )
+                    )
                 else:
                     logger.warning(
                         "LLM a proposé un chunk_id inexistant : '%s' — ignoré.",
@@ -396,7 +413,8 @@ class AgentCitation:
         """
         logger.info(
             "Génération citations — mode=%s evidences=%d",
-            "llm" if self.use_llm else "deterministe", len(evidences),
+            "llm" if self.use_llm else "deterministe",
+            len(evidences),
         )
 
         if not evidences:

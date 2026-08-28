@@ -45,9 +45,7 @@ class _ClientMock:
 def _watcher_avec_client(monkeypatch, tmp_path, sequence):
     from src import watcher as watcher_module
 
-    monkeypatch.setattr(
-        watcher_module, "CHEMIN_HASHES", tmp_path / "hashes.json"
-    )
+    monkeypatch.setattr(watcher_module, "CHEMIN_HASHES", tmp_path / "hashes.json")
     monkeypatch.setattr(cfg, "watcher_backoff_secondes", 0.0)
     w = Watcher()
     client = _ClientMock(sequence)

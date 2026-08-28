@@ -77,6 +77,7 @@ def ev_nis2():
 class TestAgentTemporel:
     def test_filtre_version_a_en_2025(self, ev_rgpd_a, ev_rgpd_b):
         from src.agents.temporal import AgentTemporel
+
         agent = AgentTemporel(use_llm=False)
         r = agent.analyser("Obligations ?", [ev_rgpd_a, ev_rgpd_b], date(2025, 6, 15))
         assert len(r.evidences_applicables) == 1
@@ -85,6 +86,7 @@ class TestAgentTemporel:
 
     def test_filtre_version_b_en_2026(self, ev_rgpd_a, ev_rgpd_b):
         from src.agents.temporal import AgentTemporel
+
         agent = AgentTemporel(use_llm=False)
         r = agent.analyser("Obligations ?", [ev_rgpd_a, ev_rgpd_b], date(2026, 8, 10))
         assert len(r.evidences_applicables) == 1
@@ -92,18 +94,21 @@ class TestAgentTemporel:
 
     def test_borne_valid_to_inclusive(self, ev_rgpd_a, ev_rgpd_b):
         from src.agents.temporal import AgentTemporel
+
         agent = AgentTemporel(use_llm=False)
         r = agent.analyser("?", [ev_rgpd_a, ev_rgpd_b], date(2026, 8, 2))
         assert r.evidences_applicables[0].article_id == "art_32"
 
     def test_borne_valid_from_inclusive(self, ev_rgpd_a, ev_rgpd_b):
         from src.agents.temporal import AgentTemporel
+
         agent = AgentTemporel(use_llm=False)
         r = agent.analyser("?", [ev_rgpd_a, ev_rgpd_b], date(2026, 8, 3))
         assert r.evidences_applicables[0].article_id == "art_32_2026"
 
     def test_avant_entree_en_vigueur(self, ev_rgpd_a, ev_rgpd_b):
         from src.agents.temporal import AgentTemporel
+
         agent = AgentTemporel(use_llm=False)
         r = agent.analyser("?", [ev_rgpd_a, ev_rgpd_b], date(2017, 1, 1))
         assert len(r.evidences_applicables) == 0
@@ -111,6 +116,7 @@ class TestAgentTemporel:
 
     def test_aucune_evidence(self):
         from src.agents.temporal import AgentTemporel
+
         agent = AgentTemporel(use_llm=False)
         r = agent.analyser("?", [], date(2025, 1, 1))
         assert r.niveau_confiance == NiveauConfiance.INCERTAIN
@@ -118,15 +124,22 @@ class TestAgentTemporel:
     def test_detection_lacune(self):
         from src.agents.temporal import AgentTemporel
         from datetime import timedelta
+
         ev_a = EvidenceRecuperee(
-            chunk_id="a", document_id="DOC", article_id="art_1",
+            chunk_id="a",
+            document_id="DOC",
+            article_id="art_1",
             texte_extrait="Texte A",
-            valid_from=date(2020, 1, 1), valid_to=date(2021, 12, 31),
+            valid_from=date(2020, 1, 1),
+            valid_to=date(2021, 12, 31),
         )
         ev_b = EvidenceRecuperee(
-            chunk_id="b", document_id="DOC", article_id="art_1",
+            chunk_id="b",
+            document_id="DOC",
+            article_id="art_1",
             texte_extrait="Texte B",
-            valid_from=date(2023, 1, 1), valid_to=None,
+            valid_from=date(2023, 1, 1),
+            valid_to=None,
         )
         agent = AgentTemporel(use_llm=False)
         _, lacunes = agent.detecter_anomalies([ev_a, ev_b])
@@ -141,6 +154,7 @@ class TestAgentTemporel:
 class TestAgentExplainer:
     def test_assemblage_avec_preuves(self, ev_rgpd_a, ev_rgpd_art33):
         from src.agents.explainer import AgentExplainer
+
         agent = AgentExplainer(use_llm=False)
         r = agent.expliquer("Obligations ?", [ev_rgpd_a, ev_rgpd_art33])
         assert r.mode == "assemblage"
@@ -150,6 +164,7 @@ class TestAgentExplainer:
 
     def test_assemblage_sans_preuves(self):
         from src.agents.explainer import AgentExplainer
+
         agent = AgentExplainer(use_llm=False)
         r = agent.expliquer("Question ?", [])
         assert r.niveau_confiance == NiveauConfiance.INCERTAIN
@@ -157,16 +172,23 @@ class TestAgentExplainer:
 
     def test_contexte_temporel_dans_reponse(self, ev_rgpd_a):
         from src.agents.explainer import AgentExplainer
+
         agent = AgentExplainer(use_llm=False)
-        r = agent.expliquer("?", [ev_rgpd_a], date_ref=date(2023, 6, 15), type_pipeline="temporelle")
+        r = agent.expliquer(
+            "?", [ev_rgpd_a], date_ref=date(2023, 6, 15), type_pipeline="temporelle"
+        )
         assert "15/06/2023" in r.reponse
 
     def test_max_8_sources_affichees(self):
         from src.agents.explainer import AgentExplainer
+
         evidences = [
             EvidenceRecuperee(
-                chunk_id=f"c{i}", document_id="DOC", article_id=f"art_{i}",
-                texte_extrait=f"Texte {i}", valid_from=date(2020, 1, 1),
+                chunk_id=f"c{i}",
+                document_id="DOC",
+                article_id=f"art_{i}",
+                texte_extrait=f"Texte {i}",
+                valid_from=date(2020, 1, 1),
             )
             for i in range(12)
         ]
@@ -183,6 +205,7 @@ class TestAgentExplainer:
 class TestAgentCitation:
     def test_generation_deterministe(self, ev_rgpd_a, ev_rgpd_art33):
         from src.agents.citation import AgentCitation, StatutCitation
+
         agent = AgentCitation(use_llm=False)
         r = agent.generate([ev_rgpd_a, ev_rgpd_art33])
         assert len(r.citations_verifiees) == 2
@@ -193,11 +216,18 @@ class TestAgentCitation:
             assert len(cit.hash_extrait) == 64
 
     def test_citation_chunk_inconnu_douteuse(self, ev_rgpd_a):
-        from src.agents.citation import AgentCitation, CitationReglementaire, StatutCitation
+        from src.agents.citation import (
+            AgentCitation,
+            CitationReglementaire,
+            StatutCitation,
+        )
+
         agent = AgentCitation(use_llm=False)
         cit_inconnue = CitationReglementaire(
-            document_id="DOC", article_id="art_99",
-            valid_from=date(2020, 1, 1), valid_to=None,
+            document_id="DOC",
+            article_id="art_99",
+            valid_from=date(2020, 1, 1),
+            valid_to=None,
             extrait="Texte inventé",
             chunk_id="chunk_INEXISTANT",
         )
@@ -207,7 +237,12 @@ class TestAgentCitation:
         assert douteuses[0].statut == StatutCitation.DOUTEUSE
 
     def test_extrait_non_contenu_dans_source(self, ev_rgpd_a):
-        from src.agents.citation import AgentCitation, CitationReglementaire, StatutCitation
+        from src.agents.citation import (
+            AgentCitation,
+            CitationReglementaire,
+            StatutCitation,
+        )
+
         agent = AgentCitation(use_llm=False)
         cit_modifiee = CitationReglementaire(
             document_id=ev_rgpd_a.document_id,
@@ -222,6 +257,7 @@ class TestAgentCitation:
 
     def test_aucune_preuve(self):
         from src.agents.citation import AgentCitation
+
         agent = AgentCitation(use_llm=False)
         r = agent.generate([])
         assert r.avertissement is not None
@@ -229,6 +265,7 @@ class TestAgentCitation:
 
     def test_reference_courte(self, ev_rgpd_a):
         from src.agents.citation import AgentCitation
+
         agent = AgentCitation(use_llm=False)
         r = agent.generate([ev_rgpd_a])
         cit = r.citations_verifiees[0]
@@ -245,24 +282,32 @@ class TestAgentCitation:
 class TestAgentConflit:
     def test_conflit_inter_documents(self, ev_rgpd_art33, ev_nis2):
         from src.agents.conflit import AgentConflit, NiveauConflit
+
         agent = AgentConflit(use_llm=False)
-        r = agent.analyser("Délai notification ?", [ev_rgpd_art33, ev_nis2], date(2025, 1, 1))
+        r = agent.analyser(
+            "Délai notification ?", [ev_rgpd_art33, ev_nis2], date(2025, 1, 1)
+        )
         # La tension "obligatoire" vs "ne doit pas" devrait être détectée
         # (résultat dépend des heuristiques sur ces textes précis)
         assert r.niveau_global is not None
 
     def test_moins_de_2_preuves(self, ev_rgpd_a):
         from src.agents.conflit import AgentConflit, NiveauConflit
+
         agent = AgentConflit(use_llm=False)
         r = agent.analyser("?", [ev_rgpd_a])
         assert r.niveau_global == NiveauConflit.AUCUN
 
     def test_aucune_tension_lexicale(self, ev_rgpd_a):
         from src.agents.conflit import AgentConflit, NiveauConflit
+
         ev_neutre = EvidenceRecuperee(
-            chunk_id="c_neutre", document_id="ANSSI_01", article_id="art_1",
+            chunk_id="c_neutre",
+            document_id="ANSSI_01",
+            article_id="art_1",
             texte_extrait="Les systèmes font l'objet d'une supervision continue.",
-            valid_from=date(2023, 1, 1), valid_to=None,
+            valid_from=date(2023, 1, 1),
+            valid_to=None,
         )
         agent = AgentConflit(use_llm=False)
         r = agent.analyser("?", [ev_rgpd_a, ev_neutre], date(2025, 1, 1))

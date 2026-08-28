@@ -10,7 +10,11 @@ from __future__ import annotations
 
 from datetime import date
 
-from scripts.pdf_to_json import construire_document, detecter_articles, detecter_chapitres
+from scripts.pdf_to_json import (
+    construire_document,
+    detecter_articles,
+    detecter_chapitres,
+)
 from src.models import SourceReglementaire
 
 TEXTE_MULTI_CHAPITRES = """CHAPITRE I : Dispositions generales

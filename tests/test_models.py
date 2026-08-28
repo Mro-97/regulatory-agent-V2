@@ -80,7 +80,9 @@ class TestIntervalleValidite:
 
     def test_dates_egales_valides(self):
         """valid_from == valid_to : valide un seul jour."""
-        iv = IntervalleValidite(valid_from=date(2025, 6, 15), valid_to=date(2025, 6, 15))
+        iv = IntervalleValidite(
+            valid_from=date(2025, 6, 15), valid_to=date(2025, 6, 15)
+        )
         assert iv.est_applicable_a(date(2025, 6, 15)) is True
         assert iv.est_applicable_a(date(2025, 6, 16)) is False
 
@@ -261,6 +263,7 @@ class TestEnregistrementAudit:
 class TestSchemasAPI:
     def test_requete_question_validation(self):
         from src.models import RequeteQuestion
+
         rq = RequeteQuestion(question="Quelles sont les obligations RGPD ?")
         assert rq.question.startswith("Quelles")
         assert rq.date_contexte is None
@@ -268,6 +271,7 @@ class TestSchemasAPI:
 
     def test_requete_question_trop_courte(self):
         from src.models import RequeteQuestion
+
         with pytest.raises(Exception):
             RequeteQuestion(question="AB")
 

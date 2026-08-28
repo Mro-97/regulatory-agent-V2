@@ -37,7 +37,9 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def setup_collection(client, collection: str, dimension: int, reset: bool = False) -> None:
+def setup_collection(
+    client, collection: str, dimension: int, reset: bool = False
+) -> None:
     """
     Crée (ou recrée) la collection Qdrant avec tous les index nécessaires.
 
@@ -62,7 +64,8 @@ def setup_collection(client, collection: str, dimension: int, reset: bool = Fals
     if not client.collection_exists(collection):
         logger.info(
             "Création collection '%s' (dim=%d, distance=Cosine)…",
-            collection, dimension,
+            collection,
+            dimension,
         )
         client.create_collection(
             collection_name=collection,
@@ -78,12 +81,12 @@ def setup_collection(client, collection: str, dimension: int, reset: bool = Fals
 
     # Index de payload pour le filtrage performant
     index_a_creer = [
-        ("document_id",  PayloadSchemaType.KEYWORD),
-        ("article_id",   PayloadSchemaType.KEYWORD),
-        ("source",       PayloadSchemaType.KEYWORD),
-        ("themes",       PayloadSchemaType.KEYWORD),
-        ("valid_from",   PayloadSchemaType.DATETIME),
-        ("valid_to",     PayloadSchemaType.DATETIME),
+        ("document_id", PayloadSchemaType.KEYWORD),
+        ("article_id", PayloadSchemaType.KEYWORD),
+        ("source", PayloadSchemaType.KEYWORD),
+        ("themes", PayloadSchemaType.KEYWORD),
+        ("valid_from", PayloadSchemaType.DATETIME),
+        ("valid_to", PayloadSchemaType.DATETIME),
     ]
 
     for champ, schema in index_a_creer:
@@ -112,10 +115,14 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Initialise la collection Qdrant pour Regulatory Agent V2.",
     )
-    parser.add_argument("--memory", action="store_true",
-        help="Utilise Qdrant en mémoire (test local).")
-    parser.add_argument("--reset", action="store_true",
-        help="Supprime et recrée la collection existante.")
+    parser.add_argument(
+        "--memory", action="store_true", help="Utilise Qdrant en mémoire (test local)."
+    )
+    parser.add_argument(
+        "--reset",
+        action="store_true",
+        help="Supprime et recrée la collection existante.",
+    )
     args = parser.parse_args()
 
     from qdrant_client import QdrantClient

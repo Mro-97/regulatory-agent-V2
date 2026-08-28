@@ -58,15 +58,17 @@ logger = logging.getLogger(__name__)
 
 class NiveauConflit(str, Enum):
     """Niveau de sévérité d'un conflit détecté."""
+
     AUCUN = "aucun"
-    POTENTIEL = "potentiel"   # heuristique — à confirmer par un juriste
-    PROBABLE = "probable"     # LLM confirme une tension réelle
-    CRITIQUE = "critique"     # obligations directement contradictoires
+    POTENTIEL = "potentiel"  # heuristique — à confirmer par un juriste
+    PROBABLE = "probable"  # LLM confirme une tension réelle
+    CRITIQUE = "critique"  # obligations directement contradictoires
 
 
 @dataclass
 class ConflitDetecte:
     """Description d'un conflit entre deux passages réglementaires."""
+
     evidence_a: EvidenceRecuperee
     evidence_b: EvidenceRecuperee
     niveau: NiveauConflit
@@ -77,6 +79,7 @@ class ConflitDetecte:
 @dataclass
 class ResultatConflit:
     """Résultat complet de l'agent Conflit."""
+
     conflits: list[ConflitDetecte]
     niveau_global: NiveauConflit
     analyse_llm: Optional[str] = None
@@ -198,13 +201,11 @@ class AgentConflit:
 
                 # Vérifier chevauchement temporel
                 if date_ref:
-                    a_active = (
-                        ev_a.valid_from <= date_ref and
-                        (ev_a.valid_to is None or ev_a.valid_to >= date_ref)
+                    a_active = ev_a.valid_from <= date_ref and (
+                        ev_a.valid_to is None or ev_a.valid_to >= date_ref
                     )
-                    b_active = (
-                        ev_b.valid_from <= date_ref and
-                        (ev_b.valid_to is None or ev_b.valid_to >= date_ref)
+                    b_active = ev_b.valid_from <= date_ref and (
+                        ev_b.valid_to is None or ev_b.valid_to >= date_ref
                     )
                     if not (a_active and b_active):
                         continue
@@ -215,17 +216,19 @@ class AgentConflit:
                 )
 
                 if tension:
-                    conflits.append(ConflitDetecte(
-                        evidence_a=ev_a,
-                        evidence_b=ev_b,
-                        niveau=NiveauConflit.POTENTIEL,
-                        description=(
-                            f"{tension} entre "
-                            f"{ev_a.document_id}/{ev_a.article_id} et "
-                            f"{ev_b.document_id}/{ev_b.article_id}"
-                        ),
-                        necessite_validation_humaine=True,
-                    ))
+                    conflits.append(
+                        ConflitDetecte(
+                            evidence_a=ev_a,
+                            evidence_b=ev_b,
+                            niveau=NiveauConflit.POTENTIEL,
+                            description=(
+                                f"{tension} entre "
+                                f"{ev_a.document_id}/{ev_a.article_id} et "
+                                f"{ev_b.document_id}/{ev_b.article_id}"
+                            ),
+                            necessite_validation_humaine=True,
+                        )
+                    )
 
         if conflits:
             logger.warning(
@@ -269,17 +272,19 @@ class AgentConflit:
                     ev_a.texte_extrait, ev_b.texte_extrait
                 )
                 if tension:
-                    conflits.append(ConflitDetecte(
-                        evidence_a=ev_a,
-                        evidence_b=ev_b,
-                        niveau=NiveauConflit.POTENTIEL,
-                        description=(
-                            f"Incohérence interne ({tension}) entre "
-                            f"{ev_a.article_id} et {ev_b.article_id} "
-                            f"dans {ev_a.document_id}"
-                        ),
-                        necessite_validation_humaine=True,
-                    ))
+                    conflits.append(
+                        ConflitDetecte(
+                            evidence_a=ev_a,
+                            evidence_b=ev_b,
+                            niveau=NiveauConflit.POTENTIEL,
+                            description=(
+                                f"Incohérence interne ({tension}) entre "
+                                f"{ev_a.article_id} et {ev_b.article_id} "
+                                f"dans {ev_a.document_id}"
+                            ),
+                            necessite_validation_humaine=True,
+                        )
+                    )
 
         return conflits
 
@@ -295,6 +300,7 @@ class AgentConflit:
         """
         if self._modele is None:
             from src.mlx_utils import get_model
+
             logger.warning(
                 "Chargement de DeepSeek-R1 14B (~9 Go) — "
                 "les autres modèles seront déchargés."
@@ -346,7 +352,7 @@ class AgentConflit:
 
         # Contexte des conflits pour le LLM — indexés à partir de 1
         contexte = "\n\n".join(
-            f"CONFLIT {i+1} :\n"
+            f"CONFLIT {i + 1} :\n"
             f"Source A : {c.evidence_a.document_id}/{c.evidence_a.article_id}\n"
             f"Texte A : {c.evidence_a.texte_extrait[:400]}\n"
             f"Source B : {c.evidence_b.document_id}/{c.evidence_b.article_id}\n"
@@ -414,14 +420,12 @@ class AgentConflit:
             conflit.niveau = self._verdict_vers_niveau(verdict, conflit.niveau)
 
             if conflit.niveau == NiveauConflit.AUCUN:
-                logger.info(
-                    "Conflit %d écarté par le LLM (verdict INEXISTANT).", i + 1
-                )
+                logger.info("Conflit %d écarté par le LLM (verdict INEXISTANT).", i + 1)
             else:
                 conflits_retenus.append(conflit)
 
         # Les conflits au-delà du 5ᵉ n'ont pas été soumis au LLM — on les conserve.
-        conflits_retenus.extend(conflits[len(conflits_analyses):])
+        conflits_retenus.extend(conflits[len(conflits_analyses) :])
 
         return conflits_retenus, analyse
 
@@ -516,7 +520,9 @@ class AgentConflit:
         """
         logger.info(
             "Analyse conflits — evidences=%d date_ref=%s question=%r",
-            len(evidences), date_ref, question[:80],
+            len(evidences),
+            date_ref,
+            question[:80],
         )
 
         if len(evidences) < 2:
@@ -560,12 +566,15 @@ class AgentConflit:
             niveau_global = NiveauConflit.POTENTIEL
 
         necessite_validation = niveau_global in (
-            NiveauConflit.PROBABLE, NiveauConflit.CRITIQUE
+            NiveauConflit.PROBABLE,
+            NiveauConflit.CRITIQUE,
         )
 
         logger.info(
             "Résultat conflits — niveau=%s conflits=%d validation_requise=%s",
-            niveau_global.value, len(tous_conflits), necessite_validation,
+            niveau_global.value,
+            len(tous_conflits),
+            necessite_validation,
         )
 
         return ResultatConflit(

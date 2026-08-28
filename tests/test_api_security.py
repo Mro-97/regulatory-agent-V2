@@ -101,15 +101,11 @@ class TestAuthentification:
         assert client.get("/pending").status_code == 401
 
     def test_approve_sans_cle_refuse(self, client):
-        rep = client.post(
-            "/approve", json={"tache_id": str(uuid.uuid4())}
-        )
+        rep = client.post("/approve", json={"tache_id": str(uuid.uuid4())})
         assert rep.status_code == 401
 
     def test_reject_sans_cle_refuse(self, client):
-        rep = client.post(
-            "/reject", json={"tache_id": str(uuid.uuid4())}
-        )
+        rep = client.post("/reject", json={"tache_id": str(uuid.uuid4())})
         assert rep.status_code == 401
 
     def test_ingest_sans_cle_refuse(self, client):
@@ -324,6 +320,8 @@ class TestEnTetesSecurite:
         assert "frame-ancestors 'none'" in csp
         # unsafe-inline peut apparaître sur style-src mais JAMAIS sur script-src.
         assert "script-src 'self'" in csp
-        script_dir = next(d for d in csp.split(";") if d.strip().startswith("script-src"))
+        script_dir = next(
+            d for d in csp.split(";") if d.strip().startswith("script-src")
+        )
         assert "unsafe-inline" not in script_dir
         assert "unsafe-eval" not in script_dir

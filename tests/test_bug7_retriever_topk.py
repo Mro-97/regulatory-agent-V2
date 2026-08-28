@@ -48,7 +48,9 @@ def _point(point_id: str, score: float, valid_to: str | None = None) -> SimpleNa
     )
 
 
-def _retriever(passe_a: list[SimpleNamespace], passe_b: list[SimpleNamespace], top_k: int):
+def _retriever(
+    passe_a: list[SimpleNamespace], passe_b: list[SimpleNamespace], top_k: int
+):
     """Retriever avec client Qdrant mocké : 1er appel = passe A, 2e = passe B."""
     client = MagicMock()
     reponse_a = MagicMock()
@@ -70,8 +72,13 @@ class TestBug7RepartitionEquilibree:
         entièrement évincé passe A. Après le fix, elle doit rester
         représentée dans le résultat final.
         """
-        passe_a = [_point(f"a{i}", score=0.50 - i * 0.01, valid_to="2030-01-01") for i in range(4)]
-        passe_b = [_point(f"b{i}", score=0.90 - i * 0.01, valid_to=None) for i in range(4)]
+        passe_a = [
+            _point(f"a{i}", score=0.50 - i * 0.01, valid_to="2030-01-01")
+            for i in range(4)
+        ]
+        passe_b = [
+            _point(f"b{i}", score=0.90 - i * 0.01, valid_to=None) for i in range(4)
+        ]
 
         r, _ = _retriever(passe_a, passe_b, top_k=4)
         evidences = r.retrieve(question="Q", date_contexte=date(2025, 6, 15))
@@ -84,8 +91,13 @@ class TestBug7RepartitionEquilibree:
         )
 
     def test_total_ne_depasse_jamais_top_k(self):
-        passe_a = [_point(f"a{i}", score=0.9 - i * 0.01, valid_to="2030-01-01") for i in range(10)]
-        passe_b = [_point(f"b{i}", score=0.8 - i * 0.01, valid_to=None) for i in range(10)]
+        passe_a = [
+            _point(f"a{i}", score=0.9 - i * 0.01, valid_to="2030-01-01")
+            for i in range(10)
+        ]
+        passe_b = [
+            _point(f"b{i}", score=0.8 - i * 0.01, valid_to=None) for i in range(10)
+        ]
 
         r, _ = _retriever(passe_a, passe_b, top_k=5)
         evidences = r.retrieve(question="Q", date_contexte=date(2025, 6, 15))
@@ -98,7 +110,9 @@ class TestBug7RepartitionEquilibree:
         passe B plutôt que de réduire le total retourné.
         """
         passe_a = [_point("a0", score=0.95, valid_to="2030-01-01")]
-        passe_b = [_point(f"b{i}", score=0.80 - i * 0.01, valid_to=None) for i in range(10)]
+        passe_b = [
+            _point(f"b{i}", score=0.80 - i * 0.01, valid_to=None) for i in range(10)
+        ]
 
         r, _ = _retriever(passe_a, passe_b, top_k=6)
         evidences = r.retrieve(question="Q", date_contexte=date(2025, 6, 15))
@@ -109,7 +123,10 @@ class TestBug7RepartitionEquilibree:
 
     def test_resultat_final_trie_par_score_decroissant(self):
         passe_a = [_point("a0", score=0.60, valid_to="2030-01-01")]
-        passe_b = [_point("b0", score=0.95, valid_to=None), _point("b1", score=0.70, valid_to=None)]
+        passe_b = [
+            _point("b0", score=0.95, valid_to=None),
+            _point("b1", score=0.70, valid_to=None),
+        ]
 
         r, _ = _retriever(passe_a, passe_b, top_k=3)
         evidences = r.retrieve(question="Q", date_contexte=date(2025, 6, 15))

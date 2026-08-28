@@ -76,9 +76,15 @@ Tous les endpoints (sauf /health et l'interface web) exigent l'en-tête `X-API-K
 """,
     openapi_tags=[
         {"name": "Système", "description": "Santé et état du système"},
-        {"name": "Requêtes", "description": "Questions réglementaires avec RAG et filtrage temporel"},
+        {
+            "name": "Requêtes",
+            "description": "Questions réglementaires avec RAG et filtrage temporel",
+        },
         {"name": "Ingestion", "description": "Ajout de documents au corpus Qdrant"},
-        {"name": "Validation", "description": "File de validation humaine (approve/reject)"},
+        {
+            "name": "Validation",
+            "description": "File de validation humaine (approve/reject)",
+        },
     ],
     docs_url="/docs" if cfg.exposer_docs else None,
     redoc_url="/redoc" if cfg.exposer_docs else None,
@@ -149,7 +155,11 @@ async def limite_taille_requete(request: Request, call_next):
         n'émettent jamais de body chunked côté client — on refuse (411).
     """
     longueur = request.headers.get("Content-Length")
-    if longueur and longueur.isdigit() and int(longueur) > cfg.taille_max_requete_octets:
+    if (
+        longueur
+        and longueur.isdigit()
+        and int(longueur) > cfg.taille_max_requete_octets
+    ):
         return JSONResponse(
             status_code=413,
             content={"detail": "Requête trop volumineuse."},
@@ -159,7 +169,9 @@ async def limite_taille_requete(request: Request, call_next):
         if te and te != "identity":
             return JSONResponse(
                 status_code=411,
-                content={"detail": "Transfer-Encoding non autorisé — Content-Length requis."},
+                content={
+                    "detail": "Transfer-Encoding non autorisé — Content-Length requis."
+                },
             )
     return await call_next(request)
 
@@ -232,8 +244,7 @@ class LimiteurDebit:
     def _purger(self, borne: float) -> None:
         """Retire les clés dont tous les horodatages sont hors fenêtre."""
         obsoletes = [
-            k for k, ts in self._horodatages.items()
-            if not ts or max(ts) <= borne
+            k for k, ts in self._horodatages.items() if not ts or max(ts) <= borne
         ]
         for k in obsoletes:
             del self._horodatages[k]
@@ -245,7 +256,10 @@ class LimiteurDebit:
             # Purge opportuniste quand le dictionnaire dépasse le plafond.
             if len(self._horodatages) >= self.max_cles:
                 self._purger(borne)
-                if len(self._horodatages) >= self.max_cles and cle not in self._horodatages:
+                if (
+                    len(self._horodatages) >= self.max_cles
+                    and cle not in self._horodatages
+                ):
                     # Toujours saturé : on refuse la nouvelle clé plutôt que
                     # de laisser croître à l'infini.
                     return False
@@ -417,7 +431,9 @@ async def pending(orchestrateur: OrchestrateurDep):
     description="Approuve une tâche de validation identifiée par son tache_id.",
     dependencies=[AuthDep, OrigineDep],
 )
-async def approuver(requete: RequeteDecisionValidation, orchestrateur: OrchestrateurDep):
+async def approuver(
+    requete: RequeteDecisionValidation, orchestrateur: OrchestrateurDep
+):
     try:
         return await orchestrateur.valider_tache(
             tache_id=requete.tache_id,

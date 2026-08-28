@@ -33,7 +33,12 @@ from uuid import uuid4
 import httpx
 
 from config import cfg
-from src.models import AlerteWatcher, SourceReglementaire, TacheValidation, TypeFilePendante
+from src.models import (
+    AlerteWatcher,
+    SourceReglementaire,
+    TacheValidation,
+    TypeFilePendante,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -83,6 +88,7 @@ SOURCES_CONFIG: list[_SourceConfig] = [
 # Normalisation du contenu
 # ---------------------------------------------------------------------------
 
+
 def normaliser_contenu(texte_brut: str) -> str:
     """
     Normalise le contenu HTML/texte avant de calculer le hash.
@@ -104,9 +110,7 @@ def normaliser_contenu(texte_brut: str) -> str:
     texte = re.sub(r'csrf[_-]?token["\s:=]+\S+', "", texte, flags=re.IGNORECASE)
     texte = re.sub(r'nonce["\s:=]+\S+', "", texte, flags=re.IGNORECASE)
     # Suppression des horodatages en clair
-    texte = re.sub(
-        r"\d{1,2}/\d{1,2}/\d{4}\s+\d{2}:\d{2}(:\d{2})?", "", texte
-    )
+    texte = re.sub(r"\d{1,2}/\d{1,2}/\d{4}\s+\d{2}:\d{2}(:\d{2})?", "", texte)
     return texte
 
 
@@ -180,7 +184,8 @@ async def enregistrer_alerte_redis(alerte: AlerteWatcher) -> None:
         await client.aclose()
         logger.info(
             "Alerte Watcher enregistrée dans Redis : source=%s url=%s",
-            alerte.source.value, alerte.url_detectee,
+            alerte.source.value,
+            alerte.url_detectee,
         )
     except Exception as exc:
         logger.error("Redis indisponible pour l'alerte Watcher : %s", exc)
@@ -221,7 +226,9 @@ class Watcher:
             )
         return self._client_http
 
-    async def _fetch_avec_retry(self, url: str, source: SourceReglementaire) -> Optional[str]:
+    async def _fetch_avec_retry(
+        self, url: str, source: SourceReglementaire
+    ) -> Optional[str]:
         """
         Récupère une URL avec reprise sur échec réseau ou erreur 5xx.
 
@@ -253,7 +260,9 @@ class Watcher:
                 if 400 <= statut < 500:
                     logger.warning(
                         "Source indisponible (%s) : %s — %s (pas de retry)",
-                        source.value, url, exc,
+                        source.value,
+                        url,
+                        exc,
                     )
                     return None
                 derniere_erreur = exc
@@ -264,13 +273,19 @@ class Watcher:
                 attente = base * (2 ** (essai - 1))
                 logger.warning(
                     "Watcher — essai %d/%d échoué pour %s (%s), nouvelle tentative dans %.1fs",
-                    essai, max_essais, url, derniere_erreur, attente,
+                    essai,
+                    max_essais,
+                    url,
+                    derniere_erreur,
+                    attente,
                 )
                 await asyncio.sleep(attente)
 
         logger.error(
             "Watcher — %d tentatives épuisées pour %s : %s",
-            max_essais, url, derniere_erreur,
+            max_essais,
+            url,
+            derniere_erreur,
         )
         return None
 
@@ -311,7 +326,8 @@ class Watcher:
         # Modification détectée
         logger.warning(
             "Watcher — modification détectée : source=%s url=%s",
-            source.value, url,
+            source.value,
+            url,
         )
 
         alerte = AlerteWatcher(

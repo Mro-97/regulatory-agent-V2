@@ -16,7 +16,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from config import cfg
 from src.models import DocumentReglementaire, MetadonneesChunk
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 # Paramètres de chunking (modifiables)
@@ -25,7 +27,9 @@ OVERLAP = 50
 
 
 class Ingester:
-    def __init__(self, collection_name: str = "regulatory_chunks", recreate: bool = False):
+    def __init__(
+        self, collection_name: str = "regulatory_chunks", recreate: bool = False
+    ):
         # F1 : respecter cfg.qdrant_https + cfg.qdrant_api_key. `url=` seul
         # hardcodait http:// et ignorait la clé Qdrant même si présente.
         scheme = "https" if cfg.qdrant_https else "http"
@@ -41,7 +45,8 @@ class Ingester:
 
     def _load_embedding_model(self):
         from sentence_transformers import SentenceTransformer
-        model = SentenceTransformer('all-MiniLM-L6-v2')
+
+        model = SentenceTransformer("all-MiniLM-L6-v2")
         logger.info("Modèle d'embedding : all-MiniLM-L6-v2 (dim=384)")
         return model
 
@@ -81,7 +86,7 @@ class Ingester:
                 text_chunks = self.chunk_text(article.texte)
                 for idx, chunk_text in enumerate(text_chunks):
                     chunk = MetadonneesChunk(
-                        chunk_id=f"{doc.id}_{article.id}_part{idx+1}",
+                        chunk_id=f"{doc.id}_{article.id}_part{idx + 1}",
                         document_id=doc.id,
                         chapitre_id=chapitre.id,
                         article_id=article.id,
@@ -139,7 +144,9 @@ class Ingester:
         from qdrant_client.models import Filter, FieldCondition, MatchValue
 
         filtre = Filter(
-            must=[FieldCondition(key="document_id", match=MatchValue(value=document_id))]
+            must=[
+                FieldCondition(key="document_id", match=MatchValue(value=document_id))
+            ]
         )
         try:
             resultat = self.client.count(
@@ -159,13 +166,20 @@ class Ingester:
 
         Retourne le nombre de points supprimés (avant suppression).
         """
-        from qdrant_client.models import Filter, FieldCondition, MatchValue, FilterSelector
+        from qdrant_client.models import (
+            Filter,
+            FieldCondition,
+            MatchValue,
+            FilterSelector,
+        )
 
         avant = self.compter_chunks_existants(document_id)
         if avant == 0:
             return 0
         filtre = Filter(
-            must=[FieldCondition(key="document_id", match=MatchValue(value=document_id))]
+            must=[
+                FieldCondition(key="document_id", match=MatchValue(value=document_id))
+            ]
         )
         self.client.delete(
             collection_name=self.collection_name,
@@ -184,9 +198,13 @@ class Ingester:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Ingérer un JSON réglementaire dans Qdrant")
+    parser = argparse.ArgumentParser(
+        description="Ingérer un JSON réglementaire dans Qdrant"
+    )
     parser.add_argument("--json", required=True, help="Chemin vers le fichier JSON")
-    parser.add_argument("--collection", default="regulatory_chunks", help="Nom de la collection Qdrant")
+    parser.add_argument(
+        "--collection", default="regulatory_chunks", help="Nom de la collection Qdrant"
+    )
     parser.add_argument("--recreate", action="store_true", help="Recréer la collection")
     args = parser.parse_args()
 

@@ -63,8 +63,14 @@ class TestMachineUnique:
 
 class TestMachinePourAgent:
     def test_tous_les_agents_retournent_le_hostname_local(self):
-        for agent in ("Retriever", "Temporal", "Explainer", "Citation",
-                      "Conflict", "Orchestrateur"):
+        for agent in (
+            "Retriever",
+            "Temporal",
+            "Explainer",
+            "Citation",
+            "Conflict",
+            "Orchestrateur",
+        ):
             assert Orchestrateur._machine_pour_agent(agent) == HOSTNAME_LOCAL
 
     def test_agent_inconnu_retourne_aussi_le_hostname_local(self):
@@ -84,9 +90,12 @@ class TestAuditContientHostname:
 
     def _evidence(self, chunk: str, doc: str, art: str) -> EvidenceRecuperee:
         return EvidenceRecuperee(
-            chunk_id=chunk, document_id=doc, article_id=art,
+            chunk_id=chunk,
+            document_id=doc,
+            article_id=art,
             texte_extrait=f"Texte {chunk}",
-            valid_from=date(2020, 1, 1), valid_to=None,
+            valid_from=date(2020, 1, 1),
+            valid_to=None,
         )
 
     def test_machine_retriever_est_hostname_dans_audit(self):
@@ -167,9 +176,10 @@ class TestAntiRegressionHardcode:
     def test_aucun_mac_a_b_c_hardcode_dans_orchestrator(self):
         """L'orchestrateur ne doit plus assigner une étiquette figée Mac_X."""
         from pathlib import Path
-        source = (
-            Path(__file__).parent.parent / "src" / "orchestrator.py"
-        ).read_text(encoding="utf-8")
+
+        source = (Path(__file__).parent.parent / "src" / "orchestrator.py").read_text(
+            encoding="utf-8"
+        )
         for etiquette in ('machine="Mac_A"', 'machine="Mac_B"', 'machine="Mac_C"'):
             assert etiquette not in source, (
                 f"Régression : '{etiquette}' hardcodé réapparu."

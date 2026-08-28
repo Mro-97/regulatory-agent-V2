@@ -68,9 +68,9 @@ class TestAncrageHorsFenetre:
             assert resultat["invalides"] >= 1, (
                 f"Falsification hors fenêtre non détectée: {resultat}"
             )
-            assert any(
-                e.get("type") == "chaine_rompue" for e in resultat["erreurs"]
-            ), f"Type d'erreur attendu 'chaine_rompue', reçu: {resultat['erreurs']}"
+            assert any(e.get("type") == "chaine_rompue" for e in resultat["erreurs"]), (
+                f"Type d'erreur attendu 'chaine_rompue', reçu: {resultat['erreurs']}"
+            )
 
         try:
             asyncio.run(_run())
