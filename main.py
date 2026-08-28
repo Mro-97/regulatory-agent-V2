@@ -37,7 +37,7 @@ async def demarrer_watcher() -> None:
         logger.info("Watcher démarré en arrière-plan.")
         await watcher.demarrer_boucle()
     except Exception as exc:
-        logger.exception("Watcher échoué : %s", exc)
+        logger.exception("Watcher échoué : %s", exc)  # noqa: TRY401 — TODO §12 étape 4 : réviser le message en même temps que le typage
 
 
 async def initialiser_audit() -> None:

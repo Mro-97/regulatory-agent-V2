@@ -385,7 +385,7 @@ class AgentConflit:
             )
             analyse = resultat.texte.strip()
         except Exception as exc:
-            logger.exception("Analyse LLM échouée : %s", exc)
+            logger.exception("Analyse LLM échouée : %s", exc)  # noqa: TRY401 — TODO §12 étape 4 : réviser le message en même temps que le typage
             return conflits, (
                 f"Analyse automatique indisponible. "
                 f"{len(conflits)} tension(s) détectée(s) manuellement."

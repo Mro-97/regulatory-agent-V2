@@ -308,7 +308,7 @@ class AgentExplainer:
             )
 
         except Exception as exc:
-            logger.exception("Synthèse LLM échouée, bascule sur assemblage : %s", exc)
+            logger.exception("Synthèse LLM échouée, bascule sur assemblage : %s", exc)  # noqa: TRY401 — TODO §12 étape 4 : réviser le message en même temps que le typage
             return self._assembler(question, evidences, date_ref, type_pipeline)
 
     # ------------------------------------------------------------------

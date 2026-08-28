@@ -360,7 +360,7 @@ class AgentTemporel:
             )
             return resultat.texte.strip()
         except Exception as exc:
-            logger.exception("Annotation LLM échouée : %s", exc)
+            logger.exception("Annotation LLM échouée : %s", exc)  # noqa: TRY401 — TODO §12 étape 4 : réviser le message en même temps que le typage
             return f"Analyse temporelle déterministe — {len(applicables)} version(s) applicable(s) à {date_ref}."  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
 
     # ------------------------------------------------------------------

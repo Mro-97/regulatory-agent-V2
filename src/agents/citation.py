@@ -377,7 +377,7 @@ class AgentCitation:
             return citations
 
         except Exception as exc:
-            logger.exception("Extraction LLM échouée, bascule déterministe : %s", exc)
+            logger.exception("Extraction LLM échouée, bascule déterministe : %s", exc)  # noqa: TRY401 — TODO §12 étape 4 : réviser le message en même temps que le typage
             return self._generer_depuis_evidences(evidences)
 
     # ------------------------------------------------------------------
