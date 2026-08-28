@@ -194,7 +194,8 @@ class MLXInference:
         gc.collect()
 
     @property
-    def est_charge(self) -> bool:  # noqa: D102 — TODO §12 étape 4 : compléter docstrings
+    def est_charge(self) -> bool:
+        """True si le modèle d'inférence est déjà chargé en mémoire."""
         return self._loaded
 
     def generate(  # noqa: D417 — TODO §12 étape 4 : compléter docstrings
@@ -306,6 +307,9 @@ class _CacheGeneration:
         temperature: float = 0.1,
         top_p: float = 0.9,
     ) -> MLXInference:
+        """Retourne l'instance de `model_name` ; décharge le modèle actif si un
+        autre est demandé (un seul modèle de génération résident à la fois).
+        """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
         if self._actif and self._actif != model_name:  # noqa: SIM102 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
             if (
                 self._instances.get(self._actif, None)
@@ -324,11 +328,13 @@ class _CacheGeneration:
         return self._instances[model_name]
 
     def unload_all(self) -> None:
+        """Décharge toutes les instances mémorisées et remet à zéro l'actif."""
         for inst in self._instances.values():
             inst.unload()
         self._actif = None
 
     def statut(self) -> dict[str, bool]:
+        """Retourne un mapping {nom_modèle: est_chargé}."""
         return {n: i.est_charge for n, i in self._instances.items()}
 
 

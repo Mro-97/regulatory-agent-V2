@@ -38,7 +38,10 @@ logger = logging.getLogger(__name__)
 
 
 def setup_collection(
-    client: QdrantClient, collection: str, dimension: int, reset: bool = False,
+    client: QdrantClient,
+    collection: str,
+    dimension: int,
+    reset: bool = False,
 ) -> None:
     """Crée (ou recrée) la collection Qdrant avec tous les index nécessaires.
 

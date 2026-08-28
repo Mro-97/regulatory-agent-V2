@@ -87,9 +87,13 @@ async def enregistrer_alerte_redis(alerte: AlerteWatcher) -> None:
         # `redis.asyncio.Redis.lpush` a une signature générique
         # `Awaitable[int] | int` selon le mode ; le client instancié plus
         # haut est bien asynchrone.
-        await cast("Awaitable[Any]", client.lpush(
-            TypeFilePendante.ALERTES.value, tache.model_dump_json(),
-        ))
+        await cast(
+            "Awaitable[Any]",
+            client.lpush(
+                TypeFilePendante.ALERTES.value,
+                tache.model_dump_json(),
+            ),
+        )
         await client.aclose()
         logger.info(
             "Alerte Watcher enregistrée dans Redis : source=%s url=%s",

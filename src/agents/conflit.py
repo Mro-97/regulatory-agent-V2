@@ -101,6 +101,7 @@ _PAIRES_CONTRADICTOIRES = [
 
 
 def _contient_terme(texte: str, pattern: str) -> bool:
+    """True si `pattern` (regex) apparaît dans `texte` sans distinction de casse."""
     return bool(re.search(pattern, texte, re.IGNORECASE))
 
 

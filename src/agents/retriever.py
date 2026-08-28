@@ -21,7 +21,6 @@ from __future__ import annotations
 
 import logging
 from datetime import UTC, date, datetime
-from typing import Any
 
 from config import cfg
 from qdrant_client import QdrantClient
@@ -30,11 +29,8 @@ from qdrant_client.http.models import (
     ScoredPoint,
 )
 from src.agents.retriever_helpers import (
-    filtre_sources,
-    filtre_themes,
-    filtre_valid_from,
-    filtre_valid_to_null,
-    filtre_valid_to_present,
+    construire_filtres_passes,
+    fusionner_passes,
     point_vers_evidence,
 )
 from src.mlx_utils import get_embedding
@@ -193,101 +189,54 @@ class Retriever:
         # --- Étape 2 : date de référence ---
         date_ref = date_contexte or datetime.now(UTC).date()
 
-        # --- Étape 3 : construction des filtres ---
-        cond_from = filtre_valid_from(date_ref)
-        cond_to_present = filtre_valid_to_present(date_ref)
-        cond_to_null = filtre_valid_to_null()
-
-        # Conditions communes aux deux passes (thèmes + sources API)
-        conditions_communes: list[Any] = []
-        cond_themes = filtre_themes(filtres_themes or [])
-        if cond_themes is not None:
-            conditions_communes.append(cond_themes)
-        cond_sources = filtre_sources(filtres_sources or [])
-        if cond_sources is not None:
-            conditions_communes.append(cond_sources)
-
-        filtre_passe_a = Filter(must=[cond_from, cond_to_present, *conditions_communes])
-        filtre_passe_b = Filter(must=[cond_from, cond_to_null, *conditions_communes])
+        # --- Étape 3 : construction des filtres (deux passes temporelles) ---
+        filtre_passe_a, filtre_passe_b = construire_filtres_passes(
+            date_ref,
+            filtres_themes or [],
+            filtres_sources or [],
+        )
 
         # --- Étape 4 : deux passes de recherche ---
-        # Sur-échantillonnage à top_k complet par passe : nécessaire pour
-        # permettre le repêchage (étape suivante) sans jamais perdre de
-        # candidat valide.
-        resultats_par_passe: dict[str, list[ScoredPoint]] = {}
-        for label, filtre in [
-            ("valid_to_present", filtre_passe_a),
-            ("valid_to_null", filtre_passe_b),
-        ]:
-            try:
-                resultats = self._rechercher(vecteur, limite=self._top_k, filtre=filtre)
-                logger.debug("Passe %s — %d résultats", label, len(resultats))
-                resultats_par_passe[label] = resultats
-            except RuntimeError as exc:
-                logger.warning("Passe %s échouée : %s", label, exc)
-                resultats_par_passe[label] = []
+        res_a = self._rechercher_passe("valid_to_present", vecteur, filtre_passe_a)
+        res_b = self._rechercher_passe("valid_to_null", vecteur, filtre_passe_b)
 
-        # --- Étape 5 : représentation garantie + arbitrage global par score ---
-        # 1) Chaque passe NON VIDE obtient au moins un slot — c'est ce qui
-        #    empêche l'éviction complète d'une passe par des scores plus élevés
-        #    de l'autre (régression B7).
-        # 2) Les slots restants sont distribués aux meilleurs candidats
-        #    (toutes passes confondues) — évite qu'un quota rigide n'évince
-        #    un candidat à haut score au profit d'un candidat à bas score
-        #    dans l'autre passe (B3).
-        res_a = resultats_par_passe["valid_to_present"]
-        res_b = resultats_par_passe["valid_to_null"]
-
-        points_bruts: list[ScoredPoint] = []
-        ids_vus: set[str] = set()
-
-        def _prendre(point: ScoredPoint) -> bool:
-            if str(point.id) in ids_vus:
-                return False
-            ids_vus.add(str(point.id))
-            points_bruts.append(point)
-            return True
-
-        # Représentation garantie : un point de chaque passe non vide,
-        # dans la limite du top_k.
-        for source in (res_a, res_b):
-            if len(points_bruts) >= self._top_k:
-                break
-            for point in source:
-                if _prendre(point):
-                    break
-
-        # Complément par score global : on parcourt les meilleurs candidats
-        # restants, toutes passes confondues.
-        candidats_restants = sorted(
-            list(res_a) + list(res_b),
-            key=lambda p: p.score,
-            reverse=True,
-        )
-        for point in candidats_restants:
-            if len(points_bruts) >= self._top_k:
-                break
-            _prendre(point)
-
+        # --- Étape 5 : fusion (représentation garantie + arbitrage par score) ---
+        points_bruts = fusionner_passes(res_a, res_b, self._top_k)
         if not points_bruts:
             logger.warning("Aucun chunk trouvé pour : %r", question[:80])
             return []
 
-        points_bruts.sort(key=lambda p: p.score, reverse=True)
-
         # --- Étape 6 : conversion ---
-        evidences: list[EvidenceRecuperee] = []
-        for point in points_bruts:
-            evidence = point_vers_evidence(point)
-            if evidence is not None:
-                evidences.append(evidence)
-
+        evidences = [
+            e for e in (point_vers_evidence(p) for p in points_bruts) if e is not None
+        ]
         logger.info(
             "Retrieval terminé — %d/%d chunks retournés",
             len(evidences),
             len(points_bruts),
         )
         return evidences
+
+    def _rechercher_passe(
+        self,
+        label: str,
+        vecteur: list[float],
+        filtre: Filter,
+    ) -> list[ScoredPoint]:
+        """Exécute une passe de recherche Qdrant en journalisant le résultat.
+
+        Le sur-échantillonnage à `top_k` complet par passe est nécessaire pour
+        permettre le repêchage (fusion) sans jamais perdre de candidat valide.
+        Retourne une liste vide si Qdrant échoue — l'appelant continue avec
+        l'autre passe.
+        """
+        try:
+            resultats = self._rechercher(vecteur, limite=self._top_k, filtre=filtre)
+            logger.debug("Passe %s — %d résultats", label, len(resultats))
+            return resultats  # noqa: TRY300 — sortie normale du try
+        except RuntimeError as exc:
+            logger.warning("Passe %s échouée : %s", label, exc)
+            return []
 
 
 # _parser_date, _point_vers_evidence et les 5 filtres Qdrant ont été

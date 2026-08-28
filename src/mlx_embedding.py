@@ -99,7 +99,8 @@ class MLXEmbedding:
         gc.collect()
 
     @property
-    def est_charge(self) -> bool:  # noqa: D102 — TODO §12 étape 4 : compléter docstrings
+    def est_charge(self) -> bool:
+        """True si le modèle d'embedding est déjà chargé en mémoire."""
         return self._loaded
 
     def encode(self, texte: str, timeout_seconds: float | None = None) -> list[float]:
@@ -210,15 +211,18 @@ class _CacheEmbedding:
         self._instances: dict[str, MLXEmbedding] = {}
 
     def get(self, model_name: str = "BAAI/bge-m3") -> MLXEmbedding:
+        """Retourne l'instance mémorisée pour `model_name` (créée si absente)."""
         if model_name not in self._instances:
             self._instances[model_name] = MLXEmbedding(model_name=model_name)
         return self._instances[model_name]
 
     def unload_all(self) -> None:
+        """Décharge toutes les instances mémorisées."""
         for inst in self._instances.values():
             inst.unload()
 
     def statut(self) -> dict[str, bool]:
+        """Retourne un mapping {nom_modèle: est_chargé}."""
         return {n: i.est_charge for n, i in self._instances.items()}
 
 

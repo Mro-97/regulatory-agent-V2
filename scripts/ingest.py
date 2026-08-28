@@ -28,7 +28,9 @@ OVERLAP = 50
 
 class Ingester:  # noqa: D101
     def __init__(  # noqa: D107 — TODO §12 étape 4 : compléter docstrings
-        self, collection_name: str = "regulatory_chunks", recreate: bool = False,
+        self,
+        collection_name: str = "regulatory_chunks",
+        recreate: bool = False,
     ) -> None:
         # F1 : respecter cfg.qdrant_https + cfg.qdrant_api_key. `url=` seul
         # hardcodait http:// et ignorait la clé Qdrant même si présente.

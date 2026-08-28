@@ -27,7 +27,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-
 async def demarrer_watcher() -> None:
     """Lance le Watcher en tâche de fond."""
     try:

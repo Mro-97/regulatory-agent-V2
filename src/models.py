@@ -343,9 +343,7 @@ class TacheValidation(BaseModel):
     tache_id: UUID = Field(default_factory=uuid4)
     type_file: TypeFilePendante = Field(..., description="File Redis de destination.")
     statut: StatutValidation = Field(default=StatutValidation.EN_ATTENTE)
-    horodatage_creation: datetime = Field(
-        default_factory=lambda: datetime.now(UTC)
-    )
+    horodatage_creation: datetime = Field(default_factory=lambda: datetime.now(UTC))
     horodatage_traitement: datetime | None = Field(default=None)
     request_id: UUID | None = Field(default=None)
     contenu: dict[str, Any] = Field(default_factory=dict)
@@ -364,9 +362,7 @@ class AlerteWatcher(BaseModel):
     document_id_concerne: str | None = Field(default=None)
     hash_precedent: str = Field(..., description="Hash SHA-256 avant modification.")
     hash_nouveau: str = Field(..., description="Hash SHA-256 après modification.")
-    horodatage_detection: datetime = Field(
-        default_factory=lambda: datetime.now(UTC)
-    )
+    horodatage_detection: datetime = Field(default_factory=lambda: datetime.now(UTC))
     description_modification: str | None = Field(default=None, max_length=2000)
     tache_validation_id: UUID | None = Field(default=None)
 
