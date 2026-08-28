@@ -169,7 +169,70 @@ Correction requise (action utilisateur, exige sudo ou édition redis.conf)
      copié le mot de passe dans `.env` sous `REDIS_PASSWORD=…`.
   3. Vérifier : `lsof -nP -iTCP:6379 -sTCP:LISTEN` ne montre plus `*:6379`.
 
-## Reste à faire (état 2026-08-26)
+## Bloc 2 — Inventaire des 3 machines                              [TERMINÉ 2026-08-28]
+
+Fait
+  - Inventaire complet mini-1 / m4pro1 / m4pro2 consigné dans
+    `INVENTAIRE.md` (livrable §7 mission).
+  - Vérif `ghp_` dans `.git/config` des 3 machines : **0 occurrence**
+    (commande : `grep -c ghp_ /Users/mro/regulatory-agent/.git/config`)
+  - PostgreSQL vide/inaccessible sur mini-1 et m4pro1 : aucun `pg_dump`
+    à récupérer (Bloc 3 réduit à peau de chagrin).
+  - Qdrant m4pro1 : collection `deepseek_rag` (106 617 points, pipeline
+    DeepSeek standalone étranger à Regulatory Agent V2).
+  - Qdrant mini-1 : protégé par une clé API différente de celle du .env,
+    accès en lecture non obtenu.
+
+Conséquence pour la suite
+  - Bloc 3 formel réduit : `.env` mini-1 et m4pro1 récupérés
+    temporairement puis effacés (décision utilisateur : nettoyage total).
+
+---
+
+## Bloc 3 + nettoyage anciennes machines                          [TERMINÉ 2026-08-28]
+
+Décision utilisateur (2026-08-28) : « effacer tout ce qui concerne
+regulatory-agent sur mini-1/m4pro1 », override explicite de la règle
+absolue §1.3 « rien n'est effacé sur les anciennes machines ». Machines
+non éteintes (contrainte maintenue).
+
+Fait sur mini-1
+  - `pkill -f qdrant` — le Qdrant applicatif du repo est arrêté ;
+    le Qdrant système (user `jro`, via `pavault`) reste intact.
+  - `rm -rf /Users/mro/regulatory-agent` — 2.1 GB effacés.
+  - Verif : `find /Users/mro -maxdepth 2 -iname regulatory-agent*` →
+    aucun résultat.
+
+Fait sur m4pro1
+  - Collection Qdrant `deepseek_rag` supprimée via
+    `curl -X DELETE http://127.0.0.1:6333/collections/deepseek_rag`
+    (200 OK).
+  - `pkill -f qdrant` — Qdrant applicatif arrêté ; Qdrant système
+    (user `adm`) reste intact (permissions insuffisantes pour le tuer,
+    et le user a demandé de ne pas éteindre les machines).
+  - `rm -rf /Users/mro/regulatory-agent` — 2.1 GB effacés.
+
+Non touché (par prudence, non demandé)
+  - `~/.cache/huggingface/` sur les deux machines (partagé avec autres
+    projets potentiels).
+  - `~/models/` s'il existe hors repo.
+  - Autres services système, bases PG (vides ou inaccessibles), config OS.
+
+Non vérifié
+  - État exact de la mémoire / processus zombies après kill Qdrant sur
+    mini-1/m4pro1 — pertinent seulement pour l'administrateur de ces
+    machines, hors périmètre.
+
+Conséquence pour la suite
+  - Bloc 4 : sans objet — plus aucune donnée applicative à restaurer,
+    m4pro2 tourne déjà avec son propre stack.
+  - Bloc 7 (sauvegarde initiale hors machine) : reste à faire.
+  - Bloc 8 (clôture, date d'effacement des anciennes) : sans objet côté
+    « date d'effacement », les deux sont déjà nettoyées.
+
+---
+
+## Reste à faire (état 2026-08-28)
 
 - Bloc 2 — INVENTAIRE.md des 3 machines (dont vérif token `ghp_` dans
   `.git/config` sur mini-1/m4pro1/m4pro2 et `git log -p -S 'ghp_' --all`).
