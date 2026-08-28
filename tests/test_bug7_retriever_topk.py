@@ -24,10 +24,10 @@ for nom in ("mlx", "mlx.core", "mlx_lm", "mlx_lm.sample_utils", "mlx_embeddings"
         sys.modules[nom] = types.ModuleType(nom)
 sys.modules["mlx.core"].eval = lambda *a, **k: None
 
-from datetime import date
-from unittest.mock import MagicMock
+from datetime import date  # noqa: E402 — stubs MLX doivent précéder les imports du projet (sinon ImportError)
+from unittest.mock import MagicMock  # noqa: E402 — stubs MLX doivent précéder les imports du projet (sinon ImportError)
 
-from src.agents.retriever import Retriever
+from src.agents.retriever import Retriever  # noqa: E402 — stubs MLX doivent précéder les imports du projet (sinon ImportError)
 
 
 def _point(point_id: str, score: float, valid_to: str | None = None) -> SimpleNamespace:

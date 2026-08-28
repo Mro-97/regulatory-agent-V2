@@ -33,6 +33,7 @@ import asyncio
 import json
 import logging
 import os
+import platform
 import re
 from datetime import UTC, date, datetime
 from uuid import UUID, uuid4
@@ -107,9 +108,7 @@ def _classifier_requete(question: str, date_contexte: date | None) -> str:
 # éventuelle en cas d'évolution) mais retourne désormais le nom réel de
 # la machine d'exécution, plus une étiquette « Mac_A/B/C » figée qui
 # renvoyait à l'ancienne architecture 3-machines abandonnée.
-import platform as _platform
-
-_MACHINE = _platform.node() or "inconnue"
+_MACHINE = platform.node() or "inconnue"
 _MACHINE_INCONNUE = "inconnue"
 
 

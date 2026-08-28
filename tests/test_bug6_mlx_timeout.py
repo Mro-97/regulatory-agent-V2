@@ -22,8 +22,8 @@ for nom in ("mlx", "mlx.core", "mlx_lm", "mlx_lm.sample_utils", "mlx_embeddings"
         sys.modules[nom] = types.ModuleType(nom)
 sys.modules["mlx.core"].eval = lambda *a, **k: None
 
-import pytest
-from src.mlx_utils import MLXTimeoutError, _executer_avec_timeout
+import pytest  # noqa: E402 — stubs MLX doivent précéder les imports du projet (sinon ImportError)
+from src.mlx_utils import MLXTimeoutError, _executer_avec_timeout  # noqa: E402 — stubs MLX doivent précéder les imports du projet (sinon ImportError)
 
 
 class TestExecuterAvecTimeout:
