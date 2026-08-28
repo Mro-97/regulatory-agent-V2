@@ -22,14 +22,65 @@ async function apiFetch(url,opts){
   const r=await fetch(url,Object.assign({},opts,{headers:h}));
   if(r.status===401){
     try{sessionStorage.removeItem("apiKey");}catch(_){}
+    _marquerAuth(false,"Clé API refusée");
     const k=_demanderCle("Clé API invalide — veuillez la ressaisir :");
     if(!k)return r;
     API_KEY=k;
     const h2=Object.assign({},opts.headers||{},{"X-API-Key":API_KEY});
     if(opts.body&&!h2["Content-Type"])h2["Content-Type"]="application/json";
-    return await fetch(url,Object.assign({},opts,{headers:h2}));
+    const r2=await fetch(url,Object.assign({},opts,{headers:h2}));
+    if(r2.ok)_marquerAuth(true,"Clé API validée");
+    return r2;
   }
   return r;
+}
+
+// Indicateur visuel d'authentification (sidebar).
+function _marquerAuth(ok,sub){
+  const dot=document.getElementById("auth-dot");
+  const lab=document.getElementById("auth-label");
+  const sb=document.getElementById("auth-sub");
+  if(!dot||!lab||!sb)return;
+  if(ok){
+    dot.className="sys-dot";
+    lab.textContent="AUTH VALIDÉE";
+  }else{
+    dot.className="sys-dot error";
+    lab.textContent="AUTH REQUISE";
+  }
+  if(sub)sb.textContent=sub;
+}
+
+// Valider la clé au démarrage contre /pending — sans quoi n'importe quelle
+// saisie donnait l'illusion de connexion (l'interface `/` et `/health` sont
+// publics). Boucle jusqu'à validation ou annulation explicite.
+async function validerCleAuDemarrage(){
+  while(API_KEY){
+    let r;
+    try{
+      r=await fetch(API.pending,{headers:{"X-API-Key":API_KEY}});
+    }catch(_){
+      _marquerAuth(false,"API injoignable");
+      return false;
+    }
+    if(r.ok){
+      _marquerAuth(true,"Clé API validée");
+      return true;
+    }
+    if(r.status===401){
+      try{sessionStorage.removeItem("apiKey");}catch(_){}
+      _marquerAuth(false,"Clé refusée par le serveur");
+      const k=_demanderCle("Clé API refusée par le serveur — veuillez ressaisir :");
+      if(!k){_marquerAuth(false,"Saisie annulée");return false;}
+      API_KEY=k;
+      continue;
+    }
+    // 5xx, 503 (API_KEY non configurée côté serveur), etc. — laisser passer.
+    _marquerAuth(false,"Serveur indisponible");
+    return false;
+  }
+  _marquerAuth(false,"Aucune clé saisie");
+  return false;
 }
 let enCours=false,sessionQueries=0,filtreActif="all",tachesData=[],activiteSession=[],historiqueSession=[];
 const chatMessages=document.getElementById("chat-messages"),champQuestion=document.getElementById("champ-question"),champDate=document.getElementById("champ-date"),btnEnvoyer=document.getElementById("btn-envoyer"),toastZone=document.getElementById("toast-zone");
@@ -192,4 +243,10 @@ btnEnvoyer.addEventListener("click",envoyerQuestion);
 champQuestion.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();envoyerQuestion();}});
 champQuestion.addEventListener("input",()=>{champQuestion.style.height="46px";champQuestion.style.height=Math.min(champQuestion.scrollHeight,130)+"px";});
 
-majKPIs();chargerTaches();setInterval(majKPIs,30000);setInterval(chargerTaches,30000);
+// Validation de la clé AVANT tout polling, pour éviter l'illusion de
+// connexion quand /health (public) affiche "OPÉRATIONNEL" alors que la
+// clé saisie est en fait rejetée.
+validerCleAuDemarrage().finally(()=>{
+  majKPIs();chargerTaches();
+  setInterval(majKPIs,30000);setInterval(chargerTaches,30000);
+});

@@ -36,6 +36,14 @@
           <div class="sys-local">100% local <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
         </div>
       </div>
+      <!-- Indicateur d'authentification (mis à jour depuis app.js après validation /pending) -->
+      <div class="sys-status" id="auth-status" style="margin-top:8px;">
+        <div class="sys-dot error" id="auth-dot"></div>
+        <div class="sys-info">
+          <div class="sys-label" id="auth-label">AUTH EN ATTENTE</div>
+          <div class="sys-sub" id="auth-sub">Clé API non validée</div>
+        </div>
+      </div>
     </div>
   </aside>
   <div class="main">
