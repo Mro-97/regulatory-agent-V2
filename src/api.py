@@ -32,11 +32,12 @@ from threading import Lock
 from typing import Annotated
 
 from config import cfg
-from fastapi import Depends, FastAPI, HTTPException, Request, status
+from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from starlette.middleware.base import RequestResponseEndpoint
 
 from src.models import (
     ReponseDecisionValidation,
@@ -127,7 +128,9 @@ _CSP_POLITIQUE = (
 
 
 @app.middleware("http")
-async def en_tetes_securite(request: Request, call_next):  # noqa: ANN001, ANN201
+async def en_tetes_securite(
+    request: Request, call_next: RequestResponseEndpoint,
+) -> Response:
     """Ajoute les en-têtes de sécurité à toutes les réponses."""
     reponse = await call_next(request)
     reponse.headers.setdefault("X-Content-Type-Options", "nosniff")
@@ -143,7 +146,9 @@ async def en_tetes_securite(request: Request, call_next):  # noqa: ANN001, ANN20
 
 
 @app.middleware("http")
-async def limite_taille_requete(request: Request, call_next):  # noqa: ANN001, ANN201
+async def limite_taille_requete(
+    request: Request, call_next: RequestResponseEndpoint,
+) -> Response:
     """Rejette les requêtes trop volumineuses.
 
     Deux vecteurs à couvrir :
@@ -314,7 +319,7 @@ OrchestrateurDep = Annotated[Orchestrateur, Depends(obtenir_orchestrateur)]
 
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
-async def interface(request: Request):  # noqa: ANN201, D103
+async def interface(request: Request) -> HTMLResponse:  # noqa: D103 — TODO §12 étape 4 : compléter docstrings
     # C1 : la clé API n'est JAMAIS embarquée dans la page (elle serait
     # visible via `view source` pour tout visiteur non authentifié).
     # Le frontend la demande à l'utilisateur au premier chargement de
@@ -359,7 +364,9 @@ async def health() -> dict[str, object]:  # noqa: D103 — TODO §12 étape 4 : 
     description="Pipeline RAG complet : retrieval vectoriel → filtrage temporel → explication LLM → citations.",  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
     dependencies=[AuthDep, OrigineDep, DebitDep],
 )
-async def poser_question(requete: RequeteQuestion, orchestrateur: OrchestrateurDep):  # noqa: ANN201, D103
+async def poser_question(  # noqa: D103 — TODO §12 étape 4 : compléter docstrings
+    requete: RequeteQuestion, orchestrateur: OrchestrateurDep,
+) -> ReponseQuestion:
     logger.info("POST /ask — %r", requete.question[:80])
     try:
         return await orchestrateur.traiter(requete)
@@ -380,7 +387,9 @@ async def poser_question(requete: RequeteQuestion, orchestrateur: OrchestrateurD
     description="Ajoute un document JSON canonique (format DocumentReglementaire) au corpus Qdrant.",  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
     dependencies=[AuthDep, OrigineDep, DebitDep],
 )
-async def ingerer(requete: RequeteIngestion, orchestrateur: OrchestrateurDep):  # noqa: ANN201, D103
+async def ingerer(  # noqa: D103 — TODO §12 étape 4 : compléter docstrings
+    requete: RequeteIngestion, orchestrateur: OrchestrateurDep,
+) -> ReponseIngestion:
     from src.orchestrator import DocumentDejaIndexeError
 
     try:
@@ -411,7 +420,7 @@ async def ingerer(requete: RequeteIngestion, orchestrateur: OrchestrateurDep):  
     description="Retourne toutes les tâches en attente de validation humaine.",
     dependencies=[AuthDep],
 )
-async def pending(orchestrateur: OrchestrateurDep):  # noqa: ANN201, D103
+async def pending(orchestrateur: OrchestrateurDep) -> ReponseTachesPendantes:  # noqa: D103 — TODO §12 étape 4 : compléter docstrings
     try:
         return await orchestrateur.lister_taches_pendantes()
     except Exception:
@@ -430,9 +439,9 @@ async def pending(orchestrateur: OrchestrateurDep):  # noqa: ANN201, D103
     description="Approuve une tâche de validation identifiée par son tache_id.",
     dependencies=[AuthDep, OrigineDep],
 )
-async def approuver(  # noqa: ANN201, D103
-    requete: RequeteDecisionValidation, orchestrateur: OrchestrateurDep
-):
+async def approuver(  # noqa: D103 — TODO §12 étape 4 : compléter docstrings
+    requete: RequeteDecisionValidation, orchestrateur: OrchestrateurDep,
+) -> ReponseDecisionValidation:
     try:
         return await orchestrateur.valider_tache(
             tache_id=requete.tache_id,
@@ -460,7 +469,9 @@ async def approuver(  # noqa: ANN201, D103
     description="Rejette une tâche de validation identifiée par son tache_id.",
     dependencies=[AuthDep, OrigineDep],
 )
-async def rejeter(requete: RequeteDecisionValidation, orchestrateur: OrchestrateurDep):  # noqa: ANN201, D103
+async def rejeter(  # noqa: D103 — TODO §12 étape 4 : compléter docstrings
+    requete: RequeteDecisionValidation, orchestrateur: OrchestrateurDep,
+) -> ReponseDecisionValidation:
     try:
         return await orchestrateur.valider_tache(
             tache_id=requete.tache_id,
