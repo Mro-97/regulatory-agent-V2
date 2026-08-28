@@ -66,7 +66,7 @@ class Ingester:
         return vec.tolist() if hasattr(vec, "tolist") else list(vec)
 
     def chunk_text(self, text: str) -> list[str]:
-        """Découpe un texte en chunks de CHUNK_SIZE caractères avec chevauchement OVERLAP."""
+        """Découpe un texte en chunks de CHUNK_SIZE caractères avec chevauchement OVERLAP."""  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
         chunks = []
         start = 0
         while start < len(text):

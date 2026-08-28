@@ -74,7 +74,7 @@ class TestAttributionChapitres:
     def test_articles_avant_premier_chapitre_vont_au_premier(self):
         """Un article situé avant le premier marqueur de chapitre est rattaché
         au premier chapitre par défaut (aucun chapitre antérieur n'existe)."""
-        texte = "Article 1\nTexte préliminaire.\n\nCHAPITRE I : Corps\n\nArticle 2\nTexte 2.\n"
+        texte = "Article 1\nTexte préliminaire.\n\nCHAPITRE I : Corps\n\nArticle 2\nTexte 2.\n"  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
         doc = construire_document(
             texte=texte,
             doc_id="TEST_PREAMBULE",

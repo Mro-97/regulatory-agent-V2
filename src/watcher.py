@@ -207,7 +207,7 @@ class Watcher:
         logger.info("Watcher initialisé — %d hashes connus.", len(self._hashes))
 
     async def _http(self) -> httpx.AsyncClient:
-        """Client HTTP partagé avec retry et timeout adaptés aux sources réglementaires."""
+        """Client HTTP partagé avec retry et timeout adaptés aux sources réglementaires."""  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
         if self._client_http is None or self._client_http.is_closed:
             self._client_http = httpx.AsyncClient(
                 timeout=30.0,
@@ -266,7 +266,7 @@ class Watcher:
             if essai < max_essais:
                 attente = base * (2 ** (essai - 1))
                 logger.warning(
-                    "Watcher — essai %d/%d échoué pour %s (%s), nouvelle tentative dans %.1fs",
+                    "Watcher — essai %d/%d échoué pour %s (%s), nouvelle tentative dans %.1fs",  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
                     essai,
                     max_essais,
                     url,

@@ -49,8 +49,8 @@ def doc_rgpd_json() -> dict:
                         "titre": "Sécurité du traitement",
                         "texte": (
                             "Compte tenu de l'état des connaissances, des coûts "
-                            "de mise en œuvre et de la nature du traitement, le responsable "
-                            "met en œuvre les mesures techniques et organisationnelles appropriées."
+                            "de mise en œuvre et de la nature du traitement, le responsable "  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
+                            "met en œuvre les mesures techniques et organisationnelles appropriées."  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
                         ),
                         "validite": {"valid_from": "2018-05-25", "valid_to": None},
                         "citations": ["art_33"],
@@ -60,7 +60,7 @@ def doc_rgpd_json() -> dict:
                         "titre": "Notification d'une violation",
                         "texte": (
                             "En cas de violation de données à caractère personnel, "
-                            "le responsable notifie l'autorité de contrôle dans les 72 heures."
+                            "le responsable notifie l'autorité de contrôle dans les 72 heures."  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
                         ),
                         "validite": {"valid_from": "2018-05-25", "valid_to": None},
                         "citations": [],
@@ -195,7 +195,7 @@ class TestPipelineIngestion:
         assert any("Texte court" in c.texte_chunk for c in chunks)
 
     def test_chunking_article_long(self):
-        """Vérifie que chunk_document produit un chunk par article avec le texte complet."""
+        """Vérifie que chunk_document produit un chunk par article avec le texte complet."""  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
         from scripts.ingest import Ingester
         from src.models import (
             Chapitre,
@@ -367,7 +367,7 @@ class TestIngestionReelle:
         assert (info.points_count or 0) == r2.chunks_indexes == r1.chunks_indexes
 
     def test_api_ingest_409_si_deja_indexe(self, doc_rgpd_json):
-        """L'API /ingest doit retourner 409 quand le document existe déjà sans forcer_reindexation."""
+        """L'API /ingest doit retourner 409 quand le document existe déjà sans forcer_reindexation."""  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
         from config import cfg
         from fastapi.testclient import TestClient
         from src import api as api_module

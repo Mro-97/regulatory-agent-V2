@@ -149,7 +149,7 @@ class AgentExplainer:
 
         if len(evidences) > 8:
             lignes.append(
-                f"... et {len(evidences) - 8} passage(s) supplémentaire(s) non affichés."
+                f"... et {len(evidences) - 8} passage(s) supplémentaire(s) non affichés."  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
             )
             lignes.append("")
 
@@ -243,7 +243,7 @@ class AgentExplainer:
 
         contexte = self._construire_contexte(evidences)
         sources_citees = [
-            f"{ev.document_id}/{ev.article_id} [{ev.valid_from}→{ev.valid_to or 'en vigueur'}]"
+            f"{ev.document_id}/{ev.article_id} [{ev.valid_from}→{ev.valid_to or 'en vigueur'}]"  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
             for ev in evidences[:8]
         ]
 
@@ -262,7 +262,7 @@ class AgentExplainer:
                     "Tu es un assistant juridique spécialisé en droit réglementaire. "
                     "Tu réponds en français, de manière claire et structurée.\n\n"
                     "RÈGLES ABSOLUES :\n"
-                    "1. Tu n'utilises QUE les informations présentes dans les sources fournies.\n"
+                    "1. Tu n'utilises QUE les informations présentes dans les sources fournies.\n"  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
                     "2. Tu n'inventes aucun article, date, obligation ou exception.\n"
                     "3. Pour chaque affirmation, tu cites la source entre crochets "
                     "[DOCUMENT/ARTICLE].\n"

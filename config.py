@@ -47,7 +47,7 @@ class Parametres(BaseSettings):
     # ------------------------------------------------------------------
     api_key: str = Field(
         default="",
-        description="Clé API partagée (en-tête X-API-Key). Vide = accès refusé (fail-closed).",
+        description="Clé API partagée (en-tête X-API-Key). Vide = accès refusé (fail-closed).",  # noqa: E501
     )
     cors_origins_str: str = Field(
         default="http://localhost,http://127.0.0.1",

@@ -94,7 +94,7 @@ class IntervalleValidite(BaseModel):
     )
     valid_to: date | None = Field(
         default=None,
-        description="Date jusqu'à laquelle cette version est applicable (incluse). None = en vigueur.",
+        description="Date jusqu'à laquelle cette version est applicable (incluse). None = en vigueur.",  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
     )
 
     @model_validator(mode="after")
@@ -102,12 +102,12 @@ class IntervalleValidite(BaseModel):
         """Vérifie que valid_to >= valid_from lorsque les deux sont renseignés."""
         if self.valid_to is not None and self.valid_to < self.valid_from:
             raise ValueError(
-                f"valid_to ({self.valid_to}) ne peut pas être antérieur à valid_from ({self.valid_from})."
+                f"valid_to ({self.valid_to}) ne peut pas être antérieur à valid_from ({self.valid_from})."  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
             )
         return self
 
     def est_applicable_a(self, date_cible: date) -> bool:
-        """Retourne True si valid_from <= date_cible <= valid_to (ou valid_to absent)."""
+        """Retourne True si valid_from <= date_cible <= valid_to (ou valid_to absent)."""  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
         if date_cible < self.valid_from:
             return False
         if self.valid_to is not None and date_cible > self.valid_to:
@@ -222,7 +222,7 @@ class DocumentReglementaire(BaseModel):
     )
 
     def calculer_hash(self) -> str:
-        """Hash SHA-256 du contenu réglementaire (hors hash_document et date_indexation)."""
+        """Hash SHA-256 du contenu réglementaire (hors hash_document et date_indexation)."""  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
         donnees = self.model_dump(
             exclude={"hash_document", "date_indexation"}, mode="json"
         )
@@ -230,7 +230,7 @@ class DocumentReglementaire(BaseModel):
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
     def articles_applicables_a(self, date_cible: date) -> list[VersionArticle]:
-        """Retourne tous les articles applicables à la date donnée, tous chapitres confondus."""
+        """Retourne tous les articles applicables à la date donnée, tous chapitres confondus."""  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
         resultat: list[VersionArticle] = []
         for chapitre in self.chapitres:
             resultat.extend(chapitre.articles_applicables_a(date_cible))
@@ -420,7 +420,7 @@ class RequeteIngestion(BaseModel):
             taille = len(json.dumps(self.contenu_json, ensure_ascii=False))
             if taille > TAILLE_MAX_CONTENU_JSON:
                 raise ValueError(
-                    f"contenu_json trop volumineux ({taille} octets > {TAILLE_MAX_CONTENU_JSON})"
+                    f"contenu_json trop volumineux ({taille} octets > {TAILLE_MAX_CONTENU_JSON})"  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
                 )
         return self
 

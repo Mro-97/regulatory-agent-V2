@@ -79,7 +79,7 @@ class TestB3PasDEvictionParScoreBas:
         )
         # b1 (le plus bas) doit être celui qui saute.
         assert "b1" not in ids, (
-            f"b1 (0.50) présent alors que a2 (0.70) devait être préféré. Résultat: {ids}"
+            f"b1 (0.50) présent alors que a2 (0.70) devait être préféré. Résultat: {ids}"  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
         )
 
     def test_passe_a_reste_representee_scores_bas(self):

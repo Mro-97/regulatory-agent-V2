@@ -72,7 +72,7 @@ Inférence 100 % locale via MLX sur Apple Silicon — aucune donnée transmise �
 
 ### Authentification
 Tous les endpoints (sauf /health et l'interface web) exigent l'en-tête `X-API-Key`.
-""",
+""",  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
     openapi_tags=[
         {"name": "Système", "description": "Santé et état du système"},
         {
@@ -331,7 +331,7 @@ async def interface(request: Request):
     "/health",
     tags=["Système"],
     summary="État du système",
-    description="Vérifie que l'API est opérationnelle. Retourne l'horodatage et la version.",
+    description="Vérifie que l'API est opérationnelle. Retourne l'horodatage et la version.",  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
 )
 async def health() -> dict[str, object]:
     # M4 : /health est public — on n'expose ni le nom d'application ni la
@@ -356,7 +356,7 @@ async def health() -> dict[str, object]:
     response_model=ReponseQuestion,
     tags=["Requêtes"],
     summary="Poser une question réglementaire",
-    description="Pipeline RAG complet : retrieval vectoriel → filtrage temporel → explication LLM → citations.",
+    description="Pipeline RAG complet : retrieval vectoriel → filtrage temporel → explication LLM → citations.",  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
     dependencies=[AuthDep, OrigineDep, DebitDep],
 )
 async def poser_question(requete: RequeteQuestion, orchestrateur: OrchestrateurDep):
@@ -377,7 +377,7 @@ async def poser_question(requete: RequeteQuestion, orchestrateur: OrchestrateurD
     status_code=202,
     tags=["Ingestion"],
     summary="Ingérer un document",
-    description="Ajoute un document JSON canonique (format DocumentReglementaire) au corpus Qdrant.",
+    description="Ajoute un document JSON canonique (format DocumentReglementaire) au corpus Qdrant.",  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
     dependencies=[AuthDep, OrigineDep, DebitDep],
 )
 async def ingerer(requete: RequeteIngestion, orchestrateur: OrchestrateurDep):

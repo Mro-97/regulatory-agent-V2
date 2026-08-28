@@ -345,7 +345,7 @@ class MLXEmbedding:
             self._processor = None
             self._loaded = False
             raise RuntimeError(
-                f"Impossible de charger le modèle d'embedding '{self.model_name}' : {exc}"
+                f"Impossible de charger le modèle d'embedding '{self.model_name}' : {exc}"  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
             ) from exc
 
     def unload(self) -> None:

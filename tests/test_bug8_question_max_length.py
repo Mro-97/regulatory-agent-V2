@@ -43,7 +43,7 @@ class TestBug8QuestionMaxLength:
         script = (
             "from src.models import RequeteQuestion\n"
             "champ = RequeteQuestion.model_fields['question']\n"
-            "max_len = next(m.max_length for m in champ.metadata if hasattr(m, 'max_length'))\n"
+            "max_len = next(m.max_length for m in champ.metadata if hasattr(m, 'max_length'))\n"  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
             "assert max_len == 10, f'attendu 10, obtenu {max_len}'\n"
             "try:\n"
             "    RequeteQuestion(question='ceci depasse largement dix caracteres')\n"

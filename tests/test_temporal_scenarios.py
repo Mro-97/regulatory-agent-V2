@@ -62,7 +62,7 @@ class TestTemporalFiltering:
         assert resultat.evidences_applicables[0].article_id == "art_32_2026"
 
     def test_jour_exact_coupure_borne_valid_to_incluse(self):
-        """Le 2026-08-02, la version A est encore applicable (borne valid_to incluse)."""
+        """Le 2026-08-02, la version A est encore applicable (borne valid_to incluse)."""  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
         agent = AgentTemporel()
         resultat = agent.analyser(
             question="Q",
@@ -72,7 +72,7 @@ class TestTemporalFiltering:
         assert [e.article_id for e in resultat.evidences_applicables] == ["art_32"]
 
     def test_jour_exact_coupure_borne_valid_from_incluse(self):
-        """Le 2026-08-03, seule la version B est applicable (borne valid_from incluse)."""
+        """Le 2026-08-03, seule la version B est applicable (borne valid_from incluse)."""  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
         agent = AgentTemporel()
         resultat = agent.analyser(
             question="Q",

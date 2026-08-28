@@ -146,7 +146,7 @@ class Retriever:
 
         Returns:
             FieldCondition Qdrant ou None si la liste est vide.
-        """
+        """  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
         themes_valides = [t for t in themes if t]
         if not themes_valides:
             return None

@@ -25,7 +25,7 @@ def ev_rgpd_a():
         chunk_id="chunk_001",
         document_id="RGPD_2016_679",
         article_id="art_32",
-        texte_extrait="Le responsable doit mettre en œuvre des mesures techniques appropriées.",
+        texte_extrait="Le responsable doit mettre en œuvre des mesures techniques appropriées.",  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
         valid_from=date(2018, 5, 25),
         valid_to=date(2026, 8, 2),
     )
@@ -37,7 +37,7 @@ def ev_rgpd_b():
         chunk_id="chunk_002",
         document_id="RGPD_2016_679",
         article_id="art_32_2026",
-        texte_extrait="Compte tenu des techniques les plus récentes, le responsable met en œuvre.",
+        texte_extrait="Compte tenu des techniques les plus récentes, le responsable met en œuvre.",  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
         valid_from=date(2026, 8, 3),
         valid_to=None,
     )
@@ -61,7 +61,7 @@ def ev_nis2():
         chunk_id="chunk_004",
         document_id="NIS2_2022_2555",
         article_id="art_23",
-        texte_extrait="L'entité ne doit pas retarder la notification au-delà de 24 heures.",
+        texte_extrait="L'entité ne doit pas retarder la notification au-delà de 24 heures.",  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
         valid_from=date(2024, 10, 17),
         valid_to=None,
     )
