@@ -26,13 +26,16 @@ from typing import Any
 from config import cfg
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import (
-    DatetimeRange,
-    FieldCondition,
     Filter,
-    IsNullCondition,
-    MatchAny,
-    PayloadField,
     ScoredPoint,
+)
+from src.agents.retriever_helpers import (
+    filtre_sources,
+    filtre_themes,
+    filtre_valid_from,
+    filtre_valid_to_null,
+    filtre_valid_to_present,
+    point_vers_evidence,
 )
 from src.mlx_utils import get_embedding
 from src.models import EvidenceRecuperee, SourceReglementaire
@@ -100,76 +103,6 @@ class Retriever:
         return vecteur
 
     # ------------------------------------------------------------------
-    # Construction des filtres Qdrant
-    # ------------------------------------------------------------------
-
-    def _filtre_valid_from(self, date_ref: date) -> FieldCondition:
-        """Condition : valid_from <= date_ref.
-
-        Args:
-            date_ref: Date de référence.
-
-        Returns:
-            FieldCondition Qdrant.
-        """
-        return FieldCondition(
-            key="valid_from",
-            range=DatetimeRange(lte=datetime.combine(date_ref, datetime.min.time())),
-        )
-
-    def _filtre_valid_to_present(self, date_ref: date) -> FieldCondition:
-        """Condition : valid_to >= date_ref (champ renseigné).
-
-        Args:
-            date_ref: Date de référence.
-
-        Returns:
-            FieldCondition Qdrant.
-        """
-        return FieldCondition(
-            key="valid_to",
-            range=DatetimeRange(gte=datetime.combine(date_ref, datetime.min.time())),
-        )
-
-    def _filtre_valid_to_null(self) -> IsNullCondition:
-        """Condition : valid_to est nul (version en vigueur indéfiniment).
-
-        Returns:
-            IsNullCondition Qdrant — syntaxe correcte pour qdrant-client 1.9+.
-        """
-        return IsNullCondition(is_null=PayloadField(key="valid_to"))
-
-    def _filtre_themes(self, themes: list[str]) -> FieldCondition | None:
-        """Condition : le payload 'themes' (array) contient au moins un des thèmes demandés.
-
-        Args:
-            themes: Liste de thèmes autorisés. Vide → aucun filtre.
-
-        Returns:
-            FieldCondition Qdrant ou None si la liste est vide.
-        """  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
-        themes_valides = [t for t in themes if t]
-        if not themes_valides:
-            return None
-        return FieldCondition(key="themes", match=MatchAny(any=themes_valides))
-
-    def _filtre_sources(
-        self, sources: list[SourceReglementaire]
-    ) -> FieldCondition | None:
-        """Condition : le payload 'source' correspond à l'une des sources demandées.
-
-        Args:
-            sources: Liste de sources autorisées. Vide → aucun filtre.
-
-        Returns:
-            FieldCondition Qdrant ou None si la liste est vide.
-        """
-        valeurs = [s.value for s in sources if s is not None]
-        if not valeurs:
-            return None
-        return FieldCondition(key="source", match=MatchAny(any=valeurs))
-
-    # ------------------------------------------------------------------
     # Recherche Qdrant
     # ------------------------------------------------------------------
 
@@ -207,59 +140,6 @@ class Retriever:
             raise RuntimeError(  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
                 f"Qdrant inaccessible (collection={self._collection}) : {exc}"
             ) from exc
-
-    # ------------------------------------------------------------------
-    # Conversion des résultats
-    # ------------------------------------------------------------------
-
-    def _point_vers_evidence(self, point: ScoredPoint) -> EvidenceRecuperee | None:
-        """Convertit un ScoredPoint Qdrant en EvidenceRecuperee.
-
-        Retourne None si le payload est incomplet, avec log d'avertissement.
-
-        Args:
-            point: ScoredPoint retourné par Qdrant.
-
-        Returns:
-            EvidenceRecuperee ou None.
-        """
-        payload = point.payload or {}
-
-        champs_requis = [
-            "chunk_id",
-            "document_id",
-            "article_id",
-            "texte_chunk",
-            "valid_from",
-        ]
-        for champ in champs_requis:
-            if champ not in payload:
-                logger.warning(
-                    "Chunk ignoré — champ manquant '%s' dans point.id=%s",
-                    champ,
-                    point.id,
-                )
-                return None
-
-        try:
-            valid_from = _parser_date(payload["valid_from"])
-            valid_to = (
-                _parser_date(payload["valid_to"]) if payload.get("valid_to") else None
-            )
-
-            return EvidenceRecuperee(
-                chunk_id=str(payload["chunk_id"]),
-                document_id=str(payload["document_id"]),
-                article_id=str(payload["article_id"]),
-                texte_extrait=str(payload["texte_chunk"]),
-                score_similarite=round(float(point.score), 4),
-                valid_from=valid_from,
-                valid_to=valid_to,
-            )
-
-        except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
-            logger.warning("Conversion échouée pour point.id=%s : %s", point.id, exc)
-            return None
 
     # ------------------------------------------------------------------
     # Point d'entrée principal
@@ -314,16 +194,16 @@ class Retriever:
         date_ref = date_contexte or datetime.now(UTC).date()
 
         # --- Étape 3 : construction des filtres ---
-        cond_from = self._filtre_valid_from(date_ref)
-        cond_to_present = self._filtre_valid_to_present(date_ref)
-        cond_to_null = self._filtre_valid_to_null()
+        cond_from = filtre_valid_from(date_ref)
+        cond_to_present = filtre_valid_to_present(date_ref)
+        cond_to_null = filtre_valid_to_null()
 
         # Conditions communes aux deux passes (thèmes + sources API)
         conditions_communes: list[Any] = []
-        cond_themes = self._filtre_themes(filtres_themes or [])
+        cond_themes = filtre_themes(filtres_themes or [])
         if cond_themes is not None:
             conditions_communes.append(cond_themes)
-        cond_sources = self._filtre_sources(filtres_sources or [])
+        cond_sources = filtre_sources(filtres_sources or [])
         if cond_sources is not None:
             conditions_communes.append(cond_sources)
 
@@ -398,7 +278,7 @@ class Retriever:
         # --- Étape 6 : conversion ---
         evidences: list[EvidenceRecuperee] = []
         for point in points_bruts:
-            evidence = self._point_vers_evidence(point)
+            evidence = point_vers_evidence(point)
             if evidence is not None:
                 evidences.append(evidence)
 
@@ -410,29 +290,7 @@ class Retriever:
         return evidences
 
 
-# ---------------------------------------------------------------------------
-# Utilitaire interne
-# ---------------------------------------------------------------------------
-
-
-def _parser_date(valeur: object) -> date:
-    """Parse une valeur de date depuis un payload Qdrant.
-
-    Accepte : str ISO 8601, datetime, date.
-
-    Args:
-        valeur: Valeur brute du payload.
-
-    Returns:
-        Objet date Python.
-
-    Raises:
-        ValueError: Si la valeur ne peut pas être parsée.
-    """
-    if isinstance(valeur, datetime):
-        return valeur.date()
-    if isinstance(valeur, date):
-        return valeur
-    if isinstance(valeur, str):
-        return date.fromisoformat(valeur[:10])
-    raise ValueError(f"Impossible de parser la date : {valeur!r}")  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
+# _parser_date, _point_vers_evidence et les 5 filtres Qdrant ont été
+# extraits vers src/agents/retriever_helpers.py (§12 étape 6). Ré-exportés
+# ci-dessus pour l'usage interne du Retriever ; les tests continuent à
+# les importer depuis src.agents.retriever_helpers directement.
