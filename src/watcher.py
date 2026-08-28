@@ -55,13 +55,13 @@ class _SourceConfig:
 
 
 SOURCES_CONFIG: list[_SourceConfig] = [
-    _SourceConfig(
-        source=SourceReglementaire.EUR_LEX,
-        urls=[
-            "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32016R0679",
-            "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32022L2555",
-        ],
-    ),
+    # EUR-Lex retiré : les pages HTML `legal-content/FR/TXT/?uri=CELEX:...`
+    # embarquent du contenu dynamique (tokens de session, timestamps, IDs
+    # d'analytics) que `normaliser_contenu` ne capture pas. Deux GET
+    # consécutifs à 2 s d'écart produisent deux hash différents → alerte
+    # à chaque cycle Watcher. Le suivi EUR-Lex devra passer par l'API
+    # officielle (SPARQL / OData) plutôt que par scraping HTML — refonte
+    # à traiter séparément.
     _SourceConfig(
         source=SourceReglementaire.CNIL,
         urls=[
