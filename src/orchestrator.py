@@ -35,10 +35,18 @@ import logging
 import os
 import platform
 import re
+from collections.abc import Awaitable, Callable
 from datetime import UTC, date, datetime
+from typing import TYPE_CHECKING, Any, TypeVar, cast
 from uuid import UUID, uuid4
 
 from config import cfg
+
+if TYPE_CHECKING:
+    import redis.asyncio as aioredis
+    from scripts.ingest import Ingester
+
+    from src.agents.retriever import Retriever
 
 from src.models import (
     EnregistrementAudit,
@@ -58,6 +66,8 @@ from src.models import (
 )
 
 logger = logging.getLogger(__name__)
+
+T = TypeVar("T")
 
 # ---------------------------------------------------------------------------
 # Détection du type de requête
@@ -150,8 +160,8 @@ class Orchestrateur:
             self.mode = "real"
 
         # Agents — instanciés en lazy lors du premier appel
-        self._retriever = None
-        self._ingester = None
+        self._retriever: Retriever | None = None
+        self._ingester: Ingester | None = None
         # M5 : le client HTTP inter-machines (Mac B / Mac C) est supprimé
         # avec l'architecture unique. Voir aussi `_http()`, retiré.
 
@@ -168,7 +178,7 @@ class Orchestrateur:
     # Accès lazy aux agents
     # ------------------------------------------------------------------
 
-    def _obtenir_retriever(self):  # noqa: ANN202 — TODO §12 étape 4 : typage strict progressif
+    def _obtenir_retriever(self) -> Retriever:
         """Retourne le Retriever réel, créé au premier appel."""
         if self._retriever is None:
             from src.agents.retriever import Retriever
@@ -177,7 +187,7 @@ class Orchestrateur:
             logger.info("Retriever réel initialisé.")
         return self._retriever
 
-    def _obtenir_ingester(self):  # noqa: ANN202 — TODO §12 étape 4 : typage strict progressif
+    def _obtenir_ingester(self) -> Ingester:
         """Retourne l'Ingester réel (scripts/ingest.py), créé au premier appel."""
         if self._ingester is None:
             from scripts.ingest import Ingester
@@ -186,7 +196,13 @@ class Orchestrateur:
             logger.info("Ingester réel initialisé.")
         return self._ingester
 
-    async def _executer_bloquant(self, fonction, /, *args, **kwargs):  # noqa: ANN001, ANN002, ANN003, ANN202, D417
+    async def _executer_bloquant(  # noqa: D417 — TODO §12 étape 4 : compléter docstrings
+        self,
+        fonction: Callable[..., T],
+        /,
+        *args: Any,
+        **kwargs: Any,
+    ) -> T:
         """Exécute un appel synchrone potentiellement long (chargement/inférence
         MLX) dans un thread séparé, pour ne jamais geler la boucle asyncio
         (sinon /health, /pending et le Watcher deviennent indisponibles
@@ -208,7 +224,7 @@ class Orchestrateur:
         async with self._verrou_agents:
             return await asyncio.to_thread(fonction, *args, **kwargs)
 
-    async def _nouveau_client_redis(self):  # noqa: ANN202 — TODO §12 étape 4 : typage strict progressif
+    async def _nouveau_client_redis(self) -> aioredis.Redis:
         """Client Redis asynchrone avec authentification depuis la config."""
         import redis.asyncio as aioredis
 
@@ -328,7 +344,7 @@ class Orchestrateur:
         question: str,
         evidences: list[EvidenceRecuperee],
         type_pipeline: str,
-        date_ref=None,  # noqa: ANN001 — TODO §12 étape 4 : typage strict progressif
+        date_ref: date | None = None,
     ) -> tuple[str, NiveauConfiance, SortieAgent]:
         """Étape 3 : synthèse via AgentExplainer.
         Assemblage structuré (use_llm=False) ou Qwen 2.5 7B (use_llm=True).
@@ -692,7 +708,11 @@ class Orchestrateur:
             par_file: dict[str, int] = {}
 
             for file in TypeFilePendante:
-                cles = await client.lrange(file.value, 0, -1)
+                # `redis.asyncio.Redis.lrange` a la même signature générique
+                # `Awaitable[list[Any]] | list[Any]` — cast au moment d'awaiter.
+                cles = await cast(
+                    "Awaitable[list[Any]]", client.lrange(file.value, 0, -1),
+                )
                 par_file[file.value] = len(cles)
                 for cle in cles:
                     try:
@@ -722,7 +742,11 @@ class Orchestrateur:
             client = await self._nouveau_client_redis()
             tache_trouvee = False
             for file in TypeFilePendante:
-                cles = await client.lrange(file.value, 0, -1)
+                # `redis.asyncio.Redis.lrange` a la même signature générique
+                # `Awaitable[list[Any]] | list[Any]` — cast au moment d'awaiter.
+                cles = await cast(
+                    "Awaitable[list[Any]]", client.lrange(file.value, 0, -1),
+                )
                 for cle in cles:
                     try:
                         donnees = json.loads(cle)
@@ -730,11 +754,13 @@ class Orchestrateur:
                             donnees["statut"] = decision.value
                             donnees["horodatage_traitement"] = horodatage.isoformat()
                             donnees["commentaire_validateur"] = commentaire
-                            await client.lrem(file.value, 1, cle)
-                            await client.lpush(
+                            await cast(
+                                "Awaitable[int]", client.lrem(file.value, 1, cle),
+                            )
+                            await cast("Awaitable[int]", client.lpush(
                                 f"traite_{file.value}",
                                 json.dumps(donnees, ensure_ascii=False),
-                            )
+                            ))
                             tache_trouvee = True
                             break
                     except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
@@ -764,7 +790,9 @@ class Orchestrateur:
         """Enregistre une tâche dans la file Redis appropriée."""
         try:
             client = await self._nouveau_client_redis()
-            await client.lpush(tache.type_file.value, tache.model_dump_json())
+            await cast("Awaitable[int]", client.lpush(
+                tache.type_file.value, tache.model_dump_json(),
+            ))
             await client.aclose()
         except Exception as exc:
             logger.exception("Redis inaccessible, tâche non enregistrée : %s", exc)  # noqa: TRY401 — TODO §12 étape 4 : réviser le message en même temps que le typage
