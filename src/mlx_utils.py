@@ -340,7 +340,7 @@ class MLXEmbedding:
                 self._model = SentenceTransformer(nom_court)
                 self._processor = None
             else:
-                from mlx_embeddings import load as emb_load
+                from mlx_embeddings import load as emb_load  # type: ignore[import-untyped]
 
                 self._model, self._processor = emb_load(self.model_name)
             self._loaded = True
