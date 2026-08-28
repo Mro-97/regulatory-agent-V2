@@ -2,7 +2,7 @@
 src/orchestrator.py — Orchestrateur de Regulatory Agent V2
 ===========================================================
 
-Responsabilités (Mac A) :
+Responsabilités :
 - Recevoir les requêtes de l'API.
 - Classifier la requête (courante / temporelle / conflit).
 - Router vers les agents appropriés.
@@ -106,17 +106,13 @@ def _classifier_requete(question: str, date_contexte: Optional[date]) -> str:
 # Orchestrateur
 # ---------------------------------------------------------------------------
 
-# Mapping agent → machine d'exécution (contexte projet § 3).
-# Source unique de vérité utilisée dans l'audit trail (SortieAgent.machine).
-# Modifier ici si l'architecture distribuée change.
-_MACHINE_PAR_AGENT: dict[str, str] = {
-    "Orchestrateur": "Mac_A",
-    "Retriever":     "Mac_B",
-    "Temporal":      "Mac_B",
-    "Explainer":     "Mac_B",
-    "Citation":      "Mac_B",
-    "Conflict":      "Mac_C",
-}
+# Architecture unique m4pro2 : un seul hôte exécute tous les agents.
+# `SortieAgent.machine` reste utile pour l'audit (traçabilité multi-hôte
+# éventuelle en cas d'évolution) mais retourne désormais le nom réel de
+# la machine d'exécution, plus une étiquette « Mac_A/B/C » figée qui
+# renvoyait à l'ancienne architecture 3-machines abandonnée.
+import platform as _platform
+_MACHINE = _platform.node() or "inconnue"
 _MACHINE_INCONNUE = "inconnue"
 
 
@@ -240,19 +236,15 @@ class Orchestrateur:
         plutôt que de renvoyer une machine erronée par défaut.
 
         Args:
-            nom_agent: Nom de l'agent (ex. "Retriever", "Temporal").
+            nom_agent: Nom de l'agent (conservé pour compatibilité de signature ;
+                       ignoré sous l'architecture unique m4pro2).
 
         Returns:
-            Étiquette de machine ("Mac_A" / "Mac_B" / "Mac_C" / "inconnue").
+            Le nom réel de la machine d'exécution (via `platform.node()`),
+            ou `"inconnue"` si le hostname n'a pas pu être résolu.
         """
-        machine = _MACHINE_PAR_AGENT.get(nom_agent)
-        if machine is None:
-            logger.warning(
-                "Agent '%s' absent du mapping _MACHINE_PAR_AGENT — audit imprécis.",
-                nom_agent,
-            )
-            return _MACHINE_INCONNUE
-        return machine
+        del nom_agent  # Signature préservée pour ne pas casser les appelants.
+        return _MACHINE
 
     # ------------------------------------------------------------------
     # Étapes du pipeline — mode real
@@ -314,7 +306,8 @@ class Orchestrateur:
         """
         from src.agents.temporal import AgentTemporel
 
-        # use_llm=False par défaut sur Mac A (16 Go) — activer sur Mac B
+        # use_llm=True : sous architecture unique m4pro2 (24 Go), le budget
+        # RAM tolère l'annotation LLM du raisonnement temporel.
         agent = AgentTemporel(use_llm=True)
         resultat = await self._executer_bloquant(
             agent.analyser,
@@ -780,7 +773,7 @@ class Orchestrateur:
     async def _persister_audit(self, audit: EnregistrementAudit) -> None:
         """
         Persiste l'enregistrement d'audit via src/audit.py.
-        Phase 1 : JSONL local. Phase 2 : PostgreSQL sur Mac C.
+        JSONL local + PostgreSQL en 127.0.0.1 (architecture unique m4pro2).
         """
         try:
             from src.audit import obtenir_gestionnaire

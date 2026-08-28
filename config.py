@@ -87,17 +87,10 @@ class Parametres(BaseSettings):
     )
     embedding_dimension: int = Field(default=384)
 
-    mac_b_host: str = Field(default="127.0.0.1", description="Rétrocompat — architecture unique.")
-    mac_b_port: int = Field(default=8001)
-
     modele_retriever: str = Field(default="mlx-community/Mistral-7B-Instruct-v0.3-4bit")
     modele_temporal: str = Field(default="mlx-community/Qwen2.5-7B-Instruct-4bit")
     modele_explainer: str = Field(default="mlx-community/Qwen2.5-7B-Instruct-4bit")
     modele_citation: str = Field(default="mlx-community/Mistral-7B-Instruct-v0.3-4bit")
-
-    mac_c_host: str = Field(default="127.0.0.1", description="Rétrocompat — architecture unique.")
-    mac_c_port: int = Field(default=8002)
-
     modele_conflit: str = Field(default="mlx-community/DeepSeek-R1-Distill-Qwen-14B-4bit")
 
     # ------------------------------------------------------------------

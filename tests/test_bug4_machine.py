@@ -1,6 +1,19 @@
-"""Test dédié Bug #4 — l'audit trail reflète la vraie machine d'exécution."""
+"""
+Test dédié Bug #4 — l'audit trail reflète la vraie machine d'exécution.
+
+Historique : sous l'ancienne architecture 3-machines, chaque agent était
+mappé statiquement à Mac_A/B/C. Le bug d'origine venait d'un hardcode
+`machine="Mac_A"` qui persistait pour Temporal alors qu'il tournait sur B.
+
+Sous l'architecture unique m4pro2 (§ 3.1 CONTEXTE_PROJET), tous les agents
+tournent sur le même hôte. `_machine_pour_agent()` renvoie désormais le
+hostname réel via `platform.node()` — le mapping figé Mac_A/B/C est retiré.
+Les tests vérifient donc que l'audit contient le hostname local et non
+plus des étiquettes obsolètes.
+"""
 
 import asyncio
+import platform
 import sys
 import types
 
@@ -13,41 +26,34 @@ sys.modules["mlx.core"].eval = lambda *a, **k: None
 from datetime import date  # noqa: E402
 from unittest.mock import MagicMock, patch  # noqa: E402
 
-import pytest  # noqa: E402
-
 from src.orchestrator import (  # noqa: E402
     Orchestrateur,
-    _MACHINE_PAR_AGENT,
+    _MACHINE,
     _MACHINE_INCONNUE,
 )
 from src.models import (  # noqa: E402
     EvidenceRecuperee,
     NiveauConfiance,
-    RequeteQuestion,
-    SourceReglementaire,
 )
 
 
+HOSTNAME_LOCAL = platform.node() or _MACHINE_INCONNUE
+
+
 # ---------------------------------------------------------------------------
-# Mapping statique — invariants du contexte projet
+# Constante d'architecture — un seul hôte
 # ---------------------------------------------------------------------------
 
 
-class TestMappingMachines:
-    """Bug #4 : chaque agent doit être mappé à sa vraie machine (contexte § 3)."""
+class TestMachineUnique:
+    """Sous m4pro2 unique, _MACHINE doit refléter le hostname réel."""
 
-    def test_orchestrateur_sur_mac_a(self):
-        assert _MACHINE_PAR_AGENT["Orchestrateur"] == "Mac_A"
+    def test_machine_est_hostname_reel(self):
+        assert _MACHINE == HOSTNAME_LOCAL
+        assert _MACHINE  # non vide
 
-    def test_moteur_sur_mac_b(self):
-        """Retriever, Temporal, Explainer, Citation tournent sur Mac B."""
-        for agent in ("Retriever", "Temporal", "Explainer", "Citation"):
-            assert _MACHINE_PAR_AGENT[agent] == "Mac_B", (
-                f"{agent} doit être sur Mac B (contexte § 3.2)"
-            )
-
-    def test_conflict_sur_mac_c(self):
-        assert _MACHINE_PAR_AGENT["Conflict"] == "Mac_C"
+    def test_machine_non_hardcodee_A_B_C(self):
+        assert _MACHINE not in {"Mac_A", "Mac_B", "Mac_C"}
 
 
 # ---------------------------------------------------------------------------
@@ -56,27 +62,25 @@ class TestMappingMachines:
 
 
 class TestMachinePourAgent:
-    def test_agents_connus(self):
-        assert Orchestrateur._machine_pour_agent("Retriever") == "Mac_B"
-        assert Orchestrateur._machine_pour_agent("Conflict") == "Mac_C"
-        assert Orchestrateur._machine_pour_agent("Orchestrateur") == "Mac_A"
+    def test_tous_les_agents_retournent_le_hostname_local(self):
+        for agent in ("Retriever", "Temporal", "Explainer", "Citation",
+                      "Conflict", "Orchestrateur"):
+            assert Orchestrateur._machine_pour_agent(agent) == HOSTNAME_LOCAL
 
-    def test_agent_inconnu_retourne_inconnue_avec_log(self, caplog):
-        import logging
-        caplog.set_level(logging.WARNING)
-        resultat = Orchestrateur._machine_pour_agent("AgentBidon")
-        assert resultat == _MACHINE_INCONNUE
-        assert "AgentBidon" in caplog.text
-        assert "audit imprécis" in caplog.text
+    def test_agent_inconnu_retourne_aussi_le_hostname_local(self):
+        # Sous architecture unique, il n'y a plus d'agent « sur une autre
+        # machine » à signaler. Un nom d'agent inconnu retourne quand même
+        # le hostname local — l'exécution s'est bien passée sur cette machine.
+        assert Orchestrateur._machine_pour_agent("AgentBidon") == HOSTNAME_LOCAL
 
 
 # ---------------------------------------------------------------------------
-# Bout-en-bout — l'audit trail contient les bonnes machines
+# Bout-en-bout — l'audit trail contient le hostname local
 # ---------------------------------------------------------------------------
 
 
-class TestAuditContientBonnesMachines:
-    """Vérifie qu'après un traitement, SortieAgent.machine est exact."""
+class TestAuditContientHostname:
+    """Vérifie qu'après un traitement, SortieAgent.machine est le hostname réel."""
 
     def _evidence(self, chunk: str, doc: str, art: str) -> EvidenceRecuperee:
         return EvidenceRecuperee(
@@ -85,10 +89,8 @@ class TestAuditContientBonnesMachines:
             valid_from=date(2020, 1, 1), valid_to=None,
         )
 
-    def test_machine_retriever_est_mac_b_dans_audit(self):
+    def test_machine_retriever_est_hostname_dans_audit(self):
         orch = Orchestrateur(mode="real")
-
-        # On mocke le Retriever pour ne pas taper Qdrant
         retriever_mock = MagicMock()
         retriever_mock.retrieve.return_value = [
             self._evidence("c1", "RGPD", "art_32"),
@@ -96,7 +98,7 @@ class TestAuditContientBonnesMachines:
         orch._retriever = retriever_mock
 
         async def _run():
-            evidences, sortie = await orch._etape_retrieval(
+            _, sortie = await orch._etape_retrieval(
                 question="Q ?",
                 date_contexte=date(2025, 6, 15),
                 filtres_themes=[],
@@ -106,15 +108,10 @@ class TestAuditContientBonnesMachines:
 
         sortie = asyncio.run(_run())
         assert sortie.nom_agent == "Retriever"
-        assert sortie.machine == "Mac_B", (
-            f"Retriever doit être audité comme Mac_B, pas {sortie.machine!r}"
-        )
+        assert sortie.machine == HOSTNAME_LOCAL
 
-    def test_machine_temporal_est_mac_b_dans_audit(self):
-        """Bug #4 : le regex 'en 2023' déclenchait Temporal avec machine='Mac_A'."""
+    def test_machine_temporal_est_hostname_dans_audit(self):
         orch = Orchestrateur(mode="real")
-
-        # Patch AgentTemporel pour éviter le LLM
         with patch("src.agents.temporal.AgentTemporel") as MockAgent:
             instance = MockAgent.return_value
             resultat = MagicMock()
@@ -136,11 +133,10 @@ class TestAuditContientBonnesMachines:
 
             _, sortie = asyncio.run(_run())
             assert sortie.nom_agent == "Temporal"
-            assert sortie.machine == "Mac_B"
+            assert sortie.machine == HOSTNAME_LOCAL
 
-    def test_machine_explainer_est_mac_b_dans_audit(self):
+    def test_machine_explainer_est_hostname_dans_audit(self):
         orch = Orchestrateur(mode="real")
-
         with patch("src.agents.explainer.AgentExplainer") as MockAgent:
             instance = MockAgent.return_value
             resultat = MagicMock()
@@ -159,26 +155,22 @@ class TestAuditContientBonnesMachines:
 
             _, _, sortie = asyncio.run(_run())
             assert sortie.nom_agent == "Explainer"
-            assert sortie.machine == "Mac_B"
+            assert sortie.machine == HOSTNAME_LOCAL
 
 
 # ---------------------------------------------------------------------------
-# Anti-régression — plus aucun "Mac_A" hardcodé pour un agent moteur
+# Anti-régression — plus aucun "Mac_A/B/C" hardcodé dans orchestrator.py
 # ---------------------------------------------------------------------------
 
 
 class TestAntiRegressionHardcode:
-    def test_aucun_mac_a_hardcode_dans_orchestrator(self):
-        """
-        Bug #4 : le fichier ne doit plus contenir la chaîne 'machine="Mac_A"'.
-        Elle doit passer par _machine_pour_agent().
-        """
+    def test_aucun_mac_a_b_c_hardcode_dans_orchestrator(self):
+        """L'orchestrateur ne doit plus assigner une étiquette figée Mac_X."""
         from pathlib import Path
         source = (
             Path(__file__).parent.parent / "src" / "orchestrator.py"
         ).read_text(encoding="utf-8")
-        assert 'machine="Mac_A"' not in source, (
-            "Régression Bug #4 : 'machine=\"Mac_A\"' hardcodé réapparu."
-        )
-        assert 'machine="Mac_B"' not in source
-        assert 'machine="Mac_C"' not in source
+        for etiquette in ('machine="Mac_A"', 'machine="Mac_B"', 'machine="Mac_C"'):
+            assert etiquette not in source, (
+                f"Régression : '{etiquette}' hardcodé réapparu."
+            )
