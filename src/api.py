@@ -1,5 +1,4 @@
-"""
-src/api.py — API FastAPI de Regulatory Agent V2
+"""src/api.py — API FastAPI de Regulatory Agent V2
 ================================================
 
 Endpoints :

@@ -1,5 +1,4 @@
-"""
-src/agents/citation.py — Agent Citation de Regulatory Agent V2
+"""src/agents/citation.py — Agent Citation de Regulatory Agent V2
 ===============================================================
 
 Responsabilité : produire et vérifier les références exactes associées
@@ -66,8 +65,7 @@ _ESPACES_MULTIPLES = re.compile(r"\s+")
 
 
 def _normaliser_pour_comparaison(texte: str) -> str:
-    """
-    Normalise un texte pour la comparaison d'ancrage citation/chunk.
+    """Normalise un texte pour la comparaison d'ancrage citation/chunk.
 
     Neutralise les écarts purement typographiques (espaces multiples,
     retours à la ligne, guillemets courbes vs droits) qui ne changent pas
@@ -93,8 +91,7 @@ class StatutCitation(str, Enum):
 
 @dataclass
 class CitationReglementaire:
-    """
-    Référence exacte à un passage réglementaire.
+    """Référence exacte à un passage réglementaire.
     Chaque citation doit être rattachée à un chunk_id connu.
     """
 
@@ -141,8 +138,7 @@ class ResultatCitation:
 
 
 class AgentCitation:
-    """
-    Agent de génération et vérification des citations réglementaires.
+    """Agent de génération et vérification des citations réglementaires.
 
     Paramètres :
         use_llm : Si True, utilise Mistral 7B pour extraire les passages
@@ -165,8 +161,7 @@ class AgentCitation:
         evidences: list[EvidenceRecuperee],
         max_extrait: int = 200,
     ) -> list[CitationReglementaire]:
-        """
-        Génère une citation par EvidenceRecuperee.
+        """Génère une citation par EvidenceRecuperee.
 
         Chaque citation est directement construite depuis les métadonnées
         du chunk — aucune inférence, aucun risque d'invention.
@@ -214,8 +209,7 @@ class AgentCitation:
         citations: list[CitationReglementaire],
         evidences_reference: list[EvidenceRecuperee],
     ) -> tuple[list[CitationReglementaire], list[CitationReglementaire]]:
-        """
-        Vérifie que chaque citation est ancrée dans les preuves récupérées.
+        """Vérifie que chaque citation est ancrée dans les preuves récupérées.
 
         Règle : une citation est VERIFIEE si son chunk_id figure dans
         la liste des preuves de référence ET que l'extrait est un
@@ -296,8 +290,7 @@ class AgentCitation:
         reponse_explainer: str,
         evidences: list[EvidenceRecuperee],
     ) -> list[CitationReglementaire]:
-        """
-        Utilise Mistral 7B pour identifier quels passages des preuves
+        """Utilise Mistral 7B pour identifier quels passages des preuves
         ont été utilisés dans la réponse de l'Explainer.
 
         Le LLM reçoit la réponse et les textes des preuves, et retourne
@@ -396,8 +389,7 @@ class AgentCitation:
         evidences: list[EvidenceRecuperee],
         reponse_explainer: str | None = None,
     ) -> ResultatCitation:
-        """
-        Génère et vérifie les citations pour une réponse réglementaire.
+        """Génère et vérifie les citations pour une réponse réglementaire.
 
         Flux :
           1. Génération des citations (déterministe ou LLM).

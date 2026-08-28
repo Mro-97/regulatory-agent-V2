@@ -1,5 +1,4 @@
-"""
-src/agents/conflit.py — Agent Conflit de Regulatory Agent V2
+"""src/agents/conflit.py — Agent Conflit de Regulatory Agent V2
 =============================================================
 
 Responsabilité : détecter les contradictions et incohérences entre
@@ -107,8 +106,7 @@ def _contient_terme(texte: str, pattern: str) -> bool:
 
 
 def _detecter_tension_lexicale(texte_a: str, texte_b: str) -> str | None:
-    """
-    Détecte une tension lexicale entre deux textes.
+    """Détecte une tension lexicale entre deux textes.
     Retourne une description si une contradiction est repérée, None sinon.
     """
     for pos, neg in _PAIRES_CONTRADICTOIRES:
@@ -125,8 +123,7 @@ def _detecter_tension_lexicale(texte_a: str, texte_b: str) -> str | None:
 
 
 def _normaliser_verdict(verdict: str) -> str:
-    """
-    Normalise un verdict LLM : majuscules, sans accents ni ponctuation périphérique.
+    """Normalise un verdict LLM : majuscules, sans accents ni ponctuation périphérique.
 
     'Confirmé.' → 'CONFIRME'
     ' apparent' → 'APPARENT'
@@ -146,8 +143,7 @@ def _normaliser_verdict(verdict: str) -> str:
 
 
 class AgentConflit:
-    """
-    Agent de détection des contradictions réglementaires.
+    """Agent de détection des contradictions réglementaires.
 
     Paramètres :
         use_llm : Si True, utilise DeepSeek-R1 14B pour analyser les
@@ -171,8 +167,7 @@ class AgentConflit:
         evidences: list[EvidenceRecuperee],
         date_ref: date | None,
     ) -> list[ConflitDetecte]:
-        """
-        Détecte les chevauchements entre preuves de documents différents
+        """Détecte les chevauchements entre preuves de documents différents
         qui couvrent la même période et le même périmètre thématique.
 
         Deux preuves sont en tension si :
@@ -244,8 +239,7 @@ class AgentConflit:
         self,
         evidences: list[EvidenceRecuperee],
     ) -> list[ConflitDetecte]:
-        """
-        Détecte les incohérences au sein d'un même document
+        """Détecte les incohérences au sein d'un même document
         (ex. deux articles du même règlement qui se contredisent).
 
         Args:
@@ -293,8 +287,7 @@ class AgentConflit:
     # ------------------------------------------------------------------
 
     def _charger_modele(self) -> None:
-        """
-        Charge DeepSeek-R1 14B via le registre MLX.
+        """Charge DeepSeek-R1 14B via le registre MLX.
         ATTENTION : ~9 Go de RAM — décharger les autres modèles avant.
         Le registre get_model() s'en charge automatiquement.
         """
@@ -316,8 +309,7 @@ class AgentConflit:
         question: str,
         conflits: list[ConflitDetecte],
     ) -> tuple[list[ConflitDetecte], str]:
-        """
-        Utilise DeepSeek-R1 14B pour analyser les conflits potentiels
+        """Utilise DeepSeek-R1 14B pour analyser les conflits potentiels
         et élever leur niveau si confirmés.
 
         Le LLM doit répondre au format JSON strict, un verdict par conflit :
@@ -429,8 +421,7 @@ class AgentConflit:
 
     @staticmethod
     def _extraire_verdicts(analyse: str) -> dict[int, str] | None:
-        """
-        Extrait le mapping {numero_conflit → verdict_normalisé} depuis la sortie LLM.
+        """Extrait le mapping {numero_conflit → verdict_normalisé} depuis la sortie LLM.
 
         Retourne None si la sortie n'est pas parsable.
         Verdicts normalisés en majuscules sans accents pour comparaison robuste.
@@ -475,8 +466,7 @@ class AgentConflit:
     def _verdict_vers_niveau(
         verdict: str | None, niveau_initial: NiveauConflit
     ) -> NiveauConflit:
-        """
-        Applique le verdict LLM au niveau d'un conflit.
+        """Applique le verdict LLM au niveau d'un conflit.
 
         - CONFIRMÉ   → PROBABLE
         - APPARENT   → niveau initial (POTENTIEL) conservé
@@ -500,8 +490,7 @@ class AgentConflit:
         evidences: list[EvidenceRecuperee],
         date_ref: date | None = None,
     ) -> ResultatConflit:
-        """
-        Détecte et analyse les conflits dans une liste de preuves.
+        """Détecte et analyse les conflits dans une liste de preuves.
 
         Étapes :
         1. Détection déterministe (chevauchements + incohérences internes).

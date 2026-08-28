@@ -1,5 +1,4 @@
-"""
-src/mlx_utils.py — Wrapper MLX pour l'inférence et l'embedding locaux
+"""src/mlx_utils.py — Wrapper MLX pour l'inférence et l'embedding locaux
 ======================================================================
 
 Deux classes distinctes selon l'usage :
@@ -58,8 +57,7 @@ def _executer_avec_timeout(
     *args,
     **kwargs,
 ) -> T:
-    """
-    Exécute `fn` en imposant une borne supérieure de temps.
+    """Exécute `fn` en imposant une borne supérieure de temps.
 
     MLX ne fournit pas d'interruption coopérative : un appel bloqué ne
     peut pas être annulé côté device. Le thread continue en tâche de
@@ -138,8 +136,7 @@ class ResultatGeneration:
 
 
 class MLXInference:
-    """
-    Wrapper autour de mlx_lm.load / mlx_lm.generate.
+    """Wrapper autour de mlx_lm.load / mlx_lm.generate.
     Lazy loading — le modèle n'est chargé qu'au premier appel.
     Un seul modèle actif à la fois via le registre global.
     """
@@ -291,8 +288,7 @@ class MLXInference:
 
 
 class MLXEmbedding:
-    """
-    Wrapper autour de mlx-embeddings pour produire des embeddings
+    """Wrapper autour de mlx-embeddings pour produire des embeddings
     de qualité optimisée pour la similarité sémantique.
 
     Utilise mlx_embeddings.load() + mlx_embeddings.generate() qui supporte
@@ -305,8 +301,7 @@ class MLXEmbedding:
     """
 
     def __init__(self, model_name: str = "BAAI/bge-m3") -> None:
-        """
-        Args:
+        """Args:
             model_name: Identifiant HuggingFace du modèle d'embedding.
                         - "sentence-transformers/<id>" : bascule sur le backend
                           sentence-transformers (repli utilisé quand
@@ -370,8 +365,7 @@ class MLXEmbedding:
     def encode(
         self, texte: str, timeout_seconds: float | None = None
     ) -> list[float]:
-        """
-        Calcule l'embedding d'un texte.
+        """Calcule l'embedding d'un texte.
 
         Args:
             texte: Texte à encoder.
@@ -414,8 +408,7 @@ class MLXEmbedding:
         textes: list[str],
         batch_size: int = 32,
     ) -> list[list[float]]:
-        """
-        Calcule les embeddings d'une liste de textes.
+        """Calcule les embeddings d'une liste de textes.
         Traite par lots pour éviter les problèmes mémoire.
 
         Args:
@@ -556,8 +549,7 @@ def get_model(
 
 
 def get_embedding(model_name: str = "BAAI/bge-m3") -> MLXEmbedding:
-    """
-    Retourne le modèle d'embedding depuis le cache global.
+    """Retourne le modèle d'embedding depuis le cache global.
 
     Args:
         model_name: Identifiant HuggingFace. Défaut : 'BAAI/bge-m3'.

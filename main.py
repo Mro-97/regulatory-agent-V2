@@ -1,5 +1,4 @@
-"""
-main.py — Point d'entrée de Regulatory Agent V2
+"""main.py — Point d'entrée de Regulatory Agent V2
 ================================================
 
 Lance :
@@ -53,8 +52,7 @@ async def initialiser_audit() -> None:
 
 
 def valider_configuration_demarrage() -> list[str]:
-    """
-    Vérifie au démarrage les invariants critiques de configuration.
+    """Vérifie au démarrage les invariants critiques de configuration.
 
     L'ancien comportement fail-closed s'appliquait à CHAQUE requête (503 sur
     tous les endpoints protégés) sans jamais l'annoncer au démarrage. Un

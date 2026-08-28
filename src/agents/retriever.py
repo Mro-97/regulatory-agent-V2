@@ -1,5 +1,4 @@
-"""
-src/agents/retriever.py — Agent Retriever de Regulatory Agent V2
+"""src/agents/retriever.py — Agent Retriever de Regulatory Agent V2
 =================================================================
 
 Responsabilité : recevoir une question, générer son embedding via MLX,
@@ -42,8 +41,7 @@ logger = logging.getLogger(__name__)
 
 
 class Retriever:
-    """
-    Agent de recherche vectorielle dans Qdrant.
+    """Agent de recherche vectorielle dans Qdrant.
 
     Cycle d'un appel retrieve() :
       question → embed_question() → deux passes Qdrant
@@ -55,8 +53,7 @@ class Retriever:
         qdrant_client: QdrantClient | None = None,
         top_k: int | None = None,
     ) -> None:
-        """
-        Initialise le Retriever sans charger le modèle en mémoire.
+        """Initialise le Retriever sans charger le modèle en mémoire.
 
         Args:
             qdrant_client: Client Qdrant injecté (utile pour les tests).
@@ -82,8 +79,7 @@ class Retriever:
     # ------------------------------------------------------------------
 
     def embed_question(self, question: str) -> list[float]:
-        """
-        Génère l'embedding de la question via MLXEmbedding (bge-m3).
+        """Génère l'embedding de la question via MLXEmbedding (bge-m3).
 
         Utilise get_embedding() pour bénéficier du lazy loading et du cache
         global. Le modèle reste chargé en permanence sur Mac B.
@@ -108,8 +104,7 @@ class Retriever:
     # ------------------------------------------------------------------
 
     def _filtre_valid_from(self, date_ref: date) -> FieldCondition:
-        """
-        Condition : valid_from <= date_ref.
+        """Condition : valid_from <= date_ref.
 
         Args:
             date_ref: Date de référence.
@@ -123,8 +118,7 @@ class Retriever:
         )
 
     def _filtre_valid_to_present(self, date_ref: date) -> FieldCondition:
-        """
-        Condition : valid_to >= date_ref (champ renseigné).
+        """Condition : valid_to >= date_ref (champ renseigné).
 
         Args:
             date_ref: Date de référence.
@@ -138,8 +132,7 @@ class Retriever:
         )
 
     def _filtre_valid_to_null(self) -> IsNullCondition:
-        """
-        Condition : valid_to est nul (version en vigueur indéfiniment).
+        """Condition : valid_to est nul (version en vigueur indéfiniment).
 
         Returns:
             IsNullCondition Qdrant — syntaxe correcte pour qdrant-client 1.9+.
@@ -147,8 +140,7 @@ class Retriever:
         return IsNullCondition(is_null=PayloadField(key="valid_to"))
 
     def _filtre_themes(self, themes: list[str]) -> FieldCondition | None:
-        """
-        Condition : le payload 'themes' (array) contient au moins un des thèmes demandés.
+        """Condition : le payload 'themes' (array) contient au moins un des thèmes demandés.
 
         Args:
             themes: Liste de thèmes autorisés. Vide → aucun filtre.
@@ -164,8 +156,7 @@ class Retriever:
     def _filtre_sources(
         self, sources: list[SourceReglementaire]
     ) -> FieldCondition | None:
-        """
-        Condition : le payload 'source' correspond à l'une des sources demandées.
+        """Condition : le payload 'source' correspond à l'une des sources demandées.
 
         Args:
             sources: Liste de sources autorisées. Vide → aucun filtre.
@@ -188,8 +179,7 @@ class Retriever:
         limite: int,
         filtre: Filter | None = None,
     ) -> list[ScoredPoint]:
-        """
-        Exécute une recherche vectorielle dans Qdrant.
+        """Exécute une recherche vectorielle dans Qdrant.
 
         Args:
             vecteur: Vecteur de la requête.
@@ -223,8 +213,7 @@ class Retriever:
     # ------------------------------------------------------------------
 
     def _point_vers_evidence(self, point) -> EvidenceRecuperee | None:
-        """
-        Convertit un ScoredPoint Qdrant en EvidenceRecuperee.
+        """Convertit un ScoredPoint Qdrant en EvidenceRecuperee.
 
         Retourne None si le payload est incomplet, avec log d'avertissement.
 
@@ -283,8 +272,7 @@ class Retriever:
         filtres_themes: list[str] | None = None,
         filtres_sources: list[SourceReglementaire] | None = None,
     ) -> list[EvidenceRecuperee]:
-        """
-        Recherche les passages réglementaires pertinents pour une question.
+        """Recherche les passages réglementaires pertinents pour une question.
 
         Deux passes Qdrant :
           Passe A : valid_from <= date_ref ET valid_to >= date_ref
@@ -428,8 +416,7 @@ class Retriever:
 
 
 def _parser_date(valeur: object) -> date:
-    """
-    Parse une valeur de date depuis un payload Qdrant.
+    """Parse une valeur de date depuis un payload Qdrant.
 
     Accepte : str ISO 8601, datetime, date.
 

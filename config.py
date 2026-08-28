@@ -1,5 +1,4 @@
-"""
-config.py — Configuration centralisée de Regulatory Agent V2
+"""config.py — Configuration centralisée de Regulatory Agent V2
 =============================================================
 
 Toutes les valeurs sont lues depuis les variables d'environnement.
@@ -14,8 +13,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Parametres(BaseSettings):
-    """
-    Paramètres globaux du système, injectables via .env ou variables d'environnement.
+    """Paramètres globaux du système, injectables via .env ou variables d'environnement.
     protected_namespaces=() supprime les warnings Pydantic sur les champs model_*.
     """
 

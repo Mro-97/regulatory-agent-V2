@@ -1,5 +1,4 @@
-"""
-scripts/setup_qdrant.py — Initialisation de la collection Qdrant
+"""scripts/setup_qdrant.py — Initialisation de la collection Qdrant
 ================================================================
 
 Crée la collection regulatory_chunks avec les bons paramètres
@@ -40,8 +39,7 @@ logger = logging.getLogger(__name__)
 def setup_collection(
     client, collection: str, dimension: int, reset: bool = False
 ) -> None:
-    """
-    Crée (ou recrée) la collection Qdrant avec tous les index nécessaires.
+    """Crée (ou recrée) la collection Qdrant avec tous les index nécessaires.
 
     Args:
         client:     QdrantClient connecté.

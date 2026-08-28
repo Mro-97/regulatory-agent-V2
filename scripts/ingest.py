@@ -101,8 +101,7 @@ class Ingester:
         return chunks
 
     def ingest_document(self, doc: DocumentReglementaire) -> int:
-        """
-        Indexe un DocumentReglementaire déjà en mémoire dans Qdrant.
+        """Indexe un DocumentReglementaire déjà en mémoire dans Qdrant.
 
         Args:
             doc: Document à indexer.
@@ -135,8 +134,7 @@ class Ingester:
         return len(points)
 
     def compter_chunks_existants(self, document_id: str) -> int:
-        """
-        Compte le nombre de chunks déjà présents pour un document_id donné.
+        """Compte le nombre de chunks déjà présents pour un document_id donné.
 
         Utilisé par l'orchestrateur pour décider si une nouvelle ingestion
         doit renvoyer 409 (déjà indexé) ou remplacer les points existants.
@@ -161,8 +159,7 @@ class Ingester:
             return 0
 
     def supprimer_chunks_document(self, document_id: str) -> int:
-        """
-        Supprime tous les points Qdrant portant un `document_id` donné.
+        """Supprime tous les points Qdrant portant un `document_id` donné.
 
         Retourne le nombre de points supprimés (avant suppression).
         """

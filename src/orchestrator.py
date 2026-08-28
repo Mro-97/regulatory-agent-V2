@@ -1,5 +1,4 @@
-"""
-src/orchestrator.py — Orchestrateur de Regulatory Agent V2
+"""src/orchestrator.py — Orchestrateur de Regulatory Agent V2
 ===========================================================
 
 Responsabilités :
@@ -86,8 +85,7 @@ _MOTS_CLES_CONFLIT = re.compile(
 
 
 def _classifier_requete(question: str, date_contexte: date | None) -> str:
-    """
-    Détermine le type de pipeline à exécuter.
+    """Détermine le type de pipeline à exécuter.
 
     Returns:
         "temporelle", "conflit" ou "courante".
@@ -117,16 +115,14 @@ _MACHINE_INCONNUE = "inconnue"
 
 
 class DocumentDejaIndexeError(Exception):
-    """
-    Levée par Orchestrateur.ingerer() quand un document_id est déjà présent
+    """Levée par Orchestrateur.ingerer() quand un document_id est déjà présent
     dans Qdrant et que forcer_reindexation=False. Traduite en HTTP 409 par
     l'API (voir src/api.py).
     """
 
 
 class Orchestrateur:
-    """
-    Orchestrateur central de Regulatory Agent V2.
+    """Orchestrateur central de Regulatory Agent V2.
 
     Paramètres :
         mode : "real" (défaut) ou "mock".
@@ -144,8 +140,7 @@ class Orchestrateur:
     """
 
     def __init__(self, mode: str | None = None) -> None:
-        """
-        Initialise l'orchestrateur sans charger aucun agent en mémoire.
+        """Initialise l'orchestrateur sans charger aucun agent en mémoire.
 
         Args:
             mode: "real" ou "mock". Si None, lit ORCHESTRATEUR_MODE
@@ -194,8 +189,7 @@ class Orchestrateur:
         return self._ingester
 
     async def _executer_bloquant(self, fonction, /, *args, **kwargs):
-        """
-        Exécute un appel synchrone potentiellement long (chargement/inférence
+        """Exécute un appel synchrone potentiellement long (chargement/inférence
         MLX) dans un thread séparé, pour ne jamais geler la boucle asyncio
         (sinon /health, /pending et le Watcher deviennent indisponibles
         pendant toute la durée du retrieval + de la génération LLM).
@@ -230,8 +224,7 @@ class Orchestrateur:
 
     @staticmethod
     def _machine_pour_agent(nom_agent: str) -> str:
-        """
-        Retourne la machine d'exécution attendue pour un agent donné.
+        """Retourne la machine d'exécution attendue pour un agent donné.
 
         Utilisée pour renseigner SortieAgent.machine dans l'audit trail.
         Un nom d'agent inconnu déclenche un warning et retourne "inconnue"
@@ -259,8 +252,7 @@ class Orchestrateur:
         filtres_themes: list[str],
         filtres_sources: list[SourceReglementaire],
     ) -> tuple[list[EvidenceRecuperee], SortieAgent]:
-        """
-        Étape 1 : récupération des passages pertinents via Qdrant.
+        """Étape 1 : récupération des passages pertinents via Qdrant.
 
         Returns:
             Tuple (evidences, sortie_agent).
@@ -298,8 +290,7 @@ class Orchestrateur:
         date_contexte: date | None,
         evidences: list[EvidenceRecuperee],
     ) -> tuple[list[EvidenceRecuperee], SortieAgent]:
-        """
-        Étape 2 : analyse temporelle via AgentTemporel.
+        """Étape 2 : analyse temporelle via AgentTemporel.
         Filtre déterministe + détection d'anomalies.
         LLM (Qwen 2.5 7B) activable via use_llm=True quand les modèles
         sont disponibles.
@@ -341,8 +332,7 @@ class Orchestrateur:
         type_pipeline: str,
         date_ref=None,
     ) -> tuple[str, NiveauConfiance, SortieAgent]:
-        """
-        Étape 3 : synthèse via AgentExplainer.
+        """Étape 3 : synthèse via AgentExplainer.
         Assemblage structuré (use_llm=False) ou Qwen 2.5 7B (use_llm=True).
         """
         from src.agents.explainer import AgentExplainer
@@ -374,8 +364,7 @@ class Orchestrateur:
     # ------------------------------------------------------------------
 
     async def traiter(self, requete: RequeteQuestion) -> ReponseQuestion:
-        """
-        Traite une question réglementaire via le pipeline multi-agent.
+        """Traite une question réglementaire via le pipeline multi-agent.
 
         Mode real  : Retriever Qdrant → Temporal (filtre déterministe)
                      → Explainer (assemblage brut) → audit
@@ -610,8 +599,7 @@ class Orchestrateur:
     # ------------------------------------------------------------------
 
     async def ingerer(self, requete: RequeteIngestion) -> ReponseIngestion:
-        """
-        Ingère un document réglementaire dans Qdrant (chunking + embedding +
+        """Ingère un document réglementaire dans Qdrant (chunking + embedding +
         upsert), en réutilisant la logique de scripts/ingest.py.
 
         requete.contenu_json est requis et validé comme DocumentReglementaire —
@@ -652,8 +640,7 @@ class Orchestrateur:
         return await asyncio.to_thread(self._ingerer_sync, requete)
 
     def _ingerer_sync(self, requete: RequeteIngestion) -> ReponseIngestion:
-        """
-        Partie synchrone (bloquante) de l'ingestion — validation, vérification
+        """Partie synchrone (bloquante) de l'ingestion — validation, vérification
         d'existence, chunking, embedding MLX et upsert Qdrant. Exécutée hors
         de la boucle asyncio via asyncio.to_thread dans ingerer().
         """
@@ -785,8 +772,7 @@ class Orchestrateur:
             logger.error("Redis inaccessible, tâche non enregistrée : %s", exc)
 
     async def _persister_audit(self, audit: EnregistrementAudit) -> None:
-        """
-        Persiste l'enregistrement d'audit via src/audit.py.
+        """Persiste l'enregistrement d'audit via src/audit.py.
         JSONL local + PostgreSQL en 127.0.0.1 (architecture unique m4pro2).
         """
         try:

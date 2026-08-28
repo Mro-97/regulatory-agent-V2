@@ -1,5 +1,4 @@
-"""
-src/watcher.py — Watcher de Regulatory Agent V2
+"""src/watcher.py — Watcher de Regulatory Agent V2
 ================================================
 
 Surveille les sources réglementaires et détecte les modifications.
@@ -89,8 +88,7 @@ SOURCES_CONFIG: list[_SourceConfig] = [
 
 
 def normaliser_contenu(texte_brut: str) -> str:
-    """
-    Normalise le contenu HTML/texte avant de calculer le hash.
+    """Normalise le contenu HTML/texte avant de calculer le hash.
 
     Supprime les éléments variables (dates d'accès, compteurs, tokens CSRF,
     publicités) qui changeraient le hash sans modifier le contenu réglementaire.
@@ -196,8 +194,7 @@ async def enregistrer_alerte_redis(alerte: AlerteWatcher) -> None:
 
 
 class Watcher:
-    """
-    Surveille les sources réglementaires et publie des alertes
+    """Surveille les sources réglementaires et publie des alertes
     dans Redis (pending_alerts) lors de la détection de modifications.
 
     Chaque modification détectée produit une AlerteWatcher soumise à
@@ -228,8 +225,7 @@ class Watcher:
     async def _fetch_avec_retry(
         self, url: str, source: SourceReglementaire
     ) -> str | None:
-        """
-        Récupère une URL avec reprise sur échec réseau ou erreur 5xx.
+        """Récupère une URL avec reprise sur échec réseau ou erreur 5xx.
 
         Politique : `cfg.watcher_max_essais` tentatives, backoff exponentiel
         de base `cfg.watcher_backoff_secondes`. Les erreurs 4xx (permanentes)
@@ -293,8 +289,7 @@ class Watcher:
         url: str,
         source: SourceReglementaire,
     ) -> AlerteWatcher | None:
-        """
-        Vérifie une URL et retourne une AlerteWatcher si le contenu a changé.
+        """Vérifie une URL et retourne une AlerteWatcher si le contenu a changé.
 
         Args:
             url:    URL à vérifier.
@@ -349,8 +344,7 @@ class Watcher:
         return alerte
 
     async def cycle_verification(self) -> list[AlerteWatcher]:
-        """
-        Vérifie toutes les URLs configurées en un seul cycle.
+        """Vérifie toutes les URLs configurées en un seul cycle.
 
         Exécute les vérifications en parallèle (une par source)
         avec un délai entre les sources pour éviter les surcharges.
@@ -391,8 +385,7 @@ class Watcher:
         return alertes
 
     async def demarrer_boucle(self) -> None:
-        """
-        Lance la boucle de surveillance en arrière-plan.
+        """Lance la boucle de surveillance en arrière-plan.
         Tourne indéfiniment avec un intervalle de cfg.watcher_intervalle_heures.
         """
         intervalle_s = cfg.watcher_intervalle_heures * 3600

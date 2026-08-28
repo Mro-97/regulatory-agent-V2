@@ -1,5 +1,4 @@
-"""
-src/agents/temporal.py — Agent Temporel de Regulatory Agent V2
+"""src/agents/temporal.py — Agent Temporel de Regulatory Agent V2
 ===============================================================
 
 Responsabilité : déterminer quelles preuves (EvidenceRecuperee) sont
@@ -52,8 +51,7 @@ _DATE_MAX_RAISONNABLE = date(2100, 12, 31)
 
 
 def _valider_date_contexte(valeur: object) -> date | None:
-    """
-    Normalise et valide une date de contexte réglementaire.
+    """Normalise et valide une date de contexte réglementaire.
 
     Accepte None, un `date`, ou un `datetime` (converti en date UTC).
     Rejette tout autre type et toute date hors [1900-01-01, 2100-12-31].
@@ -83,8 +81,7 @@ def _valider_date_contexte(valeur: object) -> date | None:
 
 @dataclass
 class EvidenceTemporelle:
-    """
-    Evidence enrichie d'une annotation temporelle.
+    """Evidence enrichie d'une annotation temporelle.
     Wrappée autour d'EvidenceRecuperee — on ne modifie pas le modèle source.
     """
 
@@ -113,8 +110,7 @@ class ResultatTemporel:
 
 
 class AgentTemporel:
-    """
-    Agent de filtrage et de raisonnement temporel.
+    """Agent de filtrage et de raisonnement temporel.
 
     Paramètres :
         use_llm : Si True et que le modèle est disponible, utilise Qwen 2.5 7B
@@ -123,8 +119,7 @@ class AgentTemporel:
     """
 
     def __init__(self, use_llm: bool = False) -> None:
-        """
-        Initialise l'agent sans charger le modèle.
+        """Initialise l'agent sans charger le modèle.
 
         Args:
             use_llm: Active l'annotation LLM pour les cas ambigus.
@@ -142,8 +137,7 @@ class AgentTemporel:
         evidences: list[EvidenceRecuperee],
         date_ref: date,
     ) -> tuple[list[EvidenceRecuperee], list[EvidenceTemporelle]]:
-        """
-        Filtre les preuves selon leur intervalle de validité.
+        """Filtre les preuves selon leur intervalle de validité.
 
         Règle : une preuve est applicable si
             valid_from <= date_ref  ET  (valid_to est None OU valid_to >= date_ref)
@@ -209,8 +203,7 @@ class AgentTemporel:
         self,
         evidences: list[EvidenceRecuperee],
     ) -> tuple[list[str], list[str]]:
-        """
-        Détecte les chevauchements et lacunes dans les intervalles de validité
+        """Détecte les chevauchements et lacunes dans les intervalles de validité
         pour un même article (même article_id, document_id identique).
 
         Ces anomalies sont des problèmes de qualité des données sources —
@@ -293,8 +286,7 @@ class AgentTemporel:
         chevauchements: list[str],
         lacunes: list[str],
     ) -> str:
-        """
-        Utilise Qwen 2.5 7B pour produire une explication temporelle
+        """Utilise Qwen 2.5 7B pour produire une explication temporelle
         en langage naturel.
 
         Le LLM reçoit uniquement les métadonnées temporelles (pas le texte
@@ -381,8 +373,7 @@ class AgentTemporel:
         evidences: list[EvidenceRecuperee],
         date_contexte: date | None = None,
     ) -> ResultatTemporel:
-        """
-        Analyse temporelle complète d'une liste de preuves.
+        """Analyse temporelle complète d'une liste de preuves.
 
         Étapes :
         1. Résolution de la date de référence.

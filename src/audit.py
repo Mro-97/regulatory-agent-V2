@@ -1,5 +1,4 @@
-"""
-src/audit.py — Audit trail de Regulatory Agent V2
+"""src/audit.py — Audit trail de Regulatory Agent V2
 ==================================================
 
 Persistance des enregistrements d'audit dans PostgreSQL (Mac C).
@@ -69,8 +68,7 @@ CREATE INDEX IF NOT EXISTS idx_audit_horodatage  ON audit_trail (horodatage DESC
 
 
 class GestionnaireAudit:
-    """
-    Persiste les enregistrements d'audit avec chaînage SHA-256.
+    """Persiste les enregistrements d'audit avec chaînage SHA-256.
 
     Deux modes :
       - local  : écriture dans data/audit.jsonl (toujours actif)
@@ -91,8 +89,7 @@ class GestionnaireAudit:
         CHEMIN_AUDIT_LOCAL.parent.mkdir(parents=True, exist_ok=True)
 
     async def initialiser(self) -> None:
-        """
-        Initialise la connexion PostgreSQL et crée la table si nécessaire.
+        """Initialise la connexion PostgreSQL et crée la table si nécessaire.
         Si PostgreSQL est indisponible, continue en mode local uniquement.
 
         Le chaînage reprend au dernier hash connu (PostgreSQL ou JSONL local).
@@ -149,8 +146,7 @@ class GestionnaireAudit:
             return None
 
     async def persister(self, audit: EnregistrementAudit) -> str:
-        """
-        Persiste un EnregistrementAudit et retourne son hash.
+        """Persiste un EnregistrementAudit et retourne son hash.
 
         Si PostgreSQL est censé être actif (self._postgres_ok) mais que
         l'INSERT échoue, la persistance locale JSONL reste la source de
@@ -206,8 +202,7 @@ class GestionnaireAudit:
         return hash_courant
 
     def statut(self) -> dict[str, object]:
-        """
-        État de synchronisation de l'audit trail, exposable via /health.
+        """État de synchronisation de l'audit trail, exposable via /health.
 
         Returns:
             Dict avec postgres_actif et desynchronisations (nombre
@@ -272,8 +267,7 @@ class GestionnaireAudit:
     async def verifier_integrite(
         self, limite: int = 100
     ) -> dict[str, int | list[dict[str, object]]]:
-        """
-        Vérifie l'intégrité de la chaîne d'audit locale.
+        """Vérifie l'intégrité de la chaîne d'audit locale.
 
         Relit les N derniers enregistrements du fichier JSONL et vérifie,
         pour chacun :

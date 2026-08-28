@@ -1,5 +1,4 @@
-"""
-src/models.py — Modèles de données Pydantic pour Regulatory Agent V2
+"""src/models.py — Modèles de données Pydantic pour Regulatory Agent V2
 =====================================================================
 
 Modèle de données pivot du projet. Toute la chaîne
@@ -84,8 +83,7 @@ class NiveauConfiance(str, Enum):
 
 
 class IntervalleValidite(BaseModel):
-    """
-    Fenêtre temporelle de validité d'un article ou d'un texte.
+    """Fenêtre temporelle de validité d'un article ou d'un texte.
     Un intervalle ouvert (valid_to = None) signifie que la version est en vigueur.
     Invariant : si valid_to est renseigné, il doit être >= valid_from.
     """
@@ -122,8 +120,7 @@ class IntervalleValidite(BaseModel):
 
 
 class VersionArticle(BaseModel):
-    """
-    Version spécifique d'un article réglementaire.
+    """Version spécifique d'un article réglementaire.
     Un même article peut avoir plusieurs versions successives dans le temps.
     """
 
@@ -184,8 +181,7 @@ class TexteLie(BaseModel):
 
 
 class DocumentReglementaire(BaseModel):
-    """
-    Représentation canonique d'un texte réglementaire.
+    """Représentation canonique d'un texte réglementaire.
     Modèle pivot manipulé par toute la chaîne du système.
     """
 
@@ -309,8 +305,7 @@ class SortieAgent(BaseModel):
 
 
 class EnregistrementAudit(BaseModel):
-    """
-    Trace complète d'une requête. Chaînage SHA-256 pour détecter toute altération.
+    """Trace complète d'une requête. Chaînage SHA-256 pour détecter toute altération.
     Chaîne : requête → documents → chunks → agents → réponse → citations → validation.
     """
 

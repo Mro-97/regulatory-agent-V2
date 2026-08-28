@@ -1,5 +1,4 @@
-"""
-scripts/pdf_to_json.py — Conversion PDF → JSON canonique
+"""scripts/pdf_to_json.py — Conversion PDF → JSON canonique
 =========================================================
 
 Convertit un PDF réglementaire en JSON canonique DocumentReglementaire
@@ -85,8 +84,7 @@ PATTERNS_CHAPITRE = [
 
 
 def extraire_texte_pdf(chemin: Path) -> str:
-    """
-    Extrait le texte brut d'un PDF via pdfplumber.
+    """Extrait le texte brut d'un PDF via pdfplumber.
 
     Args:
         chemin: Chemin vers le fichier PDF.
@@ -132,8 +130,7 @@ def extraire_texte_pdf(chemin: Path) -> str:
 
 
 def detecter_articles(texte: str) -> list[dict]:
-    """
-    Détecte les articles dans le texte extrait.
+    """Détecte les articles dans le texte extrait.
 
     Stratégie : chercher les patterns "Article N" et découper le texte
     entre chaque occurrence.
@@ -208,8 +205,7 @@ def detecter_articles(texte: str) -> list[dict]:
 
 
 def detecter_chapitres(texte: str) -> list[dict]:
-    """
-    Détecte les chapitres et sections dans le texte.
+    """Détecte les chapitres et sections dans le texte.
 
     Args:
         texte: Texte brut.
@@ -247,8 +243,7 @@ def construire_document(
     themes: list[str],
     url_source: str | None = None,
 ) -> DocumentReglementaire:
-    """
-    Construit un DocumentReglementaire depuis le texte extrait.
+    """Construit un DocumentReglementaire depuis le texte extrait.
 
     Args:
         texte:             Texte brut du document.

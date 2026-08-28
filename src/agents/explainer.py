@@ -1,5 +1,4 @@
-"""
-src/agents/explainer.py — Agent Explainer de Regulatory Agent V2
+"""src/agents/explainer.py — Agent Explainer de Regulatory Agent V2
 =================================================================
 
 Responsabilité : transformer une liste de preuves réglementaires
@@ -69,8 +68,7 @@ class ResultatExplication:
 
 
 class AgentExplainer:
-    """
-    Agent de synthèse et d'explication réglementaire.
+    """Agent de synthèse et d'explication réglementaire.
 
     Paramètres :
         use_llm : Si True, utilise Qwen 2.5 7B pour la synthèse.
@@ -94,8 +92,7 @@ class AgentExplainer:
         date_ref: date | None,
         type_pipeline: str,
     ) -> ResultatExplication:
-        """
-        Construit une réponse lisible par assemblage direct des textes.
+        """Construit une réponse lisible par assemblage direct des textes.
 
         Structure :
           - En-tête avec contexte temporel si applicable
@@ -190,8 +187,7 @@ class AgentExplainer:
         evidences: list[EvidenceRecuperee],
         max_chars: int = 6000,
     ) -> str:
-        """
-        Construit le contexte réglementaire à passer au LLM.
+        """Construit le contexte réglementaire à passer au LLM.
         Limité à max_chars pour ne pas dépasser la fenêtre de contexte.
 
         Args:
@@ -225,8 +221,7 @@ class AgentExplainer:
         date_ref: date | None,
         type_pipeline: str,
     ) -> ResultatExplication:
-        """
-        Synthétise une réponse fluide via Qwen 2.5 7B.
+        """Synthétise une réponse fluide via Qwen 2.5 7B.
 
         Le prompt impose explicitement :
         - Ne pas inventer d'informations absentes des sources.
@@ -327,8 +322,7 @@ class AgentExplainer:
         date_ref: date | None = None,
         type_pipeline: str = "courante",
     ) -> ResultatExplication:
-        """
-        Génère une explication réglementaire à partir des preuves.
+        """Génère une explication réglementaire à partir des preuves.
 
         Args:
             question:      Question originale de l'utilisateur.
