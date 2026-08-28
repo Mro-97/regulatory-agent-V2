@@ -7,6 +7,7 @@ import logging
 import sys
 import uuid
 from pathlib import Path
+from typing import Any
 
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, PointStruct, VectorParams
@@ -26,9 +27,9 @@ OVERLAP = 50
 
 
 class Ingester:  # noqa: D101
-    def __init__(  # noqa: ANN204, D107
-        self, collection_name: str = "regulatory_chunks", recreate: bool = False
-    ):
+    def __init__(  # noqa: D107 — TODO §12 étape 4 : compléter docstrings
+        self, collection_name: str = "regulatory_chunks", recreate: bool = False,
+    ) -> None:
         # F1 : respecter cfg.qdrant_https + cfg.qdrant_api_key. `url=` seul
         # hardcodait http:// et ignorait la clé Qdrant même si présente.
         scheme = "https" if cfg.qdrant_https else "http"
@@ -42,14 +43,16 @@ class Ingester:  # noqa: D101
         if recreate:
             self._recreate_collection()
 
-    def _load_embedding_model(self):  # noqa: ANN202 — TODO §12 étape 4 : typage strict progressif
-        from sentence_transformers import SentenceTransformer
+    def _load_embedding_model(self) -> Any:
+        from sentence_transformers import (
+            SentenceTransformer,  # type: ignore[import-not-found]
+        )
 
         model = SentenceTransformer("all-MiniLM-L6-v2")
         logger.info("Modèle d'embedding : all-MiniLM-L6-v2 (dim=384)")
         return model
 
-    def _recreate_collection(self):  # noqa: ANN202 — TODO §12 étape 4 : typage strict progressif
+    def _recreate_collection(self) -> None:
         if self.client.collection_exists(self.collection_name):
             self.client.delete_collection(self.collection_name)
             logger.info("Collection '%s' supprimée", self.collection_name)
@@ -193,7 +196,7 @@ class Ingester:  # noqa: D101
         self.ingest_document(doc)
 
 
-def main():  # noqa: ANN201, D103
+def main() -> None:  # noqa: D103 — TODO §12 étape 4 : compléter docstrings
     parser = argparse.ArgumentParser(
         description="Ingérer un JSON réglementaire dans Qdrant"
     )

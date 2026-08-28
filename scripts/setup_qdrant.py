@@ -27,6 +27,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from config import cfg
+from qdrant_client import QdrantClient
 
 logging.basicConfig(
     level=logging.INFO,
@@ -37,7 +38,7 @@ logger = logging.getLogger(__name__)
 
 
 def setup_collection(
-    client, collection: str, dimension: int, reset: bool = False  # noqa: ANN001 — TODO §12 étape 4 : typage strict progressif
+    client: QdrantClient, collection: str, dimension: int, reset: bool = False,
 ) -> None:
     """Crée (ou recrée) la collection Qdrant avec tous les index nécessaires.
 

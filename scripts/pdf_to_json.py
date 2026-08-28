@@ -32,6 +32,7 @@ import re
 import sys
 from datetime import date
 from pathlib import Path
+from typing import Any
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -129,7 +130,7 @@ def extraire_texte_pdf(chemin: Path) -> str:
 # ---------------------------------------------------------------------------
 
 
-def detecter_articles(texte: str) -> list[dict]:
+def detecter_articles(texte: str) -> list[dict[str, Any]]:
     """Détecte les articles dans le texte extrait.
 
     Stratégie : chercher les patterns "Article N" et découper le texte
@@ -153,7 +154,7 @@ def detecter_articles(texte: str) -> list[dict]:
                     "debut": match.start(),
                     "numero": match.group(1),
                     "titre_ligne": match.group(2).strip()
-                    if match.lastindex >= 2
+                    if match.lastindex is not None and match.lastindex >= 2
                     else "",
                 }
             )
@@ -174,8 +175,10 @@ def detecter_articles(texte: str) -> list[dict]:
 
     # Découper le texte entre les articles
     for i, pos in enumerate(positions):
-        debut_texte = pos["debut"]
-        fin_texte = positions[i + 1]["debut"] if i + 1 < len(positions) else len(texte)
+        debut_texte = int(pos["debut"])
+        fin_texte = (
+            int(positions[i + 1]["debut"]) if i + 1 < len(positions) else len(texte)
+        )
         bloc = texte[debut_texte:fin_texte].strip()
 
         # Séparer le titre du corps
@@ -204,7 +207,7 @@ def detecter_articles(texte: str) -> list[dict]:
 # ---------------------------------------------------------------------------
 
 
-def detecter_chapitres(texte: str) -> list[dict]:
+def detecter_chapitres(texte: str) -> list[dict[str, Any]]:
     """Détecte les chapitres et sections dans le texte.
 
     Args:
@@ -219,7 +222,11 @@ def detecter_chapitres(texte: str) -> list[dict]:
             chapitres.append(
                 {
                     "id": f"chap_{match.group(1).lower()}",
-                    "titre": match.group(2).strip() if match.lastindex >= 2 else "",
+                    "titre": (
+                        match.group(2).strip()
+                        if match.lastindex is not None and match.lastindex >= 2
+                        else ""
+                    ),
                     "debut": match.start(),
                 }
             )
@@ -272,7 +279,7 @@ def construire_document(
         # Dédupliquer les marqueurs répétés (headers de page) en conservant
         # la première occurrence de chaque id, dans l'ordre du texte.
         vus: set[str] = set()
-        chapitres_uniques: list[dict] = []
+        chapitres_uniques: list[dict[str, Any]] = []
         for c in chapitres_structurels:
             if c["id"] not in vus:
                 vus.add(c["id"])
@@ -280,7 +287,7 @@ def construire_document(
 
         # Attribution de chaque article au chapitre dont le début précède
         # immédiatement le sien (le dernier chapitre dont "debut" <= article["debut"]).
-        chapitres_map: dict[str, list] = {c["id"]: [] for c in chapitres_uniques}
+        chapitres_map: dict[str, list[Any]] = {c["id"]: [] for c in chapitres_uniques}
         chap_ids = [c["id"] for c in chapitres_uniques]
         chap_debuts = [c["debut"] for c in chapitres_uniques]
 
