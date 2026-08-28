@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import logging
 from datetime import UTC, date, datetime
+from typing import Any
 
 from config import cfg
 from qdrant_client import QdrantClient
@@ -211,7 +212,7 @@ class Retriever:
     # Conversion des résultats
     # ------------------------------------------------------------------
 
-    def _point_vers_evidence(self, point) -> EvidenceRecuperee | None:  # noqa: ANN001 — TODO §12 étape 4 : typage strict progressif
+    def _point_vers_evidence(self, point: ScoredPoint) -> EvidenceRecuperee | None:
         """Convertit un ScoredPoint Qdrant en EvidenceRecuperee.
 
         Retourne None si le payload est incomplet, avec log d'avertissement.
@@ -318,7 +319,7 @@ class Retriever:
         cond_to_null = self._filtre_valid_to_null()
 
         # Conditions communes aux deux passes (thèmes + sources API)
-        conditions_communes: list = []
+        conditions_communes: list[Any] = []
         cond_themes = self._filtre_themes(filtres_themes or [])
         if cond_themes is not None:
             conditions_communes.append(cond_themes)
