@@ -210,7 +210,7 @@ pytest -q
 ```
 
 Les tests couvrent :
-- ✅ Sécurité (81 tests)
+- ✅ Sécurité API (auth, CORS, CSP, rate limiting, Transfer-Encoding)
 - ✅ Attribution des chapitres (B1)
 - ✅ Audit chaîné (B2)
 - ✅ Modèles Pydantic
