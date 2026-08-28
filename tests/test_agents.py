@@ -249,7 +249,7 @@ class TestAgentCitation:
             extrait="Texte qui ne figure pas dans le chunk source",
             chunk_id=ev_rgpd_a.chunk_id,
         )
-        verifiees, douteuses = agent.verify([cit_modifiee], [ev_rgpd_a])
+        verifiees, douteuses = agent.verify([cit_modifiee], [ev_rgpd_a])  # noqa: RUF059 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
         assert len(douteuses) == 1
 
     def test_aucune_preuve(self):  # noqa: ANN201

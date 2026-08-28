@@ -430,7 +430,7 @@ class AgentConflit:
 
         # Recherche le premier objet JSON qui contient "verdicts"
         match = re.search(r"\{[^{}]*\"verdicts\".*?\}\s*\]?\s*\}", analyse, re.DOTALL)
-        if match is None:
+        if match is None:  # noqa: SIM108 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
             # Fallback : essayer de parser toute la sortie
             candidats = [analyse]
         else:
@@ -439,7 +439,7 @@ class AgentConflit:
         for candidat in candidats:
             try:
                 donnees = json.loads(candidat)
-            except Exception:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
+            except Exception:  # noqa: BLE001, S112
                 continue
 
             liste = donnees.get("verdicts") if isinstance(donnees, dict) else None

@@ -200,7 +200,7 @@ class Retriever:
                 with_payload=True,
                 with_vectors=False,
             )
-            return resultats.points
+            return resultats.points  # noqa: TRY300 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
         except Exception as exc:
             logger.exception("Erreur Qdrant (%s) : %s", self._collection, exc)  # noqa: TRY401 — TODO §12 étape 4 : réviser le message en même temps que le typage
             raise RuntimeError(  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill

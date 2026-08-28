@@ -186,7 +186,7 @@ class Ingester:  # noqa: D101
 
     def ingest_json(self, json_path: Path) -> None:
         """Chemin d'entrée CLI : charge un JSON puis appelle `ingest_document`."""
-        with open(json_path, encoding="utf-8") as f:
+        with open(json_path, encoding="utf-8") as f:  # noqa: PTH123 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
             data = json.load(f)
         doc = DocumentReglementaire(**data)
         logger.info("Document chargé : %s - %s", doc.id, doc.titre)

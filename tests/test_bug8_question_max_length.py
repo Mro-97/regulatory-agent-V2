@@ -54,7 +54,7 @@ class TestBug8QuestionMaxLength:
         )
         env = os.environ.copy()
         env["QUESTION_MAX_LENGTH"] = "10"
-        resultat = subprocess.run(
+        resultat = subprocess.run(  # noqa: S603 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
             [sys.executable, "-c", script],
             cwd=REPO_ROOT,
             env=env,

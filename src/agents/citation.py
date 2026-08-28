@@ -374,7 +374,7 @@ class AgentCitation:
                         chunk_id,
                     )
 
-            return citations
+            return citations  # noqa: TRY300 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
 
         except Exception as exc:
             logger.exception("Extraction LLM échouée, bascule déterministe : %s", exc)  # noqa: TRY401 — TODO §12 étape 4 : réviser le message en même temps que le typage

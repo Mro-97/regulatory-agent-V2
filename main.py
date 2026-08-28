@@ -45,7 +45,7 @@ async def initialiser_audit() -> None:
     try:
         from src.audit import obtenir_gestionnaire
 
-        gestionnaire = await obtenir_gestionnaire()
+        gestionnaire = await obtenir_gestionnaire()  # noqa: F841 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
         logger.info("Gestionnaire d'audit initialisé.")
     except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
         logger.warning("Audit non initialisé (non bloquant) : %s", exc)
@@ -152,13 +152,13 @@ if __name__ == "__main__":
             await server.serve()
         finally:
             watcher_task.cancel()
-            try:
+            try:  # noqa: SIM105 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
                 await watcher_task
             except asyncio.CancelledError:
                 pass
             logger.info("Arrêt propre.")
 
-    try:
+    try:  # noqa: SIM105 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
         asyncio.run(run())
     except KeyboardInterrupt:
         pass

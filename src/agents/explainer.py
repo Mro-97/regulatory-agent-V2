@@ -298,7 +298,7 @@ class AgentExplainer:
 
             # Vérification basique : la réponse ne doit pas être vide
             if not reponse:
-                raise ValueError("Réponse LLM vide.")  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
+                raise ValueError("Réponse LLM vide.")  # noqa: TRY003, TRY301
 
             return ResultatExplication(
                 reponse=reponse,

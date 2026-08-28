@@ -267,7 +267,7 @@ class TestSchemasAPI:
     def test_requete_question_trop_courte(self):  # noqa: ANN201
         from src.models import RequeteQuestion
 
-        with pytest.raises(Exception):
+        with pytest.raises(Exception):  # noqa: B017 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
             RequeteQuestion(question="AB")
 
     def test_evidence_recuperee(self):  # noqa: ANN201

@@ -110,7 +110,7 @@ class IntervalleValidite(BaseModel):
         """Retourne True si valid_from <= date_cible <= valid_to (ou valid_to absent)."""  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
         if date_cible < self.valid_from:
             return False
-        if self.valid_to is not None and date_cible > self.valid_to:
+        if self.valid_to is not None and date_cible > self.valid_to:  # noqa: SIM103 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
             return False
         return True
 
@@ -240,7 +240,7 @@ class DocumentReglementaire(BaseModel):
         """Indique si le document est en vigueur à la date donnée."""
         if date_cible < self.entry_into_force:
             return False
-        if self.repeal_date is not None and date_cible >= self.repeal_date:
+        if self.repeal_date is not None and date_cible >= self.repeal_date:  # noqa: SIM103 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
             return False
         return True
 
@@ -272,7 +272,7 @@ class MetadonneesChunk(BaseModel):
         """Indique si ce chunk est issu d'une version applicable à la date donnée."""
         if date_cible < self.valid_from:
             return False
-        if self.valid_to is not None and date_cible > self.valid_to:
+        if self.valid_to is not None and date_cible > self.valid_to:  # noqa: SIM103 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
             return False
         return True
 

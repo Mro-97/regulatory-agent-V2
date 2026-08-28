@@ -218,7 +218,7 @@ class GestionnaireAudit:
         try:
             ligne = audit.model_dump_json() + "\n"
             await asyncio.to_thread(self._ecrire_ligne_local, ligne)
-            return True
+            return True  # noqa: TRY300 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
         except Exception as exc:
             logger.exception("Écriture audit local échouée : %s", exc)  # noqa: TRY401 — TODO §12 étape 4 : réviser le message en même temps que le typage
             return False
@@ -226,7 +226,7 @@ class GestionnaireAudit:
     def _ecrire_ligne_local(self, ligne: str) -> None:
         """Écriture synchrone déléguée au threadpool (évite de bloquer l'event loop)."""
         CHEMIN_AUDIT_LOCAL.parent.mkdir(parents=True, exist_ok=True)
-        with open(CHEMIN_AUDIT_LOCAL, "a", encoding="utf-8") as f:
+        with open(CHEMIN_AUDIT_LOCAL, "a", encoding="utf-8") as f:  # noqa: PTH123 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
             f.write(ligne)
 
     async def _persister_postgres(self, audit: EnregistrementAudit) -> bool:
@@ -258,7 +258,7 @@ class GestionnaireAudit:
                     audit.hash_precedent,
                     audit.hash_courant,
                 )
-            return True
+            return True  # noqa: TRY300 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
         except Exception as exc:
             logger.exception("INSERT audit PostgreSQL échoué : %s", exc)  # noqa: TRY401 — TODO §12 étape 4 : réviser le message en même temps que le typage
             return False

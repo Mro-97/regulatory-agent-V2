@@ -43,7 +43,7 @@ class TestTransferEncoding:
         assert rep.status_code == 411, rep.text
         assert "Transfer-Encoding" in rep.json()["detail"]
 
-    def test_get_health_avec_TE_ignore(self, client):  # noqa: ANN001, ANN201
+    def test_get_health_avec_TE_ignore(self, client):  # noqa: ANN001, ANN201, N802
         # GET n'est pas concerné par la protection (pas de body attendu).
         rep = client.get("/health", headers={"Transfer-Encoding": "chunked"})
         assert rep.status_code == 200

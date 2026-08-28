@@ -247,7 +247,7 @@ class Watcher:
                 client = await self._http()
                 rep = await client.get(url)
                 rep.raise_for_status()
-                return rep.text
+                return rep.text  # noqa: TRY300 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
             except httpx.HTTPStatusError as exc:
                 # 4xx : ressource déplacée/supprimée/interdite — pas de retry.
                 statut = exc.response.status_code

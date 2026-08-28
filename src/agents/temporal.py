@@ -63,7 +63,7 @@ def _valider_date_contexte(valeur: object) -> date | None:
     if isinstance(valeur, datetime):
         valeur = valeur.date()
     if not isinstance(valeur, date):
-        raise ValueError(  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
+        raise ValueError(  # noqa: TRY003, TRY004
             f"date_contexte doit être une date, reçu {type(valeur).__name__}"
         )
     if not (_DATE_MIN_RAISONNABLE <= valeur <= _DATE_MAX_RAISONNABLE):

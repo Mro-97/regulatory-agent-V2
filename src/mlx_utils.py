@@ -484,7 +484,7 @@ class _CacheGeneration:
         temperature: float = 0.1,
         top_p: float = 0.9,
     ) -> MLXInference:
-        if self._actif and self._actif != model_name:
+        if self._actif and self._actif != model_name:  # noqa: SIM102 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
             if (
                 self._instances.get(self._actif, None)
                 and self._instances[self._actif].est_charge

@@ -56,7 +56,7 @@ class TestMachineUnique:
         assert _MACHINE == HOSTNAME_LOCAL
         assert _MACHINE  # non vide
 
-    def test_machine_non_hardcodee_A_B_C(self):  # noqa: ANN201
+    def test_machine_non_hardcodee_A_B_C(self):  # noqa: ANN201, N802
         assert _MACHINE not in {"Mac_A", "Mac_B", "Mac_C"}
 
 
@@ -125,7 +125,7 @@ class TestAuditContientHostname:
 
     def test_machine_temporal_est_hostname_dans_audit(self):  # noqa: ANN201
         orch = Orchestrateur(mode="real")
-        with patch("src.agents.temporal.AgentTemporel") as MockAgent:
+        with patch("src.agents.temporal.AgentTemporel") as MockAgent:  # noqa: N806 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
             instance = MockAgent.return_value
             resultat = MagicMock()
             resultat.date_ref = date(2025, 6, 15)
@@ -150,7 +150,7 @@ class TestAuditContientHostname:
 
     def test_machine_explainer_est_hostname_dans_audit(self):  # noqa: ANN201
         orch = Orchestrateur(mode="real")
-        with patch("src.agents.explainer.AgentExplainer") as MockAgent:
+        with patch("src.agents.explainer.AgentExplainer") as MockAgent:  # noqa: N806 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
             instance = MockAgent.return_value
             resultat = MagicMock()
             resultat.reponse = "Réponse"

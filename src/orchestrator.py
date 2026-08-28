@@ -744,7 +744,7 @@ class Orchestrateur:
 
             await client.aclose()
             if not tache_trouvee:
-                raise ValueError(f"Tâche introuvable : {tache_id}")  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
+                raise ValueError(f"Tâche introuvable : {tache_id}")  # noqa: TRY003, TRY301
 
             return ReponseDecisionValidation(
                 tache_id=tache_id,

@@ -594,7 +594,7 @@ class TestOrchestrateurNonBloquant:
         )
         # Et elle doit continuer à progresser régulièrement pendant que le
         # retrieval tourne en arrière-plan dans son thread.
-        ecarts = [b - a for a, b in zip(marqueurs, marqueurs[1:])]
+        ecarts = [b - a for a, b in zip(marqueurs, marqueurs[1:])]  # noqa: B905, RUF007
         assert all(ecart < 0.2 for ecart in ecarts), (
             f"tache_legere() n'a pas progressé régulièrement : {ecarts}"
         )

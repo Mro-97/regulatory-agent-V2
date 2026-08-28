@@ -36,7 +36,7 @@ class TestExecuterAvecTimeout:
 
         assert _executer_avec_timeout(rapide, 5.0) == "ok"
 
-    def test_leve_MLXTimeoutError_si_depasse(self):  # noqa: ANN201
+    def test_leve_MLXTimeoutError_si_depasse(self):  # noqa: ANN201, N802
         def lent() -> str:
             time.sleep(2.0)
             return "trop tard"
