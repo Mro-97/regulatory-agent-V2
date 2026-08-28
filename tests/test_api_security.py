@@ -22,7 +22,12 @@ import pytest
 from config import cfg
 from fastapi.testclient import TestClient
 from src import api as api_module
-from src.api import LimiteurDebit
+
+# Le limiteur et la classe LimiteurDebit vivent désormais dans
+# src.api_security (§12 étape 6). Le monkey-patch cible ce module —
+# `src.api._limiteur` ne serait qu'un alias.
+from src import api_security as api_security_module
+from src.api_security import LimiteurDebit
 
 CLE = "cle-de-test-0123456789abcdef"
 
@@ -187,9 +192,11 @@ class TestCorsEtOrigine:
 
 class TestRateLimiting:
     def test_debit_depasse_429(self, client):  # noqa: ANN001, ANN201
-        original = api_module._limiteur
+        original = api_security_module._limiteur
         try:
-            api_module._limiteur = LimiteurDebit(max_requetes=2, fenetre_secondes=60)
+            api_security_module._limiteur = LimiteurDebit(
+                max_requetes=2, fenetre_secondes=60
+            )
             premier = client.post(
                 "/ask",
                 json={"question": "Question rate limit ?"},
@@ -209,7 +216,7 @@ class TestRateLimiting:
             assert second.status_code == 200
             assert troisieme.status_code == 429
         finally:
-            api_module._limiteur = original
+            api_security_module._limiteur = original
 
     def test_limiteur_unitaire(self):  # noqa: ANN201
         limiteur = LimiteurDebit(max_requetes=3, fenetre_secondes=60)
