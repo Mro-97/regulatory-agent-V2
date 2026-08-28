@@ -83,11 +83,12 @@ _MACHINE = platform.node() or "inconnue"
 _MACHINE_INCONNUE = "inconnue"
 
 
-class DocumentDejaIndexeError(Exception):
-    """Levée par Orchestrateur.ingerer() quand un document_id est déjà présent
-    dans Qdrant et que forcer_reindexation=False. Traduite en HTTP 409 par
-    l'API (voir src/api.py).
-    """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
+# `DocumentDejaIndexeError` déplacé vers src/orchestrator_ingest.py
+# (§12 étape 6). Ré-exporté ici pour compatibilité descendante (api.py et
+# tests continuent à l'importer depuis src.orchestrator).
+# fmt: off
+from src.orchestrator_ingest import DocumentDejaIndexeError as DocumentDejaIndexeError  # noqa: E402, I001
+# fmt: on
 
 
 class Orchestrateur:
@@ -615,47 +616,10 @@ class Orchestrateur:
         return await asyncio.to_thread(self._ingerer_sync, requete)
 
     def _ingerer_sync(self, requete: RequeteIngestion) -> ReponseIngestion:
-        """Partie synchrone (bloquante) de l'ingestion — validation, vérification
-        d'existence, chunking, embedding MLX et upsert Qdrant. Exécutée hors
-        de la boucle asyncio via asyncio.to_thread dans ingerer().
-        """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
-        from src.models import DocumentReglementaire
+        """Ingestion synchrone déléguée à src.orchestrator_ingest."""
+        from src.orchestrator_ingest import ingerer_sync
 
-        if not requete.contenu_json:
-            raise ValueError(  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
-                "contenu_json requis — l'ingestion depuis une URL n'est pas "
-                "implémentée. Fournir le document au format DocumentReglementaire "
-                "canonique (voir scripts/pdf_to_json.py)."
-            )
-
-        try:
-            doc = DocumentReglementaire(**requete.contenu_json)
-        except Exception as exc:
-            raise ValueError(f"contenu_json invalide : {exc}") from exc  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
-
-        if not doc.hash_document:
-            doc.hash_document = doc.calculer_hash()
-
-        ingester = self._obtenir_ingester()
-        nb_existants = ingester.compter_chunks_existants(doc.id)
-
-        if nb_existants > 0 and not requete.forcer_reindexation:
-            raise DocumentDejaIndexeError(  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
-                f"Document '{doc.id}' déjà indexé ({nb_existants} chunks) — "
-                f"renvoyer avec forcer_reindexation=true pour le remplacer."
-            )
-
-        if nb_existants > 0:
-            ingester.supprimer_chunks_document(doc.id)
-
-        nb_chunks = ingester.ingest_document(doc)
-
-        return ReponseIngestion(
-            document_id=doc.id,
-            chunks_indexes=nb_chunks,
-            hash_document=doc.hash_document,
-            nouvelle_version=nb_existants > 0,
-        )
+        return ingerer_sync(self._obtenir_ingester, requete)
 
     # ------------------------------------------------------------------
     # Human-in-the-loop
