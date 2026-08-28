@@ -25,8 +25,8 @@ CHUNK_SIZE = 600
 OVERLAP = 50
 
 
-class Ingester:
-    def __init__(  # noqa: ANN204 — TODO §12 étape 4 : typage strict progressif
+class Ingester:  # noqa: D101
+    def __init__(  # noqa: ANN204, D107
         self, collection_name: str = "regulatory_chunks", recreate: bool = False
     ):
         # F1 : respecter cfg.qdrant_https + cfg.qdrant_api_key. `url=` seul
@@ -59,7 +59,7 @@ class Ingester:
         )
         logger.info("Collection '%s' créée (dim=384)", self.collection_name)
 
-    def embed_chunk(self, text: str) -> list[float]:
+    def embed_chunk(self, text: str) -> list[float]:  # noqa: D102 — TODO §12 étape 4 : compléter docstrings
         vec = self.embedding_model.encode(text)
         # SentenceTransformer renvoie un ndarray ; les mocks de tests renvoient
         # directement une liste. Accepter les deux sans conversion agressive.
@@ -77,7 +77,7 @@ class Ingester:
             start += CHUNK_SIZE - OVERLAP
         return chunks
 
-    def chunk_document(self, doc: DocumentReglementaire) -> list[MetadonneesChunk]:
+    def chunk_document(self, doc: DocumentReglementaire) -> list[MetadonneesChunk]:  # noqa: D102 — TODO §12 étape 4 : compléter docstrings
         chunks = []
         for chapitre in doc.chapitres:
             for article in chapitre.articles:
@@ -193,7 +193,7 @@ class Ingester:
         self.ingest_document(doc)
 
 
-def main():  # noqa: ANN201 — TODO §12 étape 4 : typage strict progressif
+def main():  # noqa: ANN201, D103
     parser = argparse.ArgumentParser(
         description="Ingérer un JSON réglementaire dans Qdrant"
     )

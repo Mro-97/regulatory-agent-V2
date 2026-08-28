@@ -29,7 +29,7 @@ Format de sortie attendu :
   Sources (document / article / version / dates de validité)
 
 Dépendances : src/mlx_utils.py, src/models.py
-"""
+"""  # noqa: D205, D415
 
 from __future__ import annotations
 
@@ -76,7 +76,7 @@ class AgentExplainer:
                   Sur Mac A (16 Go), laisser à False pendant les tests.
     """
 
-    def __init__(self, use_llm: bool = False) -> None:
+    def __init__(self, use_llm: bool = False) -> None:  # noqa: D107 — TODO §12 étape 4 : compléter docstrings
         self.use_llm = use_llm
         self._modele: MLXInference | None = None
         logger.info("AgentExplainer initialisé — use_llm=%s", use_llm)
@@ -196,7 +196,7 @@ class AgentExplainer:
 
         Returns:
             Texte structuré pour le prompt système.
-        """
+        """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
         blocs: list[str] = []
         total = 0
 

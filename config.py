@@ -4,7 +4,7 @@
 Toutes les valeurs sont lues depuis les variables d'environnement.
 Un fichier .env à la racine du projet est chargé automatiquement.
 Aucune valeur sensible ne doit être codée en dur ici.
-"""
+"""  # noqa: D205, D415
 
 from pathlib import Path
 
@@ -15,7 +15,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Parametres(BaseSettings):
     """Paramètres globaux du système, injectables via .env ou variables d'environnement.
     protected_namespaces=() supprime les warnings Pydantic sur les champs model_*.
-    """
+    """  # noqa: D205
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -188,19 +188,19 @@ class Parametres(BaseSettings):
     # Chemins locaux
     # ------------------------------------------------------------------
     @property
-    def racine(self) -> Path:
+    def racine(self) -> Path:  # noqa: D102
         return Path(__file__).parent
 
     @property
-    def dossier_data_raw(self) -> Path:
+    def dossier_data_raw(self) -> Path:  # noqa: D102
         return self.racine / "data" / "raw"
 
     @property
-    def dossier_data_indexed(self) -> Path:
+    def dossier_data_indexed(self) -> Path:  # noqa: D102
         return self.racine / "data" / "indexed"
 
     @property
-    def dossier_data_pending(self) -> Path:
+    def dossier_data_pending(self) -> Path:  # noqa: D102
         return self.racine / "data" / "pending"
 
     @property

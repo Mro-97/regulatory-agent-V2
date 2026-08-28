@@ -15,7 +15,7 @@ Index créés sur le payload :
     - valid_from    (datetime) — filtrage temporel borne inférieure
     - valid_to      (datetime) — filtrage temporel borne supérieure
     - themes        (keyword[]) — filtrage thématique
-"""
+"""  # noqa: D205, D415
 
 from __future__ import annotations
 
@@ -109,7 +109,7 @@ def setup_collection(
     )
 
 
-def main() -> None:
+def main() -> None:  # noqa: D103 — TODO §12 étape 4 : compléter docstrings
     parser = argparse.ArgumentParser(
         description="Initialise la collection Qdrant pour Regulatory Agent V2.",
     )

@@ -18,7 +18,7 @@ Sécurité :
   - Limite de taille de requête (taille_max_requete_octets).
   - En-têtes de sécurité appliqués à toutes les réponses.
   - Les erreurs internes sont journalisées, jamais renvoyées au client.
-"""
+"""  # noqa: D205, D415
 
 from __future__ import annotations
 
@@ -228,7 +228,7 @@ class LimiteurDebit:
     signale ce cas au boot.
     """
 
-    def __init__(
+    def __init__(  # noqa: D107 — TODO §12 étape 4 : compléter docstrings
         self,
         max_requetes: int,
         fenetre_secondes: int,
@@ -248,7 +248,7 @@ class LimiteurDebit:
         for k in obsoletes:
             del self._horodatages[k]
 
-    def autoriser(self, cle: str) -> bool:
+    def autoriser(self, cle: str) -> bool:  # noqa: D102 — TODO §12 étape 4 : compléter docstrings
         maintenant = time.monotonic()
         borne = maintenant - self.fenetre_secondes
         with self._verrou:
@@ -298,7 +298,7 @@ DebitDep = Depends(verifier_rate_limit)
 _orchestrateur: Orchestrateur | None = None
 
 
-def obtenir_orchestrateur() -> Orchestrateur:
+def obtenir_orchestrateur() -> Orchestrateur:  # noqa: D103 — TODO §12 étape 4 : compléter docstrings
     global _orchestrateur
     if _orchestrateur is None:
         _orchestrateur = Orchestrateur()
@@ -314,7 +314,7 @@ OrchestrateurDep = Annotated[Orchestrateur, Depends(obtenir_orchestrateur)]
 
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
-async def interface(request: Request):  # noqa: ANN201 — TODO §12 étape 4 : typage strict progressif
+async def interface(request: Request):  # noqa: ANN201, D103
     # C1 : la clé API n'est JAMAIS embarquée dans la page (elle serait
     # visible via `view source` pour tout visiteur non authentifié).
     # Le frontend la demande à l'utilisateur au premier chargement de
@@ -333,7 +333,7 @@ async def interface(request: Request):  # noqa: ANN201 — TODO §12 étape 4 : 
     summary="État du système",
     description="Vérifie que l'API est opérationnelle. Retourne l'horodatage et la version.",  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
 )
-async def health() -> dict[str, object]:
+async def health() -> dict[str, object]:  # noqa: D103 — TODO §12 étape 4 : compléter docstrings
     # M4 : /health est public — on n'expose ni le nom d'application ni la
     # version (fingerprinting). Le statut audit reste utile aux sondes
     # d'exploitation locales et ne révèle pas d'info versionnée.
@@ -359,7 +359,7 @@ async def health() -> dict[str, object]:
     description="Pipeline RAG complet : retrieval vectoriel → filtrage temporel → explication LLM → citations.",  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
     dependencies=[AuthDep, OrigineDep, DebitDep],
 )
-async def poser_question(requete: RequeteQuestion, orchestrateur: OrchestrateurDep):  # noqa: ANN201 — TODO §12 étape 4 : typage strict progressif
+async def poser_question(requete: RequeteQuestion, orchestrateur: OrchestrateurDep):  # noqa: ANN201, D103
     logger.info("POST /ask — %r", requete.question[:80])
     try:
         return await orchestrateur.traiter(requete)
@@ -380,7 +380,7 @@ async def poser_question(requete: RequeteQuestion, orchestrateur: OrchestrateurD
     description="Ajoute un document JSON canonique (format DocumentReglementaire) au corpus Qdrant.",  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
     dependencies=[AuthDep, OrigineDep, DebitDep],
 )
-async def ingerer(requete: RequeteIngestion, orchestrateur: OrchestrateurDep):  # noqa: ANN201 — TODO §12 étape 4 : typage strict progressif
+async def ingerer(requete: RequeteIngestion, orchestrateur: OrchestrateurDep):  # noqa: ANN201, D103
     from src.orchestrator import DocumentDejaIndexeError
 
     try:
@@ -411,7 +411,7 @@ async def ingerer(requete: RequeteIngestion, orchestrateur: OrchestrateurDep):  
     description="Retourne toutes les tâches en attente de validation humaine.",
     dependencies=[AuthDep],
 )
-async def pending(orchestrateur: OrchestrateurDep):  # noqa: ANN201 — TODO §12 étape 4 : typage strict progressif
+async def pending(orchestrateur: OrchestrateurDep):  # noqa: ANN201, D103
     try:
         return await orchestrateur.lister_taches_pendantes()
     except Exception:
@@ -430,7 +430,7 @@ async def pending(orchestrateur: OrchestrateurDep):  # noqa: ANN201 — TODO §1
     description="Approuve une tâche de validation identifiée par son tache_id.",
     dependencies=[AuthDep, OrigineDep],
 )
-async def approuver(  # noqa: ANN201 — TODO §12 étape 4 : typage strict progressif
+async def approuver(  # noqa: ANN201, D103
     requete: RequeteDecisionValidation, orchestrateur: OrchestrateurDep
 ):
     try:
@@ -460,7 +460,7 @@ async def approuver(  # noqa: ANN201 — TODO §12 étape 4 : typage strict prog
     description="Rejette une tâche de validation identifiée par son tache_id.",
     dependencies=[AuthDep, OrigineDep],
 )
-async def rejeter(requete: RequeteDecisionValidation, orchestrateur: OrchestrateurDep):  # noqa: ANN201 — TODO §12 étape 4 : typage strict progressif
+async def rejeter(requete: RequeteDecisionValidation, orchestrateur: OrchestrateurDep):  # noqa: ANN201, D103
     try:
         return await orchestrateur.valider_tache(
             tache_id=requete.tache_id,

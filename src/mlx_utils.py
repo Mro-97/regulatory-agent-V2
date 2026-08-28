@@ -21,7 +21,7 @@ Contraintes :
 - Le modèle d'embedding (~570 Mo) reste chargé en permanence sur Mac B.
 
 Dépendances : mlx-lm >= 0.16, mlx-embeddings >= 0.1.0 (MIT/Apache).
-"""
+"""  # noqa: D205, D415
 
 from __future__ import annotations
 
@@ -51,7 +51,7 @@ T = TypeVar("T")
 _executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="mlx-timed")
 
 
-def _executer_avec_timeout(
+def _executer_avec_timeout(  # noqa: D417 — TODO §12 étape 4 : compléter docstrings
     fn: Callable[..., T],
     timeout_seconds: float | None,
     *args,  # noqa: ANN002 — TODO §12 étape 4 : typage strict progressif
@@ -139,9 +139,9 @@ class MLXInference:
     """Wrapper autour de mlx_lm.load / mlx_lm.generate.
     Lazy loading — le modèle n'est chargé qu'au premier appel.
     Un seul modèle actif à la fois via le registre global.
-    """
+    """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
 
-    def __init__(
+    def __init__(  # noqa: D107 — TODO §12 étape 4 : compléter docstrings
         self,
         model_name: str,
         quantized: bool = True,
@@ -189,10 +189,10 @@ class MLXInference:
         gc.collect()
 
     @property
-    def est_charge(self) -> bool:
+    def est_charge(self) -> bool:  # noqa: D102 — TODO §12 étape 4 : compléter docstrings
         return self._loaded
 
-    def generate(
+    def generate(  # noqa: D417 — TODO §12 étape 4 : compléter docstrings
         self,
         prompt: str,
         max_tokens: int = 512,
@@ -271,14 +271,14 @@ class MLXInference:
             )
         return self.generate(prompt, max_tokens=max_tokens, temperature=temperature)
 
-    def __enter__(self) -> MLXInference:
+    def __enter__(self) -> MLXInference:  # noqa: D105 — TODO §12 étape 4 : compléter docstrings
         self.load()
         return self
 
-    def __exit__(self, *args) -> None:  # noqa: ANN002 — TODO §12 étape 4 : typage strict progressif
+    def __exit__(self, *args) -> None:  # noqa: ANN002, D105
         self.unload()
 
-    def __repr__(self) -> str:
+    def __repr__(self) -> str:  # noqa: D105 — TODO §12 étape 4 : compléter docstrings
         return f"MLXInference(model_name={self.model_name!r}, chargé={self._loaded})"
 
 
@@ -298,7 +298,7 @@ class MLXEmbedding:
 
     bge-m3 : multilingue, dimension 1024, excellent pour le français.
     Identifiant HuggingFace : 'BAAI/bge-m3'
-    """
+    """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
 
     def __init__(self, model_name: str = "BAAI/bge-m3") -> None:
         """Args:
@@ -309,7 +309,7 @@ class MLXEmbedding:
                       "There is no Stream(gpu, 2)").
                     - autrement : `mlx_embeddings` (voie native MLX).
                     Défaut : 'BAAI/bge-m3'.
-        """
+        """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
         self.model_name = model_name
         self._st_mode = model_name.startswith("sentence-transformers/")
         self._model = None
@@ -359,7 +359,7 @@ class MLXEmbedding:
         gc.collect()
 
     @property
-    def est_charge(self) -> bool:
+    def est_charge(self) -> bool:  # noqa: D102 — TODO §12 étape 4 : compléter docstrings
         return self._loaded
 
     def encode(
@@ -417,7 +417,7 @@ class MLXEmbedding:
 
         Returns:
             Liste de vecteurs, un par texte.
-        """
+        """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
         if not self._loaded:
             self.load()
 
@@ -454,14 +454,14 @@ class MLXEmbedding:
 
         return vecteurs
 
-    def __enter__(self) -> MLXEmbedding:
+    def __enter__(self) -> MLXEmbedding:  # noqa: D105 — TODO §12 étape 4 : compléter docstrings
         self.load()
         return self
 
-    def __exit__(self, *args) -> None:  # noqa: ANN002 — TODO §12 étape 4 : typage strict progressif
+    def __exit__(self, *args) -> None:  # noqa: ANN002, D105
         self.unload()
 
-    def __repr__(self) -> str:
+    def __repr__(self) -> str:  # noqa: D105 — TODO §12 étape 4 : compléter docstrings
         return f"MLXEmbedding(model_name={self.model_name!r}, chargé={self._loaded})"
 
 

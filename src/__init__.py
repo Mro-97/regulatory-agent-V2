@@ -1,1 +1,1 @@
-# Package src
+# Package src  # noqa: D104

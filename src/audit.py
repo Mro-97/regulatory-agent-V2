@@ -12,7 +12,7 @@ Pipeline d'audit :
   → persister (JSONL local + PostgreSQL si disponible)
 
 Dépendances : asyncpg (optionnel), stdlib uniquement pour le fallback.
-"""
+"""  # noqa: D205, D415
 
 from __future__ import annotations
 
@@ -77,7 +77,7 @@ class GestionnaireAudit:
     rend les hash suivants invalides — détection de falsification.
     """
 
-    def __init__(self, postgres_dsn: str | None = None) -> None:
+    def __init__(self, postgres_dsn: str | None = None) -> None:  # noqa: D107 — TODO §12 étape 4 : compléter docstrings
         self.postgres_dsn = postgres_dsn
         self._pool = None
         self._postgres_ok = False
@@ -92,7 +92,7 @@ class GestionnaireAudit:
         Si PostgreSQL est indisponible, continue en mode local uniquement.
 
         Le chaînage reprend au dernier hash connu (PostgreSQL ou JSONL local).
-        """
+        """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
         global _hash_precedent
 
         if _hash_precedent is None:

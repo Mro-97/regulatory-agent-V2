@@ -8,7 +8,7 @@ Lance :
 
 Usage :
     python3 main.py
-"""
+"""  # noqa: D205, D415
 
 import asyncio
 import logging
@@ -131,7 +131,7 @@ if __name__ == "__main__":
             cfg.api_port,
         )
 
-    async def run():  # noqa: ANN201 — TODO §12 étape 4 : typage strict progressif
+    async def run():  # noqa: ANN201, D103
         # Initialisation audit
         await initialiser_audit()
 

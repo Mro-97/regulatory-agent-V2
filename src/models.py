@@ -7,7 +7,7 @@ manipule ce modèle ou des projections de celui-ci.
 
 Dépendances : pydantic >= 2.0, stdlib uniquement.
 Licence : propriétaire — Regulatory Agent V2.
-"""
+"""  # noqa: D205, D415
 
 import hashlib
 import json
@@ -86,7 +86,7 @@ class IntervalleValidite(BaseModel):
     """Fenêtre temporelle de validité d'un article ou d'un texte.
     Un intervalle ouvert (valid_to = None) signifie que la version est en vigueur.
     Invariant : si valid_to est renseigné, il doit être >= valid_from.
-    """
+    """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
 
     valid_from: date = Field(
         ...,
@@ -122,7 +122,7 @@ class IntervalleValidite(BaseModel):
 class VersionArticle(BaseModel):
     """Version spécifique d'un article réglementaire.
     Un même article peut avoir plusieurs versions successives dans le temps.
-    """
+    """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
 
     id: str = Field(..., description="Identifiant unique de cette version d'article.")
     titre: str = Field(
@@ -183,7 +183,7 @@ class TexteLie(BaseModel):
 class DocumentReglementaire(BaseModel):
     """Représentation canonique d'un texte réglementaire.
     Modèle pivot manipulé par toute la chaîne du système.
-    """
+    """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
 
     id: str = Field(
         ...,
@@ -307,7 +307,7 @@ class SortieAgent(BaseModel):
 class EnregistrementAudit(BaseModel):
     """Trace complète d'une requête. Chaînage SHA-256 pour détecter toute altération.
     Chaîne : requête → documents → chunks → agents → réponse → citations → validation.
-    """
+    """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
 
     request_id: UUID = Field(default_factory=uuid4)
     horodatage: datetime = Field(default_factory=lambda: datetime.now(UTC))

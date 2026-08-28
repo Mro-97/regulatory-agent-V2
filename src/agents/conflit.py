@@ -30,7 +30,7 @@ Principe absolu :
   Toute contradiction non résolue est soumise à pending_links.
 
 Dépendances : src/mlx_utils.py, src/models.py
-"""
+"""  # noqa: D205, D415
 
 from __future__ import annotations
 
@@ -108,7 +108,7 @@ def _contient_terme(texte: str, pattern: str) -> bool:
 def _detecter_tension_lexicale(texte_a: str, texte_b: str) -> str | None:
     """Détecte une tension lexicale entre deux textes.
     Retourne une description si une contradiction est repérée, None sinon.
-    """
+    """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
     for pos, neg in _PAIRES_CONTRADICTOIRES:
         a_pos = _contient_terme(texte_a, pos)
         a_neg = _contient_terme(texte_a, neg)
@@ -153,7 +153,7 @@ class AgentConflit:
                   Défaut : False (détection déterministe uniquement).
     """
 
-    def __init__(self, use_llm: bool = False) -> None:
+    def __init__(self, use_llm: bool = False) -> None:  # noqa: D107 — TODO §12 étape 4 : compléter docstrings
         self.use_llm = use_llm
         self._modele: MLXInference | None = None
         logger.info("AgentConflit initialisé — use_llm=%s", use_llm)
@@ -181,7 +181,7 @@ class AgentConflit:
 
         Returns:
             Liste de ConflitDetecte.
-        """
+        """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
         conflits: list[ConflitDetecte] = []
         n = len(evidences)
 
@@ -247,7 +247,7 @@ class AgentConflit:
 
         Returns:
             Liste de ConflitDetecte.
-        """
+        """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
         conflits: list[ConflitDetecte] = []
         n = len(evidences)
 
@@ -290,7 +290,7 @@ class AgentConflit:
         """Charge DeepSeek-R1 14B via le registre MLX.
         ATTENTION : ~9 Go de RAM — décharger les autres modèles avant.
         Le registre get_model() s'en charge automatiquement.
-        """
+        """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
         if self._modele is None:
             from src.mlx_utils import get_model
 
@@ -331,7 +331,7 @@ class AgentConflit:
         Returns:
             Tuple (conflits mis à jour, analyse textuelle).
             En cas d'échec de parsing : niveaux inchangés, analyse renvoyée telle quelle.
-        """  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
+        """  # noqa: D205, E501
         self._charger_modele()
         if self._modele is None:
             raise RuntimeError("Modèle Conflit non chargé")  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill

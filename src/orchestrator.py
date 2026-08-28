@@ -25,7 +25,7 @@ Agents non encore implémentés (Temporal, Explainer, Citation, Conflict)
 → leurs étapes sont marquées TODO et contournées proprement.
 
 Dépendances : httpx, redis, pydantic >= 2.7
-"""
+"""  # noqa: D205, D415
 
 from __future__ import annotations
 
@@ -116,7 +116,7 @@ class DocumentDejaIndexeError(Exception):
     """Levée par Orchestrateur.ingerer() quand un document_id est déjà présent
     dans Qdrant et que forcer_reindexation=False. Traduite en HTTP 409 par
     l'API (voir src/api.py).
-    """
+    """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
 
 
 class Orchestrateur:
@@ -186,7 +186,7 @@ class Orchestrateur:
             logger.info("Ingester réel initialisé.")
         return self._ingester
 
-    async def _executer_bloquant(self, fonction, /, *args, **kwargs):  # noqa: ANN001, ANN002, ANN003, ANN202
+    async def _executer_bloquant(self, fonction, /, *args, **kwargs):  # noqa: ANN001, ANN002, ANN003, ANN202, D417
         """Exécute un appel synchrone potentiellement long (chargement/inférence
         MLX) dans un thread séparé, pour ne jamais geler la boucle asyncio
         (sinon /health, /pending et le Watcher deviennent indisponibles
@@ -204,7 +204,7 @@ class Orchestrateur:
 
         Returns:
             La valeur de retour de `fonction`.
-        """
+        """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
         async with self._verrou_agents:
             return await asyncio.to_thread(fonction, *args, **kwargs)
 
@@ -292,7 +292,7 @@ class Orchestrateur:
         Filtre déterministe + détection d'anomalies.
         LLM (Qwen 2.5 7B) activable via use_llm=True quand les modèles
         sont disponibles.
-        """
+        """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
         from src.agents.temporal import AgentTemporel
 
         # use_llm=True : sous architecture unique m4pro2 (24 Go), le budget
@@ -332,7 +332,7 @@ class Orchestrateur:
     ) -> tuple[str, NiveauConfiance, SortieAgent]:
         """Étape 3 : synthèse via AgentExplainer.
         Assemblage structuré (use_llm=False) ou Qwen 2.5 7B (use_llm=True).
-        """
+        """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
         from src.agents.explainer import AgentExplainer
 
         # use_llm=False par défaut — activer quand Qwen est disponible
@@ -619,7 +619,7 @@ class Orchestrateur:
             ValueError: contenu_json absent ou invalide vis-à-vis du schéma
                 DocumentReglementaire.
             DocumentDejaIndexeError: document déjà indexé sans forcer_reindexation.
-        """
+        """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
         logger.info(
             "Ingestion déclenchée : source=%s forcer_reindexation=%s",
             requete.source,
@@ -641,7 +641,7 @@ class Orchestrateur:
         """Partie synchrone (bloquante) de l'ingestion — validation, vérification
         d'existence, chunking, embedding MLX et upsert Qdrant. Exécutée hors
         de la boucle asyncio via asyncio.to_thread dans ingerer().
-        """
+        """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
         from src.models import DocumentReglementaire
 
         if not requete.contenu_json:
@@ -772,7 +772,7 @@ class Orchestrateur:
     async def _persister_audit(self, audit: EnregistrementAudit) -> None:
         """Persiste l'enregistrement d'audit via src/audit.py.
         JSONL local + PostgreSQL en 127.0.0.1 (architecture unique m4pro2).
-        """
+        """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
         try:
             from src.audit import obtenir_gestionnaire
 

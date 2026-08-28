@@ -15,7 +15,7 @@ Idempotence : une URL déjà alertée n'est pas re-alertée si le hash
 n'a pas changé depuis la dernière alerte.
 
 Dépendances : httpx, redis, pydantic >= 2.7
-"""
+"""  # noqa: D205, D415
 
 from __future__ import annotations
 
@@ -198,9 +198,9 @@ class Watcher:
 
     Chaque modification détectée produit une AlerteWatcher soumise à
     validation humaine — jamais appliquée automatiquement au corpus.
-    """
+    """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa: D107 — TODO §12 étape 4 : compléter docstrings
         self._hashes = charger_hashes_connus()
         self._client_http: httpx.AsyncClient | None = None
         self._en_cours = False
@@ -386,7 +386,7 @@ class Watcher:
     async def demarrer_boucle(self) -> None:
         """Lance la boucle de surveillance en arrière-plan.
         Tourne indéfiniment avec un intervalle de cfg.watcher_intervalle_heures.
-        """
+        """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
         intervalle_s = cfg.watcher_intervalle_heures * 3600
         logger.info(
             "Watcher — boucle démarrée (intervalle : %d h).",

@@ -24,7 +24,7 @@ Principe fondamental du skill :
   est la vérité. Le LLM apporte une explication en langage naturel.
 
 Dépendances : src/mlx_utils.py, src/models.py
-"""
+"""  # noqa: D205, D415
 
 from __future__ import annotations
 
@@ -83,7 +83,7 @@ def _valider_date_contexte(valeur: object) -> date | None:
 class EvidenceTemporelle:
     """Evidence enrichie d'une annotation temporelle.
     Wrappée autour d'EvidenceRecuperee — on ne modifie pas le modèle source.
-    """
+    """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
 
     evidence: EvidenceRecuperee
     applicable: bool
@@ -214,7 +214,7 @@ class AgentTemporel:
 
         Returns:
             Tuple (chevauchements, lacunes) — listes de messages descriptifs.
-        """
+        """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
         chevauchements: list[str] = []
         lacunes: list[str] = []
 
@@ -302,7 +302,7 @@ class AgentTemporel:
 
         Returns:
             Explication en langage naturel (str).
-        """
+        """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
         self._charger_modele()
         if self._modele is None:
             raise RuntimeError("Modèle Temporel non chargé")  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill

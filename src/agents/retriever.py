@@ -15,7 +15,7 @@ disposition transitoire pertinente (passe A) ne soit jamais totalement
 de similarité légèrement inférieur.
 
 Dépendances : qdrant-client >= 1.9, mlx-lm >= 0.16 (MIT/Apache).
-"""
+"""  # noqa: D205, D415
 
 from __future__ import annotations
 

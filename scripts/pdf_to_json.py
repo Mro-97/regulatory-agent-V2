@@ -22,7 +22,7 @@ Le script détecte automatiquement les articles (pattern "Article N" ou
 "Art. N") et les découpe en VersionArticle avec valid_from = vigueur.
 
 Dépendances : pdfplumber (MIT), pydantic >= 2.7
-"""
+"""  # noqa: D205, D301, D415
 
 from __future__ import annotations
 
@@ -354,7 +354,7 @@ def construire_document(
 # ---------------------------------------------------------------------------
 
 
-def main() -> None:
+def main() -> None:  # noqa: D103 — TODO §12 étape 4 : compléter docstrings
     parser = argparse.ArgumentParser(
         description="Convertit un PDF réglementaire en JSON canonique.",
         formatter_class=argparse.RawDescriptionHelpFormatter,

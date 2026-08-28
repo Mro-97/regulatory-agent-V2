@@ -25,7 +25,7 @@ Mode LLM (use_llm=True, Mistral 7B) :
 Principe absolu : une citation non vérifiée ne sort jamais de l'agent.
 
 Dépendances : src/mlx_utils.py, src/models.py
-"""
+"""  # noqa: D205, D415
 
 from __future__ import annotations
 
@@ -93,7 +93,7 @@ class StatutCitation(str, Enum):
 class CitationReglementaire:
     """Référence exacte à un passage réglementaire.
     Chaque citation doit être rattachée à un chunk_id connu.
-    """
+    """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
 
     document_id: str
     article_id: str
@@ -104,7 +104,7 @@ class CitationReglementaire:
     statut: StatutCitation = StatutCitation.NON_VERIFIEE
     hash_extrait: str = field(default="")  # SHA-256 de l'extrait
 
-    def __post_init__(self) -> None:
+    def __post_init__(self) -> None:  # noqa: D105 — TODO §12 étape 4 : compléter docstrings
         if not self.hash_extrait:
             self.hash_extrait = hashlib.sha256(self.extrait.encode("utf-8")).hexdigest()
 
@@ -147,7 +147,7 @@ class AgentCitation:
                   depuis les métadonnées des preuves.
     """
 
-    def __init__(self, use_llm: bool = False) -> None:
+    def __init__(self, use_llm: bool = False) -> None:  # noqa: D107 — TODO §12 étape 4 : compléter docstrings
         self.use_llm = use_llm
         self._modele: MLXInference | None = None
         logger.info("AgentCitation initialisé — use_llm=%s", use_llm)
@@ -303,7 +303,7 @@ class AgentCitation:
 
         Returns:
             Citations identifiées (statut NON_VERIFIEE avant verify()).
-        """
+        """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
         self._charger_modele()
         if self._modele is None:
             raise RuntimeError("Modèle Citation non chargé")  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
