@@ -23,8 +23,13 @@ for nom in ("mlx", "mlx.core", "mlx_lm", "mlx_lm.sample_utils", "mlx_embeddings"
         sys.modules[nom] = types.ModuleType(nom)
 sys.modules["mlx.core"].eval = lambda *a, **k: None  # noqa: ARG005 — stub/mock respectant la signature
 
-from datetime import date  # noqa: E402 — stubs MLX doivent précéder les imports du projet (sinon ImportError)
-from unittest.mock import MagicMock, patch  # noqa: E402 — stubs MLX doivent précéder les imports du projet (sinon ImportError)
+from datetime import (
+    date,
+)
+from unittest.mock import (  # noqa: E402 — stubs MLX doivent précéder les imports du projet (sinon ImportError)
+    MagicMock,
+    patch,
+)
 
 from src.models import (  # noqa: E402 — stubs MLX doivent précéder les imports du projet (sinon ImportError)
     EvidenceRecuperee,

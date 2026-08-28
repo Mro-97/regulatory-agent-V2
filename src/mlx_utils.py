@@ -302,13 +302,13 @@ class MLXEmbedding:
 
     def __init__(self, model_name: str = "BAAI/bge-m3") -> None:
         """Args:
-            model_name: Identifiant HuggingFace du modèle d'embedding.
-                        - "sentence-transformers/<id>" : bascule sur le backend
-                          sentence-transformers (repli utilisé quand
-                          `mlx_embeddings.generate` déclenche
-                          "There is no Stream(gpu, 2)").
-                        - autrement : `mlx_embeddings` (voie native MLX).
-                        Défaut : 'BAAI/bge-m3'.
+        model_name: Identifiant HuggingFace du modèle d'embedding.
+                    - "sentence-transformers/<id>" : bascule sur le backend
+                      sentence-transformers (repli utilisé quand
+                      `mlx_embeddings.generate` déclenche
+                      "There is no Stream(gpu, 2)").
+                    - autrement : `mlx_embeddings` (voie native MLX).
+                    Défaut : 'BAAI/bge-m3'.
         """
         self.model_name = model_name
         self._st_mode = model_name.startswith("sentence-transformers/")

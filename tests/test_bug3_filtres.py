@@ -9,12 +9,20 @@ for nom in ("mlx", "mlx.core", "mlx_lm", "mlx_lm.sample_utils", "mlx_embeddings"
         sys.modules[nom] = types.ModuleType(nom)
 sys.modules["mlx.core"].eval = lambda *a, **k: None  # noqa: ARG005 — stub/mock respectant la signature
 
-from datetime import date  # noqa: E402 — stubs MLX doivent précéder les imports du projet (sinon ImportError)
-from unittest.mock import MagicMock  # noqa: E402 — stubs MLX doivent précéder les imports du projet (sinon ImportError)
+from datetime import (
+    date,
+)
+from unittest.mock import (
+    MagicMock,
+)
 
 import pytest  # noqa: E402 — stubs MLX doivent précéder les imports du projet (sinon ImportError)
-from src.agents.retriever import Retriever  # noqa: E402 — stubs MLX doivent précéder les imports du projet (sinon ImportError)
-from src.models import SourceReglementaire  # noqa: E402 — stubs MLX doivent précéder les imports du projet (sinon ImportError)
+from src.agents.retriever import (
+    Retriever,
+)
+from src.models import (
+    SourceReglementaire,
+)
 
 
 @pytest.fixture

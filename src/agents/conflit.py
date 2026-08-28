@@ -332,7 +332,6 @@ class AgentConflit:
             Tuple (conflits mis à jour, analyse textuelle).
             En cas d'échec de parsing : niveaux inchangés, analyse renvoyée telle quelle.
         """  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
-
         self._charger_modele()
         if self._modele is None:
             raise RuntimeError("Modèle Conflit non chargé")  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
