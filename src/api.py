@@ -368,7 +368,7 @@ async def poser_question(requete: RequeteQuestion, orchestrateur: OrchestrateurD
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Erreur interne lors du traitement de la question.",
-        )
+        ) from None
 
 
 @app.post(
@@ -389,18 +389,18 @@ async def ingerer(requete: RequeteIngestion, orchestrateur: OrchestrateurDep):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=str(exc),
-        )
+        ) from exc
     except ValueError as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(exc),
-        )
+        ) from exc
     except Exception:
         logger.exception("Erreur /ingest")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Erreur interne lors de l'ingestion.",
-        )
+        ) from None
 
 
 @app.get(
@@ -419,7 +419,7 @@ async def pending(orchestrateur: OrchestrateurDep):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Erreur interne lors de la récupération des tâches.",
-        )
+        ) from None
 
 
 @app.post(
@@ -443,13 +443,13 @@ async def approuver(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(exc),
-        )
+        ) from exc
     except Exception:
         logger.exception("Erreur /approve")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Erreur interne lors de la validation.",
-        )
+        ) from None
 
 
 @app.post(
@@ -471,10 +471,10 @@ async def rejeter(requete: RequeteDecisionValidation, orchestrateur: Orchestrate
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(exc),
-        )
+        ) from exc
     except Exception:
         logger.exception("Erreur /reject")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Erreur interne lors de la validation.",
-        )
+        ) from None
