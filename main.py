@@ -131,7 +131,8 @@ if __name__ == "__main__":
             cfg.api_port,
         )
 
-    async def run():  # noqa: ANN201, D103
+    async def run() -> None:
+        """Boucle d'entrée : audit + Watcher en tâche de fond + uvicorn."""
         # Initialisation audit
         await initialiser_audit()
 
