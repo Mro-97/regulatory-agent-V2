@@ -34,7 +34,6 @@ import json
 import logging
 import os
 import platform
-import re
 from collections.abc import Awaitable, Callable
 from datetime import UTC, date, datetime
 from typing import TYPE_CHECKING, Any, TypeVar, cast
@@ -69,45 +68,8 @@ logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
 
-# ---------------------------------------------------------------------------
-# Détection du type de requête
-# ---------------------------------------------------------------------------
-
-_MOTS_CLES_TEMPORELS = re.compile(
-    r"\b("
-    r"en\s+\d{4}"
-    r"|avant\s+\d{4}"
-    r"|après\s+\d{4}"
-    r"|\d{4}-\d{2}-\d{2}"
-    r"|\d{1,2}/\d{1,2}/\d{2,4}"
-    r"|applicable\s+(?:le|au|en)"
-    r"|version\s+(?:de|du|en)\s+\d{4}"
-    r"|historique"
-    r"|à\s+(?:cette|la)\s+(?:date|époque)"
-    r")\b",
-    re.IGNORECASE,
-)
-
-_MOTS_CLES_CONFLIT = re.compile(
-    r"\b(contradict|conflit|incompatible|contradiction|incohérence|contraire|oppose)\b",
-    re.IGNORECASE,
-)
-
-
-def _classifier_requete(question: str, date_contexte: date | None) -> str:
-    """Détermine le type de pipeline à exécuter.
-
-    Returns:
-        "temporelle", "conflit" ou "courante".
-    """
-    if date_contexte is not None:
-        return "temporelle"
-    if _MOTS_CLES_TEMPORELS.search(question):
-        return "temporelle"
-    if _MOTS_CLES_CONFLIT.search(question):
-        return "conflit"
-    return "courante"
-
+# Classification extraite dans src/classification.py (§12 étape 6).
+from src.classification import classifier_requete as _classifier_requete  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Orchestrateur
