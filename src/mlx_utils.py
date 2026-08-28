@@ -32,9 +32,9 @@ from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import TimeoutError as FuturesTimeoutError
 from dataclasses import dataclass
-from typing import TypeVar
+from typing import Any, TypeVar, cast
 
-import mlx.core as mx
+import mlx.core as mx  # type: ignore[import-not-found]
 from config import cfg
 
 logger = logging.getLogger(__name__)
@@ -54,8 +54,8 @@ _executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="mlx-timed")
 def _executer_avec_timeout(  # noqa: D417 — TODO §12 étape 4 : compléter docstrings
     fn: Callable[..., T],
     timeout_seconds: float | None,
-    *args,  # noqa: ANN002 — TODO §12 étape 4 : typage strict progressif
-    **kwargs,  # noqa: ANN003 — TODO §12 étape 4 : typage strict progressif
+    *args: Any,
+    **kwargs: Any,
 ) -> T:
     """Exécute `fn` en imposant une borne supérieure de temps.
 
@@ -141,19 +141,23 @@ class MLXInference:
     Un seul modèle actif à la fois via le registre global.
     """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
 
-    def __init__(  # noqa: D107 — TODO §12 étape 4 : compléter docstrings
+    def __init__(
         self,
         model_name: str,
         quantized: bool = True,
         temperature: float = 0.1,
         top_p: float = 0.9,
     ) -> None:
+        """Configure l'inférence — le modèle est chargé à la demande via `load()`."""
         self.model_name = model_name
         self.quantized = quantized
         self.temperature = temperature
         self.top_p = top_p
-        self._model = None
-        self._tokenizer = None
+        # `mlx_lm` n'expose pas de types publics — `_model` et `_tokenizer`
+        # restent opaques en `Any` côté mypy. Ce sont des ressources natives
+        # dont la seule discipline est le cycle load/unload local à ce module.
+        self._model: Any = None
+        self._tokenizer: Any = None
         self._loaded = False
 
     def load(self) -> None:
@@ -165,7 +169,9 @@ class MLXInference:
         try:
             from mlx_lm import load as mlx_load
 
-            self._model, self._tokenizer = mlx_load(self.model_name)
+            # `mlx_lm.load` déclare renvoyer un 3-tuple mais utilise en
+            # pratique 2 valeurs — ce n'est pas maîtrisable côté typage.
+            self._model, self._tokenizer = mlx_load(self.model_name)  # type: ignore[misc]
             self._loaded = True
             logger.info(
                 "Modèle chargé en %.1f s : %s", time.time() - debut, self.model_name
@@ -275,7 +281,7 @@ class MLXInference:
         self.load()
         return self
 
-    def __exit__(self, *args) -> None:  # noqa: ANN002, D105
+    def __exit__(self, *args: Any) -> None:  # noqa: D105 — TODO §12 étape 4 : compléter docstrings
         self.unload()
 
     def __repr__(self) -> str:  # noqa: D105 — TODO §12 étape 4 : compléter docstrings
@@ -312,8 +318,10 @@ class MLXEmbedding:
         """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
         self.model_name = model_name
         self._st_mode = model_name.startswith("sentence-transformers/")
-        self._model = None
-        self._processor = None
+        # mêmes contraintes que MLXInference : `sentence_transformers` et
+        # `mlx_embeddings` n'exposent pas de types publics — attributs opaques.
+        self._model: Any = None
+        self._processor: Any = None
         self._loaded = False
 
     def load(self) -> None:
@@ -324,13 +332,17 @@ class MLXEmbedding:
         debut = time.time()
         try:
             if self._st_mode:
-                from sentence_transformers import SentenceTransformer
+                from sentence_transformers import (  # type: ignore[import-not-found]
+                    SentenceTransformer,
+                )
 
                 nom_court = self.model_name.split("/", 1)[1]
                 self._model = SentenceTransformer(nom_court)
                 self._processor = None
             else:
-                from mlx_embeddings import load as emb_load
+                from mlx_embeddings import (
+                    load as emb_load,  # type: ignore[import-untyped]
+                )
 
                 self._model, self._processor = emb_load(self.model_name)
             self._loaded = True
@@ -383,7 +395,7 @@ class MLXEmbedding:
         try:
             if self._st_mode:
                 vecteur = _executer_avec_timeout(self._model.encode, timeout, texte)
-                return vecteur.tolist()
+                return cast("list[float]", vecteur.tolist())
             from mlx_embeddings import generate as emb_generate
 
             sortie = _executer_avec_timeout(
@@ -399,7 +411,7 @@ class MLXEmbedding:
             # text_embeds est déjà normalisé (mean pooling + L2)
             vecteur = sortie.text_embeds[0]
             mx.eval(vecteur)
-            return vecteur.tolist()
+            return cast("list[float]", vecteur.tolist())
         except Exception as exc:
             raise RuntimeError(f"Embedding échoué ({self.model_name}) : {exc}") from exc  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
 
@@ -458,7 +470,7 @@ class MLXEmbedding:
         self.load()
         return self
 
-    def __exit__(self, *args) -> None:  # noqa: ANN002, D105
+    def __exit__(self, *args: Any) -> None:  # noqa: D105 — TODO §12 étape 4 : compléter docstrings
         self.unload()
 
     def __repr__(self) -> str:  # noqa: D105 — TODO §12 étape 4 : compléter docstrings
