@@ -16,7 +16,6 @@ from enum import StrEnum
 from typing import Any
 from uuid import UUID, uuid4
 
-from config import cfg
 from pydantic import BaseModel, Field, model_validator
 
 # Taille maximale d'un contenu JSON soumis à /ingest (octets sérialisés).
@@ -372,86 +371,16 @@ class AlerteWatcher(BaseModel):
     tache_validation_id: UUID | None = Field(default=None)
 
 
-# ---------------------------------------------------------------------------
-# Schémas API
-# ---------------------------------------------------------------------------
-
-
-class RequeteQuestion(BaseModel):
-    """Corps de la requête POST /ask."""
-
-    question: str = Field(
-        ...,
-        min_length=3,
-        max_length=cfg.question_max_length,
-        description="Question réglementaire.",
-    )
-    date_contexte: date | None = Field(
-        default=None, description="Date de contexte réglementaire."
-    )
-    filtres_themes: list[str] = Field(default_factory=list)
-    filtres_sources: list[SourceReglementaire] = Field(default_factory=list)
-    demander_validation_humaine: bool = Field(default=False)
-
-
-class ReponseQuestion(BaseModel):
-    """Corps de la réponse POST /ask."""
-
-    request_id: UUID
-    reponse: str
-    evidences: list[EvidenceRecuperee] = Field(default_factory=list)
-    niveau_confiance: NiveauConfiance
-    en_attente_validation: bool = Field(default=False)
-    tache_validation_id: UUID | None = Field(default=None)
-
-
-class RequeteIngestion(BaseModel):
-    """Corps de la requête POST /ingest."""
-
-    source: SourceReglementaire
-    url: str | None = Field(default=None, max_length=2048)
-    contenu_json: dict[str, Any] | None = Field(default=None)
-    forcer_reindexation: bool = Field(default=False)
-
-    @model_validator(mode="after")
-    def verifier_taille_contenu(self) -> "RequeteIngestion":
-        """Refuse un contenu JSON trop volumineux (anti-DoS)."""
-        if self.contenu_json is not None:
-            taille = len(json.dumps(self.contenu_json, ensure_ascii=False))
-            if taille > TAILLE_MAX_CONTENU_JSON:
-                raise ValueError(  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
-                    f"contenu_json trop volumineux ({taille} octets > {TAILLE_MAX_CONTENU_JSON})"  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
-                )
-        return self
-
-
-class ReponseIngestion(BaseModel):
-    """Corps de la réponse POST /ingest."""
-
-    document_id: str
-    chunks_indexes: int
-    hash_document: str
-    nouvelle_version: bool
-
-
-class ReponseTachesPendantes(BaseModel):
-    """Corps de la réponse GET /pending."""
-
-    total: int
-    par_file: dict[str, int] = Field(default_factory=dict)
-    taches: list[TacheValidation] = Field(default_factory=list)
-
-
-class RequeteDecisionValidation(BaseModel):
-    """Corps des requêtes POST /approve et POST /reject."""
-
-    tache_id: UUID
-    commentaire: str | None = Field(default=None, max_length=2000)
-
-
-class ReponseDecisionValidation(BaseModel):
-    """Corps de la réponse /approve et /reject."""
-
-    tache_id: UUID
-    nouveau_statut: StatutValidation
-    horodatage_traitement: datetime
+# Schémas d'API extraits dans src/schemas.py (§12 étape 6). Ré-exportés
+# depuis ce module pour compatibilité descendante (api.py, orchestrator.py
+# et les tests continuent d'importer depuis src.models). L'idiome
+# `X as X` rend le symbole explicitement exporté (mypy --strict).
+# fmt: off
+from src.schemas import ReponseDecisionValidation as ReponseDecisionValidation  # noqa: E402, I001
+from src.schemas import ReponseIngestion as ReponseIngestion  # noqa: E402
+from src.schemas import ReponseQuestion as ReponseQuestion  # noqa: E402
+from src.schemas import ReponseTachesPendantes as ReponseTachesPendantes  # noqa: E402
+from src.schemas import RequeteDecisionValidation as RequeteDecisionValidation  # noqa: E402
+from src.schemas import RequeteIngestion as RequeteIngestion  # noqa: E402
+from src.schemas import RequeteQuestion as RequeteQuestion  # noqa: E402
+# fmt: on

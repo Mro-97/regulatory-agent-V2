@@ -37,8 +37,7 @@ _hash_lock = asyncio.Lock()
 
 
 # Schéma SQL extrait dans src/audit_schema.py (§12 étape 6).
-from src.audit_schema import SQL_CREATE_TABLE  # noqa: E402, F401
-
+from src.audit_schema import SQL_CREATE_TABLE  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Gestionnaire d'audit
