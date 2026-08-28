@@ -19,7 +19,6 @@ from datetime import date
 from scripts.pdf_to_json import construire_document
 from src.models import SourceReglementaire
 
-
 TEXTE_TOC_A_LA_FIN = """Article 1
 Texte de l'article 1.
 

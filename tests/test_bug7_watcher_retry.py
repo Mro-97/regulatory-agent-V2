@@ -14,7 +14,6 @@ import asyncio
 
 import httpx
 import pytest
-
 from config import cfg
 from src.models import SourceReglementaire
 from src.watcher import Watcher

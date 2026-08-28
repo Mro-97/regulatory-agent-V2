@@ -31,8 +31,8 @@ from typing import Optional
 from uuid import uuid4
 
 import httpx
-
 from config import cfg
+
 from src.models import (
     AlerteWatcher,
     SourceReglementaire,

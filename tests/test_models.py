@@ -15,7 +15,6 @@ from datetime import date, datetime, timezone
 from uuid import uuid4
 
 import pytest
-
 from src.models import (
     Chapitre,
     DocumentReglementaire,
@@ -28,7 +27,6 @@ from src.models import (
     TypeFilePendante,
     VersionArticle,
 )
-
 
 # ---------------------------------------------------------------------------
 # IntervalleValidite

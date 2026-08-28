@@ -28,6 +28,7 @@ from typing import Optional
 from uuid import UUID
 
 from config import cfg
+
 from src.models import EnregistrementAudit
 
 logger = logging.getLogger(__name__)

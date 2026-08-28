@@ -12,8 +12,8 @@ from __future__ import annotations
 
 class TestValidationConfigDemarrage:
     def test_signale_api_key_vide(self, monkeypatch):
-        from config import cfg
         import main
+        from config import cfg
 
         monkeypatch.setattr(cfg, "api_key", "")
         erreurs = main.valider_configuration_demarrage()
@@ -21,16 +21,16 @@ class TestValidationConfigDemarrage:
         assert any("API_KEY" in e for e in erreurs)
 
     def test_signale_api_key_blancs(self, monkeypatch):
-        from config import cfg
         import main
+        from config import cfg
 
         monkeypatch.setattr(cfg, "api_key", "   ")
         erreurs = main.valider_configuration_demarrage()
         assert erreurs, "API_KEY = espaces doit être signalée"
 
     def test_accepte_api_key_valide(self, monkeypatch):
-        from config import cfg
         import main
+        from config import cfg
 
         monkeypatch.setattr(cfg, "api_key", "clef-secrete-123")
         erreurs = main.valider_configuration_demarrage()

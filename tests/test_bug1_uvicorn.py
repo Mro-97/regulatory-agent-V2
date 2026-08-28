@@ -6,7 +6,6 @@ et journalise un warning explicite si DEBUG=true ou API_WORKERS>1.
 import ast
 from pathlib import Path
 
-
 MAIN_PY = Path(__file__).parent.parent / "main.py"
 
 

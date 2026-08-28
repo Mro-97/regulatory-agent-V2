@@ -13,7 +13,6 @@ from __future__ import annotations
 from datetime import date, datetime, timezone
 
 import pytest
-
 from src.agents.temporal import AgentTemporel, _valider_date_contexte
 from src.models import EvidenceRecuperee
 

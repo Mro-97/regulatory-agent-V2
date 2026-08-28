@@ -16,7 +16,6 @@ import logging
 import sys
 
 import uvicorn
-
 from config import cfg
 
 logging.basicConfig(

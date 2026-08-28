@@ -18,7 +18,6 @@ from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
 import pytest
-
 from src.models import (
     DocumentReglementaire,
     EvidenceRecuperee,
@@ -26,7 +25,6 @@ from src.models import (
     RequeteQuestion,
     SourceReglementaire,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -117,8 +115,9 @@ class TestIngestionPydantic:
 class TestPipelineIngestion:
     def test_chunking_et_upsert(self, doc_rgpd_json, client_qdrant_memoire):
         """Vérifie que l'ingestion produit des chunks indexés dans Qdrant."""
-        from qdrant_client.http.models import Distance, VectorParams, PointStruct
         import uuid
+
+        from qdrant_client.http.models import Distance, PointStruct, VectorParams
 
         doc = DocumentReglementaire.model_validate(doc_rgpd_json)
 
@@ -166,11 +165,11 @@ class TestPipelineIngestion:
         """Un article court doit produire un seul chunk."""
         from scripts.ingest import Ingester
         from src.models import (
-            DocumentReglementaire,
             Chapitre,
-            VersionArticle,
+            DocumentReglementaire,
             IntervalleValidite,
             SourceReglementaire,
+            VersionArticle,
         )
 
         doc = DocumentReglementaire(
@@ -203,11 +202,11 @@ class TestPipelineIngestion:
         """Vérifie que chunk_document produit un chunk par article avec le texte complet."""
         from scripts.ingest import Ingester
         from src.models import (
-            DocumentReglementaire,
             Chapitre,
-            VersionArticle,
+            DocumentReglementaire,
             IntervalleValidite,
             SourceReglementaire,
+            VersionArticle,
         )
 
         texte_long = " ".join(["Texte réglementaire."] * 200)
@@ -374,9 +373,8 @@ class TestIngestionReelle:
 
     def test_api_ingest_409_si_deja_indexe(self, doc_rgpd_json):
         """L'API /ingest doit retourner 409 quand le document existe déjà sans forcer_reindexation."""
-        from fastapi.testclient import TestClient
-
         from config import cfg
+        from fastapi.testclient import TestClient
         from src import api as api_module
         from src.orchestrator import Orchestrateur
 
@@ -399,9 +397,8 @@ class TestIngestionReelle:
 
     def test_api_ingest_400_si_contenu_json_absent(self):
         """L'API /ingest doit retourner 400 (pas un faux succès) sans contenu_json."""
-        from fastapi.testclient import TestClient
-
         from config import cfg
+        from fastapi.testclient import TestClient
         from src import api as api_module
         from src.orchestrator import Orchestrateur
 
@@ -804,7 +801,6 @@ class TestAuditTrail:
     def test_health_expose_statut_audit(self):
         """L'endpoint /health doit exposer le statut de synchronisation de l'audit."""
         from fastapi.testclient import TestClient
-
         from src import api as api_module
 
         client = TestClient(api_module.app)

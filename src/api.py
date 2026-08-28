@@ -32,17 +32,17 @@ from pathlib import Path
 from threading import Lock
 from typing import Annotated
 
+from config import cfg
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from config import cfg
 from src.models import (
-    ReponseQuestion,
     ReponseDecisionValidation,
     ReponseIngestion,
+    ReponseQuestion,
     ReponseTachesPendantes,
     RequeteDecisionValidation,
     RequeteIngestion,

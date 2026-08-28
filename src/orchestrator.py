@@ -39,15 +39,15 @@ from datetime import date, datetime, timezone
 from typing import Optional
 from uuid import UUID, uuid4
 
-
 from config import cfg
+
 from src.models import (
     EnregistrementAudit,
     EvidenceRecuperee,
     NiveauConfiance,
-    ReponseQuestion,
     ReponseDecisionValidation,
     ReponseIngestion,
+    ReponseQuestion,
     ReponseTachesPendantes,
     RequeteDecisionValidation,
     RequeteIngestion,

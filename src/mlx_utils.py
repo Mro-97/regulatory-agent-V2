@@ -29,12 +29,12 @@ from __future__ import annotations
 import gc
 import logging
 import time
-from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import TimeoutError as FuturesTimeoutError
 from dataclasses import dataclass
 from typing import Callable, Optional, TypeVar
 
 import mlx.core as mx
-
 from config import cfg
 
 logger = logging.getLogger(__name__)

@@ -13,7 +13,6 @@ from datetime import date  # noqa: E402
 from unittest.mock import MagicMock  # noqa: E402
 
 import pytest  # noqa: E402
-
 from src.agents.retriever import Retriever  # noqa: E402
 from src.models import SourceReglementaire  # noqa: E402
 

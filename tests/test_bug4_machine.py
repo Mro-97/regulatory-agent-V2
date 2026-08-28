@@ -26,16 +26,15 @@ sys.modules["mlx.core"].eval = lambda *a, **k: None
 from datetime import date  # noqa: E402
 from unittest.mock import MagicMock, patch  # noqa: E402
 
-from src.orchestrator import (  # noqa: E402
-    Orchestrateur,
-    _MACHINE,
-    _MACHINE_INCONNUE,
-)
 from src.models import (  # noqa: E402
     EvidenceRecuperee,
     NiveauConfiance,
 )
-
+from src.orchestrator import (  # noqa: E402
+    _MACHINE,
+    _MACHINE_INCONNUE,
+    Orchestrateur,
+)
 
 HOSTNAME_LOCAL = platform.node() or _MACHINE_INCONNUE
 

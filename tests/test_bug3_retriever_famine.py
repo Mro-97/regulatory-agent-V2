@@ -19,8 +19,8 @@ from __future__ import annotations
 
 import sys
 import types
-from types import SimpleNamespace
 from datetime import date
+from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 for nom in ("mlx", "mlx.core", "mlx_lm", "mlx_lm.sample_utils", "mlx_embeddings"):

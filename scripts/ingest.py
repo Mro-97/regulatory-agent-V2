@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import List
 
 from qdrant_client import QdrantClient
-from qdrant_client.models import VectorParams, Distance, PointStruct
+from qdrant_client.models import Distance, PointStruct, VectorParams
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from config import cfg
@@ -141,7 +141,7 @@ class Ingester:
         Utilisé par l'orchestrateur pour décider si une nouvelle ingestion
         doit renvoyer 409 (déjà indexé) ou remplacer les points existants.
         """
-        from qdrant_client.models import Filter, FieldCondition, MatchValue
+        from qdrant_client.models import FieldCondition, Filter, MatchValue
 
         filtre = Filter(
             must=[
@@ -167,10 +167,10 @@ class Ingester:
         Retourne le nombre de points supprimés (avant suppression).
         """
         from qdrant_client.models import (
-            Filter,
             FieldCondition,
-            MatchValue,
+            Filter,
             FilterSelector,
+            MatchValue,
         )
 
         avant = self.compter_chunks_existants(document_id)

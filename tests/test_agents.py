@@ -12,9 +12,7 @@ Couvre (sans LLM, sans Qdrant) :
 from datetime import date
 
 import pytest
-
 from src.models import EvidenceRecuperee, NiveauConfiance
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -122,8 +120,9 @@ class TestAgentTemporel:
         assert r.niveau_confiance == NiveauConfiance.INCERTAIN
 
     def test_detection_lacune(self):
-        from src.agents.temporal import AgentTemporel
         from datetime import timedelta
+
+        from src.agents.temporal import AgentTemporel
 
         ev_a = EvidenceRecuperee(
             chunk_id="a",

@@ -24,6 +24,7 @@ import logging
 from datetime import date, datetime, timezone
 from typing import Optional
 
+from config import cfg
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import (
     DatetimeRange,
@@ -34,10 +35,8 @@ from qdrant_client.http.models import (
     PayloadField,
     ScoredPoint,
 )
-
-from config import cfg
-from src.models import EvidenceRecuperee, SourceReglementaire
 from src.mlx_utils import get_embedding
+from src.models import EvidenceRecuperee, SourceReglementaire
 
 logger = logging.getLogger(__name__)
 
