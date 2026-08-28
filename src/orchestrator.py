@@ -34,7 +34,7 @@ import logging
 import os
 import platform
 from collections.abc import Callable
-from datetime import UTC, date, datetime
+from datetime import date
 from typing import TYPE_CHECKING, Any, TypeVar
 from uuid import UUID, uuid4
 
@@ -221,6 +221,11 @@ class Orchestrateur:
     # Étapes du pipeline — mode real
     # ------------------------------------------------------------------
 
+    # `_etape_retrieval`, `_etape_temporal`, `_etape_explainer` ont été
+    # déplacées vers src/orchestrator_pipeline.py (§12 étape 6). Les
+    # méthodes ci-dessous sont conservées comme wrappers minces pour ne
+    # rien changer aux callers.
+
     async def _etape_retrieval(
         self,
         question: str,
@@ -228,37 +233,12 @@ class Orchestrateur:
         filtres_themes: list[str],
         filtres_sources: list[SourceReglementaire],
     ) -> tuple[list[EvidenceRecuperee], SortieAgent]:
-        """Étape 1 : récupération des passages pertinents via Qdrant.
+        """Étape 1 déléguée à src.orchestrator_pipeline."""
+        from src.orchestrator_pipeline import etape_retrieval
 
-        Returns:
-            Tuple (evidences, sortie_agent).
-        """
-        debut = datetime.now(UTC)
-        retriever = self._obtenir_retriever()
-
-        # Déporté en thread (embedding MLX + requête Qdrant, bloquant) —
-        # ne touche pas le registre de modèles de génération, donc pas
-        # besoin de _verrou_agents ici.
-        evidences = await asyncio.to_thread(
-            retriever.retrieve,
-            question=question,
-            date_contexte=date_contexte,
-            filtres_themes=filtres_themes,
-            filtres_sources=filtres_sources,
+        return await etape_retrieval(
+            self, question, date_contexte, filtres_themes, filtres_sources
         )
-
-        sortie = SortieAgent(
-            nom_agent="Retriever",
-            machine=self._machine_pour_agent("Retriever"),
-            contenu={
-                "chunks_recuperes": len(evidences),
-                "date_contexte": date_contexte.isoformat() if date_contexte else None,
-                "filtres_themes": filtres_themes,
-                "filtres_sources": [s.value for s in filtres_sources],
-            },
-            duree_ms=int((datetime.now(UTC) - debut).total_seconds() * 1000),
-        )
-        return evidences, sortie
 
     async def _etape_temporal(
         self,
@@ -266,40 +246,10 @@ class Orchestrateur:
         date_contexte: date | None,
         evidences: list[EvidenceRecuperee],
     ) -> tuple[list[EvidenceRecuperee], SortieAgent]:
-        """Étape 2 : analyse temporelle via AgentTemporel.
-        Filtre déterministe + détection d'anomalies.
-        LLM (Qwen 2.5 7B) activable via use_llm=True quand les modèles
-        sont disponibles.
-        """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
-        from src.agents.temporal import AgentTemporel
+        """Étape 2 déléguée à src.orchestrator_pipeline."""
+        from src.orchestrator_pipeline import etape_temporal
 
-        # use_llm=True : sous architecture unique m4pro2 (24 Go), le budget
-        # RAM tolère l'annotation LLM du raisonnement temporel.
-        agent = AgentTemporel(use_llm=True)
-        resultat = await self._executer_bloquant(
-            agent.analyser,
-            question=question,
-            evidences=evidences,
-            date_contexte=date_contexte,
-        )
-
-        contenu = {
-            "date_ref": resultat.date_ref.isoformat(),
-            "avant_filtrage": len(evidences),
-            "apres_filtrage": len(resultat.evidences_applicables),
-            "chevauchements": resultat.chevauchements,
-            "lacunes": resultat.lacunes,
-            "niveau_confiance": resultat.niveau_confiance.value,
-        }
-        if resultat.explication_llm:
-            contenu["explication_llm"] = resultat.explication_llm
-
-        sortie = SortieAgent(
-            nom_agent="Temporal",
-            machine=self._machine_pour_agent("Temporal"),
-            contenu=contenu,
-        )
-        return resultat.evidences_applicables, sortie
+        return await etape_temporal(self, question, date_contexte, evidences)
 
     async def _etape_explainer(
         self,
@@ -308,32 +258,10 @@ class Orchestrateur:
         type_pipeline: str,
         date_ref: date | None = None,
     ) -> tuple[str, NiveauConfiance, SortieAgent]:
-        """Étape 3 : synthèse via AgentExplainer.
-        Assemblage structuré (use_llm=False) ou Qwen 2.5 7B (use_llm=True).
-        """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
-        from src.agents.explainer import AgentExplainer
+        """Étape 3 déléguée à src.orchestrator_pipeline."""
+        from src.orchestrator_pipeline import etape_explainer
 
-        # use_llm=False par défaut — activer quand Qwen est disponible
-        agent = AgentExplainer(use_llm=True)
-        resultat = await self._executer_bloquant(
-            agent.expliquer,
-            question=question,
-            evidences=evidences,
-            date_ref=date_ref,
-            type_pipeline=type_pipeline,
-        )
-
-        sortie = SortieAgent(
-            nom_agent="Explainer",
-            machine=self._machine_pour_agent("Explainer"),
-            contenu={
-                "mode": resultat.mode,
-                "evidences_utilisees": len(evidences),
-                "sources_citees": len(resultat.sources_citees),
-                "niveau_confiance": resultat.niveau_confiance.value,
-            },
-        )
-        return resultat.reponse, resultat.niveau_confiance, sortie
+        return await etape_explainer(self, question, evidences, type_pipeline, date_ref)
 
     # ------------------------------------------------------------------
     # Pipeline principal
