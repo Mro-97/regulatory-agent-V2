@@ -12,7 +12,7 @@ Licence : propriétaire — Regulatory Agent V2.
 import hashlib
 import json
 from datetime import UTC, date, datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -28,7 +28,7 @@ TAILLE_MAX_CONTENU_JSON = 1_000_000
 # ---------------------------------------------------------------------------
 
 
-class RelationType(str, Enum):
+class RelationType(StrEnum):
     """Type de relation entre deux textes réglementaires."""
 
     SE_CHEVAUCHE = "se_chevauche"
@@ -39,7 +39,7 @@ class RelationType(str, Enum):
     REFERENCE = "reference"
 
 
-class SourceReglementaire(str, Enum):
+class SourceReglementaire(StrEnum):
     """Sources réglementaires reconnues par le système."""
 
     EUR_LEX = "EUR-Lex"
@@ -50,7 +50,7 @@ class SourceReglementaire(str, Enum):
     AUTRE = "Autre"
 
 
-class StatutValidation(str, Enum):
+class StatutValidation(StrEnum):
     """Statut d'une tâche soumise à validation humaine."""
 
     EN_ATTENTE = "en_attente"
@@ -59,7 +59,7 @@ class StatutValidation(str, Enum):
     ESCALADE = "escaladé"
 
 
-class TypeFilePendante(str, Enum):
+class TypeFilePendante(StrEnum):
     """Files Redis utilisées pour le human-in-the-loop."""
 
     LIENS = "pending_links"
@@ -68,7 +68,7 @@ class TypeFilePendante(str, Enum):
     POIDS = "pending_weights"
 
 
-class NiveauConfiance(str, Enum):
+class NiveauConfiance(StrEnum):
     """Niveau de confiance associé à une réponse générée."""
 
     ELEVE = "élevé"

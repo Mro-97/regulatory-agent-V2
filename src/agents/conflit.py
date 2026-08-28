@@ -38,7 +38,7 @@ import logging
 import re
 from dataclasses import dataclass
 from datetime import date
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import TYPE_CHECKING
 
 from config import cfg
@@ -55,7 +55,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-class NiveauConflit(str, Enum):
+class NiveauConflit(StrEnum):
     """Niveau de sévérité d'un conflit détecté."""
 
     AUCUN = "aucun"

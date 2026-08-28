@@ -34,7 +34,7 @@ import logging
 import re
 from dataclasses import dataclass, field
 from datetime import date
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import TYPE_CHECKING
 
 from config import cfg
@@ -81,7 +81,7 @@ def _normaliser_pour_comparaison(texte: str) -> str:
 # ---------------------------------------------------------------------------
 
 
-class StatutCitation(str, Enum):
+class StatutCitation(StrEnum):
     """Statut de vérification d'une citation."""
 
     VERIFIEE = "vérifiée"  # ancrée dans les preuves récupérées
