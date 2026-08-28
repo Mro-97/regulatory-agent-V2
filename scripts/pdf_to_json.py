@@ -56,23 +56,23 @@ logger = logging.getLogger(__name__)
 
 # Patterns pour détecter les débuts d'articles
 PATTERNS_ARTICLE = [
-    re.compile(r"^Article\s+(\d+)\s*[:\-–]?\s*(.*)$", re.IGNORECASE | re.MULTILINE),
-    re.compile(r"^Art\.\s*(\d+)\s*[:\-–]?\s*(.*)$", re.IGNORECASE | re.MULTILINE),
-    re.compile(r"^§\s*(\d+)\s*[:\-–]?\s*(.*)$", re.MULTILINE),
+    re.compile(r"^Article\s+(\d+)\s*[:\-–]?\s*(.*)$", re.IGNORECASE | re.MULTILINE),  # noqa: RUF001 — caractère typographique français légitime
+    re.compile(r"^Art\.\s*(\d+)\s*[:\-–]?\s*(.*)$", re.IGNORECASE | re.MULTILINE),  # noqa: RUF001 — caractère typographique français légitime
+    re.compile(r"^§\s*(\d+)\s*[:\-–]?\s*(.*)$", re.MULTILINE),  # noqa: RUF001 — caractère typographique français légitime
 ]
 
 # Patterns pour détecter les chapitres
 PATTERNS_CHAPITRE = [
     re.compile(
-        r"^CHAPITRE\s+(I{1,4}V?|[IVX]+|\d+)\s*[:\-–]?\s*(.*)$",
+        r"^CHAPITRE\s+(I{1,4}V?|[IVX]+|\d+)\s*[:\-–]?\s*(.*)$",  # noqa: RUF001 — caractère typographique français légitime
         re.IGNORECASE | re.MULTILINE,
     ),
     re.compile(
-        r"^TITRE\s+(I{1,4}V?|[IVX]+|\d+)\s*[:\-–]?\s*(.*)$",
+        r"^TITRE\s+(I{1,4}V?|[IVX]+|\d+)\s*[:\-–]?\s*(.*)$",  # noqa: RUF001 — caractère typographique français légitime
         re.IGNORECASE | re.MULTILINE,
     ),
     re.compile(
-        r"^SECTION\s+(I{1,4}V?|[IVX]+|\d+)\s*[:\-–]?\s*(.*)$",
+        r"^SECTION\s+(I{1,4}V?|[IVX]+|\d+)\s*[:\-–]?\s*(.*)$",  # noqa: RUF001 — caractère typographique français légitime
         re.IGNORECASE | re.MULTILINE,
     ),
 ]

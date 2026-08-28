@@ -55,9 +55,9 @@ _GUILLEMETS = str.maketrans(
         "“": '"',
         "”": '"',
         "„": '"',
-        "‘": "'",
-        "’": "'",
-        "‚": "'",
+        "‘": "'",  # noqa: RUF001 — caractère typographique français légitime
+        "’": "'",  # noqa: RUF001 — caractère typographique français légitime
+        "‚": "'",  # noqa: RUF001 — caractère typographique français légitime
     }
 )
 

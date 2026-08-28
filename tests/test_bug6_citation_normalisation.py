@@ -61,7 +61,7 @@ class TestNormaliserPourComparaison:
             == '"mesures appropriées"'
         )
         assert (
-            _normaliser_pour_comparaison("‘test’ et “texte”") == "'test' et \"texte\""
+            _normaliser_pour_comparaison("‘test’ et “texte”") == "'test' et \"texte\""  # noqa: RUF001 — caractère typographique français légitime
         )
 
     def test_espaces_peripheriques_retires(self):
