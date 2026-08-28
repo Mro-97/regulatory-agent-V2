@@ -20,6 +20,7 @@ import asyncio
 import json
 import logging
 from pathlib import Path
+from typing import Any, cast
 
 from config import cfg
 
@@ -77,9 +78,12 @@ class GestionnaireAudit:
     rend les hash suivants invalides — détection de falsification.
     """
 
-    def __init__(self, postgres_dsn: str | None = None) -> None:  # noqa: D107 — TODO §12 étape 4 : compléter docstrings
+    def __init__(self, postgres_dsn: str | None = None) -> None:
+        """Initialise le gestionnaire (la connexion PG est lazy, voir `initialiser`)."""
         self.postgres_dsn = postgres_dsn
-        self._pool = None
+        # `asyncpg` ne fournit pas de stubs typés : le pool est manipulé en
+        # `Any` pour laisser mypy en paix sans surcast à chaque usage.
+        self._pool: Any = None
         self._postgres_ok = False
         # Compte les persistances où PostgreSQL est censé être actif mais où
         # l'INSERT a échoué — signal explicite de divergence local/PostgreSQL,
@@ -103,7 +107,7 @@ class GestionnaireAudit:
             return
 
         try:
-            import asyncpg
+            import asyncpg  # type: ignore[import-untyped]
 
             self._pool = await asyncpg.create_pool(
                 self.postgres_dsn,
@@ -139,7 +143,7 @@ class GestionnaireAudit:
             if not lignes:
                 return None
             dernier = json.loads(lignes[-1])
-            return dernier.get("hash_courant")
+            return cast("str | None", dernier.get("hash_courant"))
         except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
             logger.warning("Lecture du dernier hash local échouée : %s", exc)
             return None
