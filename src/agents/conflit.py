@@ -37,13 +37,13 @@ from __future__ import annotations
 
 import logging
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import date
 from enum import Enum
 from typing import TYPE_CHECKING, Optional
 
 from config import cfg
-from src.models import EvidenceRecuperee, NiveauConfiance
+from src.models import EvidenceRecuperee
 
 if TYPE_CHECKING:
     from src.mlx_utils import MLXInference
@@ -340,8 +340,6 @@ class AgentConflit:
             Tuple (conflits mis à jour, analyse textuelle).
             En cas d'échec de parsing : niveaux inchangés, analyse renvoyée telle quelle.
         """
-        import json
-        import re
 
         self._charger_modele()
         if self._modele is None:

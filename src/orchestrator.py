@@ -49,7 +49,6 @@ from src.models import (
     ReponseIngestion,
     ReponseQuestion,
     ReponseTachesPendantes,
-    RequeteDecisionValidation,
     RequeteIngestion,
     RequeteQuestion,
     SortieAgent,

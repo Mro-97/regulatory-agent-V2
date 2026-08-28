@@ -11,8 +11,7 @@ Couvre :
 """
 
 import hashlib
-from datetime import date, datetime, timezone
-from uuid import uuid4
+from datetime import date
 
 import pytest
 from src.models import (
@@ -23,8 +22,6 @@ from src.models import (
     IntervalleValidite,
     NiveauConfiance,
     SourceReglementaire,
-    TacheValidation,
-    TypeFilePendante,
     VersionArticle,
 )
 

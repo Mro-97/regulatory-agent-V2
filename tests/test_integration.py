@@ -12,10 +12,7 @@ Lance avec : python3 -m pytest tests/test_integration.py -v
 from __future__ import annotations
 
 import asyncio
-import json
 from datetime import date
-from pathlib import Path
-from unittest.mock import AsyncMock, patch
 
 import pytest
 from src.models import (
@@ -168,7 +165,6 @@ class TestPipelineIngestion:
             Chapitre,
             DocumentReglementaire,
             IntervalleValidite,
-            SourceReglementaire,
             VersionArticle,
         )
 
@@ -205,7 +201,6 @@ class TestPipelineIngestion:
             Chapitre,
             DocumentReglementaire,
             IntervalleValidite,
-            SourceReglementaire,
             VersionArticle,
         )
 
@@ -278,7 +273,7 @@ class TestIngestionReelle:
         return ingester
 
     def test_ingestion_reelle_nouveau_document(self, doc_rgpd_json):
-        from src.models import RequeteIngestion, SourceReglementaire
+        from src.models import RequeteIngestion
         from src.orchestrator import Orchestrateur
 
         orchestrateur = Orchestrateur(mode="real")
@@ -300,7 +295,7 @@ class TestIngestionReelle:
         assert (info.points_count or 0) == reponse.chunks_indexes
 
     def test_ingestion_sans_contenu_json_leve_valueerror(self):
-        from src.models import RequeteIngestion, SourceReglementaire
+        from src.models import RequeteIngestion
         from src.orchestrator import Orchestrateur
 
         orchestrateur = Orchestrateur(mode="real")
@@ -312,7 +307,7 @@ class TestIngestionReelle:
             asyncio.run(orchestrateur.ingerer(requete))
 
     def test_ingestion_contenu_invalide_leve_valueerror(self):
-        from src.models import RequeteIngestion, SourceReglementaire
+        from src.models import RequeteIngestion
         from src.orchestrator import Orchestrateur
 
         orchestrateur = Orchestrateur(mode="real")
@@ -326,7 +321,7 @@ class TestIngestionReelle:
             asyncio.run(orchestrateur.ingerer(requete))
 
     def test_ingestion_document_deja_indexe_sans_force(self, doc_rgpd_json):
-        from src.models import RequeteIngestion, SourceReglementaire
+        from src.models import RequeteIngestion
         from src.orchestrator import DocumentDejaIndexeError, Orchestrateur
 
         orchestrateur = Orchestrateur(mode="real")
@@ -344,7 +339,7 @@ class TestIngestionReelle:
             asyncio.run(_run())
 
     def test_ingestion_document_deja_indexe_avec_force_remplace(self, doc_rgpd_json):
-        from src.models import RequeteIngestion, SourceReglementaire
+        from src.models import RequeteIngestion
         from src.orchestrator import Orchestrateur
 
         orchestrateur = Orchestrateur(mode="real")

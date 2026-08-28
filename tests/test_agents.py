@@ -120,7 +120,6 @@ class TestAgentTemporel:
         assert r.niveau_confiance == NiveauConfiance.INCERTAIN
 
     def test_detection_lacune(self):
-        from datetime import timedelta
 
         from src.agents.temporal import AgentTemporel
 
@@ -239,7 +238,6 @@ class TestAgentCitation:
         from src.agents.citation import (
             AgentCitation,
             CitationReglementaire,
-            StatutCitation,
         )
 
         agent = AgentCitation(use_llm=False)
@@ -280,7 +278,7 @@ class TestAgentCitation:
 
 class TestAgentConflit:
     def test_conflit_inter_documents(self, ev_rgpd_art33, ev_nis2):
-        from src.agents.conflit import AgentConflit, NiveauConflit
+        from src.agents.conflit import AgentConflit
 
         agent = AgentConflit(use_llm=False)
         r = agent.analyser(

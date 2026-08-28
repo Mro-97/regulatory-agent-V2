@@ -28,7 +28,6 @@ Dépendances : pdfplumber (MIT), pydantic >= 2.7
 from __future__ import annotations
 
 import argparse
-import json
 import logging
 import re
 import sys

@@ -27,7 +27,6 @@ sys.modules["mlx.core"].eval = lambda *a, **k: None
 from datetime import date  # noqa: E402
 from unittest.mock import MagicMock  # noqa: E402
 
-import pytest  # noqa: E402
 from src.agents.retriever import Retriever  # noqa: E402
 
 
