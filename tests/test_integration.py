@@ -263,7 +263,7 @@ class TestIngestionReelle:
         )
 
         class FauxModeleEmbedding:
-            def encode(self, texte):
+            def encode(self, texte):  # noqa: ARG002 — argument conservé pour signature contractuelle
                 return [0.1, 0.2, 0.3, 0.4]
 
         ingester = Ingester.__new__(Ingester)
@@ -546,7 +546,7 @@ class TestOrchestrateurNonBloquant:
         orchestrateur = Orchestrateur(mode="real")
 
         class RetrieverLent:
-            def retrieve(self, **kwargs):
+            def retrieve(self, **kwargs):  # noqa: ARG002 — argument conservé pour signature contractuelle
                 time.sleep(0.3)
                 return []
 
@@ -555,7 +555,7 @@ class TestOrchestrateurNonBloquant:
         )
 
         async def etape_explainer_rapide(
-            question, evidences, type_pipeline, date_ref=None
+            question, evidences, type_pipeline, date_ref=None  # noqa: ARG001 — argument conservé pour signature contractuelle
         ):
             return (
                 "réponse simulée",

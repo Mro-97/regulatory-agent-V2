@@ -22,7 +22,7 @@ from types import SimpleNamespace
 for nom in ("mlx", "mlx.core", "mlx_lm", "mlx_lm.sample_utils", "mlx_embeddings"):
     if nom not in sys.modules:
         sys.modules[nom] = types.ModuleType(nom)
-sys.modules["mlx.core"].eval = lambda *a, **k: None
+sys.modules["mlx.core"].eval = lambda *a, **k: None  # noqa: ARG005 — stub/mock respectant la signature
 
 from datetime import date  # noqa: E402 — stubs MLX doivent précéder les imports du projet (sinon ImportError)
 from unittest.mock import MagicMock  # noqa: E402 — stubs MLX doivent précéder les imports du projet (sinon ImportError)
@@ -58,7 +58,7 @@ def _retriever(
     client.query_points.side_effect = [reponse_a, reponse_b]
 
     r = Retriever(qdrant_client=client, top_k=top_k)
-    r.embed_question = lambda q: [0.1] * 1024
+    r.embed_question = lambda q: [0.1] * 1024  # noqa: ARG005 — stub/mock respectant la signature
     return r, client
 
 

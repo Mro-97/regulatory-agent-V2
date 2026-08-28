@@ -267,7 +267,7 @@ class TestMasquageErreurs:
     def test_erreur_interne_masquee(self, client, monkeypatch):
         from src.orchestrator import Orchestrateur
 
-        def exploser(self, tache_id, decision, commentaire=None):
+        def exploser(self, tache_id, decision, commentaire=None):  # noqa: ARG001 — argument conservé pour signature contractuelle
             raise RuntimeError("/chemin/secret/interne")
 
         monkeypatch.setattr(Orchestrateur, "valider_tache", exploser)
@@ -284,7 +284,7 @@ class TestMasquageErreurs:
     def test_tache_introuvable_404(self, client, monkeypatch):
         from src.orchestrator import Orchestrateur
 
-        def introuvable(self, tache_id, decision, commentaire=None):
+        def introuvable(self, tache_id, decision, commentaire=None):  # noqa: ARG001 — argument conservé pour signature contractuelle
             raise ValueError("Tâche introuvable")  # noqa: TRY003
 
         monkeypatch.setattr(Orchestrateur, "valider_tache", introuvable)

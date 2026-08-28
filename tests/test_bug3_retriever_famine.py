@@ -26,7 +26,7 @@ from unittest.mock import MagicMock
 for nom in ("mlx", "mlx.core", "mlx_lm", "mlx_lm.sample_utils", "mlx_embeddings"):
     if nom not in sys.modules:
         sys.modules[nom] = types.ModuleType(nom)
-sys.modules["mlx.core"].eval = lambda *a, **k: None
+sys.modules["mlx.core"].eval = lambda *a, **k: None  # noqa: ARG005 — stub/mock respectant la signature
 
 from src.agents.retriever import Retriever  # noqa: E402 — stubs MLX doivent précéder les imports du projet (sinon ImportError)
 
@@ -52,7 +52,7 @@ def _retriever(passe_a, passe_b, top_k):
     ra.points, rb.points = passe_a, passe_b
     client.query_points.side_effect = [ra, rb]
     r = Retriever(qdrant_client=client, top_k=top_k)
-    r.embed_question = lambda q: [0.1] * 1024
+    r.embed_question = lambda q: [0.1] * 1024  # noqa: ARG005 — stub/mock respectant la signature
     return r
 
 

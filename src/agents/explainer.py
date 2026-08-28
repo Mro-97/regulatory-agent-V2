@@ -87,7 +87,7 @@ class AgentExplainer:
 
     def _assembler(
         self,
-        question: str,
+        question: str,  # noqa: ARG002 — argument conservé pour signature contractuelle
         evidences: list[EvidenceRecuperee],
         date_ref: date | None,
         type_pipeline: str,

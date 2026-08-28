@@ -21,7 +21,7 @@ import types
 for nom in ("mlx", "mlx.core", "mlx_lm", "mlx_lm.sample_utils", "mlx_embeddings"):
     if nom not in sys.modules:
         sys.modules[nom] = types.ModuleType(nom)
-sys.modules["mlx.core"].eval = lambda *a, **k: None
+sys.modules["mlx.core"].eval = lambda *a, **k: None  # noqa: ARG005 — stub/mock respectant la signature
 
 from datetime import date  # noqa: E402 — stubs MLX doivent précéder les imports du projet (sinon ImportError)
 from unittest.mock import MagicMock, patch  # noqa: E402 — stubs MLX doivent précéder les imports du projet (sinon ImportError)
