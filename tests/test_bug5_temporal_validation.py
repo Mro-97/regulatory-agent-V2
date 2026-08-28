@@ -17,7 +17,7 @@ from src.agents.temporal import AgentTemporel, _valider_date_contexte
 from src.models import EvidenceRecuperee
 
 
-def _evidence(valid_from: date, valid_to=None) -> EvidenceRecuperee:
+def _evidence(valid_from: date, valid_to=None) -> EvidenceRecuperee:  # noqa: ANN001
     return EvidenceRecuperee(
         chunk_id="c",
         document_id="D",
@@ -30,36 +30,36 @@ def _evidence(valid_from: date, valid_to=None) -> EvidenceRecuperee:
 
 
 class TestValidationDateContexte:
-    def test_datetime_normalise_en_date(self):
+    def test_datetime_normalise_en_date(self):  # noqa: ANN201
         # Ne doit pas lever, et doit produire une date.
         d = _valider_date_contexte(datetime(2025, 6, 15, 12, 0, tzinfo=UTC))
         assert d == date(2025, 6, 15)
 
-    def test_date_dans_bornes_accepte(self):
+    def test_date_dans_bornes_accepte(self):  # noqa: ANN201
         assert _valider_date_contexte(date(2025, 6, 15)) == date(2025, 6, 15)
 
-    def test_none_reste_none(self):
+    def test_none_reste_none(self):  # noqa: ANN201
         assert _valider_date_contexte(None) is None
 
-    def test_annee_aberrante_haute_rejete(self):
+    def test_annee_aberrante_haute_rejete(self):  # noqa: ANN201
         with pytest.raises(ValueError):
             _valider_date_contexte(date(9999, 12, 31))
 
-    def test_annee_aberrante_basse_rejete(self):
+    def test_annee_aberrante_basse_rejete(self):  # noqa: ANN201
         with pytest.raises(ValueError):
             _valider_date_contexte(date(1, 1, 1))
 
-    def test_type_non_date_rejete(self):
+    def test_type_non_date_rejete(self):  # noqa: ANN201
         with pytest.raises(ValueError):
             _valider_date_contexte("2025-06-15")
 
-    def test_analyser_rejette_date_aberrante(self):
+    def test_analyser_rejette_date_aberrante(self):  # noqa: ANN201
         agent = AgentTemporel(use_llm=False)
         ev = [_evidence(date(2020, 1, 1))]
         with pytest.raises(ValueError):
             agent.analyser(question="Q", evidences=ev, date_contexte=date(9999, 12, 31))
 
-    def test_analyser_accepte_datetime_en_convertissant(self):
+    def test_analyser_accepte_datetime_en_convertissant(self):  # noqa: ANN201
         """Avant le fix : `datetime > date` levait TypeError dans le filtre."""
         agent = AgentTemporel(use_llm=False)
         ev = [_evidence(date(2020, 1, 1))]

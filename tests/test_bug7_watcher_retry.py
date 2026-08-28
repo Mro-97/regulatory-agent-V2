@@ -21,14 +21,14 @@ from src.watcher import Watcher
 class _ClientMock:
     """Client HTTP simulé qui fait échouer les N premières requêtes."""
 
-    def __init__(self, sequence: list):
+    def __init__(self, sequence: list):  # noqa: ANN204
         # sequence : liste d'items — soit une exception à lever, soit un
         # tuple (statut, corps) à retourner.
         self.sequence = list(sequence)
         self.appels: list[str] = []
         self.is_closed = False
 
-    async def get(self, url: str):
+    async def get(self, url: str):  # noqa: ANN202
         self.appels.append(url)
         if not self.sequence:
             raise RuntimeError("Séquence mock épuisée")  # noqa: TRY003
@@ -40,7 +40,7 @@ class _ClientMock:
         return httpx.Response(status_code=statut, text=corps, request=request)
 
 
-def _watcher_avec_client(monkeypatch, tmp_path, sequence):
+def _watcher_avec_client(monkeypatch, tmp_path, sequence):  # noqa: ANN001, ANN202
     from src import watcher as watcher_module
 
     monkeypatch.setattr(watcher_module, "CHEMIN_HASHES", tmp_path / "hashes.json")
@@ -56,7 +56,7 @@ def _watcher_avec_client(monkeypatch, tmp_path, sequence):
 
 
 class TestB7WatcherRetry:
-    def test_reprise_apres_echec_reseau_transitoire(self, tmp_path, monkeypatch):
+    def test_reprise_apres_echec_reseau_transitoire(self, tmp_path, monkeypatch):  # noqa: ANN001, ANN201
         """Deux échecs réseau puis succès → verifier_url doit atteindre la 3e."""
         monkeypatch.setattr(cfg, "watcher_max_essais", 3)
         w, client = _watcher_avec_client(
@@ -69,7 +69,7 @@ class TestB7WatcherRetry:
             ],
         )
 
-        async def _run():
+        async def _run():  # noqa: ANN202
             # 1er passage : première indexation, pas d'alerte, hash enregistré.
             alerte = await w.verifier_url("https://ex/1", SourceReglementaire.EUR_LEX)
             assert alerte is None
@@ -77,7 +77,7 @@ class TestB7WatcherRetry:
 
         asyncio.run(_run())
 
-    def test_5xx_reessaye_puis_echoue(self, tmp_path, monkeypatch):
+    def test_5xx_reessaye_puis_echoue(self, tmp_path, monkeypatch):  # noqa: ANN001, ANN201
         """Trois 5xx consécutifs → renonce, sans exception."""
         monkeypatch.setattr(cfg, "watcher_max_essais", 3)
         w, client = _watcher_avec_client(
@@ -86,14 +86,14 @@ class TestB7WatcherRetry:
             [(503, ""), (502, ""), (500, "")],
         )
 
-        async def _run():
+        async def _run():  # noqa: ANN202
             alerte = await w.verifier_url("https://ex/2", SourceReglementaire.EUR_LEX)
             assert alerte is None
             assert len(client.appels) == 3
 
         asyncio.run(_run())
 
-    def test_4xx_pas_de_retry(self, tmp_path, monkeypatch):
+    def test_4xx_pas_de_retry(self, tmp_path, monkeypatch):  # noqa: ANN001, ANN201
         """404 est permanent — pas de retry."""
         monkeypatch.setattr(cfg, "watcher_max_essais", 5)
         w, client = _watcher_avec_client(
@@ -102,14 +102,14 @@ class TestB7WatcherRetry:
             [(404, ""), (200, "ne devrait pas être atteint")],
         )
 
-        async def _run():
+        async def _run():  # noqa: ANN202
             alerte = await w.verifier_url("https://ex/3", SourceReglementaire.CNIL)
             assert alerte is None
             assert len(client.appels) == 1  # pas de deuxième tentative
 
         asyncio.run(_run())
 
-    def test_max_essais_1_conserve_comportement_ancien(self, tmp_path, monkeypatch):
+    def test_max_essais_1_conserve_comportement_ancien(self, tmp_path, monkeypatch):  # noqa: ANN001, ANN201
         monkeypatch.setattr(cfg, "watcher_max_essais", 1)
         w, client = _watcher_avec_client(
             monkeypatch,
@@ -117,7 +117,7 @@ class TestB7WatcherRetry:
             [httpx.ConnectError("no net"), (200, "peu importe")],
         )
 
-        async def _run():
+        async def _run():  # noqa: ANN202
             alerte = await w.verifier_url("https://ex/4", SourceReglementaire.ANSSI)
             assert alerte is None
             assert len(client.appels) == 1

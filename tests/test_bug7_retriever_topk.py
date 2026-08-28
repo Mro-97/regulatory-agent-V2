@@ -52,7 +52,7 @@ def _point(point_id: str, score: float, valid_to: str | None = None) -> SimpleNa
     )
 
 
-def _retriever(
+def _retriever(  # noqa: ANN202
     passe_a: list[SimpleNamespace], passe_b: list[SimpleNamespace], top_k: int
 ):
     """Retriever avec client Qdrant mocké : 1er appel = passe A, 2e = passe B."""
@@ -69,7 +69,7 @@ def _retriever(
 
 
 class TestBug7RepartitionEquilibree:
-    def test_passe_a_non_evincee_par_scores_plus_bas(self):
+    def test_passe_a_non_evincee_par_scores_plus_bas(self):  # noqa: ANN201
         """
         Passe A (transitoire) a des scores systématiquement plus bas que
         passe B (permanent). Avant le fix, un top-k global pur aurait
@@ -94,7 +94,7 @@ class TestBug7RepartitionEquilibree:
             f"résultat={chunk_ids}"
         )
 
-    def test_total_ne_depasse_jamais_top_k(self):
+    def test_total_ne_depasse_jamais_top_k(self):  # noqa: ANN201
         passe_a = [
             _point(f"a{i}", score=0.9 - i * 0.01, valid_to="2030-01-01")
             for i in range(10)
@@ -107,7 +107,7 @@ class TestBug7RepartitionEquilibree:
         evidences = r.retrieve(question="Q", date_contexte=date(2025, 6, 15))
         assert len(evidences) == 5
 
-    def test_repechage_si_passe_sous_alimentee(self):
+    def test_repechage_si_passe_sous_alimentee(self):  # noqa: ANN201
         """
         Une seule disposition transitoire disponible (passe A) : le budget
         qui lui était réservé (mais non consommé) doit être repêché depuis
@@ -125,7 +125,7 @@ class TestBug7RepartitionEquilibree:
         chunk_ids = {e.chunk_id for e in evidences}
         assert "a0" in chunk_ids
 
-    def test_resultat_final_trie_par_score_decroissant(self):
+    def test_resultat_final_trie_par_score_decroissant(self):  # noqa: ANN201
         passe_a = [_point("a0", score=0.60, valid_to="2030-01-01")]
         passe_b = [
             _point("b0", score=0.95, valid_to=None),
@@ -138,12 +138,12 @@ class TestBug7RepartitionEquilibree:
         scores = [e.score_similarite for e in evidences]
         assert scores == sorted(scores, reverse=True)
 
-    def test_deux_passes_vides_retourne_liste_vide(self):
+    def test_deux_passes_vides_retourne_liste_vide(self):  # noqa: ANN201
         r, _ = _retriever([], [], top_k=5)
         evidences = r.retrieve(question="Q", date_contexte=date(2025, 6, 15))
         assert evidences == []
 
-    def test_chaque_passe_interrogee_avec_budget_top_k_complet(self):
+    def test_chaque_passe_interrogee_avec_budget_top_k_complet(self):  # noqa: ANN201
         """
         Le sur-échantillonnage par passe (limite=top_k) doit être préservé :
         c'est ce qui permet le repêchage sans jamais perdre de candidat.

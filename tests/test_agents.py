@@ -20,7 +20,7 @@ from src.models import EvidenceRecuperee, NiveauConfiance
 
 
 @pytest.fixture
-def ev_rgpd_a():
+def ev_rgpd_a():  # noqa: ANN201
     return EvidenceRecuperee(
         chunk_id="chunk_001",
         document_id="RGPD_2016_679",
@@ -32,7 +32,7 @@ def ev_rgpd_a():
 
 
 @pytest.fixture
-def ev_rgpd_b():
+def ev_rgpd_b():  # noqa: ANN201
     return EvidenceRecuperee(
         chunk_id="chunk_002",
         document_id="RGPD_2016_679",
@@ -44,7 +44,7 @@ def ev_rgpd_b():
 
 
 @pytest.fixture
-def ev_rgpd_art33():
+def ev_rgpd_art33():  # noqa: ANN201
     return EvidenceRecuperee(
         chunk_id="chunk_003",
         document_id="RGPD_2016_679",
@@ -56,7 +56,7 @@ def ev_rgpd_art33():
 
 
 @pytest.fixture
-def ev_nis2():
+def ev_nis2():  # noqa: ANN201
     return EvidenceRecuperee(
         chunk_id="chunk_004",
         document_id="NIS2_2022_2555",
@@ -73,7 +73,7 @@ def ev_nis2():
 
 
 class TestAgentTemporel:
-    def test_filtre_version_a_en_2025(self, ev_rgpd_a, ev_rgpd_b):
+    def test_filtre_version_a_en_2025(self, ev_rgpd_a, ev_rgpd_b):  # noqa: ANN001, ANN201
         from src.agents.temporal import AgentTemporel
 
         agent = AgentTemporel(use_llm=False)
@@ -82,7 +82,7 @@ class TestAgentTemporel:
         assert r.evidences_applicables[0].article_id == "art_32"
         assert len(r.evidences_exclues) == 1
 
-    def test_filtre_version_b_en_2026(self, ev_rgpd_a, ev_rgpd_b):
+    def test_filtre_version_b_en_2026(self, ev_rgpd_a, ev_rgpd_b):  # noqa: ANN001, ANN201
         from src.agents.temporal import AgentTemporel
 
         agent = AgentTemporel(use_llm=False)
@@ -90,21 +90,21 @@ class TestAgentTemporel:
         assert len(r.evidences_applicables) == 1
         assert r.evidences_applicables[0].article_id == "art_32_2026"
 
-    def test_borne_valid_to_inclusive(self, ev_rgpd_a, ev_rgpd_b):
+    def test_borne_valid_to_inclusive(self, ev_rgpd_a, ev_rgpd_b):  # noqa: ANN001, ANN201
         from src.agents.temporal import AgentTemporel
 
         agent = AgentTemporel(use_llm=False)
         r = agent.analyser("?", [ev_rgpd_a, ev_rgpd_b], date(2026, 8, 2))
         assert r.evidences_applicables[0].article_id == "art_32"
 
-    def test_borne_valid_from_inclusive(self, ev_rgpd_a, ev_rgpd_b):
+    def test_borne_valid_from_inclusive(self, ev_rgpd_a, ev_rgpd_b):  # noqa: ANN001, ANN201
         from src.agents.temporal import AgentTemporel
 
         agent = AgentTemporel(use_llm=False)
         r = agent.analyser("?", [ev_rgpd_a, ev_rgpd_b], date(2026, 8, 3))
         assert r.evidences_applicables[0].article_id == "art_32_2026"
 
-    def test_avant_entree_en_vigueur(self, ev_rgpd_a, ev_rgpd_b):
+    def test_avant_entree_en_vigueur(self, ev_rgpd_a, ev_rgpd_b):  # noqa: ANN001, ANN201
         from src.agents.temporal import AgentTemporel
 
         agent = AgentTemporel(use_llm=False)
@@ -112,14 +112,14 @@ class TestAgentTemporel:
         assert len(r.evidences_applicables) == 0
         assert r.niveau_confiance == NiveauConfiance.INCERTAIN
 
-    def test_aucune_evidence(self):
+    def test_aucune_evidence(self):  # noqa: ANN201
         from src.agents.temporal import AgentTemporel
 
         agent = AgentTemporel(use_llm=False)
         r = agent.analyser("?", [], date(2025, 1, 1))
         assert r.niveau_confiance == NiveauConfiance.INCERTAIN
 
-    def test_detection_lacune(self):
+    def test_detection_lacune(self):  # noqa: ANN201
 
         from src.agents.temporal import AgentTemporel
 
@@ -150,7 +150,7 @@ class TestAgentTemporel:
 
 
 class TestAgentExplainer:
-    def test_assemblage_avec_preuves(self, ev_rgpd_a, ev_rgpd_art33):
+    def test_assemblage_avec_preuves(self, ev_rgpd_a, ev_rgpd_art33):  # noqa: ANN001, ANN201
         from src.agents.explainer import AgentExplainer
 
         agent = AgentExplainer(use_llm=False)
@@ -160,7 +160,7 @@ class TestAgentExplainer:
         assert "RGPD_2016_679" in r.reponse
         assert r.niveau_confiance == NiveauConfiance.MOYEN
 
-    def test_assemblage_sans_preuves(self):
+    def test_assemblage_sans_preuves(self):  # noqa: ANN201
         from src.agents.explainer import AgentExplainer
 
         agent = AgentExplainer(use_llm=False)
@@ -168,7 +168,7 @@ class TestAgentExplainer:
         assert r.niveau_confiance == NiveauConfiance.INCERTAIN
         assert len(r.sources_citees) == 0
 
-    def test_contexte_temporel_dans_reponse(self, ev_rgpd_a):
+    def test_contexte_temporel_dans_reponse(self, ev_rgpd_a):  # noqa: ANN001, ANN201
         from src.agents.explainer import AgentExplainer
 
         agent = AgentExplainer(use_llm=False)
@@ -177,7 +177,7 @@ class TestAgentExplainer:
         )
         assert "15/06/2023" in r.reponse
 
-    def test_max_8_sources_affichees(self):
+    def test_max_8_sources_affichees(self):  # noqa: ANN201
         from src.agents.explainer import AgentExplainer
 
         evidences = [
@@ -201,7 +201,7 @@ class TestAgentExplainer:
 
 
 class TestAgentCitation:
-    def test_generation_deterministe(self, ev_rgpd_a, ev_rgpd_art33):
+    def test_generation_deterministe(self, ev_rgpd_a, ev_rgpd_art33):  # noqa: ANN001, ANN201
         from src.agents.citation import AgentCitation, StatutCitation
 
         agent = AgentCitation(use_llm=False)
@@ -213,7 +213,7 @@ class TestAgentCitation:
             assert cit.statut == StatutCitation.VERIFIEE
             assert len(cit.hash_extrait) == 64
 
-    def test_citation_chunk_inconnu_douteuse(self, ev_rgpd_a):
+    def test_citation_chunk_inconnu_douteuse(self, ev_rgpd_a):  # noqa: ANN001, ANN201
         from src.agents.citation import (
             AgentCitation,
             CitationReglementaire,
@@ -234,7 +234,7 @@ class TestAgentCitation:
         assert len(douteuses) == 1
         assert douteuses[0].statut == StatutCitation.DOUTEUSE
 
-    def test_extrait_non_contenu_dans_source(self, ev_rgpd_a):
+    def test_extrait_non_contenu_dans_source(self, ev_rgpd_a):  # noqa: ANN001, ANN201
         from src.agents.citation import (
             AgentCitation,
             CitationReglementaire,
@@ -252,7 +252,7 @@ class TestAgentCitation:
         verifiees, douteuses = agent.verify([cit_modifiee], [ev_rgpd_a])
         assert len(douteuses) == 1
 
-    def test_aucune_preuve(self):
+    def test_aucune_preuve(self):  # noqa: ANN201
         from src.agents.citation import AgentCitation
 
         agent = AgentCitation(use_llm=False)
@@ -260,7 +260,7 @@ class TestAgentCitation:
         assert r.avertissement is not None
         assert len(r.citations_verifiees) == 0
 
-    def test_reference_courte(self, ev_rgpd_a):
+    def test_reference_courte(self, ev_rgpd_a):  # noqa: ANN001, ANN201
         from src.agents.citation import AgentCitation
 
         agent = AgentCitation(use_llm=False)
@@ -277,7 +277,7 @@ class TestAgentCitation:
 
 
 class TestAgentConflit:
-    def test_conflit_inter_documents(self, ev_rgpd_art33, ev_nis2):
+    def test_conflit_inter_documents(self, ev_rgpd_art33, ev_nis2):  # noqa: ANN001, ANN201
         from src.agents.conflit import AgentConflit
 
         agent = AgentConflit(use_llm=False)
@@ -288,14 +288,14 @@ class TestAgentConflit:
         # (résultat dépend des heuristiques sur ces textes précis)
         assert r.niveau_global is not None
 
-    def test_moins_de_2_preuves(self, ev_rgpd_a):
+    def test_moins_de_2_preuves(self, ev_rgpd_a):  # noqa: ANN001, ANN201
         from src.agents.conflit import AgentConflit, NiveauConflit
 
         agent = AgentConflit(use_llm=False)
         r = agent.analyser("?", [ev_rgpd_a])
         assert r.niveau_global == NiveauConflit.AUCUN
 
-    def test_aucune_tension_lexicale(self, ev_rgpd_a):
+    def test_aucune_tension_lexicale(self, ev_rgpd_a):  # noqa: ANN001, ANN201
         from src.agents.conflit import AgentConflit, NiveauConflit
 
         ev_neutre = EvidenceRecuperee(

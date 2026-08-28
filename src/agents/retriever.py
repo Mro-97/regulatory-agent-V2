@@ -211,7 +211,7 @@ class Retriever:
     # Conversion des résultats
     # ------------------------------------------------------------------
 
-    def _point_vers_evidence(self, point) -> EvidenceRecuperee | None:
+    def _point_vers_evidence(self, point) -> EvidenceRecuperee | None:  # noqa: ANN001 — TODO §12 étape 4 : typage strict progressif
         """Convertit un ScoredPoint Qdrant en EvidenceRecuperee.
 
         Retourne None si le payload est incomplet, avec log d'avertissement.

@@ -26,7 +26,7 @@ OVERLAP = 50
 
 
 class Ingester:
-    def __init__(
+    def __init__(  # noqa: ANN204 — TODO §12 étape 4 : typage strict progressif
         self, collection_name: str = "regulatory_chunks", recreate: bool = False
     ):
         # F1 : respecter cfg.qdrant_https + cfg.qdrant_api_key. `url=` seul
@@ -42,14 +42,14 @@ class Ingester:
         if recreate:
             self._recreate_collection()
 
-    def _load_embedding_model(self):
+    def _load_embedding_model(self):  # noqa: ANN202 — TODO §12 étape 4 : typage strict progressif
         from sentence_transformers import SentenceTransformer
 
         model = SentenceTransformer("all-MiniLM-L6-v2")
         logger.info("Modèle d'embedding : all-MiniLM-L6-v2 (dim=384)")
         return model
 
-    def _recreate_collection(self):
+    def _recreate_collection(self):  # noqa: ANN202 — TODO §12 étape 4 : typage strict progressif
         if self.client.collection_exists(self.collection_name):
             self.client.delete_collection(self.collection_name)
             logger.info("Collection '%s' supprimée", self.collection_name)
@@ -193,7 +193,7 @@ class Ingester:
         self.ingest_document(doc)
 
 
-def main():
+def main():  # noqa: ANN201 — TODO §12 étape 4 : typage strict progressif
     parser = argparse.ArgumentParser(
         description="Ingérer un JSON réglementaire dans Qdrant"
     )

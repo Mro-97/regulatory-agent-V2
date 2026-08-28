@@ -53,7 +53,7 @@ Texte 4.
 """
 
 
-def _doc(texte: str, doc_id: str):
+def _doc(texte: str, doc_id: str):  # noqa: ANN202
     return construire_document(
         texte=texte,
         doc_id=doc_id,
@@ -71,7 +71,7 @@ class TestTOCAprèsArticles:
     fausse partition. On tombe alors en mode chapitre unique.
     """
 
-    def test_toc_a_la_fin_regroupe_en_chapitre_principal(self):
+    def test_toc_a_la_fin_regroupe_en_chapitre_principal(self):  # noqa: ANN201
         doc = _doc(TEXTE_TOC_A_LA_FIN, "TEST_TOC_END")
         # Attendu : un seul chapitre, 3 articles.
         assert len(doc.chapitres) == 1, (
@@ -90,7 +90,7 @@ class TestChapitresRépétés:
     """Un marqueur CHAPITRE répété (typique d'un header de page PDF) ne
     doit pas produire de Chapitre dupliqué dans la sortie."""
 
-    def test_pas_de_doublon_de_chapitre(self):
+    def test_pas_de_doublon_de_chapitre(self):  # noqa: ANN201
         doc = _doc(TEXTE_CHAPITRES_REPETES, "TEST_CHAP_REP")
         ids = [c.id for c in doc.chapitres]
         assert ids == list(dict.fromkeys(ids)), (

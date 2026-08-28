@@ -35,19 +35,19 @@ class TestBug1AucunReloadNiWorkers:
     uvicorn.Server programmatique.
     """
 
-    def test_pas_de_reload_dans_uvicorn_config(self):
+    def test_pas_de_reload_dans_uvicorn_config(self):  # noqa: ANN201
         """AST-based : reload= ne doit pas être un kwarg d'uvicorn.Config()."""
         assert "reload" not in _kwargs_uvicorn_config(), (
             "Régression Bug #1 : uvicorn.Config() ne doit plus recevoir reload=."
         )
 
-    def test_pas_de_workers_dans_uvicorn_config(self):
+    def test_pas_de_workers_dans_uvicorn_config(self):  # noqa: ANN201
         """AST-based : workers= ne doit pas être un kwarg d'uvicorn.Config()."""
         assert "workers" not in _kwargs_uvicorn_config(), (
             "Régression Bug #2 : uvicorn.Config() ne doit plus recevoir workers=."
         )
 
-    def test_uvicorn_config_ne_contient_que_options_supportees(self):
+    def test_uvicorn_config_ne_contient_que_options_supportees(self):  # noqa: ANN201
         """
         Vérifie que l'appel à uvicorn.Config() ne mentionne que
         les kwargs compatibles avec le mode programmatique.
@@ -78,7 +78,7 @@ class TestBug1AucunReloadNiWorkers:
 class TestBug1WarningsDebugEtWorkers:
     """Les warnings doivent apparaître dans le source pour guider l'utilisateur."""
 
-    def test_warning_si_debug_active(self):
+    def test_warning_si_debug_active(self):  # noqa: ANN201
         source = _source_main()
         assert "cfg.debug" in source
         assert "reload" in source.lower()
@@ -86,14 +86,14 @@ class TestBug1WarningsDebugEtWorkers:
             "Le warning doit indiquer la commande CLI de remplacement."
         )
 
-    def test_warning_si_workers_superieur_a_1(self):
+    def test_warning_si_workers_superieur_a_1(self):  # noqa: ANN201
         source = _source_main()
         assert "cfg.api_workers > 1" in source
         assert "gunicorn" in source.lower(), (
             "Le warning doit pointer vers gunicorn pour le multi-worker."
         )
 
-    def test_import_module_reste_valide(self):
+    def test_import_module_reste_valide(self):  # noqa: ANN201
         """main.py doit rester importable syntaxiquement."""
         source = _source_main()
         # ast.parse lève SyntaxError si le fichier est cassé

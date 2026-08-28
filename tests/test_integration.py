@@ -73,7 +73,7 @@ def doc_rgpd_json() -> dict:
 
 
 @pytest.fixture
-def client_qdrant_memoire():
+def client_qdrant_memoire():  # noqa: ANN201
     """Client Qdrant en mémoire pour les tests."""
     from qdrant_client import QdrantClient
 
@@ -86,19 +86,19 @@ def client_qdrant_memoire():
 
 
 class TestIngestionPydantic:
-    def test_charger_document_depuis_json(self, doc_rgpd_json):
+    def test_charger_document_depuis_json(self, doc_rgpd_json):  # noqa: ANN001, ANN201
         doc = DocumentReglementaire.model_validate(doc_rgpd_json)
         assert doc.id == "RGPD_2016_679"
         assert len(doc.chapitres) == 1
         assert len(doc.chapitres[0].articles) == 2
 
-    def test_hash_document_coherent(self, doc_rgpd_json):
+    def test_hash_document_coherent(self, doc_rgpd_json):  # noqa: ANN001, ANN201
         doc = DocumentReglementaire.model_validate(doc_rgpd_json)
         h1 = doc.calculer_hash()
         h2 = doc.calculer_hash()
         assert h1 == h2
 
-    def test_articles_applicables_2025(self, doc_rgpd_json):
+    def test_articles_applicables_2025(self, doc_rgpd_json):  # noqa: ANN001, ANN201
         doc = DocumentReglementaire.model_validate(doc_rgpd_json)
         applicables = doc.articles_applicables_a(date(2025, 6, 15))
         assert len(applicables) == 2  # art_32 et art_33, tous deux sans valid_to
@@ -110,7 +110,7 @@ class TestIngestionPydantic:
 
 
 class TestPipelineIngestion:
-    def test_chunking_et_upsert(self, doc_rgpd_json, client_qdrant_memoire):
+    def test_chunking_et_upsert(self, doc_rgpd_json, client_qdrant_memoire):  # noqa: ANN001, ANN201
         """Vérifie que l'ingestion produit des chunks indexés dans Qdrant."""
         import uuid
 
@@ -158,7 +158,7 @@ class TestPipelineIngestion:
         info = client_qdrant_memoire.get_collection("test_collection")
         assert (info.points_count or 0) >= 2
 
-    def test_chunking_article_court(self):
+    def test_chunking_article_court(self):  # noqa: ANN201
         """Un article court doit produire un seul chunk."""
         from scripts.ingest import Ingester
         from src.models import (
@@ -194,7 +194,7 @@ class TestPipelineIngestion:
         assert len(chunks) >= 1
         assert any("Texte court" in c.texte_chunk for c in chunks)
 
-    def test_chunking_article_long(self):
+    def test_chunking_article_long(self):  # noqa: ANN201
         """Vérifie que chunk_document produit un chunk par article avec le texte complet."""  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
         from scripts.ingest import Ingester
         from src.models import (
@@ -251,7 +251,7 @@ class TestIngestionReelle:
     """
 
     @staticmethod
-    def _ingester_en_memoire(collection: str = "test_ingest"):
+    def _ingester_en_memoire(collection: str = "test_ingest"):  # noqa: ANN205
         from qdrant_client import QdrantClient
         from qdrant_client.http.models import Distance, VectorParams
         from scripts.ingest import Ingester
@@ -263,7 +263,7 @@ class TestIngestionReelle:
         )
 
         class FauxModeleEmbedding:
-            def encode(self, texte):  # noqa: ARG002 — argument conservé pour signature contractuelle
+            def encode(self, texte):  # noqa: ANN001, ANN202, ARG002
                 return [0.1, 0.2, 0.3, 0.4]
 
         ingester = Ingester.__new__(Ingester)
@@ -272,7 +272,7 @@ class TestIngestionReelle:
         ingester.embedding_model = FauxModeleEmbedding()
         return ingester
 
-    def test_ingestion_reelle_nouveau_document(self, doc_rgpd_json):
+    def test_ingestion_reelle_nouveau_document(self, doc_rgpd_json):  # noqa: ANN001, ANN201
         from src.models import RequeteIngestion
         from src.orchestrator import Orchestrateur
 
@@ -294,7 +294,7 @@ class TestIngestionReelle:
         info = ingester.client.get_collection(ingester.collection_name)
         assert (info.points_count or 0) == reponse.chunks_indexes
 
-    def test_ingestion_sans_contenu_json_leve_valueerror(self):
+    def test_ingestion_sans_contenu_json_leve_valueerror(self):  # noqa: ANN201
         from src.models import RequeteIngestion
         from src.orchestrator import Orchestrateur
 
@@ -306,7 +306,7 @@ class TestIngestionReelle:
         with pytest.raises(ValueError):
             asyncio.run(orchestrateur.ingerer(requete))
 
-    def test_ingestion_contenu_invalide_leve_valueerror(self):
+    def test_ingestion_contenu_invalide_leve_valueerror(self):  # noqa: ANN201
         from src.models import RequeteIngestion
         from src.orchestrator import Orchestrateur
 
@@ -320,7 +320,7 @@ class TestIngestionReelle:
         with pytest.raises(ValueError):
             asyncio.run(orchestrateur.ingerer(requete))
 
-    def test_ingestion_document_deja_indexe_sans_force(self, doc_rgpd_json):
+    def test_ingestion_document_deja_indexe_sans_force(self, doc_rgpd_json):  # noqa: ANN001, ANN201
         from src.models import RequeteIngestion
         from src.orchestrator import DocumentDejaIndexeError, Orchestrateur
 
@@ -331,14 +331,14 @@ class TestIngestionReelle:
             source=SourceReglementaire.EUR_LEX, contenu_json=doc_rgpd_json
         )
 
-        async def _run():
+        async def _run():  # noqa: ANN202
             await orchestrateur.ingerer(requete)  # première ingestion, OK
             await orchestrateur.ingerer(requete)  # deuxième, doit échouer
 
         with pytest.raises(DocumentDejaIndexeError):
             asyncio.run(_run())
 
-    def test_ingestion_document_deja_indexe_avec_force_remplace(self, doc_rgpd_json):
+    def test_ingestion_document_deja_indexe_avec_force_remplace(self, doc_rgpd_json):  # noqa: ANN001, ANN201
         from src.models import RequeteIngestion
         from src.orchestrator import Orchestrateur
 
@@ -355,7 +355,7 @@ class TestIngestionReelle:
             forcer_reindexation=True,
         )
 
-        async def _run():
+        async def _run():  # noqa: ANN202
             r1 = await orchestrateur.ingerer(requete)
             r2 = await orchestrateur.ingerer(requete_force)
             return r1, r2
@@ -366,7 +366,7 @@ class TestIngestionReelle:
         info = ingester.client.get_collection(ingester.collection_name)
         assert (info.points_count or 0) == r2.chunks_indexes == r1.chunks_indexes
 
-    def test_api_ingest_409_si_deja_indexe(self, doc_rgpd_json):
+    def test_api_ingest_409_si_deja_indexe(self, doc_rgpd_json):  # noqa: ANN001, ANN201
         """L'API /ingest doit retourner 409 quand le document existe déjà sans forcer_reindexation."""  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
         from config import cfg
         from fastapi.testclient import TestClient
@@ -390,7 +390,7 @@ class TestIngestionReelle:
         finally:
             api_module._orchestrateur = original
 
-    def test_api_ingest_400_si_contenu_json_absent(self):
+    def test_api_ingest_400_si_contenu_json_absent(self):  # noqa: ANN201
         """L'API /ingest doit retourner 400 (pas un faux succès) sans contenu_json."""
         from config import cfg
         from fastapi.testclient import TestClient
@@ -417,7 +417,7 @@ class TestIngestionReelle:
 
 
 class TestPipelineAgents:
-    def test_pipeline_deterministe_sans_qdrant(self):
+    def test_pipeline_deterministe_sans_qdrant(self):  # noqa: ANN201
         """
         Pipeline complet sans Qdrant ni LLM.
         Injecte des EvidenceRecuperee directement dans l'Explainer.
@@ -466,7 +466,7 @@ class TestPipelineAgents:
         assert len(r_explainer.sources_citees) == 2
         assert "RGPD_2016_679" in r_explainer.reponse
 
-    def test_pipeline_citation_verification(self):
+    def test_pipeline_citation_verification(self):  # noqa: ANN201
         """Les citations générées depuis les preuves doivent toutes être vérifiées."""
         from src.agents.citation import AgentCitation, StatutCitation
 
@@ -497,13 +497,13 @@ class TestPipelineAgents:
 
 
 class TestOrchestrateurMock:
-    def test_mode_mock_sans_infrastructure(self):
+    def test_mode_mock_sans_infrastructure(self):  # noqa: ANN201
         """L'orchestrateur en mode mock ne doit nécessiter aucune infra."""
         from src.orchestrator import Orchestrateur
 
         orch = Orchestrateur(mode="mock")
 
-        async def _run():
+        async def _run():  # noqa: ANN202
             req = RequeteQuestion(question="Test question RGPD")
             rep = await orch.traiter(req)
             assert rep.request_id is not None
@@ -512,7 +512,7 @@ class TestOrchestrateurMock:
 
         asyncio.run(_run())
 
-    def test_classification_requetes(self):
+    def test_classification_requetes(self):  # noqa: ANN201
         from src.orchestrator import _classifier_requete
 
         assert _classifier_requete("Question simple", None) == "courante"
@@ -526,7 +526,7 @@ class TestOrchestrateurMock:
 
 
 class TestOrchestrateurNonBloquant:
-    def test_retrieval_bloquant_ne_gele_pas_la_boucle_asyncio(self, monkeypatch):
+    def test_retrieval_bloquant_ne_gele_pas_la_boucle_asyncio(self, monkeypatch):  # noqa: ANN001, ANN201
         """
         Le retrieval (embedding + Qdrant, synchrone et potentiellement long)
         doit être déporté dans un thread (asyncio.to_thread) — sinon il
@@ -546,7 +546,7 @@ class TestOrchestrateurNonBloquant:
         orchestrateur = Orchestrateur(mode="real")
 
         class RetrieverLent:
-            def retrieve(self, **kwargs):  # noqa: ARG002 — argument conservé pour signature contractuelle
+            def retrieve(self, **kwargs):  # noqa: ANN003, ANN202, ARG002
                 time.sleep(0.3)
                 return []
 
@@ -554,8 +554,8 @@ class TestOrchestrateurNonBloquant:
             orchestrateur, "_obtenir_retriever", lambda: RetrieverLent()
         )
 
-        async def etape_explainer_rapide(
-            question, evidences, type_pipeline, date_ref=None  # noqa: ARG001 — argument conservé pour signature contractuelle
+        async def etape_explainer_rapide(  # noqa: ANN202
+            question, evidences, type_pipeline, date_ref=None  # noqa: ANN001, ARG001
         ):
             return (
                 "réponse simulée",
@@ -565,11 +565,11 @@ class TestOrchestrateurNonBloquant:
 
         monkeypatch.setattr(orchestrateur, "_etape_explainer", etape_explainer_rapide)
 
-        async def _run():
+        async def _run():  # noqa: ANN202
             t0 = time.monotonic()
             marqueurs: list[float] = []
 
-            async def tache_legere():
+            async def tache_legere():  # noqa: ANN202
                 for _ in range(6):
                     marqueurs.append(time.monotonic() - t0)
                     await asyncio.sleep(0.05)
@@ -606,7 +606,7 @@ class TestOrchestrateurNonBloquant:
 
 
 class TestAuditTrail:
-    def test_persistance_locale(self, tmp_path):
+    def test_persistance_locale(self, tmp_path):  # noqa: ANN001, ANN201
         """Vérifie que l'audit JSONL est bien écrit localement."""
         import src.audit as audit_module
         from src.models import EnregistrementAudit
@@ -616,7 +616,7 @@ class TestAuditTrail:
         original = audit_module.CHEMIN_AUDIT_LOCAL
         audit_module.CHEMIN_AUDIT_LOCAL = chemin_test
 
-        async def _run():
+        async def _run():  # noqa: ANN202
             gestionnaire = audit_module.GestionnaireAudit(postgres_dsn=None)
             await gestionnaire.initialiser()
 
@@ -638,7 +638,7 @@ class TestAuditTrail:
         finally:
             audit_module.CHEMIN_AUDIT_LOCAL = original
 
-    def test_chainaage_hashes(self, tmp_path):
+    def test_chainaage_hashes(self, tmp_path):  # noqa: ANN001, ANN201
         """Deux audits successifs doivent avoir des hashes chaînés."""
         import src.audit as audit_module
         from src.models import EnregistrementAudit
@@ -648,7 +648,7 @@ class TestAuditTrail:
         audit_module.CHEMIN_AUDIT_LOCAL = chemin_test
         audit_module._hash_precedent = None  # reset
 
-        async def _run():
+        async def _run():  # noqa: ANN202
             gestionnaire = audit_module.GestionnaireAudit(postgres_dsn=None)
             await gestionnaire.initialiser()
 
@@ -668,7 +668,7 @@ class TestAuditTrail:
             audit_module.CHEMIN_AUDIT_LOCAL = original
             audit_module._hash_precedent = None
 
-    def test_verifier_integrite_chaine_intacte(self, tmp_path):
+    def test_verifier_integrite_chaine_intacte(self, tmp_path):  # noqa: ANN001, ANN201
         """Une chaîne d'audit intacte doit être entièrement valide."""
         import src.audit as audit_module
         from src.models import EnregistrementAudit
@@ -678,7 +678,7 @@ class TestAuditTrail:
         audit_module.CHEMIN_AUDIT_LOCAL = chemin_test
         audit_module._hash_precedent = None
 
-        async def _run():
+        async def _run():  # noqa: ANN202
             gestionnaire = audit_module.GestionnaireAudit(postgres_dsn=None)
             await gestionnaire.initialiser()
 
@@ -699,7 +699,7 @@ class TestAuditTrail:
             audit_module.CHEMIN_AUDIT_LOCAL = original
             audit_module._hash_precedent = None
 
-    def test_verifier_integrite_detecte_enregistrement_supprime(self, tmp_path):
+    def test_verifier_integrite_detecte_enregistrement_supprime(self, tmp_path):  # noqa: ANN001, ANN201
         """
         Un enregistrement retiré du milieu du fichier JSONL doit être détecté :
         les deux enregistrements restants sont chacun auto-cohérents (leur
@@ -715,7 +715,7 @@ class TestAuditTrail:
         audit_module.CHEMIN_AUDIT_LOCAL = chemin_test
         audit_module._hash_precedent = None
 
-        async def _run():
+        async def _run():  # noqa: ANN202
             gestionnaire = audit_module.GestionnaireAudit(postgres_dsn=None)
             await gestionnaire.initialiser()
 
@@ -742,7 +742,7 @@ class TestAuditTrail:
         finally:
             audit_module.CHEMIN_AUDIT_LOCAL = original
 
-    def test_desynchronisation_postgres_comptabilisee(self, tmp_path):
+    def test_desynchronisation_postgres_comptabilisee(self, tmp_path):  # noqa: ANN001, ANN201
         """
         Si PostgreSQL est censé être actif mais que l'INSERT échoue, la
         persistance locale (source de vérité) doit rester intacte, et
@@ -758,17 +758,17 @@ class TestAuditTrail:
         audit_module._hash_precedent = None
 
         class FausseAcquisition:
-            async def __aenter__(self):
+            async def __aenter__(self):  # noqa: ANN204
                 raise RuntimeError("connexion PostgreSQL indisponible")  # noqa: TRY003
 
-            async def __aexit__(self, *args):
+            async def __aexit__(self, *args):  # noqa: ANN002, ANN204
                 return False
 
         class FauxPool:
-            def acquire(self):
+            def acquire(self):  # noqa: ANN202
                 return FausseAcquisition()
 
-        async def _run():
+        async def _run():  # noqa: ANN202
             gestionnaire = audit_module.GestionnaireAudit(postgres_dsn=None)
             await gestionnaire.initialiser()
             # Simule un PostgreSQL déclaré actif dont l'INSERT échoue.
@@ -793,7 +793,7 @@ class TestAuditTrail:
             audit_module.CHEMIN_AUDIT_LOCAL = original
             audit_module._hash_precedent = None
 
-    def test_health_expose_statut_audit(self):
+    def test_health_expose_statut_audit(self):  # noqa: ANN201
         """L'endpoint /health doit exposer le statut de synchronisation de l'audit."""
         from fastapi.testclient import TestClient
         from src import api as api_module

@@ -37,7 +37,7 @@ logger = logging.getLogger(__name__)
 
 
 def setup_collection(
-    client, collection: str, dimension: int, reset: bool = False
+    client, collection: str, dimension: int, reset: bool = False  # noqa: ANN001 — TODO §12 étape 4 : typage strict progressif
 ) -> None:
     """Crée (ou recrée) la collection Qdrant avec tous les index nécessaires.
 

@@ -19,7 +19,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
 class TestBug8QuestionMaxLength:
-    def test_max_length_derive_de_cfg_par_defaut(self):
+    def test_max_length_derive_de_cfg_par_defaut(self):  # noqa: ANN201
         """La contrainte Pydantic doit être identique à cfg.question_max_length,
         et non une constante indépendante qui coïncide par hasard."""
         from config import cfg
@@ -29,7 +29,7 @@ class TestBug8QuestionMaxLength:
         max_len = next(m.max_length for m in champ.metadata if hasattr(m, "max_length"))
         assert max_len == cfg.question_max_length
 
-    def test_env_override_propage_a_requete_question(self):
+    def test_env_override_propage_a_requete_question(self):  # noqa: ANN201
         """
         Régression du Bug #8 : QUESTION_MAX_LENGTH doit réellement modifier
         la validation, pas seulement cfg.

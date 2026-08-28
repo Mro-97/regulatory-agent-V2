@@ -13,20 +13,20 @@ from config import Parametres
 
 
 class TestB8DefautsLocaux:
-    def test_qdrant_host_par_defaut_est_local(self):
+    def test_qdrant_host_par_defaut_est_local(self):  # noqa: ANN201
         # Instance neuve sans lire .env — on force `_env_file=None`.
         p = Parametres(_env_file=None)
         assert p.qdrant_host == "127.0.0.1"
 
-    def test_redis_host_par_defaut_est_local(self):
+    def test_redis_host_par_defaut_est_local(self):  # noqa: ANN201
         p = Parametres(_env_file=None)
         assert p.redis_host == "127.0.0.1"
 
-    def test_api_host_par_defaut_est_local(self):
+    def test_api_host_par_defaut_est_local(self):  # noqa: ANN201
         p = Parametres(_env_file=None)
         assert p.api_host == "127.0.0.1"
 
-    def test_aucune_ip_192_168_x_dans_les_defauts(self):
+    def test_aucune_ip_192_168_x_dans_les_defauts(self):  # noqa: ANN201
         p = Parametres(_env_file=None)
         # Toute valeur str des champs Pydantic doit être exempte d'IP LAN
         # de l'ancienne architecture (ne s'applique qu'aux défauts, pas aux

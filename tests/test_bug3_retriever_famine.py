@@ -48,7 +48,7 @@ def _point(point_id: str, score: float, valid_to: str | None) -> SimpleNamespace
     )
 
 
-def _retriever(passe_a, passe_b, top_k):
+def _retriever(passe_a, passe_b, top_k):  # noqa: ANN001, ANN202
     client = MagicMock()
     ra, rb = MagicMock(), MagicMock()
     ra.points, rb.points = passe_a, passe_b
@@ -59,7 +59,7 @@ def _retriever(passe_a, passe_b, top_k):
 
 
 class TestB3PasDEvictionParScoreBas:
-    def test_transitoire_haut_score_pas_evincee_par_permanent_bas_score(self):
+    def test_transitoire_haut_score_pas_evincee_par_permanent_bas_score(self):  # noqa: ANN201
         passe_a = [
             _point("a0", 0.90, valid_to="2030-01-01"),
             _point("a1", 0.80, valid_to="2030-01-01"),
@@ -84,7 +84,7 @@ class TestB3PasDEvictionParScoreBas:
             f"b1 (0.50) présent alors que a2 (0.70) devait être préféré. Résultat: {ids}"  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
         )
 
-    def test_passe_a_reste_representee_scores_bas(self):
+    def test_passe_a_reste_representee_scores_bas(self):  # noqa: ANN201
         """Régression du fix B7 : passe A évincée par scores B tous meilleurs."""
         passe_a = [
             _point(f"a{i}", 0.50 - i * 0.01, valid_to="2030-01-01") for i in range(4)

@@ -131,7 +131,7 @@ if __name__ == "__main__":
             cfg.api_port,
         )
 
-    async def run():
+    async def run():  # noqa: ANN201 — TODO §12 étape 4 : typage strict progressif
         # Initialisation audit
         await initialiser_audit()
 

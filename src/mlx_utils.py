@@ -54,8 +54,8 @@ _executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="mlx-timed")
 def _executer_avec_timeout(
     fn: Callable[..., T],
     timeout_seconds: float | None,
-    *args,
-    **kwargs,
+    *args,  # noqa: ANN002 — TODO §12 étape 4 : typage strict progressif
+    **kwargs,  # noqa: ANN003 — TODO §12 étape 4 : typage strict progressif
 ) -> T:
     """Exécute `fn` en imposant une borne supérieure de temps.
 
@@ -275,7 +275,7 @@ class MLXInference:
         self.load()
         return self
 
-    def __exit__(self, *args) -> None:
+    def __exit__(self, *args) -> None:  # noqa: ANN002 — TODO §12 étape 4 : typage strict progressif
         self.unload()
 
     def __repr__(self) -> str:
@@ -458,7 +458,7 @@ class MLXEmbedding:
         self.load()
         return self
 
-    def __exit__(self, *args) -> None:
+    def __exit__(self, *args) -> None:  # noqa: ANN002 — TODO §12 étape 4 : typage strict progressif
         self.unload()
 
     def __repr__(self) -> str:

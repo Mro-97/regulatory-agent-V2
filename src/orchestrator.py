@@ -168,7 +168,7 @@ class Orchestrateur:
     # Accès lazy aux agents
     # ------------------------------------------------------------------
 
-    def _obtenir_retriever(self):
+    def _obtenir_retriever(self):  # noqa: ANN202 — TODO §12 étape 4 : typage strict progressif
         """Retourne le Retriever réel, créé au premier appel."""
         if self._retriever is None:
             from src.agents.retriever import Retriever
@@ -177,7 +177,7 @@ class Orchestrateur:
             logger.info("Retriever réel initialisé.")
         return self._retriever
 
-    def _obtenir_ingester(self):
+    def _obtenir_ingester(self):  # noqa: ANN202 — TODO §12 étape 4 : typage strict progressif
         """Retourne l'Ingester réel (scripts/ingest.py), créé au premier appel."""
         if self._ingester is None:
             from scripts.ingest import Ingester
@@ -186,7 +186,7 @@ class Orchestrateur:
             logger.info("Ingester réel initialisé.")
         return self._ingester
 
-    async def _executer_bloquant(self, fonction, /, *args, **kwargs):
+    async def _executer_bloquant(self, fonction, /, *args, **kwargs):  # noqa: ANN001, ANN002, ANN003, ANN202
         """Exécute un appel synchrone potentiellement long (chargement/inférence
         MLX) dans un thread séparé, pour ne jamais geler la boucle asyncio
         (sinon /health, /pending et le Watcher deviennent indisponibles
@@ -208,7 +208,7 @@ class Orchestrateur:
         async with self._verrou_agents:
             return await asyncio.to_thread(fonction, *args, **kwargs)
 
-    async def _nouveau_client_redis(self):
+    async def _nouveau_client_redis(self):  # noqa: ANN202 — TODO §12 étape 4 : typage strict progressif
         """Client Redis asynchrone avec authentification depuis la config."""
         import redis.asyncio as aioredis
 
@@ -328,7 +328,7 @@ class Orchestrateur:
         question: str,
         evidences: list[EvidenceRecuperee],
         type_pipeline: str,
-        date_ref=None,
+        date_ref=None,  # noqa: ANN001 — TODO §12 étape 4 : typage strict progressif
     ) -> tuple[str, NiveauConfiance, SortieAgent]:
         """Étape 3 : synthèse via AgentExplainer.
         Assemblage structuré (use_llm=False) ou Qwen 2.5 7B (use_llm=True).

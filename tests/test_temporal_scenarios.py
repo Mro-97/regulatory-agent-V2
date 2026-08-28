@@ -39,7 +39,7 @@ def _paire_versions_rgpd() -> list[EvidenceRecuperee]:
 
 
 class TestTemporalFiltering:
-    def test_version_applicable_avant_coupure(self):
+    def test_version_applicable_avant_coupure(self):  # noqa: ANN201
         """Date antérieure à la coupure → doit retourner la version A."""
         agent = AgentTemporel()
         resultat = agent.analyser(
@@ -50,7 +50,7 @@ class TestTemporalFiltering:
         assert len(resultat.evidences_applicables) == 1
         assert resultat.evidences_applicables[0].article_id == "art_32"
 
-    def test_version_applicable_apres_coupure(self):
+    def test_version_applicable_apres_coupure(self):  # noqa: ANN201
         """Date postérieure à la coupure → doit retourner la version B."""
         agent = AgentTemporel()
         resultat = agent.analyser(
@@ -61,7 +61,7 @@ class TestTemporalFiltering:
         assert len(resultat.evidences_applicables) == 1
         assert resultat.evidences_applicables[0].article_id == "art_32_2026"
 
-    def test_jour_exact_coupure_borne_valid_to_incluse(self):
+    def test_jour_exact_coupure_borne_valid_to_incluse(self):  # noqa: ANN201
         """Le 2026-08-02, la version A est encore applicable (borne valid_to incluse)."""  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
         agent = AgentTemporel()
         resultat = agent.analyser(
@@ -71,7 +71,7 @@ class TestTemporalFiltering:
         )
         assert [e.article_id for e in resultat.evidences_applicables] == ["art_32"]
 
-    def test_jour_exact_coupure_borne_valid_from_incluse(self):
+    def test_jour_exact_coupure_borne_valid_from_incluse(self):  # noqa: ANN201
         """Le 2026-08-03, seule la version B est applicable (borne valid_from incluse)."""  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
         agent = AgentTemporel()
         resultat = agent.analyser(
@@ -81,7 +81,7 @@ class TestTemporalFiltering:
         )
         assert [e.article_id for e in resultat.evidences_applicables] == ["art_32_2026"]
 
-    def test_date_hors_intervalle_raisonnable_leve_valueerror(self):
+    def test_date_hors_intervalle_raisonnable_leve_valueerror(self):  # noqa: ANN201
         """B5 : une date_contexte hors [1900, 2100] doit lever ValueError."""
         agent = AgentTemporel()
         with pytest.raises(ValueError):
@@ -91,7 +91,7 @@ class TestTemporalFiltering:
                 date_contexte=date(9999, 12, 31),
             )
 
-    def test_date_calendaire_invalide_leve_valueerror_a_la_construction(self):
+    def test_date_calendaire_invalide_leve_valueerror_a_la_construction(self):  # noqa: ANN201
         """date(2025, 2, 30) n'existe pas — la construction du `date` échoue."""
         with pytest.raises(ValueError):
             date(2025, 2, 30)

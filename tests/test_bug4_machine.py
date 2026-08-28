@@ -52,11 +52,11 @@ HOSTNAME_LOCAL = platform.node() or _MACHINE_INCONNUE
 class TestMachineUnique:
     """Sous m4pro2 unique, _MACHINE doit refléter le hostname réel."""
 
-    def test_machine_est_hostname_reel(self):
+    def test_machine_est_hostname_reel(self):  # noqa: ANN201
         assert _MACHINE == HOSTNAME_LOCAL
         assert _MACHINE  # non vide
 
-    def test_machine_non_hardcodee_A_B_C(self):
+    def test_machine_non_hardcodee_A_B_C(self):  # noqa: ANN201
         assert _MACHINE not in {"Mac_A", "Mac_B", "Mac_C"}
 
 
@@ -66,7 +66,7 @@ class TestMachineUnique:
 
 
 class TestMachinePourAgent:
-    def test_tous_les_agents_retournent_le_hostname_local(self):
+    def test_tous_les_agents_retournent_le_hostname_local(self):  # noqa: ANN201
         for agent in (
             "Retriever",
             "Temporal",
@@ -77,7 +77,7 @@ class TestMachinePourAgent:
         ):
             assert Orchestrateur._machine_pour_agent(agent) == HOSTNAME_LOCAL
 
-    def test_agent_inconnu_retourne_aussi_le_hostname_local(self):
+    def test_agent_inconnu_retourne_aussi_le_hostname_local(self):  # noqa: ANN201
         # Sous architecture unique, il n'y a plus d'agent « sur une autre
         # machine » à signaler. Un nom d'agent inconnu retourne quand même
         # le hostname local — l'exécution s'est bien passée sur cette machine.
@@ -102,7 +102,7 @@ class TestAuditContientHostname:
             valid_to=None,
         )
 
-    def test_machine_retriever_est_hostname_dans_audit(self):
+    def test_machine_retriever_est_hostname_dans_audit(self):  # noqa: ANN201
         orch = Orchestrateur(mode="real")
         retriever_mock = MagicMock()
         retriever_mock.retrieve.return_value = [
@@ -110,7 +110,7 @@ class TestAuditContientHostname:
         ]
         orch._retriever = retriever_mock
 
-        async def _run():
+        async def _run():  # noqa: ANN202
             _, sortie = await orch._etape_retrieval(
                 question="Q ?",
                 date_contexte=date(2025, 6, 15),
@@ -123,7 +123,7 @@ class TestAuditContientHostname:
         assert sortie.nom_agent == "Retriever"
         assert sortie.machine == HOSTNAME_LOCAL
 
-    def test_machine_temporal_est_hostname_dans_audit(self):
+    def test_machine_temporal_est_hostname_dans_audit(self):  # noqa: ANN201
         orch = Orchestrateur(mode="real")
         with patch("src.agents.temporal.AgentTemporel") as MockAgent:
             instance = MockAgent.return_value
@@ -137,7 +137,7 @@ class TestAuditContientHostname:
             resultat.niveau_confiance = NiveauConfiance.ELEVE
             instance.analyser.return_value = resultat
 
-            async def _run():
+            async def _run():  # noqa: ANN202
                 return await orch._etape_temporal(
                     question="Q ?",
                     date_contexte=date(2025, 6, 15),
@@ -148,7 +148,7 @@ class TestAuditContientHostname:
             assert sortie.nom_agent == "Temporal"
             assert sortie.machine == HOSTNAME_LOCAL
 
-    def test_machine_explainer_est_hostname_dans_audit(self):
+    def test_machine_explainer_est_hostname_dans_audit(self):  # noqa: ANN201
         orch = Orchestrateur(mode="real")
         with patch("src.agents.explainer.AgentExplainer") as MockAgent:
             instance = MockAgent.return_value
@@ -159,7 +159,7 @@ class TestAuditContientHostname:
             resultat.niveau_confiance = NiveauConfiance.MOYEN
             instance.expliquer.return_value = resultat
 
-            async def _run():
+            async def _run():  # noqa: ANN202
                 return await orch._etape_explainer(
                     question="Q ?",
                     evidences=[self._evidence("c1", "RGPD", "art_32")],
@@ -177,7 +177,7 @@ class TestAuditContientHostname:
 
 
 class TestAntiRegressionHardcode:
-    def test_aucun_mac_a_b_c_hardcode_dans_orchestrator(self):
+    def test_aucun_mac_a_b_c_hardcode_dans_orchestrator(self):  # noqa: ANN201
         """L'orchestrateur ne doit plus assigner une étiquette figée Mac_X."""
         from pathlib import Path
 

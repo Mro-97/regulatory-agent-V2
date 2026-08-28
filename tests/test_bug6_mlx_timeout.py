@@ -30,13 +30,13 @@ from src.mlx_utils import (  # noqa: E402 — stubs MLX doivent précéder les i
 
 
 class TestExecuterAvecTimeout:
-    def test_retourne_le_resultat_si_dans_les_temps(self):
+    def test_retourne_le_resultat_si_dans_les_temps(self):  # noqa: ANN201
         def rapide() -> str:
             return "ok"
 
         assert _executer_avec_timeout(rapide, 5.0) == "ok"
 
-    def test_leve_MLXTimeoutError_si_depasse(self):
+    def test_leve_MLXTimeoutError_si_depasse(self):  # noqa: ANN201
         def lent() -> str:
             time.sleep(2.0)
             return "trop tard"
@@ -44,19 +44,19 @@ class TestExecuterAvecTimeout:
         with pytest.raises(MLXTimeoutError):
             _executer_avec_timeout(lent, 0.2)
 
-    def test_timeout_none_pas_de_borne(self):
+    def test_timeout_none_pas_de_borne(self):  # noqa: ANN201
         def rapide() -> int:
             return 42
 
         assert _executer_avec_timeout(rapide, None) == 42
 
-    def test_timeout_zero_pas_de_borne(self):
+    def test_timeout_zero_pas_de_borne(self):  # noqa: ANN201
         def rapide() -> int:
             return 7
 
         assert _executer_avec_timeout(rapide, 0) == 7
 
-    def test_propage_exception_normale(self):
+    def test_propage_exception_normale(self):  # noqa: ANN201
         def crash() -> None:
             raise ValueError("boom")
 

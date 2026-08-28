@@ -39,7 +39,7 @@ def _ev(chunk_id: str, doc: str, art: str, texte: str) -> EvidenceRecuperee:
 
 
 @pytest.fixture
-def deux_conflits():
+def deux_conflits():  # noqa: ANN201
     """Deux conflits distincts pour tester l'isolation des verdicts."""
     ev_a1 = _ev("c1", "RGPD_2016_679", "art_33", "notification obligatoire")
     ev_b1 = _ev("c2", "NIS2_2022_2555", "art_23", "ne doit pas retarder")
@@ -68,15 +68,15 @@ def deux_conflits():
 
 
 class TestNormaliserVerdict:
-    def test_accents_retires(self):
+    def test_accents_retires(self):  # noqa: ANN201
         assert _normaliser_verdict("Confirmé") == "CONFIRME"
         assert _normaliser_verdict("Confirmé.") == "CONFIRME"
 
-    def test_espaces_et_casse(self):
+    def test_espaces_et_casse(self):  # noqa: ANN201
         assert _normaliser_verdict(" apparent ") == "APPARENT"
         assert _normaliser_verdict("INEXISTANT") == "INEXISTANT"
 
-    def test_ponctuation_peripherique(self):
+    def test_ponctuation_peripherique(self):  # noqa: ANN201
         assert _normaliser_verdict("CONFIRMÉ,") == "CONFIRME"
         assert _normaliser_verdict("'inexistant'") == "INEXISTANT"
 
@@ -93,7 +93,7 @@ class TestBug5VerdictParConflit:
     élevés à PROBABLE parce que 'CONFIRMÉ' était cherché globalement.
     """
 
-    def test_verdicts_isoles_par_conflit(self, deux_conflits):
+    def test_verdicts_isoles_par_conflit(self, deux_conflits):  # noqa: ANN001, ANN201
         agent = AgentConflit(use_llm=True)
         agent._modele = MagicMock()
 
@@ -115,7 +115,7 @@ class TestBug5VerdictParConflit:
         assert conflits_maj[0].niveau == NiveauConflit.PROBABLE
         assert conflits_maj[0].evidence_a.document_id == "RGPD_2016_679"
 
-    def test_tous_confirmes(self, deux_conflits):
+    def test_tous_confirmes(self, deux_conflits):  # noqa: ANN001, ANN201
         agent = AgentConflit(use_llm=True)
         agent._modele = MagicMock()
         sortie = MagicMock()
@@ -131,7 +131,7 @@ class TestBug5VerdictParConflit:
         assert len(conflits_maj) == 2
         assert all(c.niveau == NiveauConflit.PROBABLE for c in conflits_maj)
 
-    def test_apparent_conserve_niveau_initial(self, deux_conflits):
+    def test_apparent_conserve_niveau_initial(self, deux_conflits):  # noqa: ANN001, ANN201
         agent = AgentConflit(use_llm=True)
         agent._modele = MagicMock()
         sortie = MagicMock()
@@ -149,7 +149,7 @@ class TestBug5VerdictParConflit:
         assert len(conflits_maj) == 1
         assert conflits_maj[0].niveau == NiveauConflit.POTENTIEL
 
-    def test_parsing_json_echoue_niveaux_conserves(self, deux_conflits):
+    def test_parsing_json_echoue_niveaux_conserves(self, deux_conflits):  # noqa: ANN001, ANN201
         """Sortie LLM non-JSON : fallback sur les niveaux déterministes."""
         agent = AgentConflit(use_llm=True)
         agent._modele = MagicMock()
@@ -162,7 +162,7 @@ class TestBug5VerdictParConflit:
         assert len(conflits_maj) == 2
         assert all(c.niveau == NiveauConflit.POTENTIEL for c in conflits_maj)
 
-    def test_llm_leve_exception_fallback(self, deux_conflits):
+    def test_llm_leve_exception_fallback(self, deux_conflits):  # noqa: ANN001, ANN201
         agent = AgentConflit(use_llm=True)
         agent._modele = MagicMock()
         agent._modele.generate_avec_messages.side_effect = RuntimeError("boom")
@@ -171,7 +171,7 @@ class TestBug5VerdictParConflit:
         assert len(conflits_maj) == 2  # conservés
         assert "indisponible" in analyse.lower()
 
-    def test_bloc_json_dans_texte_libre(self, deux_conflits):
+    def test_bloc_json_dans_texte_libre(self, deux_conflits):  # noqa: ANN001, ANN201
         """Le LLM entoure parfois le JSON de texte — on doit l'extraire."""
         agent = AgentConflit(use_llm=True)
         agent._modele = MagicMock()

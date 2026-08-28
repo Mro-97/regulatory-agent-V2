@@ -26,7 +26,7 @@ from src.models import (
 
 
 @pytest.fixture
-def retriever_mock():
+def retriever_mock():  # noqa: ANN201
     client = MagicMock()
     reponse = MagicMock()
     reponse.points = []
@@ -39,11 +39,11 @@ def retriever_mock():
 
 class TestBug3FiltresPropages:
     @staticmethod
-    def _cles(filtre) -> list[str]:
+    def _cles(filtre) -> list[str]:  # noqa: ANN001
         """Récupère les 'key' des FieldCondition en ignorant les IsNullCondition."""
         return [getattr(c, "key", None) for c in filtre.must if getattr(c, "key", None)]
 
-    def test_themes_et_sources_atteignent_qdrant(self, retriever_mock):
+    def test_themes_et_sources_atteignent_qdrant(self, retriever_mock):  # noqa: ANN001, ANN201
         r, client = retriever_mock
         r.retrieve(
             question="Obligations RGPD ?",
@@ -57,7 +57,7 @@ class TestBug3FiltresPropages:
             assert "themes" in cles, f"Filtre thèmes absent, cles={cles}"
             assert "source" in cles, f"Filtre source absent, cles={cles}"
 
-    def test_aucun_filtre_si_listes_vides(self, retriever_mock):
+    def test_aucun_filtre_si_listes_vides(self, retriever_mock):  # noqa: ANN001, ANN201
         r, client = retriever_mock
         r.retrieve(
             question="Q",
@@ -70,12 +70,12 @@ class TestBug3FiltresPropages:
             assert "themes" not in cles
             assert "source" not in cles
 
-    def test_signature_none_par_defaut(self, retriever_mock):
+    def test_signature_none_par_defaut(self, retriever_mock):  # noqa: ANN001, ANN201
         """Rétrocompat : appel sans filtres."""
         r, _ = retriever_mock
         r.retrieve(question="Test", date_contexte=date(2025, 6, 15))
 
-    def test_seulement_themes(self, retriever_mock):
+    def test_seulement_themes(self, retriever_mock):  # noqa: ANN001, ANN201
         r, client = retriever_mock
         r.retrieve(
             question="Q",
@@ -88,7 +88,7 @@ class TestBug3FiltresPropages:
             assert "themes" in cles
             assert "source" not in cles
 
-    def test_valeur_du_filtre_themes(self, retriever_mock):
+    def test_valeur_du_filtre_themes(self, retriever_mock):  # noqa: ANN001, ANN201
         """Vérifie que MatchAny reçoit bien les valeurs demandées."""
         r, client = retriever_mock
         r.retrieve(

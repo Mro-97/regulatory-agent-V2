@@ -11,7 +11,7 @@ from __future__ import annotations
 
 
 class TestValidationConfigDemarrage:
-    def test_signale_api_key_vide(self, monkeypatch):
+    def test_signale_api_key_vide(self, monkeypatch):  # noqa: ANN001, ANN201
         import main
         from config import cfg
 
@@ -20,7 +20,7 @@ class TestValidationConfigDemarrage:
         assert erreurs, "API_KEY vide doit être signalée"
         assert any("API_KEY" in e for e in erreurs)
 
-    def test_signale_api_key_blancs(self, monkeypatch):
+    def test_signale_api_key_blancs(self, monkeypatch):  # noqa: ANN001, ANN201
         import main
         from config import cfg
 
@@ -28,7 +28,7 @@ class TestValidationConfigDemarrage:
         erreurs = main.valider_configuration_demarrage()
         assert erreurs, "API_KEY = espaces doit être signalée"
 
-    def test_accepte_api_key_valide(self, monkeypatch):
+    def test_accepte_api_key_valide(self, monkeypatch):  # noqa: ANN001, ANN201
         import main
         from config import cfg
 

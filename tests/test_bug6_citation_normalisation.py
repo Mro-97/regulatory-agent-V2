@@ -43,19 +43,19 @@ def _cit(extrait: str, chunk_id: str = "chunk_001") -> CitationReglementaire:
 
 
 class TestNormaliserPourComparaison:
-    def test_espaces_multiples_collabses(self):
+    def test_espaces_multiples_collabses(self):  # noqa: ANN201
         assert (
             _normaliser_pour_comparaison("Le  responsable   doit agir")
             == "Le responsable doit agir"
         )
 
-    def test_retours_a_la_ligne_normalises(self):
+    def test_retours_a_la_ligne_normalises(self):  # noqa: ANN201
         assert (
             _normaliser_pour_comparaison("Le responsable\ndoit\tagir")
             == "Le responsable doit agir"
         )
 
-    def test_guillemets_typographiques_normalises(self):
+    def test_guillemets_typographiques_normalises(self):  # noqa: ANN201
         assert (
             _normaliser_pour_comparaison("«mesures appropriées»")
             == '"mesures appropriées"'
@@ -64,7 +64,7 @@ class TestNormaliserPourComparaison:
             _normaliser_pour_comparaison("‘test’ et “texte”") == "'test' et \"texte\""  # noqa: RUF001 — caractère typographique français légitime
         )
 
-    def test_espaces_peripheriques_retires(self):
+    def test_espaces_peripheriques_retires(self):  # noqa: ANN201
         assert _normaliser_pour_comparaison("  texte  ") == "texte"
 
 
@@ -74,7 +74,7 @@ class TestBug6CitationReformatee:
     source, mais reformaté par le LLM, doit rester VERIFIEE.
     """
 
-    def test_double_espace_reste_verifiee(self):
+    def test_double_espace_reste_verifiee(self):  # noqa: ANN201
         agent = AgentCitation(use_llm=False)
         source = _ev("Le responsable doit mettre en œuvre des mesures appropriées.")
         cit = _cit("Le responsable  doit mettre en œuvre des mesures appropriées.")
@@ -84,7 +84,7 @@ class TestBug6CitationReformatee:
         assert len(douteuses) == 0
         assert verifiees[0].statut == StatutCitation.VERIFIEE
 
-    def test_retour_a_la_ligne_reste_verifiee(self):
+    def test_retour_a_la_ligne_reste_verifiee(self):  # noqa: ANN201
         agent = AgentCitation(use_llm=False)
         source = _ev("Le responsable doit notifier la violation dans les 72 heures.")
         cit = _cit("Le responsable doit notifier\nla violation dans les 72 heures.")
@@ -93,7 +93,7 @@ class TestBug6CitationReformatee:
         assert len(verifiees) == 1
         assert len(douteuses) == 0
 
-    def test_guillemets_typographiques_reste_verifiee(self):
+    def test_guillemets_typographiques_reste_verifiee(self):  # noqa: ANN201
         agent = AgentCitation(use_llm=False)
         source = _ev(
             'Le texte prévoit des "mesures appropriées" au sens de l\'article.'
@@ -104,7 +104,7 @@ class TestBug6CitationReformatee:
         assert len(verifiees) == 1
         assert len(douteuses) == 0
 
-    def test_extrait_reellement_absent_toujours_douteuse(self):
+    def test_extrait_reellement_absent_toujours_douteuse(self):  # noqa: ANN201
         """Le fix ne doit pas masquer une vraie divergence de contenu."""
         agent = AgentCitation(use_llm=False)
         source = _ev("Le responsable doit mettre en œuvre des mesures appropriées.")

@@ -15,7 +15,7 @@ import asyncio
 
 
 class TestAncrageHorsFenetre:
-    def test_bloc_auto_coherent_en_tete_de_fenetre_est_detecte(self, tmp_path):
+    def test_bloc_auto_coherent_en_tete_de_fenetre_est_detecte(self, tmp_path):  # noqa: ANN001, ANN201
         """
         Un attaquant remplace le milieu et la fin du fichier par un bloc
         auto-cohérent dont l'ancrage (hash_precedent du premier) ne
@@ -32,7 +32,7 @@ class TestAncrageHorsFenetre:
         audit_module.CHEMIN_AUDIT_LOCAL = chemin_test
         audit_module._hash_precedent = None
 
-        async def _run():
+        async def _run():  # noqa: ANN202
             gestionnaire = audit_module.GestionnaireAudit(postgres_dsn=None)
             await gestionnaire.initialiser()
 
