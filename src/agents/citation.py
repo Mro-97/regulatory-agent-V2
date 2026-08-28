@@ -34,7 +34,7 @@ import logging
 import re
 from dataclasses import dataclass, field
 from datetime import date
-from enum import Enum, StrEnum
+from enum import StrEnum
 from typing import TYPE_CHECKING
 
 from config import cfg

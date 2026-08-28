@@ -18,7 +18,7 @@ from src.agents.conflit import (  # noqa: E402 — stubs MLX doivent précéder 
     NiveauConflit,
     _normaliser_verdict,
 )
-from src.models import (
+from src.models import (  # noqa: E402 — stubs MLX doivent précéder les imports du projet (sinon ImportError)
     EvidenceRecuperee,
 )
 
