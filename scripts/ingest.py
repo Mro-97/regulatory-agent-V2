@@ -44,7 +44,7 @@ class Ingester:  # noqa: D101
             self._recreate_collection()
 
     def _load_embedding_model(self) -> Any:
-        from sentence_transformers import SentenceTransformer  # type: ignore[import-not-found]
+        from sentence_transformers import SentenceTransformer  # type: ignore[import-not-found]  # noqa: I001 — ancrage single-ligne du type: ignore
 
         model = SentenceTransformer("all-MiniLM-L6-v2")
         logger.info("Modèle d'embedding : all-MiniLM-L6-v2 (dim=384)")
