@@ -1,0 +1,103 @@
+[project]
+name = "regulatory-agent-v2"
+version = "0.1.0"
+description = "Système local de veille réglementaire et d'assistance IA (Apple Silicon, MLX, 100% local)."
+requires-python = ">=3.11"
+
+# La liste réelle des dépendances runtime est maintenue dans requirements.txt
+# (contrainte historique du projet). pyproject.toml ne redéclare pas ces
+# dépendances runtime pour ne pas dupliquer la source de vérité.
+
+[project.optional-dependencies]
+dev = [
+  "ruff>=0.6.0",
+  "mypy>=1.11.0",
+  "radon>=6.0.0",
+  "vulture>=2.11",
+  "pip-audit>=2.7.0",
+  "interrogate>=1.7.0",
+  "import-linter>=2.0",
+  "pre-commit>=3.7",
+]
+
+# ---------------------------------------------------------------------------
+# Ruff — formatage + lint (référence unique, remplace black/isort/flake8/pylint)
+# Écarts assumés au Google Style Guide : voir regulatory-code-standards §0.2
+# ---------------------------------------------------------------------------
+
+[tool.ruff]
+line-length = 88          # écart assumé au guide Google (80), voir § 0.2
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+  "E", "W",      # pycodestyle
+  "F",           # pyflakes
+  "D",           # pydocstyle — format Google des docstrings
+  "I",           # isort
+  "N",           # pep8-naming
+  "UP",          # pyupgrade
+  "B",           # bugbear — dont B006 défauts mutables, B904 raise from
+  "A",           # builtins masqués
+  "C4",          # comprehensions
+  "DTZ",         # datetimes naïfs        <- critique pour ce projet
+  "T20",         # print / pprint
+  "LOG", "G",    # journalisation
+  "TRY", "BLE",  # anti-patterns d'exception, except aveugle
+  "PTH",         # pathlib
+  "SIM",         # simplifications
+  "ARG",         # arguments inutilisés
+  "ERA",         # code commenté
+  "ANN",         # annotations manquantes
+  "S",           # bandit — dont S101 assert
+  "TD", "FIX",   # format des TODO, voir § 0.3
+  "RUF",
+]
+ignore = ["ANN401"]  # Any explicitement justifié, voir § 3
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "D"]  # assert et docstrings allégées dans les tests
+
+# ---------------------------------------------------------------------------
+# mypy — typage strict
+# ---------------------------------------------------------------------------
+
+[tool.mypy]
+strict = true
+warn_unreachable = true
+disallow_any_explicit = false
+plugins = ["pydantic.mypy"]
+
+# ---------------------------------------------------------------------------
+# interrogate — couverture des docstrings
+# ---------------------------------------------------------------------------
+
+[tool.interrogate]
+fail-under = 95
+ignore-init-method = true
+ignore-init-module = true
+ignore-magic = true
+ignore-private = false
+ignore-property-decorators = false
+ignore-semiprivate = false
+exclude = ["tests", "venv", "scripts/pdf_to_json.py"]
+
+# ---------------------------------------------------------------------------
+# vulture — code mort
+# ---------------------------------------------------------------------------
+
+[tool.vulture]
+min_confidence = 80
+paths = ["src"]
+exclude = ["tests", "venv"]
+
+# ---------------------------------------------------------------------------
+# pytest / couverture — placeholder, seuils activés à l'étape 7
+# ---------------------------------------------------------------------------
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

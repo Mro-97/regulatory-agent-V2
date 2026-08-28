@@ -1,0 +1,54 @@
+# Pre-commit — regulatory-code-standards v1.1
+#
+# Statut : ADVISORY tant que la campagne de mise en conformité §12 n'est
+# pas terminée (étape 7). `fail_fast: false` + `stages` limités permettent
+# aux devs d'installer les hooks et de voir les constats sans bloquer le
+# commit. Bascule en portes bloquantes = décision projet, à l'étape 7.
+
+fail_fast: false
+default_stages: [pre-commit]
+
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.5
+    hooks:
+      - id: ruff-format
+        name: "ruff format (advisory)"
+        stages: [manual]
+      - id: ruff
+        name: "ruff check (advisory)"
+        args: ["--fix", "--exit-non-zero-on-fix"]
+        stages: [manual]
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.11.2
+    hooks:
+      - id: mypy
+        name: "mypy --strict (advisory)"
+        additional_dependencies:
+          - pydantic>=2.7
+        args: ["--strict", "--no-warn-unused-ignores"]
+        stages: [manual]
+        files: ^src/
+
+  - repo: https://github.com/econchick/interrogate
+    rev: 1.7.0
+    hooks:
+      - id: interrogate
+        name: "interrogate (advisory)"
+        args: ["--config", "pyproject.toml"]
+        stages: [manual]
+        files: ^src/
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.28.0
+    hooks:
+      - id: gitleaks
+        name: "gitleaks secret scan (advisory)"
+        stages: [manual]
+
+# Pour lancer manuellement toutes les vérifications avant push :
+#   pre-commit run --hook-stage manual --all-files
+#
+# À l'étape 7 : retirer `stages: [manual]` sur chaque hook, retirer ce
+# commentaire, et laisser le pre-commit refuser les commits qui régressent.

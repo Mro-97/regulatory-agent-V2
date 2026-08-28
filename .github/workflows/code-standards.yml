@@ -1,0 +1,82 @@
+# regulatory-code-standards §12 — pipeline CI (ADVISORY)
+#
+# Tant que la campagne de mise en conformité n'est pas terminée (étape 7),
+# chaque job est marqué `continue-on-error: true` et n'échoue pas la CI.
+# Il produit un rapport dans les logs pour suivre la progression.
+#
+# Étape 7 : retirer `continue-on-error`, ajouter `required: true` dans
+# la protection de branche, et la CI devient bloquante.
+
+name: code-standards (advisory)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  standards:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install dev tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff mypy radon vulture pip-audit interrogate import-linter pydantic pydantic-settings
+
+      - name: Ruff format check
+        continue-on-error: true
+        run: ruff format --check .
+
+      - name: Ruff lint
+        continue-on-error: true
+        run: ruff check --statistics .
+
+      - name: mypy --strict
+        continue-on-error: true
+        run: mypy --strict src/
+
+      - name: radon — complexité cyclomatique (seuil B)
+        continue-on-error: true
+        run: radon cc -s -n C src/
+
+      - name: radon — indice de maintenabilité (seuil B)
+        continue-on-error: true
+        run: radon mi -n B src/
+
+      - name: interrogate — docstrings ≥ 95%
+        continue-on-error: true
+        run: interrogate -f 95 src/ || true
+
+      - name: vulture — code mort
+        continue-on-error: true
+        run: vulture src/ --min-confidence 80
+
+      - name: pip-audit — vulnérabilités dépendances
+        continue-on-error: true
+        run: pip-audit -r requirements.txt
+
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Install runtime + test deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+      - name: pytest
+        run: pytest -q
