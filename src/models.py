@@ -85,7 +85,7 @@ class IntervalleValidite(BaseModel):
     """Fenêtre temporelle de validité d'un article ou d'un texte.
     Un intervalle ouvert (valid_to = None) signifie que la version est en vigueur.
     Invariant : si valid_to est renseigné, il doit être >= valid_from.
-    """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
+    """  # noqa: D205
 
     valid_from: date = Field(
         ...,
@@ -109,7 +109,7 @@ class IntervalleValidite(BaseModel):
         """Retourne True si valid_from <= date_cible <= valid_to (ou valid_to absent)."""  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
         if date_cible < self.valid_from:
             return False
-        if self.valid_to is not None and date_cible > self.valid_to:  # noqa: SIM103 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
+        if self.valid_to is not None and date_cible > self.valid_to:  # noqa: SIM103 — garde-fou temporel explicite (préférence lisibilité §0.2)
             return False
         return True
 
@@ -121,7 +121,7 @@ class IntervalleValidite(BaseModel):
 class VersionArticle(BaseModel):
     """Version spécifique d'un article réglementaire.
     Un même article peut avoir plusieurs versions successives dans le temps.
-    """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
+    """  # noqa: D205
 
     id: str = Field(..., description="Identifiant unique de cette version d'article.")
     titre: str = Field(
@@ -182,7 +182,7 @@ class TexteLie(BaseModel):
 class DocumentReglementaire(BaseModel):
     """Représentation canonique d'un texte réglementaire.
     Modèle pivot manipulé par toute la chaîne du système.
-    """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
+    """  # noqa: D205
 
     id: str = Field(
         ...,
@@ -239,7 +239,7 @@ class DocumentReglementaire(BaseModel):
         """Indique si le document est en vigueur à la date donnée."""
         if date_cible < self.entry_into_force:
             return False
-        if self.repeal_date is not None and date_cible >= self.repeal_date:  # noqa: SIM103 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
+        if self.repeal_date is not None and date_cible >= self.repeal_date:  # noqa: SIM103 — garde-fou temporel explicite (préférence lisibilité §0.2)
             return False
         return True
 
@@ -271,7 +271,7 @@ class MetadonneesChunk(BaseModel):
         """Indique si ce chunk est issu d'une version applicable à la date donnée."""
         if date_cible < self.valid_from:
             return False
-        if self.valid_to is not None and date_cible > self.valid_to:  # noqa: SIM103 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
+        if self.valid_to is not None and date_cible > self.valid_to:  # noqa: SIM103 — garde-fou temporel explicite (préférence lisibilité §0.2)
             return False
         return True
 
@@ -306,7 +306,7 @@ class SortieAgent(BaseModel):
 class EnregistrementAudit(BaseModel):
     """Trace complète d'une requête. Chaînage SHA-256 pour détecter toute altération.
     Chaîne : requête → documents → chunks → agents → réponse → citations → validation.
-    """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
+    """  # noqa: D205
 
     request_id: UUID = Field(default_factory=uuid4)
     horodatage: datetime = Field(default_factory=lambda: datetime.now(UTC))

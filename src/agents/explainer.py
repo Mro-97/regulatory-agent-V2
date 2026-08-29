@@ -76,7 +76,7 @@ class AgentExplainer:
                   Sur Mac A (16 Go), laisser à False pendant les tests.
     """
 
-    def __init__(self, use_llm: bool = False) -> None:  # noqa: D107 — TODO §12 étape 4 : compléter docstrings
+    def __init__(self, use_llm: bool = False) -> None:  # noqa: D107
         self.use_llm = use_llm
         self._modele: MLXInference | None = None
         logger.info("AgentExplainer initialisé — use_llm=%s", use_llm)
@@ -196,7 +196,7 @@ class AgentExplainer:
 
         Returns:
             Texte structuré pour le prompt système.
-        """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
+        """  # noqa: D205
         blocs: list[str] = []
         total = 0
 
@@ -307,8 +307,8 @@ class AgentExplainer:
                 mode="llm",
             )
 
-        except Exception as exc:
-            logger.exception("Synthèse LLM échouée, bascule sur assemblage : %s", exc)  # noqa: TRY401 — TODO §12 étape 4 : réviser le message en même temps que le typage
+        except Exception:
+            logger.exception("Synthèse LLM échouée, bascule sur assemblage")
             return self._assembler(question, evidences, date_ref, type_pipeline)
 
     # ------------------------------------------------------------------

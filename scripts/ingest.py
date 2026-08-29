@@ -27,7 +27,7 @@ OVERLAP = 50
 
 
 class Ingester:  # noqa: D101
-    def __init__(  # noqa: D107 — TODO §12 étape 4 : compléter docstrings
+    def __init__(  # noqa: D107
         self,
         collection_name: str = "regulatory_chunks",
         recreate: bool = False,
@@ -62,7 +62,7 @@ class Ingester:  # noqa: D101
         )
         logger.info("Collection '%s' créée (dim=384)", self.collection_name)
 
-    def embed_chunk(self, text: str) -> list[float]:  # noqa: D102 — TODO §12 étape 4 : compléter docstrings
+    def embed_chunk(self, text: str) -> list[float]:  # noqa: D102
         vec = self.embedding_model.encode(text)
         # SentenceTransformer renvoie un ndarray ; les mocks de tests renvoient
         # directement une liste. Accepter les deux sans conversion agressive.
@@ -80,7 +80,7 @@ class Ingester:  # noqa: D101
             start += CHUNK_SIZE - OVERLAP
         return chunks
 
-    def chunk_document(self, doc: DocumentReglementaire) -> list[MetadonneesChunk]:  # noqa: D102 — TODO §12 étape 4 : compléter docstrings
+    def chunk_document(self, doc: DocumentReglementaire) -> list[MetadonneesChunk]:  # noqa: D102
         chunks = []
         for chapitre in doc.chapitres:
             for article in chapitre.articles:
@@ -189,14 +189,14 @@ class Ingester:  # noqa: D101
 
     def ingest_json(self, json_path: Path) -> None:
         """Chemin d'entrée CLI : charge un JSON puis appelle `ingest_document`."""
-        with open(json_path, encoding="utf-8") as f:  # noqa: PTH123 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
+        with json_path.open(encoding="utf-8") as f:
             data = json.load(f)
         doc = DocumentReglementaire(**data)
         logger.info("Document chargé : %s - %s", doc.id, doc.titre)
         self.ingest_document(doc)
 
 
-def main() -> None:  # noqa: D103 — TODO §12 étape 4 : compléter docstrings
+def main() -> None:  # noqa: D103
     parser = argparse.ArgumentParser(
         description="Ingérer un JSON réglementaire dans Qdrant"
     )

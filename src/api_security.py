@@ -145,9 +145,9 @@ class LimiteurDebit:
     Le limiteur est un objet mono-process : en multi-worker (gunicorn -w N),
     la limite effective est × N. `main.valider_configuration_demarrage()`
     signale ce cas au boot.
-    """  # noqa: RUF002 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
+    """  # noqa: RUF002 — typographie française légitime dans la docstring
 
-    def __init__(  # noqa: D107 — TODO §12 étape 4 : compléter docstrings
+    def __init__(  # noqa: D107
         self,
         max_requetes: int,
         fenetre_secondes: int,
@@ -167,7 +167,7 @@ class LimiteurDebit:
         for k in obsoletes:
             del self._horodatages[k]
 
-    def autoriser(self, cle: str) -> bool:  # noqa: D102 — TODO §12 étape 4 : compléter docstrings
+    def autoriser(self, cle: str) -> bool:  # noqa: D102
         maintenant = time.monotonic()
         borne = maintenant - self.fenetre_secondes
         with self._verrou:

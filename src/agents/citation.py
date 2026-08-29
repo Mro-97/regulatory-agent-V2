@@ -92,7 +92,7 @@ class StatutCitation(StrEnum):
 class CitationReglementaire:
     """Référence exacte à un passage réglementaire.
     Chaque citation doit être rattachée à un chunk_id connu.
-    """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
+    """  # noqa: D205
 
     document_id: str
     article_id: str
@@ -103,7 +103,7 @@ class CitationReglementaire:
     statut: StatutCitation = StatutCitation.NON_VERIFIEE
     hash_extrait: str = field(default="")  # SHA-256 de l'extrait
 
-    def __post_init__(self) -> None:  # noqa: D105 — TODO §12 étape 4 : compléter docstrings
+    def __post_init__(self) -> None:  # noqa: D105
         if not self.hash_extrait:
             self.hash_extrait = hashlib.sha256(self.extrait.encode("utf-8")).hexdigest()
 
@@ -146,7 +146,7 @@ class AgentCitation:
                   depuis les métadonnées des preuves.
     """
 
-    def __init__(self, use_llm: bool = False) -> None:  # noqa: D107 — TODO §12 étape 4 : compléter docstrings
+    def __init__(self, use_llm: bool = False) -> None:  # noqa: D107
         self.use_llm = use_llm
         self._modele: MLXInference | None = None
         logger.info("AgentCitation initialisé — use_llm=%s", use_llm)

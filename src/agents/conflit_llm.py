@@ -33,7 +33,7 @@ def _normaliser_verdict(verdict: str) -> str:
 def charger_modele_conflit(modele: MLXInference | None) -> MLXInference:
     """Charge DeepSeek-R1 14B via le registre MLX.
     ATTENTION : ~9 Go de RAM — décharger les autres modèles avant.
-    """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
+    """  # noqa: D205
     if modele is None:
         from src.mlx_utils import get_model
 
@@ -55,10 +55,7 @@ def extraire_verdicts(analyse: str) -> dict[int, str] | None:
     Retourne None si la sortie n'est pas parsable.
     """
     match = re.search(r"\{[^{}]*\"verdicts\".*?\}\s*\]?\s*\}", analyse, re.DOTALL)
-    if match is None:  # noqa: SIM108 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
-        candidats = [analyse]
-    else:
-        candidats = [match.group(0), analyse]
+    candidats = [analyse] if match is None else [match.group(0), analyse]
 
     for candidat in candidats:
         try:
@@ -168,8 +165,8 @@ def analyser_avec_llm(
             max_tokens=512,
         )
         analyse = resultat.texte.strip()
-    except Exception as exc:
-        logger.exception("Analyse LLM échouée : %s", exc)  # noqa: TRY401 — TODO §12 étape 4 : réviser le message en même temps que le typage
+    except Exception:
+        logger.exception("Analyse LLM échouée")
         return conflits, (
             f"Analyse automatique indisponible. "
             f"{len(conflits)} tension(s) détectée(s) manuellement."

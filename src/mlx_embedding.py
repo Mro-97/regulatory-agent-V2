@@ -34,7 +34,7 @@ class MLXEmbedding:
 
     bge-m3 : multilingue, dimension 1024, excellent pour le français.
     Identifiant HuggingFace : 'BAAI/bge-m3'
-    """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
+    """  # noqa: D205
 
     def __init__(self, model_name: str = "BAAI/bge-m3") -> None:
         """Args:
@@ -45,7 +45,7 @@ class MLXEmbedding:
                       "There is no Stream(gpu, 2)").
                     - autrement : `mlx_embeddings` (voie native MLX).
                     Défaut : 'BAAI/bge-m3'.
-        """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
+        """  # noqa: D205
         self.model_name = model_name
         self._st_mode = model_name.startswith("sentence-transformers/")
         # mêmes contraintes que MLXInference : `sentence_transformers` et
@@ -156,7 +156,7 @@ class MLXEmbedding:
 
         Returns:
             Liste de vecteurs, un par texte.
-        """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
+        """  # noqa: D205
         if not self._loaded:
             self.load()
 
@@ -193,14 +193,14 @@ class MLXEmbedding:
 
         return vecteurs
 
-    def __enter__(self) -> MLXEmbedding:  # noqa: D105 — TODO §12 étape 4 : compléter docstrings
+    def __enter__(self) -> MLXEmbedding:  # noqa: D105
         self.load()
         return self
 
-    def __exit__(self, *args: Any) -> None:  # noqa: D105 — TODO §12 étape 4 : compléter docstrings
+    def __exit__(self, *args: Any) -> None:  # noqa: D105
         self.unload()
 
-    def __repr__(self) -> str:  # noqa: D105 — TODO §12 étape 4 : compléter docstrings
+    def __repr__(self) -> str:  # noqa: D105
         return f"MLXEmbedding(model_name={self.model_name!r}, chargé={self._loaded})"
 
 

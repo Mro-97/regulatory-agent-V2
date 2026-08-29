@@ -73,7 +73,7 @@ class GestionnaireAudit:
         Si PostgreSQL est indisponible, continue en mode local uniquement.
 
         Le chaînage reprend au dernier hash connu (PostgreSQL ou JSONL local).
-        """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
+        """  # noqa: D205
         global _hash_precedent
 
         if _hash_precedent is None:
@@ -199,15 +199,15 @@ class GestionnaireAudit:
         try:
             ligne = audit.model_dump_json() + "\n"
             await asyncio.to_thread(self._ecrire_ligne_local, ligne)
-            return True  # noqa: TRY300 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
-        except Exception as exc:
-            logger.exception("Écriture audit local échouée : %s", exc)  # noqa: TRY401 — TODO §12 étape 4 : réviser le message en même temps que le typage
+            return True  # noqa: TRY300 — sortie normale du bloc try
+        except Exception:
+            logger.exception("Écriture audit local échouée")
             return False
 
     def _ecrire_ligne_local(self, ligne: str) -> None:
         """Écriture synchrone déléguée au threadpool (évite de bloquer l'event loop)."""
         CHEMIN_AUDIT_LOCAL.parent.mkdir(parents=True, exist_ok=True)
-        with open(CHEMIN_AUDIT_LOCAL, "a", encoding="utf-8") as f:  # noqa: PTH123 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
+        with CHEMIN_AUDIT_LOCAL.open("a", encoding="utf-8") as f:
             f.write(ligne)
 
     async def _persister_postgres(self, audit: EnregistrementAudit) -> bool:
@@ -239,9 +239,9 @@ class GestionnaireAudit:
                     audit.hash_precedent,
                     audit.hash_courant,
                 )
-            return True  # noqa: TRY300 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
-        except Exception as exc:
-            logger.exception("INSERT audit PostgreSQL échoué : %s", exc)  # noqa: TRY401 — TODO §12 étape 4 : réviser le message en même temps que le typage
+            return True  # noqa: TRY300 — sortie normale du bloc try
+        except Exception:
+            logger.exception("INSERT audit PostgreSQL échoué")
             return False
 
     async def verifier_integrite(

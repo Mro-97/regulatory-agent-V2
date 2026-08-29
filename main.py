@@ -11,6 +11,7 @@ Usage :
 """  # noqa: D205, D415
 
 import asyncio
+import contextlib
 import logging
 import sys
 
@@ -35,8 +36,8 @@ async def demarrer_watcher() -> None:
         watcher = Watcher()
         logger.info("Watcher démarré en arrière-plan.")
         await watcher.demarrer_boucle()
-    except Exception as exc:
-        logger.exception("Watcher échoué : %s", exc)  # noqa: TRY401 — TODO §12 étape 4 : réviser le message en même temps que le typage
+    except Exception:
+        logger.exception("Watcher échoué")
 
 
 async def initialiser_audit() -> None:
@@ -44,7 +45,7 @@ async def initialiser_audit() -> None:
     try:
         from src.audit import obtenir_gestionnaire
 
-        gestionnaire = await obtenir_gestionnaire()  # noqa: F841 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
+        await obtenir_gestionnaire()
         logger.info("Gestionnaire d'audit initialisé.")
     except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
         logger.warning("Audit non initialisé (non bloquant) : %s", exc)
@@ -152,13 +153,9 @@ if __name__ == "__main__":
             await server.serve()
         finally:
             watcher_task.cancel()
-            try:  # noqa: SIM105 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
+            with contextlib.suppress(asyncio.CancelledError):
                 await watcher_task
-            except asyncio.CancelledError:
-                pass
             logger.info("Arrêt propre.")
 
-    try:  # noqa: SIM105 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
+    with contextlib.suppress(KeyboardInterrupt):
         asyncio.run(run())
-    except KeyboardInterrupt:
-        pass

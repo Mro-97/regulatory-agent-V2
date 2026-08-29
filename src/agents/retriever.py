@@ -130,9 +130,9 @@ class Retriever:
                 with_payload=True,
                 with_vectors=False,
             )
-            return resultats.points  # noqa: TRY300 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
+            return resultats.points  # noqa: TRY300 — sortie normale du bloc try
         except Exception as exc:
-            logger.exception("Erreur Qdrant (%s) : %s", self._collection, exc)  # noqa: TRY401 — TODO §12 étape 4 : réviser le message en même temps que le typage
+            logger.exception("Erreur Qdrant (%s)", self._collection)
             raise RuntimeError(  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
                 f"Qdrant inaccessible (collection={self._collection}) : {exc}"
             ) from exc
@@ -182,8 +182,8 @@ class Retriever:
         # --- Étape 1 : embedding ---
         try:
             vecteur = self.embed_question(question)
-        except RuntimeError as exc:
-            logger.exception("Embedding impossible, retrieval annulé : %s", exc)  # noqa: TRY401 — TODO §12 étape 4 : réviser le message en même temps que le typage
+        except RuntimeError:
+            logger.exception("Embedding impossible, retrieval annulé")
             return []
 
         # --- Étape 2 : date de référence ---

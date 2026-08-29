@@ -82,7 +82,7 @@ def _valider_date_contexte(valeur: object) -> date | None:
 class EvidenceTemporelle:
     """Evidence enrichie d'une annotation temporelle.
     Wrappée autour d'EvidenceRecuperee — on ne modifie pas le modèle source.
-    """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
+    """  # noqa: D205
 
     evidence: EvidenceRecuperee
     applicable: bool
@@ -213,7 +213,7 @@ class AgentTemporel:
 
         Returns:
             Tuple (chevauchements, lacunes) — listes de messages descriptifs.
-        """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
+        """  # noqa: D205
         chevauchements: list[str] = []
         lacunes: list[str] = []
 

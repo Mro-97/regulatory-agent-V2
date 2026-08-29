@@ -128,7 +128,8 @@ installer_middlewares(app)
 _orchestrateur: Orchestrateur | None = None
 
 
-def obtenir_orchestrateur() -> Orchestrateur:  # noqa: D103 — TODO §12 étape 4 : compléter docstrings
+def obtenir_orchestrateur() -> Orchestrateur:
+    """Retourne le singleton `Orchestrateur`, instancié au premier appel."""
     global _orchestrateur
     if _orchestrateur is None:
         _orchestrateur = Orchestrateur()
@@ -144,7 +145,8 @@ OrchestrateurDep = Annotated[Orchestrateur, Depends(obtenir_orchestrateur)]
 
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
-async def interface(request: Request) -> HTMLResponse:  # noqa: D103 — TODO §12 étape 4 : compléter docstrings
+async def interface(request: Request) -> HTMLResponse:
+    """Rend l'interface web principale (index.html) sans embarquer la clé API."""
     # C1 : la clé API n'est JAMAIS embarquée dans la page (elle serait
     # visible via `view source` pour tout visiteur non authentifié).
     # Le frontend la demande à l'utilisateur au premier chargement de
@@ -163,7 +165,8 @@ async def interface(request: Request) -> HTMLResponse:  # noqa: D103 — TODO §
     summary="État du système",
     description="Vérifie que l'API est opérationnelle. Retourne l'horodatage et la version.",  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
 )
-async def health() -> dict[str, object]:  # noqa: D103 — TODO §12 étape 4 : compléter docstrings
+async def health() -> dict[str, object]:
+    """Endpoint public de santé : statut + horodatage + statut d'audit."""
     # M4 : /health est public — on n'expose ni le nom d'application ni la
     # version (fingerprinting). Le statut audit reste utile aux sondes
     # d'exploitation locales et ne révèle pas d'info versionnée.
@@ -189,10 +192,11 @@ async def health() -> dict[str, object]:  # noqa: D103 — TODO §12 étape 4 : 
     description="Pipeline RAG complet : retrieval vectoriel → filtrage temporel → explication LLM → citations.",  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
     dependencies=[AuthDep, OrigineDep, DebitDep],
 )
-async def poser_question(  # noqa: D103 — TODO §12 étape 4 : compléter docstrings
+async def poser_question(
     requete: RequeteQuestion,
     orchestrateur: OrchestrateurDep,
 ) -> ReponseQuestion:
+    """Traite une question réglementaire via le pipeline multi-agent."""
     logger.info("POST /ask — %r", requete.question[:80])
     try:
         return await orchestrateur.traiter(requete)
@@ -213,10 +217,11 @@ async def poser_question(  # noqa: D103 — TODO §12 étape 4 : compléter docs
     description="Ajoute un document JSON canonique (format DocumentReglementaire) au corpus Qdrant.",  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
     dependencies=[AuthDep, OrigineDep, DebitDep],
 )
-async def ingerer(  # noqa: D103 — TODO §12 étape 4 : compléter docstrings
+async def ingerer(
     requete: RequeteIngestion,
     orchestrateur: OrchestrateurDep,
 ) -> ReponseIngestion:
+    """Ingère un document JSON canonique (chunking + embedding + upsert Qdrant)."""
     from src.orchestrator import DocumentDejaIndexeError
 
     try:
@@ -247,7 +252,8 @@ async def ingerer(  # noqa: D103 — TODO §12 étape 4 : compléter docstrings
     description="Retourne toutes les tâches en attente de validation humaine.",
     dependencies=[AuthDep],
 )
-async def pending(orchestrateur: OrchestrateurDep) -> ReponseTachesPendantes:  # noqa: D103 — TODO §12 étape 4 : compléter docstrings
+async def pending(orchestrateur: OrchestrateurDep) -> ReponseTachesPendantes:
+    """Liste les tâches Redis en attente de validation humaine."""
     try:
         return await orchestrateur.lister_taches_pendantes()
     except Exception:
@@ -266,10 +272,11 @@ async def pending(orchestrateur: OrchestrateurDep) -> ReponseTachesPendantes:  #
     description="Approuve une tâche de validation identifiée par son tache_id.",
     dependencies=[AuthDep, OrigineDep],
 )
-async def approuver(  # noqa: D103 — TODO §12 étape 4 : compléter docstrings
+async def approuver(
     requete: RequeteDecisionValidation,
     orchestrateur: OrchestrateurDep,
 ) -> ReponseDecisionValidation:
+    """Approuve la tâche identifiée par `tache_id` (statut → APPROUVE)."""
     try:
         return await orchestrateur.valider_tache(
             tache_id=requete.tache_id,
@@ -297,10 +304,11 @@ async def approuver(  # noqa: D103 — TODO §12 étape 4 : compléter docstring
     description="Rejette une tâche de validation identifiée par son tache_id.",
     dependencies=[AuthDep, OrigineDep],
 )
-async def rejeter(  # noqa: D103 — TODO §12 étape 4 : compléter docstrings
+async def rejeter(
     requete: RequeteDecisionValidation,
     orchestrateur: OrchestrateurDep,
 ) -> ReponseDecisionValidation:
+    """Rejette la tâche identifiée par `tache_id` (statut → REJETE)."""
     try:
         return await orchestrateur.valider_tache(
             tache_id=requete.tache_id,

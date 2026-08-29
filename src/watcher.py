@@ -100,8 +100,8 @@ async def enregistrer_alerte_redis(alerte: AlerteWatcher) -> None:
             alerte.source.value,
             alerte.url_detectee,
         )
-    except Exception as exc:
-        logger.exception("Redis indisponible pour l'alerte Watcher : %s", exc)  # noqa: TRY401 — TODO §12 étape 4 : réviser le message en même temps que le typage
+    except Exception:
+        logger.exception("Redis indisponible pour l'alerte Watcher")
 
 
 # ---------------------------------------------------------------------------
@@ -115,9 +115,9 @@ class Watcher:
 
     Chaque modification détectée produit une AlerteWatcher soumise à
     validation humaine — jamais appliquée automatiquement au corpus.
-    """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
+    """  # noqa: D205
 
-    def __init__(self) -> None:  # noqa: D107 — TODO §12 étape 4 : compléter docstrings
+    def __init__(self) -> None:  # noqa: D107
         self._hashes = charger_hashes_connus()
         self._client_http: httpx.AsyncClient | None = None
         self._en_cours = False
@@ -164,7 +164,7 @@ class Watcher:
                 client = await self._http()
                 rep = await client.get(url)
                 rep.raise_for_status()
-                return rep.text  # noqa: TRY300 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
+                return rep.text  # noqa: TRY300 — sortie normale du bloc try
             except httpx.HTTPStatusError as exc:
                 # 4xx : ressource déplacée/supprimée/interdite — pas de retry.
                 statut = exc.response.status_code
@@ -303,7 +303,7 @@ class Watcher:
     async def demarrer_boucle(self) -> None:
         """Lance la boucle de surveillance en arrière-plan.
         Tourne indéfiniment avec un intervalle de cfg.watcher_intervalle_heures.
-        """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
+        """  # noqa: D205
         intervalle_s = cfg.watcher_intervalle_heures * 3600
         logger.info(
             "Watcher — boucle démarrée (intervalle : %d h).",
@@ -313,8 +313,8 @@ class Watcher:
         while True:
             try:
                 await self.cycle_verification()
-            except Exception as exc:
-                logger.exception("Watcher — erreur cycle : %s", exc)  # noqa: TRY401 — TODO §12 étape 4 : réviser le message en même temps que le typage
+            except Exception:
+                logger.exception("Watcher — erreur cycle")
 
             logger.info(
                 "Watcher — prochain cycle dans %d h.",

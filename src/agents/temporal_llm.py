@@ -65,7 +65,7 @@ def annoter_avec_llm(
 
     Returns:
         Explication en langage naturel (str).
-    """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
+    """  # noqa: D205
     # Construction du contexte temporel (sans texte complet)
     ctx_applicables = "\n".join(
         f"- {e.document_id}/{e.article_id} : "
@@ -117,6 +117,6 @@ def annoter_avec_llm(
             max_tokens=256,
         )
         return resultat.texte.strip()
-    except Exception as exc:
-        logger.exception("Annotation LLM échouée : %s", exc)  # noqa: TRY401 — TODO §12 étape 4 : réviser le message en même temps que le typage
+    except Exception:
+        logger.exception("Annotation LLM échouée")
         return f"Analyse temporelle déterministe — {len(applicables)} version(s) applicable(s) à {date_ref}."  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)

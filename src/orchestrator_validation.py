@@ -61,8 +61,8 @@ async def lister_taches_pendantes(
             par_file=par_file,
             taches=taches,
         )
-    except Exception as exc:
-        logger.exception("Redis inaccessible : %s", exc)  # noqa: TRY401 — TODO §12 étape 4 : réviser le message en même temps que le typage
+    except Exception:
+        logger.exception("Redis inaccessible")
         return ReponseTachesPendantes(total=0, par_file={}, taches=[])
 
 
@@ -137,5 +137,5 @@ async def enregistrer_tache_redis(
             ),
         )
         await client.aclose()
-    except Exception as exc:
-        logger.exception("Redis inaccessible, tâche non enregistrée : %s", exc)  # noqa: TRY401 — TODO §12 étape 4 : réviser le message en même temps que le typage
+    except Exception:
+        logger.exception("Redis inaccessible, tâche non enregistrée")

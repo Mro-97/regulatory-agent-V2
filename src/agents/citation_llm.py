@@ -55,7 +55,7 @@ def extraire_avec_llm(
         Liste de citations identifiées (statut NON_VERIFIEE avant verify()),
         liste vide si le LLM répond AUCUN, ou None en cas d'échec — dans ce
         dernier cas l'appelant retombe sur la génération déterministe.
-    """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
+    """  # noqa: D205
     # Contexte des preuves pour le LLM
     contexte_preuves = "\n\n".join(
         f"CHUNK_ID: {ev.chunk_id}\n"
@@ -122,8 +122,8 @@ def extraire_avec_llm(
                     chunk_id,
                 )
 
-        return citations  # noqa: TRY300 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
+        return citations  # noqa: TRY300 — sortie normale du bloc try
 
-    except Exception as exc:
-        logger.exception("Extraction LLM échouée, bascule déterministe : %s", exc)  # noqa: TRY401 — TODO §12 étape 4 : réviser le message en même temps que le typage
+    except Exception:
+        logger.exception("Extraction LLM échouée, bascule déterministe")
         return None

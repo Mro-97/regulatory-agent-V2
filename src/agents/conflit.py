@@ -108,7 +108,7 @@ def _contient_terme(texte: str, pattern: str) -> bool:
 def _detecter_tension_lexicale(texte_a: str, texte_b: str) -> str | None:
     """Détecte une tension lexicale entre deux textes.
     Retourne une description si une contradiction est repérée, None sinon.
-    """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
+    """  # noqa: D205
     for pos, neg in _PAIRES_CONTRADICTOIRES:
         a_pos = _contient_terme(texte_a, pos)
         a_neg = _contient_terme(texte_a, neg)
@@ -146,7 +146,7 @@ class AgentConflit:
                   Défaut : False (détection déterministe uniquement).
     """
 
-    def __init__(self, use_llm: bool = False) -> None:  # noqa: D107 — TODO §12 étape 4 : compléter docstrings
+    def __init__(self, use_llm: bool = False) -> None:  # noqa: D107
         self.use_llm = use_llm
         self._modele: MLXInference | None = None
         logger.info("AgentConflit initialisé — use_llm=%s", use_llm)
@@ -174,7 +174,7 @@ class AgentConflit:
 
         Returns:
             Liste de ConflitDetecte.
-        """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
+        """  # noqa: D205
         conflits: list[ConflitDetecte] = []
         n = len(evidences)
 
@@ -240,7 +240,7 @@ class AgentConflit:
 
         Returns:
             Liste de ConflitDetecte.
-        """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
+        """  # noqa: D205
         conflits: list[ConflitDetecte] = []
         n = len(evidences)
 

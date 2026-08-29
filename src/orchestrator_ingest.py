@@ -24,7 +24,7 @@ class DocumentDejaIndexeError(Exception):
     """Levée par ingerer_sync() quand un document_id est déjà présent
     dans Qdrant et que forcer_reindexation=False. Traduite en HTTP 409
     par l'API (voir src/api.py).
-    """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
+    """  # noqa: D205
 
 
 def ingerer_sync(

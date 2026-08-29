@@ -113,7 +113,7 @@ def setup_collection(
     )
 
 
-def main() -> None:  # noqa: D103 — TODO §12 étape 4 : compléter docstrings
+def main() -> None:  # noqa: D103
     parser = argparse.ArgumentParser(
         description="Initialise la collection Qdrant pour Regulatory Agent V2.",
     )

@@ -158,7 +158,7 @@ class Orchestrateur:
             logger.info("Ingester réel initialisé.")
         return self._ingester
 
-    async def _executer_bloquant(  # noqa: D417 — TODO §12 étape 4 : compléter docstrings
+    async def _executer_bloquant(  # noqa: D417
         self,
         fonction: Callable[..., T],
         /,
@@ -182,7 +182,7 @@ class Orchestrateur:
 
         Returns:
             La valeur de retour de `fonction`.
-        """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
+        """  # noqa: D205
         async with self._verrou_agents:
             return await asyncio.to_thread(fonction, *args, **kwargs)
 
@@ -327,8 +327,8 @@ class Orchestrateur:
                 filtres_sources=requete.filtres_sources,
             )
             agents_executes.append(sortie_retriever)
-        except Exception as exc:
-            logger.exception("Retrieval échoué : %s", exc)  # noqa: TRY401 — TODO §12 étape 4 : réviser le message en même temps que le typage
+        except Exception:
+            logger.exception("Retrieval échoué")
             return ReponseQuestion(
                 request_id=request_id,
                 reponse="Le service de recherche est temporairement indisponible.",
@@ -380,8 +380,8 @@ class Orchestrateur:
                 date_ref=requete.date_contexte,
             )
             agents_executes.append(sortie_explainer)
-        except Exception as exc:
-            logger.exception("Explainer échoué : %s", exc)  # noqa: TRY401 — TODO §12 étape 4 : réviser le message en même temps que le typage
+        except Exception:
+            logger.exception("Explainer échoué")
             reponse_texte = "Erreur lors de la génération de la réponse."
             niveau_confiance = NiveauConfiance.INCERTAIN
 
@@ -469,7 +469,7 @@ class Orchestrateur:
             ValueError: contenu_json absent ou invalide vis-à-vis du schéma
                 DocumentReglementaire.
             DocumentDejaIndexeError: document déjà indexé sans forcer_reindexation.
-        """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
+        """  # noqa: D205
         logger.info(
             "Ingestion déclenchée : source=%s forcer_reindexation=%s",
             requete.source,
@@ -533,7 +533,7 @@ class Orchestrateur:
     async def _persister_audit(self, audit: EnregistrementAudit) -> None:
         """Persiste l'enregistrement d'audit via src/audit.py.
         JSONL local + PostgreSQL en 127.0.0.1 (architecture unique m4pro2).
-        """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
+        """  # noqa: D205
         try:
             from src.audit import obtenir_gestionnaire
 
@@ -546,8 +546,8 @@ class Orchestrateur:
                 [a.nom_agent for a in audit.agents_executes],
                 audit.niveau_confiance.value,
             )
-        except Exception as exc:
-            logger.exception("Audit échoué (non bloquant) : %s", exc)  # noqa: TRY401 — TODO §12 étape 4 : réviser le message en même temps que le typage
+        except Exception:
+            logger.exception("Audit échoué (non bloquant)")
             logger.info(
                 "AUDIT (log only) request_id=%s agents=%s confiance=%s",
                 audit.request_id,

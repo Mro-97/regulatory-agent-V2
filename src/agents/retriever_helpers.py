@@ -136,7 +136,7 @@ def fusionner_passes(
 
     Returns:
         Liste de ScoredPoint sans doublon, ≤ `top_k` éléments.
-    """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
+    """  # noqa: D205
     points_bruts: list[ScoredPoint] = []
     ids_vus: set[str] = set()
 

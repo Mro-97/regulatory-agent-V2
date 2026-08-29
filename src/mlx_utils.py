@@ -50,7 +50,7 @@ T = TypeVar("T")
 _executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="mlx-timed")
 
 
-def _executer_avec_timeout(  # noqa: D417 — TODO §12 étape 4 : compléter docstrings
+def _executer_avec_timeout(  # noqa: D417
     fn: Callable[..., T],
     timeout_seconds: float | None,
     *args: Any,
@@ -138,7 +138,7 @@ class MLXInference:
     """Wrapper autour de mlx_lm.load / mlx_lm.generate.
     Lazy loading — le modèle n'est chargé qu'au premier appel.
     Un seul modèle actif à la fois via le registre global.
-    """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
+    """  # noqa: D205
 
     def __init__(
         self,
@@ -198,7 +198,7 @@ class MLXInference:
         """True si le modèle d'inférence est déjà chargé en mémoire."""
         return self._loaded
 
-    def generate(  # noqa: D417 — TODO §12 étape 4 : compléter docstrings
+    def generate(  # noqa: D417
         self,
         prompt: str,
         max_tokens: int = 512,
@@ -277,14 +277,14 @@ class MLXInference:
             )
         return self.generate(prompt, max_tokens=max_tokens, temperature=temperature)
 
-    def __enter__(self) -> MLXInference:  # noqa: D105 — TODO §12 étape 4 : compléter docstrings
+    def __enter__(self) -> MLXInference:  # noqa: D105
         self.load()
         return self
 
-    def __exit__(self, *args: Any) -> None:  # noqa: D105 — TODO §12 étape 4 : compléter docstrings
+    def __exit__(self, *args: Any) -> None:  # noqa: D105
         self.unload()
 
-    def __repr__(self) -> str:  # noqa: D105 — TODO §12 étape 4 : compléter docstrings
+    def __repr__(self) -> str:  # noqa: D105
         return f"MLXInference(model_name={self.model_name!r}, chargé={self._loaded})"
 
 
@@ -309,14 +309,15 @@ class _CacheGeneration:
     ) -> MLXInference:
         """Retourne l'instance de `model_name` ; décharge le modèle actif si un
         autre est demandé (un seul modèle de génération résident à la fois).
-        """  # noqa: D205 — TODO §12 étape 4 : compléter docstrings
-        if self._actif and self._actif != model_name:  # noqa: SIM102 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
-            if (
-                self._instances.get(self._actif, None)
-                and self._instances[self._actif].est_charge
-            ):
-                logger.info("Swap modèle : %s → %s", self._actif, model_name)
-                self._instances[self._actif].unload()
+        """  # noqa: D205
+        if (
+            self._actif
+            and self._actif != model_name
+            and self._instances.get(self._actif) is not None
+            and self._instances[self._actif].est_charge
+        ):
+            logger.info("Swap modèle : %s → %s", self._actif, model_name)
+            self._instances[self._actif].unload()
         if model_name not in self._instances:
             self._instances[model_name] = MLXInference(
                 model_name=model_name,
