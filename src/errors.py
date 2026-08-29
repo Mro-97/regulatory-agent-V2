@@ -39,6 +39,24 @@ class ConfigurationError(RegulatoryAgentError):
     """Configuration invalide détectée au démarrage ou à l'usage."""
 
 
+class PromptNotFoundError(ConfigurationError):
+    """Le gabarit LLM demandé n'existe pas sous `prompts/`."""
+
+    def __init__(self, chemin: object) -> None:  # noqa: D107 — constructeur documenté par la classe (§0.2)
+        super().__init__(f"Prompt introuvable : {chemin}")
+        self.chemin = chemin
+
+
+class MalformedPromptError(ConfigurationError):
+    """Un fichier prompt existe mais son format `# system` / `# user` est invalide."""
+
+    def __init__(self, sections_manquantes: list[str]) -> None:  # noqa: D107 — constructeur documenté par la classe (§0.2)
+        super().__init__(
+            f"Prompt malformé : section(s) manquante(s) {sections_manquantes}"
+        )
+        self.sections_manquantes = sections_manquantes
+
+
 # ---------------------------------------------------------------------------
 # Ingestion (corpus JSON, PDF, upsert Qdrant)
 # ---------------------------------------------------------------------------
