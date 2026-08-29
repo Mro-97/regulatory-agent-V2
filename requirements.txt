@@ -10,7 +10,6 @@ mlx-embeddings>=0.1,<1.0
 # --- API ---
 fastapi>=0.111,<1.0
 uvicorn[standard]>=0.29,<1.0
-python-multipart>=0.0.9,<1.0
 jinja2>=3.1,<4.0
 
 # --- Modèles de données ---
@@ -23,13 +22,14 @@ qdrant-client>=1.9,<2.0
 # --- File de messages / cache ---
 redis>=5.0,<6.0
 
-# --- Base relationnelle (audit, Mac C) ---
+# --- Base relationnelle (audit, m4pro2 en 127.0.0.1) ---
 asyncpg>=0.29,<1.0
 
 # --- Utilitaires ---
 httpx>=0.27,<1.0
+# python-dotenv est tiré transitivement par pydantic-settings ; version
+# verrouillée ici pour éviter une rétro-installation en 0.21.x.
 python-dotenv>=1.0,<2.0
-structlog>=24.1,<25.0
 
 # --- Conversion PDF ---
 pdfplumber>=0.11,<1.0
