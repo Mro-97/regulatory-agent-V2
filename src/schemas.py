@@ -18,7 +18,6 @@ from config import cfg
 from pydantic import BaseModel, Field, model_validator
 
 from src.models import (
-    TAILLE_MAX_CONTENU_JSON,
     EvidenceRecuperee,
     NiveauConfiance,
     SourceReglementaire,
@@ -68,10 +67,10 @@ class RequeteIngestion(BaseModel):
         """Refuse un contenu JSON trop volumineux (anti-DoS)."""
         if self.contenu_json is not None:
             taille = len(json.dumps(self.contenu_json, ensure_ascii=False))
-            if taille > TAILLE_MAX_CONTENU_JSON:
+            if taille > cfg.taille_max_contenu_json:
                 from src.errors import PayloadTooLargeError
 
-                raise PayloadTooLargeError(taille, TAILLE_MAX_CONTENU_JSON)
+                raise PayloadTooLargeError(taille, cfg.taille_max_contenu_json)
         return self
 
 

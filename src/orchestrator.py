@@ -31,7 +31,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import os
 import platform
 from collections.abc import Callable
 from datetime import date
@@ -113,10 +112,10 @@ class Orchestrateur:
         """Initialise l'orchestrateur sans charger aucun agent en mémoire.
 
         Args:
-            mode: "real" ou "mock". Si None, lit ORCHESTRATEUR_MODE
-                  dans l'environnement, défaut "real".
+            mode: "real" ou "mock". Si None, lit `cfg.orchestrateur_mode`
+                  (renseigné via ORCHESTRATEUR_MODE dans .env), défaut "real".
         """
-        self.mode = mode or os.environ.get("ORCHESTRATEUR_MODE", "real")
+        self.mode = mode or cfg.orchestrateur_mode
         if self.mode not in ("real", "mock"):
             logger.warning("Mode inconnu '%s', bascule sur 'real'.", self.mode)
             self.mode = "real"

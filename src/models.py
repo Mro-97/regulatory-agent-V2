@@ -18,10 +18,6 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field, model_validator
 
-# Taille maximale d'un contenu JSON soumis à /ingest (octets sérialisés).
-TAILLE_MAX_CONTENU_JSON = 1_000_000
-
-
 # ---------------------------------------------------------------------------
 # Énumérations
 # ---------------------------------------------------------------------------

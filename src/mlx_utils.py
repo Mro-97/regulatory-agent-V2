@@ -87,25 +87,22 @@ def _executer_avec_timeout(  # noqa: D417
         raise GenerationTimeoutError(timeout_seconds) from exc
 
 
-# Longueur max (caractères) d'un texte envoyé à l'embedding. `max_length=512`
-# et `truncation=True` passés à emb_generate() agissent sur les *tokens*, pas
-# les caractères — sur un texte très long, la tokenisation elle-même peut
-# consommer une mémoire excessive avant que la troncature ne s'applique
-# (cause du crash mémoire observé en ingérant REACH sans chunking en amont).
-# Cette limite est un filet de sécurité : les appelants (Retriever, Ingester)
-# doivent chunker en amont ; elle protège contre un appel qui les court-circuite.
-TAILLE_MAX_TEXTE_EMBEDDING = 8000
-
-
 def _tronquer_pour_embedding(texte: str) -> str:
-    """Tronque un texte trop long avant embedding, avec avertissement."""
-    if len(texte) > TAILLE_MAX_TEXTE_EMBEDDING:
+    """Tronque un texte trop long avant embedding, avec avertissement.
+
+    La limite (`cfg.mlx_taille_max_texte_embedding`, caractères) est un
+    filet de sécurité pour les appelants (Retriever, Ingester) qui
+    court-circuiteraient le chunking en amont — voir la description du
+    champ dans `config.py` pour le rationale.
+    """
+    limite = cfg.mlx_taille_max_texte_embedding
+    if len(texte) > limite:
         logger.warning(
             "Texte tronqué de %d à %d caractères avant embedding.",
             len(texte),
-            TAILLE_MAX_TEXTE_EMBEDDING,
+            limite,
         )
-        return texte[:TAILLE_MAX_TEXTE_EMBEDDING]
+        return texte[:limite]
     return texte
 
 

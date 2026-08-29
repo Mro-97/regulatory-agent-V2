@@ -31,6 +31,13 @@ class Parametres(BaseSettings):
     app_nom: str = Field(default="Regulatory Agent V2")
     app_version: str = Field(default="0.1.0")
     debug: bool = Field(default=False)
+    orchestrateur_mode: str = Field(
+        default="real",
+        description=(
+            "Mode d'exécution de l'orchestrateur : 'real' (agents MLX + Qdrant + "
+            "Redis) ou 'mock' (réponses simulées, aucune dépendance externe)."
+        ),
+    )
 
     # ------------------------------------------------------------------
     # Serveur API — architecture unique m4pro2 (§3.1 CONTEXTE_PROJET)
@@ -60,6 +67,13 @@ class Parametres(BaseSettings):
     )
     taille_max_requete_octets: int = Field(
         default=2_097_152, description="Taille maximale du corps de requête (2 Mo)."
+    )
+    taille_max_contenu_json: int = Field(
+        default=1_000_000,
+        description=(
+            "Taille max (octets) du champ `contenu_json` d'un RequeteIngestion "
+            "après sérialisation JSON (garde-fou anti-DoS applicatif)."
+        ),
     )
     question_max_length: int = Field(
         default=4000, description="Longueur max d'une question."
@@ -112,6 +126,18 @@ class Parametres(BaseSettings):
             "prompt pathologique de figer l'API indéfiniment."
         ),
     )
+    mlx_taille_max_texte_embedding: int = Field(
+        default=8000,
+        description=(
+            "Longueur max (caractères) d'un texte envoyé à l'embedding. "
+            "`max_length=512` et `truncation=True` passés à emb_generate() "
+            "agissent sur les *tokens*, pas les caractères ; sur un texte "
+            "très long, la tokenisation elle-même peut consommer une mémoire "
+            "excessive avant que la troncature ne s'applique (crash observé "
+            "en ingérant REACH sans chunking en amont). Filet de sécurité pour "
+            "les appelants qui court-circuiteraient le chunking."
+        ),
+    )
 
     # ------------------------------------------------------------------
     # Qdrant — local sur m4pro2 (§3.1 CONTEXTE_PROJET)
@@ -141,6 +167,9 @@ class Parametres(BaseSettings):
         default="",
         description="DSN PostgreSQL ex. postgresql://user:motdepasse@127.0.0.1:5432/base.",
     )
+    postgres_pool_min_size: int = Field(default=1)
+    postgres_pool_max_size: int = Field(default=5)
+    postgres_command_timeout: float = Field(default=10.0)
 
     # ------------------------------------------------------------------
     # Human-in-the-loop

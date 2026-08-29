@@ -88,9 +88,9 @@ class GestionnaireAudit:
 
             self._pool = await asyncpg.create_pool(
                 self.postgres_dsn,
-                min_size=1,
-                max_size=5,
-                command_timeout=10,
+                min_size=cfg.postgres_pool_min_size,
+                max_size=cfg.postgres_pool_max_size,
+                command_timeout=cfg.postgres_command_timeout,
             )
             async with self._pool.acquire() as conn:
                 await conn.execute(SQL_CREATE_TABLE)
