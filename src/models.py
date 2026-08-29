@@ -100,9 +100,9 @@ class IntervalleValidite(BaseModel):
     def verifier_coherence_dates(self) -> "IntervalleValidite":
         """Vérifie que valid_to >= valid_from lorsque les deux sont renseignés."""
         if self.valid_to is not None and self.valid_to < self.valid_from:
-            raise ValueError(  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
-                f"valid_to ({self.valid_to}) ne peut pas être antérieur à valid_from ({self.valid_from})."  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
-            )
+            from src.errors import InconsistentDatesError
+
+            raise InconsistentDatesError(self.valid_from, self.valid_to)
         return self
 
     def est_applicable_a(self, date_cible: date) -> bool:

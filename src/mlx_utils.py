@@ -36,11 +36,14 @@ from typing import Any, TypeVar
 
 from config import cfg
 
+from src.errors import GenerationTimeoutError
+
 logger = logging.getLogger(__name__)
 
-
-class MLXTimeoutError(RuntimeError):
-    """Levée quand un appel MLX dépasse le délai configuré."""
+# Alias descendant : le nom historique reste importable pour ne pas
+# casser les callers extérieurs (tests, monkey-patch). La classe unique
+# vit désormais dans src.errors (§12 étape 8).
+MLXTimeoutError = GenerationTimeoutError
 
 
 T = TypeVar("T")
@@ -81,7 +84,7 @@ def _executer_avec_timeout(  # noqa: D417
     try:
         return future.result(timeout=timeout_seconds)
     except FuturesTimeoutError as exc:
-        raise MLXTimeoutError(f"Appel MLX dépassé après {timeout_seconds}s") from exc  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
+        raise GenerationTimeoutError(timeout_seconds) from exc
 
 
 # Longueur max (caractères) d'un texte envoyé à l'embedding. `max_length=512`
@@ -176,12 +179,12 @@ class MLXInference:
                 "Modèle chargé en %.1f s : %s", time.time() - debut, self.model_name
             )
         except Exception as exc:
+            from src.errors import ModelLoadError
+
             self._model = None
             self._tokenizer = None
             self._loaded = False
-            raise RuntimeError(  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
-                f"Impossible de charger '{self.model_name}' : {exc}"
-            ) from exc
+            raise ModelLoadError(self.model_name, cause=str(exc)) from exc
 
     def unload(self) -> None:
         """Libère le modèle. Idempotent."""
@@ -251,9 +254,9 @@ class MLXInference:
                 ),
             )
         except Exception as exc:
-            raise RuntimeError(  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
-                f"Génération échouée ({self.model_name}) : {exc}"
-            ) from exc
+            from src.errors import GenerationFailedError
+
+            raise GenerationFailedError(self.model_name, cause=str(exc)) from exc
 
     def generate_avec_messages(
         self,

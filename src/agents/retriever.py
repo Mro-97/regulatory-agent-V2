@@ -90,7 +90,8 @@ class Retriever:
             Vecteur d'embedding normalisé (dimension 1024 pour bge-m3).
 
         Raises:
-            RuntimeError: Si le modèle ne peut pas être chargé.
+            InferenceError: Si le modèle ne peut pas être chargé ou si
+                l'encodage échoue (`ModelLoadError`, `EmbeddingFailedError`).
         """
         logger.debug("Génération de l'embedding — question=%r", question[:80])
         modele = get_embedding(cfg.modele_embedding)
@@ -119,7 +120,7 @@ class Retriever:
             Liste de ScoredPoint retournés par Qdrant.
 
         Raises:
-            RuntimeError: Si Qdrant est inaccessible.
+            VectorStoreError: Si Qdrant est inaccessible.
         """
         try:
             resultats = self._client.query_points(
@@ -132,10 +133,10 @@ class Retriever:
             )
             return resultats.points  # noqa: TRY300 — sortie normale du bloc try
         except Exception as exc:
+            from src.errors import VectorStoreError
+
             logger.exception("Erreur Qdrant (%s)", self._collection)
-            raise RuntimeError(  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
-                f"Qdrant inaccessible (collection={self._collection}) : {exc}"
-            ) from exc
+            raise VectorStoreError(self._collection, cause=str(exc)) from exc
 
     # ------------------------------------------------------------------
     # Point d'entrée principal
@@ -180,9 +181,11 @@ class Retriever:
         )
 
         # --- Étape 1 : embedding ---
+        from src.errors import InferenceError
+
         try:
             vecteur = self.embed_question(question)
-        except RuntimeError:
+        except InferenceError:
             logger.exception("Embedding impossible, retrieval annulé")
             return []
 
@@ -230,11 +233,13 @@ class Retriever:
         Retourne une liste vide si Qdrant échoue — l'appelant continue avec
         l'autre passe.
         """
+        from src.errors import VectorStoreError
+
         try:
             resultats = self._rechercher(vecteur, limite=self._top_k, filtre=filtre)
             logger.debug("Passe %s — %d résultats", label, len(resultats))
             return resultats  # noqa: TRY300 — sortie normale du try
-        except RuntimeError as exc:
+        except VectorStoreError as exc:
             logger.warning("Passe %s échouée : %s", label, exc)
             return []
 

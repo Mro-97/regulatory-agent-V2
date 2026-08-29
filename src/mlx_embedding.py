@@ -81,12 +81,12 @@ class MLXEmbedding:
                 "sentence-transformers" if self._st_mode else "mlx-embeddings",
             )
         except Exception as exc:
+            from src.errors import ModelLoadError
+
             self._model = None
             self._processor = None
             self._loaded = False
-            raise RuntimeError(  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
-                f"Impossible de charger le modèle d'embedding '{self.model_name}' : {exc}"  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
-            ) from exc
+            raise ModelLoadError(self.model_name, cause=str(exc)) from exc
 
     def unload(self) -> None:
         """Libère le modèle. Idempotent."""
@@ -140,7 +140,9 @@ class MLXEmbedding:
             mx.eval(vecteur)
             return cast("list[float]", vecteur.tolist())
         except Exception as exc:
-            raise RuntimeError(f"Embedding échoué ({self.model_name}) : {exc}") from exc  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
+            from src.errors import EmbeddingFailedError
+
+            raise EmbeddingFailedError(self.model_name, cause=str(exc)) from exc
 
     def encode_batch(
         self,
@@ -163,7 +165,9 @@ class MLXEmbedding:
         try:
             from mlx_embeddings import generate as emb_generate
         except Exception as exc:
-            raise RuntimeError(f"mlx-embeddings non disponible : {exc}") from exc  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
+            from src.errors import ModelLoadError
+
+            raise ModelLoadError("mlx-embeddings", cause=str(exc)) from exc
 
         textes = [_tronquer_pour_embedding(t) for t in textes]
         vecteurs: list[list[float]] = []
@@ -187,8 +191,12 @@ class MLXEmbedding:
                 for vecteur in sortie.text_embeds:
                     vecteurs.append(vecteur.tolist())
             except Exception as exc:
-                raise RuntimeError(  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
-                    f"Embedding batch échoué lot {debut}-{debut + len(lot)} : {exc}"
+                from src.errors import EmbeddingFailedError
+
+                raise EmbeddingFailedError(
+                    self.model_name,
+                    cause=str(exc),
+                    batch=(debut, debut + len(lot)),
                 ) from exc
 
         return vecteurs

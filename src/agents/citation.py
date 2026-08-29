@@ -286,10 +286,11 @@ class AgentCitation:
     ) -> list[CitationReglementaire]:
         """Extraction LLM déléguée à src.agents.citation_llm."""
         from src.agents.citation_llm import extraire_avec_llm
+        from src.errors import ModelNotLoadedError
 
         self._charger_modele()
         if self._modele is None:
-            raise RuntimeError("Modèle Citation non chargé")  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
+            raise ModelNotLoadedError("Citation")
         resultat = extraire_avec_llm(
             modele=self._modele,
             reponse_explainer=reponse_explainer,

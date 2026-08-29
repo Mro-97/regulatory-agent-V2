@@ -69,10 +69,9 @@ class RequeteIngestion(BaseModel):
         if self.contenu_json is not None:
             taille = len(json.dumps(self.contenu_json, ensure_ascii=False))
             if taille > TAILLE_MAX_CONTENU_JSON:
-                raise ValueError(  # noqa: TRY003
-                    f"contenu_json trop volumineux "
-                    f"({taille} octets > {TAILLE_MAX_CONTENU_JSON})",
-                )
+                from src.errors import PayloadTooLargeError
+
+                raise PayloadTooLargeError(taille, TAILLE_MAX_CONTENU_JSON)
         return self
 
 

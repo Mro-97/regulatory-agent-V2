@@ -292,10 +292,11 @@ class AgentConflit:
     ) -> tuple[list[ConflitDetecte], str]:
         """Analyse LLM déléguée à src.agents.conflit_llm."""
         from src.agents.conflit_llm import analyser_avec_llm
+        from src.errors import ModelNotLoadedError
 
         self._charger_modele()
         if self._modele is None:
-            raise RuntimeError("Modèle Conflit non chargé")  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
+            raise ModelNotLoadedError("Conflict")
         return analyser_avec_llm(
             modele=self._modele,
             question=question,

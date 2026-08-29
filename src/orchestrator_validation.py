@@ -14,6 +14,7 @@ from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any, cast
 
+from src.errors import QueueBackendError, TaskNotFoundError
 from src.models import (
     ReponseDecisionValidation,
     ReponseTachesPendantes,
@@ -109,17 +110,17 @@ async def valider_tache(
 
         await client.aclose()
         if not tache_trouvee:
-            raise ValueError(f"Tâche introuvable : {tache_id}")  # noqa: TRY003, TRY301
+            raise TaskNotFoundError(tache_id)  # noqa: TRY301 — levée intentionnelle rattrapée par le try/except externe pour compatibilité de contrat
 
         return ReponseDecisionValidation(
             tache_id=tache_id,
             nouveau_statut=decision,
             horodatage_traitement=horodatage,
         )
-    except ValueError:
+    except TaskNotFoundError:
         raise
     except Exception as exc:
-        raise RuntimeError(f"Validation échouée : {exc}") from exc  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
+        raise QueueBackendError(str(exc)) from exc
 
 
 async def enregistrer_tache_redis(

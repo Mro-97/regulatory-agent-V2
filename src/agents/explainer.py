@@ -237,9 +237,11 @@ class AgentExplainer:
         Returns:
             ResultatExplication.
         """
+        from src.errors import ModelNotLoadedError
+
         self._charger_modele()
         if self._modele is None:
-            raise RuntimeError("Modèle Explainer non chargé")  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
+            raise ModelNotLoadedError("Explainer")
 
         contexte = self._construire_contexte(evidences)
         sources_citees = [
@@ -298,7 +300,9 @@ class AgentExplainer:
 
             # Vérification basique : la réponse ne doit pas être vide
             if not reponse:
-                raise ValueError("Réponse LLM vide.")  # noqa: TRY003, TRY301
+                from src.errors import StructuredOutputError
+
+                raise StructuredOutputError("Explainer", detail="réponse vide")  # noqa: TRY301 — levée intentionnelle avant repli déterministe
 
             return ResultatExplication(
                 reponse=reponse,

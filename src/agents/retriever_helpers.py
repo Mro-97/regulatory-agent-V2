@@ -83,7 +83,9 @@ def parser_date(valeur: object) -> date:
         return valeur
     if isinstance(valeur, str):
         return date.fromisoformat(valeur[:10])
-    raise ValueError(f"Impossible de parser la date : {valeur!r}")  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
+    from src.errors import PayloadDateParseError
+
+    raise PayloadDateParseError(valeur)
 
 
 def construire_filtres_passes(

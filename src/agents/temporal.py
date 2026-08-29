@@ -57,18 +57,22 @@ def _valider_date_contexte(valeur: object) -> date | None:
     Ces bornes sont volontairement larges — elles écartent les valeurs
     aberrantes (année 1 ou 9999) sans contraindre l'usage légitime.
     """
+    from src.errors import InvalidContextDateError
+
     if valeur is None:
         return None
     if isinstance(valeur, datetime):
         valeur = valeur.date()
     if not isinstance(valeur, date):
-        raise ValueError(  # noqa: TRY003, TRY004
-            f"date_contexte doit être une date, reçu {type(valeur).__name__}"
+        raise InvalidContextDateError(
+            reason=f"type reçu {type(valeur).__name__}",
+            value=valeur,
         )
     if not (_DATE_MIN_RAISONNABLE <= valeur <= _DATE_MAX_RAISONNABLE):
-        raise ValueError(  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
-            f"date_contexte {valeur} hors intervalle raisonnable "
-            f"[{_DATE_MIN_RAISONNABLE}, {_DATE_MAX_RAISONNABLE}]"
+        raise InvalidContextDateError(
+            reason=f"{valeur} hors intervalle "
+            f"[{_DATE_MIN_RAISONNABLE}, {_DATE_MAX_RAISONNABLE}]",
+            value=valeur,
         )
     return valeur
 
@@ -282,10 +286,11 @@ class AgentTemporel:
     ) -> str:
         """Annotation LLM déléguée à src.agents.temporal_llm."""
         from src.agents.temporal_llm import annoter_avec_llm
+        from src.errors import ModelNotLoadedError
 
         self._charger_modele()
         if self._modele is None:
-            raise RuntimeError("Modèle Temporel non chargé")  # noqa: TRY003 — message ponctuel, taxonomie d'erreurs dédiée à traiter en §8 skill
+            raise ModelNotLoadedError("Temporal")
         return annoter_avec_llm(
             modele=self._modele,
             question=question,
