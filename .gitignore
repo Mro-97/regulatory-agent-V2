@@ -6,6 +6,11 @@ __pycache__/
 *.pyo
 .DS_Store
 
+# Caches d'outils qualité (mypy, pytest, ruff)
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
 # Données — on conserve le corpus raw en JSON (commité), pas les artefacts générés
 data/indexed/*
 data/pending/*
