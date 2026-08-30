@@ -75,6 +75,60 @@ def _normaliser_pour_comparaison(texte: str) -> str:
     return texte.strip()
 
 
+def _est_citation_verifiee(
+    cit: CitationReglementaire,
+    index_chunks: dict[str, EvidenceRecuperee],
+) -> bool:
+    """True si le chunk_id existe et si l'extrait est ancré (comparaison normalisée)."""
+    chunk = index_chunks.get(cit.chunk_id)
+    if chunk is None:
+        logger.warning(
+            "Citation DOUTEUSE — chunk_id '%s' introuvable dans les preuves.",
+            cit.chunk_id,
+        )
+        return False
+    extrait_norm = _normaliser_pour_comparaison(cit.extrait)
+    chunk_norm = _normaliser_pour_comparaison(chunk.texte_extrait)
+    if extrait_norm not in chunk_norm:
+        logger.warning(
+            "Citation DOUTEUSE — extrait non retrouvé dans chunk '%s'.",
+            cit.chunk_id,
+        )
+        return False
+    return True
+
+
+def _journaliser_verification(
+    nb_verifiees: int, nb_douteuses: int, nb_total: int
+) -> None:
+    """Trace le résultat de la vérification déterministe."""
+    logger.info(
+        "Vérification : %d vérifiée(s), %d douteuse(s) sur %d",
+        nb_verifiees,
+        nb_douteuses,
+        nb_total,
+    )
+
+
+def _resultat_citation_vide() -> ResultatCitation:
+    """ResultatCitation vide avec avertissement 'aucune preuve disponible'."""
+    return ResultatCitation(
+        citations_verifiees=[],
+        citations_douteuses=[],
+        mode="deterministe",
+        avertissement="Aucune preuve disponible — aucune citation produite.",
+    )
+
+
+def _avertissement_citations_douteuses(nb_douteuses: int) -> str | None:
+    """Message d'avertissement si au moins une citation est douteuse (sinon None)."""
+    if nb_douteuses == 0:
+        return None
+    return (
+        f"{nb_douteuses} citation(s) non vérifiable(s) exclue(s) de la réponse finale."
+    )
+
+
 # ---------------------------------------------------------------------------
 # Structures
 # ---------------------------------------------------------------------------
@@ -208,65 +262,18 @@ class AgentCitation:
         citations: list[CitationReglementaire],
         evidences_reference: list[EvidenceRecuperee],
     ) -> tuple[list[CitationReglementaire], list[CitationReglementaire]]:
-        """Vérifie que chaque citation est ancrée dans les preuves récupérées.
-
-        Règle : une citation est VERIFIEE si son chunk_id figure dans
-        la liste des preuves de référence ET que l'extrait est un
-        sous-ensemble du texte du chunk source.
-
-        Une citation DOUTEUSE ne peut pas être présentée à l'utilisateur
-        comme une référence autoritaire.
-
-        Args:
-            citations:           Citations à vérifier.
-            evidences_reference: Preuves récupérées servant de référence.
-
-        Returns:
-            Tuple (vérifiées, douteuses).
-        """
-        # Index des chunks par chunk_id pour la vérification O(1)
-        index_chunks: dict[str, EvidenceRecuperee] = {
-            ev.chunk_id: ev for ev in evidences_reference
-        }
-
+        """Vérifie que chaque citation est ancrée dans les preuves fournies."""
+        index_chunks = {ev.chunk_id: ev for ev in evidences_reference}
         verifiees: list[CitationReglementaire] = []
         douteuses: list[CitationReglementaire] = []
-
         for cit in citations:
-            chunk = index_chunks.get(cit.chunk_id)
-
-            if chunk is None:
+            if _est_citation_verifiee(cit, index_chunks):
+                cit.statut = StatutCitation.VERIFIEE
+                verifiees.append(cit)
+            else:
                 cit.statut = StatutCitation.DOUTEUSE
                 douteuses.append(cit)
-                logger.warning(
-                    "Citation DOUTEUSE — chunk_id '%s' introuvable dans les preuves.",
-                    cit.chunk_id,
-                )
-                continue
-
-            # Vérification de l'extrait : doit être contenu dans le texte source
-            # (comparaison normalisée — insensible aux espaces multiples,
-            # retours à la ligne et guillemets typographiques)
-            if _normaliser_pour_comparaison(
-                cit.extrait
-            ) not in _normaliser_pour_comparaison(chunk.texte_extrait):
-                cit.statut = StatutCitation.DOUTEUSE
-                douteuses.append(cit)
-                logger.warning(
-                    "Citation DOUTEUSE — extrait non retrouvé dans chunk '%s'.",
-                    cit.chunk_id,
-                )
-                continue
-
-            cit.statut = StatutCitation.VERIFIEE
-            verifiees.append(cit)
-
-        logger.info(
-            "Vérification : %d vérifiée(s), %d douteuse(s) sur %d",
-            len(verifiees),
-            len(douteuses),
-            len(citations),
-        )
+        _journaliser_verification(len(verifiees), len(douteuses), len(citations))
         return verifiees, douteuses
 
     # ------------------------------------------------------------------
@@ -309,61 +316,40 @@ class AgentCitation:
         evidences: list[EvidenceRecuperee],
         reponse_explainer: str | None = None,
     ) -> ResultatCitation:
-        """Génère et vérifie les citations pour une réponse réglementaire.
-
-        Flux :
-          1. Génération des citations (déterministe ou LLM).
-          2. Vérification déterministe de chaque citation.
-          3. Retour du résultat avec séparation vérifiées / douteuses.
-
-        Args:
-            evidences:          Preuves récupérées et filtrées.
-            reponse_explainer:  Texte de l'Explainer (requis si use_llm=True).
-
-        Returns:
-            ResultatCitation avec citations vérifiées et douteuses.
-        """
+        """Génère + vérifie les citations (LLM ou déterministe selon `use_llm`)."""
         logger.info(
             "Génération citations — mode=%s evidences=%d",
             "llm" if self.use_llm else "deterministe",
             len(evidences),
         )
-
         if not evidences:
-            return ResultatCitation(
-                citations_verifiees=[],
-                citations_douteuses=[],
-                mode="deterministe",
-                avertissement="Aucune preuve disponible — aucune citation produite.",
-            )
-
-        # --- Génération ---
-        if self.use_llm and reponse_explainer:
-            citations_brutes = self._extraire_avec_llm(
-                reponse_explainer=reponse_explainer,
-                evidences=evidences,
-            )
-            mode = "llm"
-        else:
-            citations_brutes = self._generer_depuis_evidences(evidences)
-            mode = "deterministe"
-
-        # --- Vérification (toujours déterministe) ---
+            return _resultat_citation_vide()
+        citations_brutes, mode = self._produire_citations_brutes(
+            evidences, reponse_explainer
+        )
         verifiees, douteuses = self.verify(
             citations=citations_brutes,
             evidences_reference=evidences,
         )
-
-        avertissement = None
-        if douteuses:
-            avertissement = (
-                f"{len(douteuses)} citation(s) non vérifiable(s) exclue(s) "
-                f"de la réponse finale."
-            )
-
         return ResultatCitation(
             citations_verifiees=verifiees,
             citations_douteuses=douteuses,
             mode=mode,
-            avertissement=avertissement,
+            avertissement=_avertissement_citations_douteuses(len(douteuses)),
         )
+
+    def _produire_citations_brutes(
+        self,
+        evidences: list[EvidenceRecuperee],
+        reponse_explainer: str | None,
+    ) -> tuple[list[CitationReglementaire], str]:
+        """Choisit la stratégie de génération (LLM ou déterministe) et l'exécute."""
+        if self.use_llm and reponse_explainer:
+            return (
+                self._extraire_avec_llm(
+                    reponse_explainer=reponse_explainer,
+                    evidences=evidences,
+                ),
+                "llm",
+            )
+        return self._generer_depuis_evidences(evidences), "deterministe"

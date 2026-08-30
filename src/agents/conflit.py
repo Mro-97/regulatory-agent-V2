@@ -36,6 +36,7 @@ from __future__ import annotations
 
 import logging
 import re
+from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import date
 from enum import StrEnum
@@ -130,6 +131,117 @@ from src.agents.conflit_llm import _normaliser_verdict as _normaliser_verdict  #
 # fmt: on
 
 
+def _paires(
+    evidences: list[EvidenceRecuperee],
+) -> Iterator[tuple[EvidenceRecuperee, EvidenceRecuperee]]:
+    """Itère sur toutes les paires (i, j) avec i < j."""
+    n = len(evidences)
+    for i in range(n):
+        for j in range(i + 1, n):
+            yield evidences[i], evidences[j]
+
+
+def _paire_active_a_date(
+    ev_a: EvidenceRecuperee, ev_b: EvidenceRecuperee, date_ref: date | None
+) -> bool:
+    """True si les deux preuves sont valides à `date_ref` (True si date_ref None)."""
+    if date_ref is None:
+        return True
+    return _est_active_a(ev_a, date_ref) and _est_active_a(ev_b, date_ref)
+
+
+def _est_active_a(ev: EvidenceRecuperee, date_ref: date) -> bool:
+    """True si `valid_from <= date_ref <= valid_to` (bornes inclusives)."""
+    return ev.valid_from <= date_ref and (
+        ev.valid_to is None or ev.valid_to >= date_ref
+    )
+
+
+def _conflit_inter_documents(
+    ev_a: EvidenceRecuperee, ev_b: EvidenceRecuperee, tension: str
+) -> ConflitDetecte:
+    """Construit un ConflitDetecte pour une tension entre documents distincts."""
+    return ConflitDetecte(
+        evidence_a=ev_a,
+        evidence_b=ev_b,
+        niveau=NiveauConflit.POTENTIEL,
+        description=(
+            f"{tension} entre "
+            f"{ev_a.document_id}/{ev_a.article_id} et "
+            f"{ev_b.document_id}/{ev_b.article_id}"
+        ),
+        necessite_validation_humaine=True,
+    )
+
+
+def _conflit_intra_document(
+    ev_a: EvidenceRecuperee, ev_b: EvidenceRecuperee, tension: str
+) -> ConflitDetecte:
+    """Construit un ConflitDetecte pour une incohérence interne à un document."""
+    return ConflitDetecte(
+        evidence_a=ev_a,
+        evidence_b=ev_b,
+        niveau=NiveauConflit.POTENTIEL,
+        description=(
+            f"Incohérence interne ({tension}) entre "
+            f"{ev_a.article_id} et {ev_b.article_id} "
+            f"dans {ev_a.document_id}"
+        ),
+        necessite_validation_humaine=True,
+    )
+
+
+def _journaliser_conflits_inter(conflits: list[ConflitDetecte]) -> None:
+    """Log WARNING si des conflits ont été détectés, INFO sinon."""
+    if conflits:
+        logger.warning(
+            "%d conflit(s) potentiel(s) détecté(s) entre documents distincts.",
+            len(conflits),
+        )
+    else:
+        logger.info("Aucun conflit inter-documents détecté.")
+
+
+def _resultat_conflit_vide() -> ResultatConflit:
+    """Retourne un ResultatConflit AUCUN (aucun conflit, mode déterministe)."""
+    return ResultatConflit(
+        conflits=[],
+        niveau_global=NiveauConflit.AUCUN,
+        mode="deterministe",
+    )
+
+
+def _calculer_niveau_global(conflits: list[ConflitDetecte]) -> NiveauConflit:
+    """Retourne le niveau max (CRITIQUE > PROBABLE > POTENTIEL)."""
+    niveaux = [c.niveau for c in conflits]
+    if NiveauConflit.CRITIQUE in niveaux:
+        return NiveauConflit.CRITIQUE
+    if NiveauConflit.PROBABLE in niveaux:
+        return NiveauConflit.PROBABLE
+    return NiveauConflit.POTENTIEL
+
+
+def _assembler_resultat_conflit(
+    conflits: list[ConflitDetecte], analyse_llm: str | None, mode: str
+) -> ResultatConflit:
+    """Assemble le ResultatConflit final avec niveau global + validation requise."""
+    niveau_global = _calculer_niveau_global(conflits)
+    necessite = niveau_global in (NiveauConflit.PROBABLE, NiveauConflit.CRITIQUE)
+    logger.info(
+        "Résultat conflits — niveau=%s conflits=%d validation_requise=%s",
+        niveau_global.value,
+        len(conflits),
+        necessite,
+    )
+    return ResultatConflit(
+        conflits=conflits,
+        niveau_global=niveau_global,
+        analyse_llm=analyse_llm,
+        mode=mode,
+        necessite_validation_humaine=necessite,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Agent Conflit
 # ---------------------------------------------------------------------------
@@ -160,119 +272,33 @@ class AgentConflit:
         evidences: list[EvidenceRecuperee],
         date_ref: date | None,
     ) -> list[ConflitDetecte]:
-        """Détecte les chevauchements entre preuves de documents différents
-        qui couvrent la même période et le même périmètre thématique.
-
-        Deux preuves sont en tension si :
-        - Elles proviennent de documents différents (document_id distincts)
-        - Leurs intervalles de validité se chevauchent à date_ref
-        - Elles contiennent une tension lexicale détectable
-
-        Args:
-            evidences: Preuves filtrées temporellement.
-            date_ref:  Date de référence pour le chevauchement.
-
-        Returns:
-            Liste de ConflitDetecte.
-        """  # noqa: D205
+        """Détecte tensions entre preuves de documents distincts actives à date_ref."""
         conflits: list[ConflitDetecte] = []
-        n = len(evidences)
-
-        for i in range(n):
-            for j in range(i + 1, n):
-                ev_a = evidences[i]
-                ev_b = evidences[j]
-
-                # Ignorer les preuves du même document
-                if ev_a.document_id == ev_b.document_id:
-                    continue
-
-                # Vérifier chevauchement temporel
-                if date_ref:
-                    a_active = ev_a.valid_from <= date_ref and (
-                        ev_a.valid_to is None or ev_a.valid_to >= date_ref
-                    )
-                    b_active = ev_b.valid_from <= date_ref and (
-                        ev_b.valid_to is None or ev_b.valid_to >= date_ref
-                    )
-                    if not (a_active and b_active):
-                        continue
-
-                # Recherche de tension lexicale
-                tension = _detecter_tension_lexicale(
-                    ev_a.texte_extrait, ev_b.texte_extrait
-                )
-
-                if tension:
-                    conflits.append(
-                        ConflitDetecte(
-                            evidence_a=ev_a,
-                            evidence_b=ev_b,
-                            niveau=NiveauConflit.POTENTIEL,
-                            description=(
-                                f"{tension} entre "
-                                f"{ev_a.document_id}/{ev_a.article_id} et "
-                                f"{ev_b.document_id}/{ev_b.article_id}"
-                            ),
-                            necessite_validation_humaine=True,
-                        )
-                    )
-
-        if conflits:
-            logger.warning(
-                "%d conflit(s) potentiel(s) détecté(s) entre documents distincts.",
-                len(conflits),
-            )
-        else:
-            logger.info("Aucun conflit inter-documents détecté.")
-
+        for ev_a, ev_b in _paires(evidences):
+            if ev_a.document_id == ev_b.document_id:
+                continue
+            if not _paire_active_a_date(ev_a, ev_b, date_ref):
+                continue
+            tension = _detecter_tension_lexicale(ev_a.texte_extrait, ev_b.texte_extrait)
+            if tension:
+                conflits.append(_conflit_inter_documents(ev_a, ev_b, tension))
+        _journaliser_conflits_inter(conflits)
         return conflits
 
     def _detecter_incoherences_internes(
         self,
         evidences: list[EvidenceRecuperee],
     ) -> list[ConflitDetecte]:
-        """Détecte les incohérences au sein d'un même document
-        (ex. deux articles du même règlement qui se contredisent).
-
-        Args:
-            evidences: Preuves filtrées.
-
-        Returns:
-            Liste de ConflitDetecte.
-        """  # noqa: D205
+        """Détecte les tensions entre articles distincts d'un même document."""
         conflits: list[ConflitDetecte] = []
-        n = len(evidences)
-
-        for i in range(n):
-            for j in range(i + 1, n):
-                ev_a = evidences[i]
-                ev_b = evidences[j]
-
-                # Même document, articles différents
-                if ev_a.document_id != ev_b.document_id:
-                    continue
-                if ev_a.article_id == ev_b.article_id:
-                    continue
-
-                tension = _detecter_tension_lexicale(
-                    ev_a.texte_extrait, ev_b.texte_extrait
-                )
-                if tension:
-                    conflits.append(
-                        ConflitDetecte(
-                            evidence_a=ev_a,
-                            evidence_b=ev_b,
-                            niveau=NiveauConflit.POTENTIEL,
-                            description=(
-                                f"Incohérence interne ({tension}) entre "
-                                f"{ev_a.article_id} et {ev_b.article_id} "
-                                f"dans {ev_a.document_id}"
-                            ),
-                            necessite_validation_humaine=True,
-                        )
-                    )
-
+        for ev_a, ev_b in _paires(evidences):
+            if ev_a.document_id != ev_b.document_id:
+                continue
+            if ev_a.article_id == ev_b.article_id:
+                continue
+            tension = _detecter_tension_lexicale(ev_a.texte_extrait, ev_b.texte_extrait)
+            if tension:
+                conflits.append(_conflit_intra_document(ev_a, ev_b, tension))
         return conflits
 
     # ------------------------------------------------------------------
@@ -313,84 +339,25 @@ class AgentConflit:
         evidences: list[EvidenceRecuperee],
         date_ref: date | None = None,
     ) -> ResultatConflit:
-        """Détecte et analyse les conflits dans une liste de preuves.
-
-        Étapes :
-        1. Détection déterministe (chevauchements + incohérences internes).
-        2. Si conflits détectés ET use_llm=True → analyse DeepSeek-R1.
-        3. Calcul du niveau global et de la nécessité de validation humaine.
-
-        Args:
-            question:  Question originale de l'utilisateur.
-            evidences: Preuves filtrées (issues du Retriever + Temporal).
-            date_ref:  Date de référence pour le chevauchement temporel.
-
-        Returns:
-            ResultatConflit avec la liste des conflits et leur niveau.
-        """
+        """Détection déterministe + analyse LLM (si `use_llm`) des conflits."""
         logger.info(
             "Analyse conflits — evidences=%d date_ref=%s question=%r",
             len(evidences),
             date_ref,
             question[:80],
         )
-
         if len(evidences) < 2:
-            # Impossible d'avoir un conflit avec moins de 2 preuves
-            return ResultatConflit(
-                conflits=[],
-                niveau_global=NiveauConflit.AUCUN,
-                mode="deterministe",
-            )
-
-        # --- Détection déterministe ---
-        conflits_inter = self._detecter_chevauchements(evidences, date_ref)
-        conflits_intra = self._detecter_incoherences_internes(evidences)
-        tous_conflits = conflits_inter + conflits_intra
-
+            return _resultat_conflit_vide()
+        tous_conflits = self._detecter_chevauchements(
+            evidences, date_ref
+        ) + self._detecter_incoherences_internes(evidences)
         if not tous_conflits:
-            return ResultatConflit(
-                conflits=[],
-                niveau_global=NiveauConflit.AUCUN,
-                mode="deterministe",
-            )
-
-        # --- Analyse LLM si activée et conflits détectés ---
-        analyse_llm: str | None = None
-        mode = "deterministe"
-
+            return _resultat_conflit_vide()
+        analyse_llm, mode = None, "deterministe"
         if self.use_llm:
             tous_conflits, analyse_llm = self._analyser_avec_llm(
                 question=question,
                 conflits=tous_conflits,
             )
             mode = "llm"
-
-        # --- Niveau global ---
-        niveaux = [c.niveau for c in tous_conflits]
-        if NiveauConflit.CRITIQUE in niveaux:
-            niveau_global = NiveauConflit.CRITIQUE
-        elif NiveauConflit.PROBABLE in niveaux:
-            niveau_global = NiveauConflit.PROBABLE
-        else:
-            niveau_global = NiveauConflit.POTENTIEL
-
-        necessite_validation = niveau_global in (
-            NiveauConflit.PROBABLE,
-            NiveauConflit.CRITIQUE,
-        )
-
-        logger.info(
-            "Résultat conflits — niveau=%s conflits=%d validation_requise=%s",
-            niveau_global.value,
-            len(tous_conflits),
-            necessite_validation,
-        )
-
-        return ResultatConflit(
-            conflits=tous_conflits,
-            niveau_global=niveau_global,
-            analyse_llm=analyse_llm,
-            mode=mode,
-            necessite_validation_humaine=necessite_validation,
-        )
+        return _assembler_resultat_conflit(tous_conflits, analyse_llm, mode)

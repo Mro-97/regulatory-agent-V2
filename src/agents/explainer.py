@@ -63,6 +63,103 @@ class ResultatExplication:
 
 
 # ---------------------------------------------------------------------------
+# Helpers module-level pour _assembler / _synthetiser_avec_llm
+# ---------------------------------------------------------------------------
+
+
+_MSG_AUCUN_PASSAGE = (
+    "Aucun passage réglementaire pertinent n'a été trouvé "
+    "dans le corpus pour cette question.\n\n"
+    "Vérifiez que les documents correspondants ont été ingérés, "
+    "ou reformulez la question."
+)
+
+_AVERTISSEMENT = (
+    "⚠️ Ces passages sont extraits du corpus réglementaire indexé. "
+    "Ils ne constituent pas un avis juridique. "
+    "Consultez les textes officiels (EUR-Lex, Légifrance) pour confirmation."
+)
+
+
+def _resultat_assemblage_vide() -> ResultatExplication:
+    """Retourne un ResultatExplication INCERTAIN quand aucune preuve n'est fournie."""
+    return ResultatExplication(
+        reponse=_MSG_AUCUN_PASSAGE,
+        sources_citees=[],
+        niveau_confiance=NiveauConfiance.INCERTAIN,
+        mode="assemblage",
+    )
+
+
+def _entete_assemblage(date_ref: date | None, type_pipeline: str) -> str:
+    """Formatte l'en-tête d'un assemblage (temporel ou courant)."""
+    if date_ref and type_pipeline == "temporelle":
+        return f"Textes applicables à la date du {date_ref.strftime('%d/%m/%Y')} :\n"
+    return "Textes réglementaires pertinents :\n"
+
+
+def _ajouter_blocs_evidences(
+    evidences: list[EvidenceRecuperee],
+    lignes: list[str],
+    sources_citees: list[str],
+) -> None:
+    """Ajoute (in place) un bloc lisible par preuve, jusqu'à 8 preuves."""
+    for i, ev in enumerate(evidences[:8], 1):
+        validite = f"{ev.valid_from} → {ev.valid_to or 'en vigueur'}"
+        ref = f"{ev.document_id} / {ev.article_id} [{validite}]"
+        sources_citees.append(ref)
+        lignes.append(f"**[{i}] {ref}**")
+        lignes.append(ev.texte_extrait.strip())
+        lignes.append("")
+
+
+def _ajouter_reste_et_avertissement(nb_total: int, lignes: list[str]) -> None:
+    """Ajoute la mention du surplus (si > 8) puis l'avertissement final."""
+    if nb_total > 8:
+        lignes.append(
+            f"... et {nb_total - 8} passage(s) supplémentaire(s) non affichés."
+        )
+        lignes.append("")
+    lignes.append(_AVERTISSEMENT)
+
+
+def _construire_sources_citees(evidences: list[EvidenceRecuperee]) -> list[str]:
+    """Formate `document_id/article_id [from→to]` pour les 8 premières preuves."""
+    return [
+        f"{ev.document_id}/{ev.article_id} "
+        f"[{ev.valid_from}→{ev.valid_to or 'en vigueur'}]"
+        for ev in evidences[:8]
+    ]
+
+
+def _construire_contexte_temporel(date_ref: date | None, type_pipeline: str) -> str:
+    """Retourne la clause temporelle du prompt (vide si non-temporelle)."""
+    if not date_ref or type_pipeline != "temporelle":
+        return ""
+    return (
+        f"\nATTENTION : La question porte sur la réglementation applicable "
+        f"à la date du {date_ref}. Utilise uniquement les versions valides "
+        f"à cette date (indiquées dans les sources).\n"
+    )
+
+
+def _preparer_messages_synthese(
+    question: str,
+    contexte: str,
+    date_ref: date | None,
+    type_pipeline: str,
+) -> list[dict[str, str]]:
+    """Charge le gabarit `explainer/synthetiser` v1 et le rend avec les variables."""
+    from src.prompts_loader import charger_prompt
+
+    return charger_prompt("explainer/synthetiser", 1).rendre(
+        question=question,
+        contexte=contexte,
+        contexte_temporel=_construire_contexte_temporel(date_ref, type_pipeline),
+    )
+
+
+# ---------------------------------------------------------------------------
 # Agent Explainer
 # ---------------------------------------------------------------------------
 
@@ -92,74 +189,13 @@ class AgentExplainer:
         date_ref: date | None,
         type_pipeline: str,
     ) -> ResultatExplication:
-        """Construit une réponse lisible par assemblage direct des textes.
-
-        Structure :
-          - En-tête avec contexte temporel si applicable
-          - Un bloc par evidence (document / article / dates / extrait)
-          - Avertissement de non-substitution juridique
-
-        Args:
-            question:      Question originale.
-            evidences:     Preuves filtrées et ordonnées.
-            date_ref:      Date de référence si question temporelle.
-            type_pipeline: "courante", "temporelle" ou "conflit".
-
-        Returns:
-            ResultatExplication.
-        """
+        """Assemblage direct : en-tête + blocs par evidence + avertissement."""
         if not evidences:
-            return ResultatExplication(
-                reponse=(
-                    "Aucun passage réglementaire pertinent n'a été trouvé "
-                    "dans le corpus pour cette question.\n\n"
-                    "Vérifiez que les documents correspondants ont été ingérés, "
-                    "ou reformulez la question."
-                ),
-                sources_citees=[],
-                niveau_confiance=NiveauConfiance.INCERTAIN,
-                mode="assemblage",
-            )
-
-        lignes: list[str] = []
+            return _resultat_assemblage_vide()
+        lignes = [_entete_assemblage(date_ref, type_pipeline)]
         sources_citees: list[str] = []
-
-        # En-tête
-        if date_ref and type_pipeline == "temporelle":
-            lignes.append(
-                f"Textes applicables à la date du {date_ref.strftime('%d/%m/%Y')} :\n"
-            )
-        else:
-            lignes.append("Textes réglementaires pertinents :\n")
-
-        # Un bloc par evidence (max 8 pour la lisibilité)
-        for i, ev in enumerate(evidences[:8], 1):
-            validite = f"{ev.valid_from}"
-            if ev.valid_to:
-                validite += f" → {ev.valid_to}"
-            else:
-                validite += " → en vigueur"
-
-            ref = f"{ev.document_id} / {ev.article_id} [{validite}]"
-            sources_citees.append(ref)
-
-            lignes.append(f"**[{i}] {ref}**")
-            lignes.append(ev.texte_extrait.strip())
-            lignes.append("")
-
-        if len(evidences) > 8:
-            lignes.append(
-                f"... et {len(evidences) - 8} passage(s) supplémentaire(s) non affichés."  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
-            )
-            lignes.append("")
-
-        # Avertissement
-        lignes.append(
-            "⚠️ Ces passages sont extraits du corpus réglementaire indexé. "
-            "Ils ne constituent pas un avis juridique. "
-            "Consultez les textes officiels (EUR-Lex, Légifrance) pour confirmation."
-        )
-
+        _ajouter_blocs_evidences(evidences, lignes, sources_citees)
+        _ajouter_reste_et_avertissement(len(evidences), lignes)
         return ResultatExplication(
             reponse="\n".join(lignes),
             sources_citees=sources_citees,
@@ -221,73 +257,43 @@ class AgentExplainer:
         date_ref: date | None,
         type_pipeline: str,
     ) -> ResultatExplication:
-        """Synthétise une réponse fluide via Qwen 2.5 7B.
-
-        Le prompt impose explicitement :
-        - Ne pas inventer d'informations absentes des sources.
-        - Citer chaque affirmation avec sa source (document/article).
-        - Signaler si les sources sont insuffisantes.
-
-        Args:
-            question:      Question de l'utilisateur.
-            evidences:     Preuves filtrées.
-            date_ref:      Date de référence.
-            type_pipeline: Type de pipeline.
-
-        Returns:
-            ResultatExplication.
-        """
+        """Synthèse LLM (Qwen 2.5 7B) avec repli sur assemblage en cas d'échec."""
         from src.errors import ModelNotLoadedError
 
         self._charger_modele()
         if self._modele is None:
             raise ModelNotLoadedError("Explainer")
-
         contexte = self._construire_contexte(evidences)
-        sources_citees = [
-            f"{ev.document_id}/{ev.article_id} [{ev.valid_from}→{ev.valid_to or 'en vigueur'}]"  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
-            for ev in evidences[:8]
-        ]
-
-        contexte_temporel = ""
-        if date_ref and type_pipeline == "temporelle":
-            contexte_temporel = (
-                f"\nATTENTION : La question porte sur la réglementation applicable "
-                f"à la date du {date_ref}. Utilise uniquement les versions valides "
-                f"à cette date (indiquées dans les sources).\n"
-            )
-
-        from src.prompts_loader import charger_prompt
-
-        messages = charger_prompt("explainer/synthetiser", 1).rendre(
-            question=question,
-            contexte=contexte,
-            contexte_temporel=contexte_temporel,
+        sources_citees = _construire_sources_citees(evidences)
+        messages = _preparer_messages_synthese(
+            question, contexte, date_ref, type_pipeline
         )
-
         try:
-            resultat = self._modele.generate_avec_messages(
-                messages=messages,
-                max_tokens=cfg.mlx_max_tokens,
-            )
-            reponse = resultat.texte.strip()
-
-            # Vérification basique : la réponse ne doit pas être vide
-            if not reponse:
-                from src.errors import StructuredOutputError
-
-                raise StructuredOutputError("Explainer", detail="réponse vide")  # noqa: TRY301 — levée intentionnelle avant repli déterministe
-
-            return ResultatExplication(
-                reponse=reponse,
-                sources_citees=sources_citees,
-                niveau_confiance=NiveauConfiance.ELEVE,
-                mode="llm",
-            )
-
+            return self._generer_synthese(messages, sources_citees)
         except Exception:
             logger.exception("Synthèse LLM échouée, bascule sur assemblage")
             return self._assembler(question, evidences, date_ref, type_pipeline)
+
+    def _generer_synthese(
+        self, messages: list[dict[str, str]], sources_citees: list[str]
+    ) -> ResultatExplication:
+        """Appelle le LLM et vérifie que la réponse n'est pas vide."""
+        from src.errors import StructuredOutputError
+
+        assert self._modele is not None  # noqa: S101 — invariant garanti par le caller
+        resultat = self._modele.generate_avec_messages(
+            messages=messages,
+            max_tokens=cfg.mlx_max_tokens,
+        )
+        reponse = resultat.texte.strip()
+        if not reponse:
+            raise StructuredOutputError("Explainer", detail="réponse vide")
+        return ResultatExplication(
+            reponse=reponse,
+            sources_citees=sources_citees,
+            niveau_confiance=NiveauConfiance.ELEVE,
+            mode="llm",
+        )
 
     # ------------------------------------------------------------------
     # Point d'entrée principal

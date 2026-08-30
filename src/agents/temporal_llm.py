@@ -48,43 +48,41 @@ def annoter_avec_llm(
     chevauchements: list[str],
     lacunes: list[str],
 ) -> str:
-    """Utilise Qwen 2.5 7B pour produire une explication temporelle
-    en langage naturel.
-
-    Le LLM reçoit uniquement les métadonnées temporelles (pas le texte
-    complet des articles) pour limiter la taille du contexte.
-
-    Args:
-        modele:         Instance MLXInference déjà chargée.
-        question:       Question originale de l'utilisateur.
-        date_ref:       Date de référence.
-        applicables:    Preuves retenues.
-        exclues:        Preuves écartées avec raison.
-        chevauchements: Anomalies détectées.
-        lacunes:        Lacunes détectées.
-
-    Returns:
-        Explication en langage naturel (str).
-    """  # noqa: D205
-    from src.prompts_loader import charger_prompt
-
-    # Construction du contexte temporel (sans texte complet)
-    ctx_applicables = "\n".join(
-        f"- {e.document_id}/{e.article_id} : "
-        f"valide du {e.valid_from} au {e.valid_to or 'indéfiniment'}"
-        for e in applicables[:10]
+    """Qwen 2.5 7B produit une explication temporelle (métadonnées uniquement)."""
+    messages = _preparer_messages_temporal(
+        question,
+        date_ref,
+        applicables,
+        exclues,
+        chevauchements,
+        lacunes,
     )
-    ctx_exclues = "\n".join(
-        f"- {et.evidence.document_id}/{et.evidence.article_id} : {et.raison_exclusion}"
-        for et in exclues[:5]
-    )
-    ctx_anomalies = ""
-    if chevauchements or lacunes:
-        ctx_anomalies = "\nAnomalies détectées :\n" + "\n".join(
-            chevauchements + lacunes
+    try:
+        resultat = modele.generate_avec_messages(messages=messages, max_tokens=256)
+        return resultat.texte.strip()
+    except Exception:
+        logger.exception("Annotation LLM échouée")
+        return (
+            f"Analyse temporelle déterministe — "
+            f"{len(applicables)} version(s) applicable(s) à {date_ref}."
         )
 
-    prompt_messages = charger_prompt("temporal/annoter", 1).rendre(
+
+def _preparer_messages_temporal(
+    question: str,
+    date_ref: date,
+    applicables: list[EvidenceRecuperee],
+    exclues: list[EvidenceTemporelle],
+    chevauchements: list[str],
+    lacunes: list[str],
+) -> list[dict[str, str]]:
+    """Formatte les 3 contextes (applicables/exclues/anomalies) puis rend le gabarit."""
+    from src.prompts_loader import charger_prompt
+
+    ctx_applicables = _formatter_applicables(applicables)
+    ctx_exclues = _formatter_exclues(exclues)
+    ctx_anomalies = _formatter_anomalies(chevauchements, lacunes)
+    return charger_prompt("temporal/annoter", 1).rendre(
         question=question,
         date_ref=date_ref,
         nb_applicables=len(applicables),
@@ -94,12 +92,26 @@ def annoter_avec_llm(
         ctx_anomalies=ctx_anomalies,
     )
 
-    try:
-        resultat = modele.generate_avec_messages(
-            messages=prompt_messages,
-            max_tokens=256,
-        )
-        return resultat.texte.strip()
-    except Exception:
-        logger.exception("Annotation LLM échouée")
-        return f"Analyse temporelle déterministe — {len(applicables)} version(s) applicable(s) à {date_ref}."  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
+
+def _formatter_applicables(applicables: list[EvidenceRecuperee]) -> str:
+    """Liste puces `- doc/art : valide du <from> au <to>` (max 10)."""
+    return "\n".join(
+        f"- {e.document_id}/{e.article_id} : "
+        f"valide du {e.valid_from} au {e.valid_to or 'indéfiniment'}"
+        for e in applicables[:10]
+    )
+
+
+def _formatter_exclues(exclues: list[EvidenceTemporelle]) -> str:
+    """Liste puces `- doc/art : raison` pour les 5 premières exclusions."""
+    return "\n".join(
+        f"- {et.evidence.document_id}/{et.evidence.article_id} : {et.raison_exclusion}"
+        for et in exclues[:5]
+    )
+
+
+def _formatter_anomalies(chevauchements: list[str], lacunes: list[str]) -> str:
+    """Bloc `Anomalies détectées : ...` ou chaîne vide si aucune."""
+    if not chevauchements and not lacunes:
+        return ""
+    return "\nAnomalies détectées :\n" + "\n".join(chevauchements + lacunes)

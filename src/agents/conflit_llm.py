@@ -105,21 +105,29 @@ def analyser_avec_llm(
     question: str,
     conflits: list[ConflitDetecte],
 ) -> tuple[list[ConflitDetecte], str]:
-    """Utilise DeepSeek-R1 14B pour analyser les conflits potentiels.
-
-    Voir docstring d'origine dans src/agents/conflit.py pour le mapping
-    verdict → niveau et le format JSON attendu.
-
-    Args:
-        modele:    Instance MLXInference déjà chargée (DeepSeek-R1 14B).
-        question:  Question originale de l'utilisateur.
-        conflits:  Conflits potentiels détectés déterministiquement.
-
-    Returns:
-        Tuple (conflits mis à jour, analyse textuelle).
-    """
-    # Limite d'analyse pour rester dans la fenêtre de contexte du modèle.
+    """DeepSeek-R1 14B annote 5 conflits max et renvoie un JSON structuré."""
     conflits_analyses = conflits[:5]
+    messages = _preparer_messages_conflit(question, conflits_analyses)
+    analyse = _appeler_llm_conflit(modele, messages, len(conflits))
+    if analyse is None:
+        return conflits, (
+            f"Analyse automatique indisponible. "
+            f"{len(conflits)} tension(s) détectée(s) manuellement."
+        )
+    verdicts = extraire_verdicts(analyse)
+    if verdicts is None:
+        _journaliser_parsing_echoue(analyse)
+        return conflits, analyse
+    conflits_retenus = _appliquer_verdicts(conflits_analyses, verdicts)
+    conflits_retenus.extend(conflits[len(conflits_analyses) :])
+    return conflits_retenus, analyse
+
+
+def _preparer_messages_conflit(
+    question: str, conflits_analyses: list[ConflitDetecte]
+) -> list[dict[str, str]]:
+    """Construit le contexte formatté puis rend le gabarit `conflit/analyser` v1."""
+    from src.prompts_loader import charger_prompt
 
     contexte = "\n\n".join(
         f"CONFLIT {i + 1} :\n"
@@ -130,48 +138,45 @@ def analyser_avec_llm(
         f"Tension détectée : {c.description}"
         for i, c in enumerate(conflits_analyses)
     )
-
-    from src.prompts_loader import charger_prompt
-
-    messages = charger_prompt("conflit/analyser", 1).rendre(
+    return charger_prompt("conflit/analyser", 1).rendre(
         question=question,
         nb_conflits=len(conflits_analyses),
         contexte=contexte,
     )
 
+
+def _appeler_llm_conflit(
+    modele: MLXInference, messages: list[dict[str, str]], nb_conflits_total: int
+) -> str | None:
+    """Appelle le LLM ; retourne le texte stripped, ou None si l'appel a échoué."""
     try:
-        resultat = modele.generate_avec_messages(
-            messages=messages,
-            max_tokens=512,
-        )
-        analyse = resultat.texte.strip()
+        resultat = modele.generate_avec_messages(messages=messages, max_tokens=512)
     except Exception:
         logger.exception("Analyse LLM échouée")
-        return conflits, (
-            f"Analyse automatique indisponible. "
-            f"{len(conflits)} tension(s) détectée(s) manuellement."
-        )
+        return None
+    _ = nb_conflits_total  # réservé pour un usage futur (metrics)
+    return resultat.texte.strip()
 
-    verdicts = extraire_verdicts(analyse)
 
-    if verdicts is None:
-        logger.warning(
-            "Parsing JSON du verdict Conflit échoué — niveaux déterministes conservés. "
-            "Sortie brute : %r",
-            analyse[:200],
-        )
-        return conflits, analyse
+def _journaliser_parsing_echoue(analyse: str) -> None:
+    """Trace un WARNING quand le JSON verdict est illisible (niveaux préservés)."""
+    logger.warning(
+        "Parsing JSON du verdict Conflit échoué — niveaux déterministes conservés. "
+        "Sortie brute : %r",
+        analyse[:200],
+    )
 
-    conflits_retenus: list[ConflitDetecte] = []
+
+def _appliquer_verdicts(
+    conflits_analyses: list[ConflitDetecte], verdicts: dict[int, str]
+) -> list[ConflitDetecte]:
+    """Applique les verdicts (1-based) aux conflits ; drop les verdicts INEXISTANT."""
+    retenus: list[ConflitDetecte] = []
     for i, conflit in enumerate(conflits_analyses):
-        verdict = verdicts.get(i + 1)  # index 1-based comme dans le prompt
+        verdict = verdicts.get(i + 1)
         conflit.niveau = verdict_vers_niveau(verdict, conflit.niveau)
-
         if conflit.niveau == NiveauConflit.AUCUN:
             logger.info("Conflit %d écarté par le LLM (verdict INEXISTANT).", i + 1)
         else:
-            conflits_retenus.append(conflit)
-
-    conflits_retenus.extend(conflits[len(conflits_analyses) :])
-
-    return conflits_retenus, analyse
+            retenus.append(conflit)
+    return retenus
