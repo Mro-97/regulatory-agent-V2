@@ -22,8 +22,12 @@ from __future__ import annotations
 import asyncio
 import logging
 from collections.abc import Awaitable
+from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
+
+if TYPE_CHECKING:
+    import redis.asyncio as aioredis
 
 import httpx
 from config import cfg
@@ -57,42 +61,14 @@ from src.watcher_helpers import (  # noqa: E402, F401
 
 
 async def enregistrer_alerte_redis(alerte: AlerteWatcher) -> None:
-    """Enregistre une alerte dans la file Redis pending_alerts."""
+    """Pousse une AlerteWatcher dans la file Redis `pending_alerts`."""
     try:
-        import redis.asyncio as aioredis
-
-        client = aioredis.Redis(
-            host=cfg.redis_host,
-            port=cfg.redis_port,
-            password=cfg.redis_password or None,
-            db=cfg.redis_db,
-            decode_responses=True,
-        )
-
-        tache = TacheValidation(
-            type_file=TypeFilePendante.ALERTES,
-            contenu={
-                "alerte_id": str(alerte.alerte_id),
-                "source": alerte.source.value,
-                "url": alerte.url_detectee,
-                "document_concerne": alerte.document_id_concerne,
-                "hash_avant": alerte.hash_precedent[:16] + "…",
-                "hash_apres": alerte.hash_nouveau[:16] + "…",
-                "description": alerte.description_modification,
-                "horodatage": alerte.horodatage_detection.isoformat(),
-            },
-        )
+        client = _nouveau_client_redis()
+        tache = _construire_tache_validation_alerte(alerte)
         alerte.tache_validation_id = tache.tache_id
-
-        # `redis.asyncio.Redis.lpush` a une signature générique
-        # `Awaitable[int] | int` selon le mode ; le client instancié plus
-        # haut est bien asynchrone.
         await cast(
             "Awaitable[Any]",
-            client.lpush(
-                TypeFilePendante.ALERTES.value,
-                tache.model_dump_json(),
-            ),
+            client.lpush(TypeFilePendante.ALERTES.value, tache.model_dump_json()),
         )
         await client.aclose()
         logger.info(
@@ -102,6 +78,82 @@ async def enregistrer_alerte_redis(alerte: AlerteWatcher) -> None:
         )
     except Exception:
         logger.exception("Redis indisponible pour l'alerte Watcher")
+
+
+def _nouveau_client_redis() -> aioredis.Redis:
+    """Fabrique un client Redis asynchrone avec les paramètres cfg."""
+    import redis.asyncio as aioredis
+
+    return aioredis.Redis(
+        host=cfg.redis_host,
+        port=cfg.redis_port,
+        password=cfg.redis_password or None,
+        db=cfg.redis_db,
+        decode_responses=True,
+    )
+
+
+@dataclass(frozen=True)
+class _ResultatTentativeFetch:
+    """Résultat d'une tentative HTTP dans `Watcher._tenter_fetch`."""
+
+    contenu: str | None  # contenu HTTP si succès, sinon None
+    arreter: bool  # True si 4xx (pas de retry)
+    erreur: Exception | None  # exception rencontrée (si non-succès)
+
+
+def _construire_alerte(
+    source: SourceReglementaire,
+    url: str,
+    hash_precedent: str,
+    hash_nouveau: str,
+) -> AlerteWatcher:
+    """Construit une AlerteWatcher horodatée avec description SHA-256 tronquée."""
+    return AlerteWatcher(
+        source=source,
+        url_detectee=url,
+        hash_precedent=hash_precedent,
+        hash_nouveau=hash_nouveau,
+        horodatage_detection=datetime.now(UTC),
+        description_modification=(
+            f"Modification détectée — source {source.value} — "
+            f"URL : {url} — "
+            f"empreinte SHA-256 : {hash_precedent[:12]}… → {hash_nouveau[:12]}…"
+        ),
+    )
+
+
+async def _attendre_backoff(
+    essai: int, max_essais: int, url: str, erreur: Exception | None, base: float
+) -> None:
+    """Attend `base * 2^(essai-1)` secondes et loggue la tentative."""
+    attente = base * (2 ** (essai - 1))
+    logger.warning(
+        "Watcher — essai %d/%d échoué pour %s (%s), nouvelle tentative dans %.1fs",
+        essai,
+        max_essais,
+        url,
+        erreur,
+        attente,
+    )
+    await asyncio.sleep(attente)
+
+
+def _construire_tache_validation_alerte(alerte: AlerteWatcher) -> TacheValidation:
+    """Construit la TacheValidation qui matérialise une alerte dans Redis."""
+    return TacheValidation(
+        type_file=TypeFilePendante.ALERTES,
+        contenu={
+            "alerte_id": str(alerte.alerte_id),
+            "source": alerte.source.value,
+            "url": alerte.url_detectee,
+            "document_concerne": alerte.document_id_concerne,
+            "hash_avant": alerte.hash_precedent[:16] + "…",
+            "hash_apres": alerte.hash_nouveau[:16] + "…",
+            "description": alerte.description_modification,
+            "horodatage": alerte.horodatage_detection.isoformat(),
+        },
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -141,57 +193,19 @@ class Watcher:
     async def _fetch_avec_retry(
         self, url: str, source: SourceReglementaire
     ) -> str | None:
-        """Récupère une URL avec reprise sur échec réseau ou erreur 5xx.
-
-        Politique : `cfg.watcher_max_essais` tentatives, backoff exponentiel
-        de base `cfg.watcher_backoff_secondes`. Les erreurs 4xx (permanentes)
-        ne sont PAS réessayées.
-
-        Args:
-            url: URL cible.
-            source: Source pour le journal.
-
-        Returns:
-            Corps de la réponse (str) si succès, None si toutes les
-            tentatives ont échoué.
-        """
+        """Récupère `url` avec backoff exponentiel ; None sur 4xx/épuisement."""
         max_essais = max(1, int(cfg.watcher_max_essais))
         base = max(0.0, float(cfg.watcher_backoff_secondes))
         derniere_erreur: Exception | None = None
-
         for essai in range(1, max_essais + 1):
-            try:
-                client = await self._http()
-                rep = await client.get(url)
-                rep.raise_for_status()
-                return rep.text  # noqa: TRY300 — sortie normale du bloc try
-            except httpx.HTTPStatusError as exc:
-                # 4xx : ressource déplacée/supprimée/interdite — pas de retry.
-                statut = exc.response.status_code
-                if 400 <= statut < 500:
-                    logger.warning(
-                        "Source indisponible (%s) : %s — %s (pas de retry)",
-                        source.value,
-                        url,
-                        exc,
-                    )
-                    return None
-                derniere_erreur = exc
-            except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
-                derniere_erreur = exc
-
+            resultat = await self._tenter_fetch(url, source)
+            if resultat.contenu is not None:
+                return resultat.contenu
+            if resultat.arreter:
+                return None
+            derniere_erreur = resultat.erreur
             if essai < max_essais:
-                attente = base * (2 ** (essai - 1))
-                logger.warning(
-                    "Watcher — essai %d/%d échoué pour %s (%s), nouvelle tentative dans %.1fs",  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
-                    essai,
-                    max_essais,
-                    url,
-                    derniere_erreur,
-                    attente,
-                )
-                await asyncio.sleep(attente)
-
+                await _attendre_backoff(essai, max_essais, url, derniere_erreur, base)
         logger.error(
             "Watcher — %d tentatives épuisées pour %s : %s",
             max_essais,
@@ -200,64 +214,62 @@ class Watcher:
         )
         return None
 
+    async def _tenter_fetch(
+        self, url: str, source: SourceReglementaire
+    ) -> _ResultatTentativeFetch:
+        """Une tentative HTTP : succès, arrêt (4xx), ou erreur à réessayer."""
+        try:
+            client = await self._http()
+            rep = await client.get(url)
+            rep.raise_for_status()
+        except httpx.HTTPStatusError as exc:
+            statut = exc.response.status_code
+            if 400 <= statut < 500:
+                logger.warning(
+                    "Source indisponible (%s) : %s — %s (pas de retry)",
+                    source.value,
+                    url,
+                    exc,
+                )
+                return _ResultatTentativeFetch(contenu=None, arreter=True, erreur=exc)
+            return _ResultatTentativeFetch(contenu=None, arreter=False, erreur=exc)
+        except Exception as exc:  # noqa: BLE001 — frontière externe : dégradation gracieuse, cf. skill §8
+            return _ResultatTentativeFetch(contenu=None, arreter=False, erreur=exc)
+        return _ResultatTentativeFetch(contenu=rep.text, arreter=False, erreur=None)
+
     async def verifier_url(
         self,
         url: str,
         source: SourceReglementaire,
     ) -> AlerteWatcher | None:
-        """Vérifie une URL et retourne une AlerteWatcher si le contenu a changé.
-
-        Args:
-            url:    URL à vérifier.
-            source: Source réglementaire associée.
-
-        Returns:
-            AlerteWatcher si modification détectée, None sinon.
-        """
+        """Retourne une AlerteWatcher si le contenu de `url` a changé, None sinon."""
         contenu_brut = await self._fetch_avec_retry(url, source)
         if contenu_brut is None:
             return None
-
-        contenu_normalise = normaliser_contenu(contenu_brut)
-        hash_nouveau = calculer_hash_contenu(contenu_normalise)
+        hash_nouveau = calculer_hash_contenu(normaliser_contenu(contenu_brut))
         hash_precedent = self._hashes.get(url)
-
         if hash_precedent is None:
-            # Première vérification — enregistrer le hash de référence
-            self._hashes[url] = hash_nouveau
-            await asyncio.to_thread(sauvegarder_hashes, self._hashes)
-            logger.info("Watcher — première indexation : %s", url)
+            await self._memoriser_hash_initial(url, hash_nouveau)
             return None
-
         if hash_nouveau == hash_precedent:
             logger.debug("Watcher — inchangé : %s", url)
             return None
-
-        # Modification détectée
         logger.warning(
-            "Watcher — modification détectée : source=%s url=%s",
-            source.value,
-            url,
+            "Watcher — modification détectée : source=%s url=%s", source.value, url
         )
+        alerte = _construire_alerte(source, url, hash_precedent, hash_nouveau)
+        await self._memoriser_hash(url, hash_nouveau)
+        return alerte
 
-        alerte = AlerteWatcher(
-            source=source,
-            url_detectee=url,
-            hash_precedent=hash_precedent,
-            hash_nouveau=hash_nouveau,
-            horodatage_detection=datetime.now(UTC),
-            description_modification=(
-                f"Modification détectée — source {source.value} — "
-                f"URL : {url} — "
-                f"empreinte SHA-256 : {hash_precedent[:12]}… → {hash_nouveau[:12]}…"
-            ),
-        )
+    async def _memoriser_hash_initial(self, url: str, hash_nouveau: str) -> None:
+        """Enregistre le hash de référence (première vérification d'une URL)."""
+        await self._memoriser_hash(url, hash_nouveau)
+        logger.info("Watcher — première indexation : %s", url)
 
-        # Mettre à jour le hash connu
+    async def _memoriser_hash(self, url: str, hash_nouveau: str) -> None:
+        """Met à jour la table des hashes en mémoire et la persiste (thread)."""
         self._hashes[url] = hash_nouveau
         await asyncio.to_thread(sauvegarder_hashes, self._hashes)
-
-        return alerte
 
     async def cycle_verification(self) -> list[AlerteWatcher]:
         """Vérifie toutes les URLs configurées en un seul cycle.

@@ -19,6 +19,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, cast
 
@@ -38,6 +39,123 @@ _hash_lock = asyncio.Lock()
 
 # Schéma SQL extrait dans src/audit_schema.py (§12 étape 6).
 from src.audit_schema import SQL_CREATE_TABLE  # noqa: E402
+
+
+def _bilan_integrite_vide() -> dict[str, int | list[dict[str, object]]]:
+    """Bilan vide (retourné quand le fichier JSONL n'existe pas)."""
+    return {"total": 0, "valides": 0, "invalides": 0, "erreurs": []}
+
+
+def _lire_fenetre_audit(limite: int) -> tuple[str | None, list[str]]:
+    """Retourne (hash d'ancrage, fenêtre des `limite` dernières lignes).
+
+    Le hash d'ancrage est celui de la ligne AVANT la fenêtre : sans lui,
+    un bloc auto-cohérent injecté en tête de fenêtre passerait inaperçu.
+    """
+    toutes = CHEMIN_AUDIT_LOCAL.read_text(encoding="utf-8").strip().splitlines()
+    fenetre = toutes[-limite:]
+    if len(toutes) <= limite:
+        return None, fenetre
+    try:
+        ancre = json.loads(toutes[-limite - 1]).get("hash_courant")
+    except Exception:  # noqa: BLE001 — frontière externe : dégradation gracieuse, cf. skill §8
+        ancre = None
+    return ancre, fenetre
+
+
+def _verifier_lignes_audit(
+    lignes: list[str], hash_ancre: str | None
+) -> dict[str, int | list[dict[str, object]]]:
+    """Itère sur les lignes JSONL, compte valides/invalides, collecte les erreurs."""
+    total = valides = invalides = 0
+    erreurs: list[dict[str, object]] = []
+    hash_precedent_attendu: str | None = hash_ancre
+    precedent_connu = hash_ancre is not None
+    for i, ligne in enumerate(lignes):
+        total += 1
+        try:
+            resultat = _verifier_une_ligne(
+                ligne, hash_precedent_attendu, precedent_connu
+            )
+        except Exception as exc:  # noqa: BLE001 — ligne illisible, cf. skill §8
+            invalides += 1
+            erreurs.append({"ligne": i + 1, "erreur": str(exc)})
+            precedent_connu = False
+            continue
+        if resultat.detail is None:
+            valides += 1
+        else:
+            invalides += 1
+            detail_indexe = {**resultat.detail, "ligne": i + 1}
+            erreurs.append(detail_indexe)
+        hash_precedent_attendu = resultat.hash_attendu
+        precedent_connu = True
+    return {
+        "total": total,
+        "valides": valides,
+        "invalides": invalides,
+        "erreurs": erreurs,
+    }
+
+
+@dataclass(frozen=True)
+class _ResultatVerifLigne:
+    """Résultat de la vérification d'une ligne JSONL d'audit."""
+
+    hash_attendu: str | None
+    detail: dict[str, object] | None  # None si valide, sinon dict de diagnostic
+
+
+def _verifier_une_ligne(
+    ligne: str, hash_precedent_attendu: str | None, precedent_connu: bool
+) -> _ResultatVerifLigne:
+    """Vérifie auto-cohérence et liaison de chaîne d'une ligne, sans effet de bord."""
+    donnees = json.loads(ligne)
+    hash_attendu = donnees.get("hash_courant")
+    hash_precedent_declare = donnees.get("hash_precedent")
+    audit = EnregistrementAudit(**donnees)
+    hash_calcule = audit.calculer_hash()
+    auto_coherent = hash_calcule == hash_attendu
+    chaine_coherente = (
+        not precedent_connu or hash_precedent_declare == hash_precedent_attendu
+    )
+    if auto_coherent and chaine_coherente:
+        return _ResultatVerifLigne(hash_attendu=hash_attendu, detail=None)
+    detail = _detail_erreur_ligne(
+        donnees,
+        auto_coherent,
+        hash_attendu,
+        hash_calcule,
+        hash_precedent_declare,
+        hash_precedent_attendu,
+    )
+    return _ResultatVerifLigne(hash_attendu=hash_attendu, detail=detail)
+
+
+def _detail_erreur_ligne(
+    donnees: dict[str, object],
+    auto_coherent: bool,
+    hash_attendu: str | None,
+    hash_calcule: str,
+    hash_precedent_declare: str | None,
+    hash_precedent_attendu: str | None,
+) -> dict[str, object]:
+    """Construit le dict de diagnostic (hash_auto_incoherent vs chaine_rompue)."""
+    detail: dict[str, object] = {"request_id": donnees.get("request_id")}
+    if not auto_coherent:
+        detail["type"] = "hash_auto_incoherent"
+        detail["attendu"] = hash_attendu[:16] if hash_attendu else None
+        detail["calcule"] = hash_calcule[:16]
+        return detail
+    detail["type"] = "chaine_rompue"
+    detail["hash_precedent_declare"] = (
+        hash_precedent_declare[:16] if hash_precedent_declare else None
+    )
+    detail["hash_precedent_attendu"] = (
+        hash_precedent_attendu[:16] if hash_precedent_attendu else None
+    )
+    return detail
+
 
 # ---------------------------------------------------------------------------
 # Gestionnaire d'audit
@@ -126,60 +244,49 @@ class GestionnaireAudit:
             return None
 
     async def persister(self, audit: EnregistrementAudit) -> str:
-        """Persiste un EnregistrementAudit et retourne son hash.
-
-        Si PostgreSQL est censé être actif (self._postgres_ok) mais que
-        l'INSERT échoue, la persistance locale JSONL reste la source de
-        vérité — la divergence est comptabilisée (self.desynchronisations)
-        et loggée en ERROR plutôt que silencieusement ignorée, afin qu'un
-        écart entre les deux chaînes d'audit reste détectable (ex. via
-        GestionnaireAudit.statut() / l'endpoint /health).
-
-        Args:
-            audit: EnregistrementAudit (depuis src/models.py).
-
-        Returns:
-            Hash SHA-256 de l'enregistrement.
-        """
+        """Persiste (local + PostgreSQL) sous verrou, chaîné au hash précédent."""
         global _hash_precedent
 
         async with _hash_lock:
-            # Chaînage : injecter le hash précédent avant de calculer
             audit.hash_precedent = _hash_precedent
             hash_courant = audit.calculer_hash()
             audit.hash_courant = hash_courant
-
-            # Persistance locale (toujours)
-            local_ok = await self._persister_local(audit)
-            if not local_ok:
-                logger.error(
-                    "Audit local NON persisté — request_id=%s hash=%s… "
-                    "(la chaîne locale et le compteur interne divergent désormais)",
-                    audit.request_id,
-                    hash_courant[:16],
-                )
-
-            # Persistance PostgreSQL (si disponible)
+            await self._persister_local_avec_log(audit, hash_courant)
             if self._postgres_ok:
-                postgres_ok = await self._persister_postgres(audit)
-                if not postgres_ok:
-                    self.desynchronisations += 1
-                    logger.error(
-                        "Audit PostgreSQL NON persisté — request_id=%s hash=%s… "
-                        "divergence local/PostgreSQL (total cumulé : %d)",
-                        audit.request_id,
-                        hash_courant[:16],
-                        self.desynchronisations,
-                    )
-
+                await self._persister_postgres_avec_log(audit, hash_courant)
             _hash_precedent = hash_courant
-
         logger.info(
-            "Audit — request_id=%s hash=%s…",
+            "Audit — request_id=%s hash=%s…", audit.request_id, hash_courant[:16]
+        )
+        return hash_courant
+
+    async def _persister_local_avec_log(
+        self, audit: EnregistrementAudit, hash_courant: str
+    ) -> None:
+        """Écrit le JSONL local ; log ERROR sur échec (divergence interne)."""
+        if await self._persister_local(audit):
+            return
+        logger.error(
+            "Audit local NON persisté — request_id=%s hash=%s… "
+            "(la chaîne locale et le compteur interne divergent désormais)",
             audit.request_id,
             hash_courant[:16],
         )
-        return hash_courant
+
+    async def _persister_postgres_avec_log(
+        self, audit: EnregistrementAudit, hash_courant: str
+    ) -> None:
+        """INSERT PostgreSQL ; sur échec, incrémente desynchronisations + log ERROR."""
+        if await self._persister_postgres(audit):
+            return
+        self.desynchronisations += 1
+        logger.error(
+            "Audit PostgreSQL NON persisté — request_id=%s hash=%s… "
+            "divergence local/PostgreSQL (total cumulé : %d)",
+            audit.request_id,
+            hash_courant[:16],
+            self.desynchronisations,
+        )
 
     def statut(self) -> dict[str, object]:
         """État de synchronisation de l'audit trail, exposable via /health.
@@ -247,121 +354,11 @@ class GestionnaireAudit:
     async def verifier_integrite(
         self, limite: int = 100
     ) -> dict[str, int | list[dict[str, object]]]:
-        """Vérifie l'intégrité de la chaîne d'audit locale.
-
-        Relit les N derniers enregistrements du fichier JSONL et vérifie,
-        pour chacun :
-          1. Auto-cohérence : hash_courant correspond bien au contenu.
-          2. Liaison de chaîne : hash_precedent correspond au hash_courant
-             de l'enregistrement qui le précède dans le fichier.
-        Le contrôle (2) est ce qui détecte la suppression, le réordonnancement
-        ou le remplacement d'un enregistrement au milieu du fichier — un
-        contrôle (1) seul ne le détecterait pas, puisqu'un enregistrement
-        retiré reste individuellement auto-cohérent.
-
-        Args:
-            limite: Nombre maximum d'enregistrements à vérifier.
-
-        Returns:
-            Dict avec total, valides, invalides, et détails des erreurs.
-            Chaque erreur précise "type" : "hash_auto_incoherent" (contenu
-            modifié) ou "chaine_rompue" (enregistrement manquant/réordonné).
-        """
-        total = 0
-        valides = 0
-        invalides = 0
-        erreurs: list[dict[str, object]] = []
-
+        """Vérifie auto-cohérence hash et liaison de chaîne des N derniers audits."""
         if not CHEMIN_AUDIT_LOCAL.exists():
-            return {
-                "total": total,
-                "valides": valides,
-                "invalides": invalides,
-                "erreurs": erreurs,
-            }
-
-        def _lire_dernieres_lignes() -> tuple[str | None, list[str]]:
-            """Retourne (hash d'ancrage, lignes de la fenêtre).
-
-            Si le fichier contient plus de `limite` lignes, la ligne juste
-            avant la fenêtre est lue séparément pour extraire son
-            hash_courant : c'est l'ancre qui permet de vérifier la liaison
-            de chaîne de la PREMIÈRE ligne de la fenêtre. Sans ça, un bloc
-            auto-cohérent inséré en tête de fenêtre passait inaperçu.
-            """
-            toutes = CHEMIN_AUDIT_LOCAL.read_text(encoding="utf-8").strip().splitlines()
-            fenetre = toutes[-limite:]
-            ancre: str | None = None
-            if len(toutes) > limite:
-                try:
-                    ancre = json.loads(toutes[-limite - 1]).get("hash_courant")
-                except Exception:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
-                    ancre = None
-            return ancre, fenetre
-
-        hash_ancre, lignes = await asyncio.to_thread(_lire_dernieres_lignes)
-
-        # hash_courant de l'enregistrement précédent dans la fenêtre lue.
-        # Si un ancre a pu être lue (fichier plus long que la fenêtre), la
-        # liaison de la première ligne de la fenêtre est vérifiée contre elle.
-        hash_precedent_attendu: str | None = hash_ancre
-        precedent_connu = hash_ancre is not None
-
-        for i, ligne in enumerate(lignes):
-            total += 1
-            try:
-                donnees = json.loads(ligne)
-                hash_attendu = donnees.get("hash_courant")
-                hash_precedent_declare = donnees.get("hash_precedent")
-                audit = EnregistrementAudit(**donnees)
-                hash_calcule = audit.calculer_hash()
-
-                auto_coherent = hash_calcule == hash_attendu
-                chaine_coherente = (
-                    not precedent_connu
-                    or hash_precedent_declare == hash_precedent_attendu
-                )
-
-                if auto_coherent and chaine_coherente:
-                    valides += 1
-                else:
-                    invalides += 1
-                    detail: dict[str, object] = {
-                        "ligne": i + 1,
-                        "request_id": donnees.get("request_id"),
-                    }
-                    if not auto_coherent:
-                        detail["type"] = "hash_auto_incoherent"
-                        detail["attendu"] = hash_attendu[:16] if hash_attendu else None
-                        detail["calcule"] = hash_calcule[:16]
-                    else:
-                        detail["type"] = "chaine_rompue"
-                        detail["hash_precedent_declare"] = (
-                            hash_precedent_declare[:16]
-                            if hash_precedent_declare
-                            else None
-                        )
-                        detail["hash_precedent_attendu"] = (
-                            hash_precedent_attendu[:16]
-                            if hash_precedent_attendu
-                            else None
-                        )
-                    erreurs.append(detail)
-
-                hash_precedent_attendu = hash_attendu
-                precedent_connu = True
-            except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
-                invalides += 1
-                erreurs.append({"ligne": i + 1, "erreur": str(exc)})
-                # Ligne illisible — le prédécesseur pour la suivante n'est plus fiable.
-                precedent_connu = False
-
-        return {
-            "total": total,
-            "valides": valides,
-            "invalides": invalides,
-            "erreurs": erreurs,
-        }
+            return _bilan_integrite_vide()
+        hash_ancre, lignes = await asyncio.to_thread(_lire_fenetre_audit, limite)
+        return _verifier_lignes_audit(lignes, hash_ancre)
 
     async def fermer(self) -> None:
         """Ferme le pool PostgreSQL proprement."""
