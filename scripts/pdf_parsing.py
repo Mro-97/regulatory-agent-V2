@@ -50,34 +50,37 @@ PATTERNS_CHAPITRE = [
 
 
 def extraire_texte_pdf(chemin: Path) -> str:
-    """Extrait le texte brut d'un PDF via pdfplumber.
+    """Extrait le texte brut d'un PDF via pdfplumber."""
+    _verifier_pdfplumber_disponible()
+    _verifier_fichier_existe(chemin)
+    logger.info("Extraction texte : %s", chemin.name)
+    return _extraire_pages(chemin)
 
-    Args:
-        chemin: Chemin vers le fichier PDF.
 
-    Returns:
-        Texte brut extrait, pages séparées par des sauts de ligne doubles.
-
-    Raises:
-        ImportError: Si pdfplumber n'est pas installé.
-        FileNotFoundError: Si le fichier n'existe pas.
-    """
+def _verifier_pdfplumber_disponible() -> None:
+    """Vérifie que `pdfplumber` est importable ; sys.exit(1) sinon."""
     try:
-        import pdfplumber
+        import pdfplumber  # noqa: F401
     except ImportError:
         logger.exception(
             "pdfplumber requis : pip install pdfplumber --break-system-packages"
         )
         sys.exit(1)
 
+
+def _verifier_fichier_existe(chemin: Path) -> None:
+    """Lève ExtractionFailedError si `chemin` n'existe pas."""
     if not chemin.exists():
         from src.errors import ExtractionFailedError
 
         raise ExtractionFailedError(str(chemin), reason="fichier introuvable")
 
-    logger.info("Extraction texte : %s", chemin.name)
-    pages_texte: list[str] = []
 
+def _extraire_pages(chemin: Path) -> str:
+    """Concatène le texte de chaque page en journalisant tous les 20 pages."""
+    import pdfplumber
+
+    pages_texte: list[str] = []
     with pdfplumber.open(chemin) as pdf:
         logger.info("Nombre de pages : %d", len(pdf.pages))
         for i, page in enumerate(pdf.pages, 1):
@@ -86,7 +89,6 @@ def extraire_texte_pdf(chemin: Path) -> str:
                 pages_texte.append(texte.strip())
             if i % 20 == 0:
                 logger.info("  Pages traitées : %d/%d", i, len(pdf.pages))
-
     texte_complet = "\n\n".join(pages_texte)
     logger.info("Extraction terminée — %d caractères", len(texte_complet))
     return texte_complet
@@ -98,34 +100,8 @@ def extraire_texte_pdf(chemin: Path) -> str:
 
 
 def detecter_articles(texte: str) -> list[dict[str, Any]]:
-    """Détecte les articles dans le texte extrait.
-
-    Stratégie : chercher les patterns "Article N" et découper le texte
-    entre chaque occurrence.
-
-    Args:
-        texte: Texte brut du document.
-
-    Returns:
-        Liste de dicts {numero, titre, texte, debut} — "debut" est la position
-        du début de l'article dans le texte source, utilisée pour l'attribution
-        au bon chapitre dans construire_document().
-    """
-    articles = []
-    positions = []
-
-    for pattern in PATTERNS_ARTICLE:
-        for match in pattern.finditer(texte):
-            positions.append(
-                {
-                    "debut": match.start(),
-                    "numero": match.group(1),
-                    "titre_ligne": match.group(2).strip()
-                    if match.lastindex is not None and match.lastindex >= 2
-                    else "",
-                }
-            )
-
+    """Découpe `texte` en articles ; bloc unique si aucun pattern ne matche."""
+    positions = _collecter_positions_articles(texte)
     if not positions:
         logger.warning("Aucun article détecté — document traité comme un seul bloc.")
         return [
@@ -134,39 +110,62 @@ def detecter_articles(texte: str) -> list[dict[str, Any]]:
                 "titre": "Document complet",
                 "texte": texte.strip(),
                 "debut": 0,
-            }
+            },
         ]
-
-    # Trier par position
     positions.sort(key=lambda p: p["debut"])
-
-    # Découper le texte entre les articles
-    for i, pos in enumerate(positions):
-        debut_texte = int(pos["debut"])
-        fin_texte = (
-            int(positions[i + 1]["debut"]) if i + 1 < len(positions) else len(texte)
+    articles = [
+        art
+        for art in (
+            _decouper_article(pos, positions, i, texte)
+            for i, pos in enumerate(positions)
         )
-        bloc = texte[debut_texte:fin_texte].strip()
-
-        # Séparer le titre du corps
-        lignes = bloc.split("\n", 1)
-        titre = pos["titre_ligne"] or f"Article {pos['numero']}"
-        corps = lignes[1].strip() if len(lignes) > 1 else ""
-
-        if not corps:
-            continue
-
-        articles.append(
-            {
-                "numero": pos["numero"],
-                "titre": titre,
-                "texte": corps,
-                "debut": debut_texte,
-            }
-        )
-
+        if art is not None
+    ]
     logger.info("%d article(s) détecté(s)", len(articles))
     return articles
+
+
+def _collecter_positions_articles(texte: str) -> list[dict[str, Any]]:
+    """Applique tous les PATTERNS_ARTICLE et collecte les positions/numéro/titre."""
+    positions: list[dict[str, Any]] = []
+    for pattern in PATTERNS_ARTICLE:
+        for match in pattern.finditer(texte):
+            titre_ligne = (
+                match.group(2).strip()
+                if match.lastindex is not None and match.lastindex >= 2
+                else ""
+            )
+            positions.append(
+                {
+                    "debut": match.start(),
+                    "numero": match.group(1),
+                    "titre_ligne": titre_ligne,
+                },
+            )
+    return positions
+
+
+def _decouper_article(
+    pos: dict[str, Any],
+    positions: list[dict[str, Any]],
+    i: int,
+    texte: str,
+) -> dict[str, Any] | None:
+    """Extrait le bloc `[debut, debut_suivant]` et sépare titre/corps ; None si vide."""
+    debut_texte = int(pos["debut"])
+    fin_texte = int(positions[i + 1]["debut"]) if i + 1 < len(positions) else len(texte)
+    bloc = texte[debut_texte:fin_texte].strip()
+    lignes = bloc.split("\n", 1)
+    titre = pos["titre_ligne"] or f"Article {pos['numero']}"
+    corps = lignes[1].strip() if len(lignes) > 1 else ""
+    if not corps:
+        return None
+    return {
+        "numero": pos["numero"],
+        "titre": titre,
+        "texte": corps,
+        "debut": debut_texte,
+    }
 
 
 # ---------------------------------------------------------------------------

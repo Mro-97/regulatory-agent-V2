@@ -77,96 +77,12 @@ def construire_document(
     themes: list[str],
     url_source: str | None = None,
 ) -> DocumentReglementaire:
-    """Construit un DocumentReglementaire depuis le texte extrait.
-
-    Args:
-        texte:             Texte brut du document.
-        doc_id:            Identifiant du document.
-        titre:             Titre officiel.
-        source:            Source institutionnelle.
-        publication_date:  Date de publication.
-        entry_into_force:  Date d'entrée en vigueur.
-        themes:            Tags thématiques.
-        url_source:        URL canonique (optionnel).
-
-    Returns:
-        DocumentReglementaire prêt à l'ingestion.
-    """
+    """Assemble un DocumentReglementaire (chapitres + articles) depuis le texte brut."""
     articles_bruts = detecter_articles(texte)
     chapitres_bruts = detecter_chapitres(texte)
-
-    # Si tous les marqueurs de chapitre suivent tous les articles, on est
-    # face à une TOC/pied de document, pas à une vraie partition : on tombe
-    # en mode chapitre unique. Idem s'il n'y a aucun chapitre détecté.
-    max_art_debut = max((a.get("debut", 0) for a in articles_bruts), default=0)
-    chapitres_structurels = [c for c in chapitres_bruts if c["debut"] <= max_art_debut]
-
-    if chapitres_bruts and chapitres_structurels:
-        # Dédupliquer les marqueurs répétés (headers de page) en conservant
-        # la première occurrence de chaque id, dans l'ordre du texte.
-        vus: set[str] = set()
-        chapitres_uniques: list[dict[str, Any]] = []
-        for c in chapitres_structurels:
-            if c["id"] not in vus:
-                vus.add(c["id"])
-                chapitres_uniques.append(c)
-
-        # Attribution de chaque article au chapitre dont le début précède
-        # immédiatement le sien (le dernier chapitre dont "debut" <= article["debut"]).
-        chapitres_map: dict[str, list[Any]] = {c["id"]: [] for c in chapitres_uniques}
-        chap_ids = [c["id"] for c in chapitres_uniques]
-        chap_debuts = [c["debut"] for c in chapitres_uniques]
-
-        for art in articles_bruts:
-            art_debut = art.get("debut", 0)
-            chap_id = chap_ids[0]  # défaut : avant le premier chapitre détecté
-            for cid, debut in zip(chap_ids, chap_debuts, strict=True):
-                if debut <= art_debut:
-                    chap_id = cid
-                else:
-                    break
-            chapitres_map[chap_id].append(art)
-
-        chapitres: list[Chapitre] = []
-        for c in chapitres_uniques:
-            arts = chapitres_map.get(c["id"], [])
-            if not arts:
-                continue
-            versions = [
-                VersionArticle(
-                    id=f"art_{a['numero']}",
-                    titre=a["titre"] or f"Article {a['numero']}",
-                    texte=a["texte"],
-                    validite=IntervalleValidite(valid_from=entry_into_force),
-                )
-                for a in arts
-            ]
-            chapitres.append(
-                Chapitre(
-                    id=c["id"],
-                    titre=c["titre"] or c["id"],
-                    articles=versions,
-                )
-            )
-    else:
-        # Un seul chapitre
-        versions = [
-            VersionArticle(
-                id=f"art_{a['numero']}",
-                titre=a["titre"] or f"Article {a['numero']}",
-                texte=a["texte"],
-                validite=IntervalleValidite(valid_from=entry_into_force),
-            )
-            for a in articles_bruts
-        ]
-        chapitres = [
-            Chapitre(
-                id="chap_principal",
-                titre="Dispositions",
-                articles=versions,
-            )
-        ]
-
+    chapitres = _decouper_en_chapitres(
+        articles_bruts, chapitres_bruts, entry_into_force
+    )
     doc = DocumentReglementaire(
         id=doc_id,
         titre=titre,
@@ -182,12 +98,121 @@ def construire_document(
     return doc
 
 
+def _decouper_en_chapitres(
+    articles_bruts: list[dict[str, Any]],
+    chapitres_bruts: list[dict[str, Any]],
+    entry_into_force: date,
+) -> list[Chapitre]:
+    """Choisit le découpage : par chapitres détectés, sinon un chapitre unique."""
+    max_art_debut = max((a.get("debut", 0) for a in articles_bruts), default=0)
+    chapitres_structurels = [c for c in chapitres_bruts if c["debut"] <= max_art_debut]
+    if chapitres_bruts and chapitres_structurels:
+        return _construire_chapitres_multiples(
+            articles_bruts, chapitres_structurels, entry_into_force
+        )
+    return [_construire_chapitre_unique(articles_bruts, entry_into_force)]
+
+
+def _construire_chapitres_multiples(
+    articles_bruts: list[dict[str, Any]],
+    chapitres_structurels: list[dict[str, Any]],
+    entry_into_force: date,
+) -> list[Chapitre]:
+    """Attribue chaque article au chapitre précédent (immédiatement inférieur)."""
+    chapitres_uniques = _dedupliquer_par_id(chapitres_structurels)
+    chapitres_map: dict[str, list[Any]] = {c["id"]: [] for c in chapitres_uniques}
+    chap_ids = [c["id"] for c in chapitres_uniques]
+    chap_debuts = [c["debut"] for c in chapitres_uniques]
+    for art in articles_bruts:
+        chap_id = _resoudre_chapitre_de(art, chap_ids, chap_debuts)
+        chapitres_map[chap_id].append(art)
+    return [
+        Chapitre(
+            id=c["id"],
+            titre=c["titre"] or c["id"],
+            articles=_construire_versions(chapitres_map[c["id"]], entry_into_force),
+        )
+        for c in chapitres_uniques
+        if chapitres_map[c["id"]]
+    ]
+
+
+def _construire_chapitre_unique(
+    articles_bruts: list[dict[str, Any]],
+    entry_into_force: date,
+) -> Chapitre:
+    """Retourne un seul chapitre `chap_principal` contenant tous les articles."""
+    return Chapitre(
+        id="chap_principal",
+        titre="Dispositions",
+        articles=_construire_versions(articles_bruts, entry_into_force),
+    )
+
+
+def _construire_versions(
+    articles_bruts: list[dict[str, Any]],
+    entry_into_force: date,
+) -> list[VersionArticle]:
+    """Convertit chaque dict article en VersionArticle valide dès `entry_into_force`."""
+    return [
+        VersionArticle(
+            id=f"art_{a['numero']}",
+            titre=a["titre"] or f"Article {a['numero']}",
+            texte=a["texte"],
+            validite=IntervalleValidite(valid_from=entry_into_force),
+        )
+        for a in articles_bruts
+    ]
+
+
+def _dedupliquer_par_id(
+    chapitres: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Conserve la première occurrence de chaque id (headers de page répétés)."""
+    vus: set[str] = set()
+    uniques: list[dict[str, Any]] = []
+    for c in chapitres:
+        if c["id"] not in vus:
+            vus.add(c["id"])
+            uniques.append(c)
+    return uniques
+
+
+def _resoudre_chapitre_de(
+    art: dict[str, Any],
+    chap_ids: list[str],
+    chap_debuts: list[int],
+) -> str:
+    """Retourne le dernier chap_id dont le début précède le début de `art`."""
+    art_debut = art.get("debut", 0)
+    chap_id = chap_ids[0]
+    for cid, debut in zip(chap_ids, chap_debuts, strict=True):
+        if debut <= art_debut:
+            chap_id = cid
+        else:
+            break
+    return chap_id
+
+
 # ---------------------------------------------------------------------------
 # Point d'entrée CLI
 # ---------------------------------------------------------------------------
 
 
-def main() -> None:  # noqa: D103
+def main() -> None:
+    """Entrée CLI : parse args → extrait le PDF → construit le JSON canonique."""
+    args = _parser_arguments().parse_args()
+    if not args.fichier.exists():
+        logger.error("Fichier introuvable : %s", args.fichier)
+        sys.exit(1)
+    chemin_sortie = _resoudre_chemin_sortie(args)
+    doc = _extraire_et_construire(args)
+    chemin_sortie.write_text(doc.model_dump_json(indent=2), encoding="utf-8")
+    _journaliser_sortie(chemin_sortie, doc)
+
+
+def _parser_arguments() -> argparse.ArgumentParser:
+    """Configure et retourne l'ArgumentParser CLI de pdf_to_json."""
     parser = argparse.ArgumentParser(
         description="Convertit un PDF réglementaire en JSON canonique.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -207,10 +232,10 @@ def main() -> None:  # noqa: D103
         help="Source institutionnelle.",
     )
     parser.add_argument(
-        "--publication", required=True, help="Date de publication (YYYY-MM-DD)."
+        "--publication", required=True, help="Date publication (YYYY-MM-DD)."
     )
     parser.add_argument(
-        "--vigueur", required=True, help="Date d'entrée en vigueur (YYYY-MM-DD)."
+        "--vigueur", required=True, help="Date entrée en vigueur (YYYY-MM-DD)."
     )
     parser.add_argument("--themes", default="", help="Thèmes séparés par des virgules.")
     parser.add_argument("--url", default=None, help="URL canonique de la source.")
@@ -220,45 +245,35 @@ def main() -> None:  # noqa: D103
         type=Path,
         help="Fichier JSON de sortie (défaut : data/raw/<id>.json).",
     )
+    return parser
 
-    args = parser.parse_args()
 
-    # Validation
-    if not args.fichier.exists():
-        logger.error("Fichier introuvable : %s", args.fichier)
-        sys.exit(1)
-
-    pub_date = date.fromisoformat(args.publication)
-    vig_date = date.fromisoformat(args.vigueur)
-    themes = [t.strip() for t in args.themes.split(",") if t.strip()]
-    source = SourceReglementaire(args.source)
-
-    chemin_sortie = args.sortie or (
+def _resoudre_chemin_sortie(args: argparse.Namespace) -> Path:
+    """Retourne le chemin explicite (--sortie) ou le défaut `data/raw/<id>.json`."""
+    chemin = args.sortie or (
         Path(__file__).parent.parent / "data" / "raw" / f"{args.doc_id}.json"
     )
-    chemin_sortie.parent.mkdir(parents=True, exist_ok=True)
+    chemin.parent.mkdir(parents=True, exist_ok=True)
+    return chemin
 
-    # Extraction
+
+def _extraire_et_construire(args: argparse.Namespace) -> DocumentReglementaire:
+    """Extrait le texte PDF puis assemble le DocumentReglementaire."""
     texte = extraire_texte_pdf(args.fichier)
-
-    # Construction
-    doc = construire_document(
+    return construire_document(
         texte=texte,
         doc_id=args.doc_id,
         titre=args.titre or args.doc_id,
-        source=source,
-        publication_date=pub_date,
-        entry_into_force=vig_date,
-        themes=themes,
+        source=SourceReglementaire(args.source),
+        publication_date=date.fromisoformat(args.publication),
+        entry_into_force=date.fromisoformat(args.vigueur),
+        themes=[t.strip() for t in args.themes.split(",") if t.strip()],
         url_source=args.url,
     )
 
-    # Sauvegarde
-    chemin_sortie.write_text(
-        doc.model_dump_json(indent=2),
-        encoding="utf-8",
-    )
 
+def _journaliser_sortie(chemin_sortie: Path, doc: DocumentReglementaire) -> None:
+    """Trace le fichier produit et rappelle la commande suivante."""
     total_articles = sum(len(c.articles) for c in doc.chapitres)
     logger.info(
         "JSON généré : %s | chapitres=%d articles=%d",

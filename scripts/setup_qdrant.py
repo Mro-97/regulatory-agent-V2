@@ -43,45 +43,51 @@ def setup_collection(
     dimension: int,
     reset: bool = False,
 ) -> None:
-    """Crée (ou recrée) la collection Qdrant avec tous les index nécessaires.
+    """Idempotent : crée/recrée `collection` (VectorParams Cosine) + indexes payload."""
+    _reinitialiser_si_demande(client, collection, reset)
+    _creer_collection_si_absente(client, collection, dimension)
+    _creer_indexes_payload(client, collection)
+    _journaliser_etat_collection(client, collection)
 
-    Args:
-        client:     QdrantClient connecté.
-        collection: Nom de la collection.
-        dimension:  Dimension des vecteurs d'embedding.
-        reset:      Si True, supprime la collection existante avant création.
-    """
-    from qdrant_client.http.models import (
-        Distance,
-        PayloadSchemaType,
-        VectorParams,
-    )
 
-    # Suppression si reset
+def _reinitialiser_si_demande(
+    client: QdrantClient, collection: str, reset: bool
+) -> None:
+    """Supprime la collection existante quand `reset=True`."""
     if reset and client.collection_exists(collection):
         logger.warning("Suppression de la collection existante : %s", collection)
         client.delete_collection(collection)
 
-    # Création si absente
-    if not client.collection_exists(collection):
-        logger.info(
-            "Création collection '%s' (dim=%d, distance=Cosine)…",
-            collection,
-            dimension,
-        )
-        client.create_collection(
-            collection_name=collection,
-            vectors_config=VectorParams(
-                size=dimension,
-                distance=Distance.COSINE,
-                on_disk=False,
-            ),
-        )
-        logger.info("Collection créée.")
-    else:
-        logger.info("Collection '%s' existante — index seulement.", collection)
 
-    # Index de payload pour le filtrage performant
+def _creer_collection_si_absente(
+    client: QdrantClient, collection: str, dimension: int
+) -> None:
+    """Crée la collection avec VectorParams Cosine si elle n'existe pas."""
+    from qdrant_client.http.models import Distance, VectorParams
+
+    if client.collection_exists(collection):
+        logger.info("Collection '%s' existante — index seulement.", collection)
+        return
+    logger.info(
+        "Création collection '%s' (dim=%d, distance=Cosine)…",
+        collection,
+        dimension,
+    )
+    client.create_collection(
+        collection_name=collection,
+        vectors_config=VectorParams(
+            size=dimension,
+            distance=Distance.COSINE,
+            on_disk=False,
+        ),
+    )
+    logger.info("Collection créée.")
+
+
+def _creer_indexes_payload(client: QdrantClient, collection: str) -> None:
+    """Crée les 6 indexes de payload nécessaires au filtrage temporel/thématique."""
+    from qdrant_client.http.models import PayloadSchemaType
+
     index_a_creer = [
         ("document_id", PayloadSchemaType.KEYWORD),
         ("article_id", PayloadSchemaType.KEYWORD),
@@ -90,7 +96,6 @@ def setup_collection(
         ("valid_from", PayloadSchemaType.DATETIME),
         ("valid_to", PayloadSchemaType.DATETIME),
     ]
-
     for champ, schema in index_a_creer:
         try:
             client.create_payload_index(
@@ -99,11 +104,12 @@ def setup_collection(
                 field_schema=schema,
             )
             logger.info("Index créé : %s (%s)", champ, schema.value)
-        except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
-            # L'index existe déjà — ignoré
+        except Exception as exc:  # noqa: BLE001 — index déjà présent, tolérable, cf. skill §8
             logger.debug("Index '%s' déjà présent : %s", champ, exc)
 
-    # Vérification finale
+
+def _journaliser_etat_collection(client: QdrantClient, collection: str) -> None:
+    """Trace vecteurs/statut de la collection après setup."""
     info = client.get_collection(collection)
     logger.info(
         "Collection prête : %s | vecteurs=%d | statut=%s",
@@ -113,7 +119,24 @@ def setup_collection(
     )
 
 
-def main() -> None:  # noqa: D103
+def main() -> None:
+    """Entrée CLI : parse `--memory`/`--reset`, se connecte et appelle setup."""
+    args = _parser_arguments().parse_args()
+    client = _nouveau_client(memory=args.memory)
+    setup_collection(
+        client=client,
+        collection=cfg.qdrant_collection,
+        dimension=cfg.qdrant_vecteur_taille,
+        reset=args.reset,
+    )
+    if not args.memory:
+        logger.info(
+            "Prochaine étape : python3 scripts/ingest.py --fichier data/raw/<doc>.json"
+        )
+
+
+def _parser_arguments() -> argparse.ArgumentParser:
+    """ArgumentParser CLI de setup_qdrant."""
     parser = argparse.ArgumentParser(
         description="Initialise la collection Qdrant pour Regulatory Agent V2.",
     )
@@ -125,33 +148,23 @@ def main() -> None:  # noqa: D103
         action="store_true",
         help="Supprime et recrée la collection existante.",
     )
-    args = parser.parse_args()
+    return parser
 
+
+def _nouveau_client(memory: bool) -> QdrantClient:
+    """Instancie un client Qdrant (mémoire pour tests, sinon `cfg.qdrant_*`)."""
     from qdrant_client import QdrantClient
 
-    if args.memory:
+    if memory:
         logger.info("Mode test : Qdrant en mémoire.")
-        client = QdrantClient(location=":memory:")
-    else:
-        logger.info("Connexion Qdrant : %s:%d", cfg.qdrant_host, cfg.qdrant_port)
-        client = QdrantClient(
-            host=cfg.qdrant_host,
-            port=cfg.qdrant_port,
-            https=cfg.qdrant_https,
-            api_key=cfg.qdrant_api_key or None,
-        )
-
-    setup_collection(
-        client=client,
-        collection=cfg.qdrant_collection,
-        dimension=cfg.qdrant_vecteur_taille,
-        reset=args.reset,
+        return QdrantClient(location=":memory:")
+    logger.info("Connexion Qdrant : %s:%d", cfg.qdrant_host, cfg.qdrant_port)
+    return QdrantClient(
+        host=cfg.qdrant_host,
+        port=cfg.qdrant_port,
+        https=cfg.qdrant_https,
+        api_key=cfg.qdrant_api_key or None,
     )
-
-    if not args.memory:
-        logger.info(
-            "Prochaine étape : python3 scripts/ingest.py --fichier data/raw/<doc>.json"
-        )
 
 
 if __name__ == "__main__":
