@@ -140,6 +140,51 @@ OrchestrateurDep = Annotated[Orchestrateur, Depends(obtenir_orchestrateur)]
 
 
 # ---------------------------------------------------------------------------
+# Helpers d'erreur HTTP (mutualisation §Clean Code SRP)
+# ---------------------------------------------------------------------------
+
+
+# Messages HTTP 500 — sortis du corps de fonction (règle TRY003 §8) pour
+# ne pas polluer les `raise` avec des chaînes littérales longues.
+_MSG_ERREUR_INGESTION = "Erreur interne lors de l'ingestion."
+_MSG_ERREUR_VALIDATION = "Erreur interne lors de la validation."
+_MSG_ERREUR_PENDING = "Erreur interne lors de la récupération des tâches."
+_MSG_ERREUR_ASK = "Erreur interne lors du traitement de la question."
+
+
+def _erreur_500(detail: str) -> HTTPException:
+    """Fabrique une HTTPException 500 avec `detail` (pour `raise ... from`)."""
+    return HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=detail
+    )
+
+
+async def _appliquer_decision_validation(
+    orchestrateur: Orchestrateur,
+    requete: RequeteDecisionValidation,
+    decision: StatutValidation,
+    *,
+    endpoint: str,
+) -> ReponseDecisionValidation:
+    """Applique une décision (APPROUVE/REJETE) avec mapping d'erreurs HTTP.
+
+    Mutualisation des handlers `/approve` et `/reject` qui n'ont
+    fonctionnellement qu'un statut cible différent.
+    """
+    try:
+        return await orchestrateur.valider_tache(
+            tache_id=requete.tache_id,
+            decision=decision,
+            commentaire=requete.commentaire,
+        )
+    except ValueError as exc:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, str(exc)) from exc
+    except Exception:
+        logger.exception("Erreur %s", endpoint)
+        raise _erreur_500(_MSG_ERREUR_VALIDATION) from None
+
+
+# ---------------------------------------------------------------------------
 # Interface web
 # ---------------------------------------------------------------------------
 
@@ -202,10 +247,7 @@ async def poser_question(
         return await orchestrateur.traiter(requete)
     except Exception:
         logger.exception("Erreur /ask")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Erreur interne lors du traitement de la question.",
-        ) from None
+        raise _erreur_500(_MSG_ERREUR_ASK) from None
 
 
 @app.post(
@@ -227,21 +269,12 @@ async def ingerer(
     try:
         return await orchestrateur.ingerer(requete)
     except DocumentDejaIndexeError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=str(exc),
-        ) from exc
+        raise HTTPException(status.HTTP_409_CONFLICT, str(exc)) from exc
     except ValueError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(exc),
-        ) from exc
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, str(exc)) from exc
     except Exception:
         logger.exception("Erreur /ingest")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Erreur interne lors de l'ingestion.",
-        ) from None
+        raise _erreur_500(_MSG_ERREUR_INGESTION) from None
 
 
 @app.get(
@@ -258,10 +291,7 @@ async def pending(orchestrateur: OrchestrateurDep) -> ReponseTachesPendantes:
         return await orchestrateur.lister_taches_pendantes()
     except Exception:
         logger.exception("Erreur /pending")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Erreur interne lors de la récupération des tâches.",
-        ) from None
+        raise _erreur_500(_MSG_ERREUR_PENDING) from None
 
 
 @app.post(
@@ -277,23 +307,9 @@ async def approuver(
     orchestrateur: OrchestrateurDep,
 ) -> ReponseDecisionValidation:
     """Approuve la tâche identifiée par `tache_id` (statut → APPROUVE)."""
-    try:
-        return await orchestrateur.valider_tache(
-            tache_id=requete.tache_id,
-            decision=StatutValidation.APPROUVE,
-            commentaire=requete.commentaire,
-        )
-    except ValueError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(exc),
-        ) from exc
-    except Exception:
-        logger.exception("Erreur /approve")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Erreur interne lors de la validation.",
-        ) from None
+    return await _appliquer_decision_validation(
+        orchestrateur, requete, StatutValidation.APPROUVE, endpoint="/approve"
+    )
 
 
 @app.post(
@@ -309,20 +325,6 @@ async def rejeter(
     orchestrateur: OrchestrateurDep,
 ) -> ReponseDecisionValidation:
     """Rejette la tâche identifiée par `tache_id` (statut → REJETE)."""
-    try:
-        return await orchestrateur.valider_tache(
-            tache_id=requete.tache_id,
-            decision=StatutValidation.REJETE,
-            commentaire=requete.commentaire,
-        )
-    except ValueError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(exc),
-        ) from exc
-    except Exception:
-        logger.exception("Erreur /reject")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Erreur interne lors de la validation.",
-        ) from None
+    return await _appliquer_decision_validation(
+        orchestrateur, requete, StatutValidation.REJETE, endpoint="/reject"
+    )

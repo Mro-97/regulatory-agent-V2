@@ -39,6 +39,47 @@ from src.models import EvidenceRecuperee, SourceReglementaire
 logger = logging.getLogger(__name__)
 
 
+def _nouveau_client_qdrant() -> QdrantClient:
+    """Fabrique un `QdrantClient` avec les paramètres cfg (host/port/https/api_key)."""
+    return QdrantClient(
+        host=cfg.qdrant_host,
+        port=cfg.qdrant_port,
+        https=cfg.qdrant_https,
+        api_key=cfg.qdrant_api_key or None,
+    )
+
+
+def _journaliser_debut_retrieval(
+    question: str,
+    date_contexte: date | None,
+    top_k: int,
+    filtres_themes: list[str] | None,
+    filtres_sources: list[SourceReglementaire] | None,
+) -> None:
+    """Trace un appel `retrieve()` avec filtres et question tronquée."""
+    logger.info(
+        "Retrieval — question=%r date_contexte=%s top_k=%d themes=%s sources=%s",
+        question[:80],
+        date_contexte,
+        top_k,
+        filtres_themes or [],
+        [s.value for s in (filtres_sources or [])],
+    )
+
+
+def _convertir_points_en_evidences(
+    points: list[ScoredPoint],
+) -> list[EvidenceRecuperee]:
+    """Convertit une liste de ScoredPoint en EvidenceRecuperee[] (drop les None)."""
+    evidences = [e for e in (point_vers_evidence(p) for p in points) if e is not None]
+    logger.info(
+        "Retrieval terminé — %d/%d chunks retournés",
+        len(evidences),
+        len(points),
+    )
+    return evidences
+
+
 class Retriever:
     """Agent de recherche vectorielle dans Qdrant.
 
@@ -55,16 +96,10 @@ class Retriever:
         """Initialise le Retriever sans charger le modèle en mémoire.
 
         Args:
-            qdrant_client: Client Qdrant injecté (utile pour les tests).
-                           Si None, créé depuis cfg.
+            qdrant_client: Client injecté (tests) ; sinon créé depuis cfg.
             top_k: Nombre de chunks à retourner. Défaut : cfg.qdrant_top_k.
         """
-        self._client = qdrant_client or QdrantClient(
-            host=cfg.qdrant_host,
-            port=cfg.qdrant_port,
-            https=cfg.qdrant_https,
-            api_key=cfg.qdrant_api_key or None,
-        )
+        self._client = qdrant_client or _nouveau_client_qdrant()
         self._collection = cfg.qdrant_collection
         self._top_k = top_k if top_k is not None else cfg.qdrant_top_k
         logger.info(
@@ -78,20 +113,10 @@ class Retriever:
     # ------------------------------------------------------------------
 
     def embed_question(self, question: str) -> list[float]:
-        """Génère l'embedding de la question via MLXEmbedding (bge-m3).
-
-        Utilise get_embedding() pour bénéficier du lazy loading et du cache
-        global. Le modèle reste chargé en permanence sur Mac B.
-
-        Args:
-            question: Texte de la question à encoder.
-
-        Returns:
-            Vecteur d'embedding normalisé (dimension 1024 pour bge-m3).
+        """Génère l'embedding via MLXEmbedding (bge-m3, cache global).
 
         Raises:
-            InferenceError: Si le modèle ne peut pas être chargé ou si
-                l'encodage échoue (`ModelLoadError`, `EmbeddingFailedError`).
+            InferenceError: Chargement modèle ou encodage échoué.
         """
         logger.debug("Génération de l'embedding — question=%r", question[:80])
         modele = get_embedding(cfg.modele_embedding)
@@ -109,15 +134,7 @@ class Retriever:
         limite: int,
         filtre: Filter | None = None,
     ) -> list[ScoredPoint]:
-        """Exécute une recherche vectorielle dans Qdrant.
-
-        Args:
-            vecteur: Vecteur de la requête.
-            limite:  Nombre maximum de résultats.
-            filtre:  Filtre Qdrant optionnel.
-
-        Returns:
-            Liste de ScoredPoint retournés par Qdrant.
+        """Exécute une recherche vectorielle Qdrant.
 
         Raises:
             VectorStoreError: Si Qdrant est inaccessible.
@@ -151,74 +168,60 @@ class Retriever:
     ) -> list[EvidenceRecuperee]:
         """Recherche les passages réglementaires pertinents pour une question.
 
-        Deux passes Qdrant :
-          Passe A : valid_from <= date_ref ET valid_to >= date_ref
-          Passe B : valid_from <= date_ref ET valid_to = null
-        Le budget top_k est réparti équitablement entre les deux passes
-        (avec repêchage si l'une des deux manque de candidats), puis le
-        résultat final est trié par score décroissant.
+        Retrieval en deux passes temporelles (`valid_to>=date_ref` +
+        `valid_to=null`) fusionnées par score, avec représentation
+        garantie de chaque passe non vide (empêche B7).
 
         Args:
             question:        Question réglementaire en langage naturel.
-            date_contexte:   Date réglementaire de contexte. Si None,
-                             utilise la date du jour.
+            date_contexte:   Date de contexte ; défaut = aujourd'hui.
             filtres_themes:  Restreint aux chunks portant au moins un des thèmes.
-                             None ou liste vide = pas de filtrage thématique.
             filtres_sources: Restreint aux chunks issus des sources listées.
-                             None ou liste vide = pas de filtrage par source.
 
         Returns:
-            Liste d'EvidenceRecuperee triée par score décroissant,
-            limitée à top_k éléments. Liste vide si aucun résultat.
+            EvidenceRecuperee[] triée par score décroissant, ≤ `top_k`.
         """
-        logger.info(
-            "Retrieval — question=%r date_contexte=%s top_k=%d themes=%s sources=%s",
-            question[:80],
-            date_contexte,
-            self._top_k,
-            filtres_themes or [],
-            [s.value for s in (filtres_sources or [])],
+        _journaliser_debut_retrieval(
+            question, date_contexte, self._top_k, filtres_themes, filtres_sources
         )
+        vecteur = self._encoder_question_ou_vide(question)
+        if not vecteur:
+            return []
+        date_ref = date_contexte or datetime.now(UTC).date()
+        points_bruts = self._executer_deux_passes(
+            vecteur, date_ref, filtres_themes, filtres_sources
+        )
+        if not points_bruts:
+            logger.warning("Aucun chunk trouvé pour : %r", question[:80])
+            return []
+        return _convertir_points_en_evidences(points_bruts)
 
-        # --- Étape 1 : embedding ---
+    def _encoder_question_ou_vide(self, question: str) -> list[float]:
+        """Retourne l'embedding, ou une liste vide si l'inférence échoue."""
         from src.errors import InferenceError
 
         try:
-            vecteur = self.embed_question(question)
+            return self.embed_question(question)
         except InferenceError:
             logger.exception("Embedding impossible, retrieval annulé")
             return []
 
-        # --- Étape 2 : date de référence ---
-        date_ref = date_contexte or datetime.now(UTC).date()
-
-        # --- Étape 3 : construction des filtres (deux passes temporelles) ---
-        filtre_passe_a, filtre_passe_b = construire_filtres_passes(
+    def _executer_deux_passes(
+        self,
+        vecteur: list[float],
+        date_ref: date,
+        filtres_themes: list[str] | None,
+        filtres_sources: list[SourceReglementaire] | None,
+    ) -> list[ScoredPoint]:
+        """Construit les filtres, exécute les 2 passes, retourne la fusion triée."""
+        filtre_a, filtre_b = construire_filtres_passes(
             date_ref,
             filtres_themes or [],
             filtres_sources or [],
         )
-
-        # --- Étape 4 : deux passes de recherche ---
-        res_a = self._rechercher_passe("valid_to_present", vecteur, filtre_passe_a)
-        res_b = self._rechercher_passe("valid_to_null", vecteur, filtre_passe_b)
-
-        # --- Étape 5 : fusion (représentation garantie + arbitrage par score) ---
-        points_bruts = fusionner_passes(res_a, res_b, self._top_k)
-        if not points_bruts:
-            logger.warning("Aucun chunk trouvé pour : %r", question[:80])
-            return []
-
-        # --- Étape 6 : conversion ---
-        evidences = [
-            e for e in (point_vers_evidence(p) for p in points_bruts) if e is not None
-        ]
-        logger.info(
-            "Retrieval terminé — %d/%d chunks retournés",
-            len(evidences),
-            len(points_bruts),
-        )
-        return evidences
+        res_a = self._rechercher_passe("valid_to_present", vecteur, filtre_a)
+        res_b = self._rechercher_passe("valid_to_null", vecteur, filtre_b)
+        return fusionner_passes(res_a, res_b, self._top_k)
 
     def _rechercher_passe(
         self,
@@ -226,13 +229,7 @@ class Retriever:
         vecteur: list[float],
         filtre: Filter,
     ) -> list[ScoredPoint]:
-        """Exécute une passe de recherche Qdrant en journalisant le résultat.
-
-        Le sur-échantillonnage à `top_k` complet par passe est nécessaire pour
-        permettre le repêchage (fusion) sans jamais perdre de candidat valide.
-        Retourne une liste vide si Qdrant échoue — l'appelant continue avec
-        l'autre passe.
-        """
+        """Exécute une passe Qdrant (sur-échantillonnée à top_k) ; [] sur échec."""
         from src.errors import VectorStoreError
 
         try:
