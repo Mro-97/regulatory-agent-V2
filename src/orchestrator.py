@@ -90,6 +90,143 @@ from src.orchestrator_ingest import DocumentDejaIndexeError as DocumentDejaIndex
 # fmt: on
 
 
+def _resoudre_mode(mode: str | None) -> str:
+    """Retourne le mode effectif en repliant les valeurs inconnues sur 'real'."""
+    effectif = mode or cfg.orchestrateur_mode
+    if effectif not in ("real", "mock"):
+        logger.warning("Mode inconnu '%s', bascule sur 'real'.", effectif)
+        return "real"
+    return effectif
+
+
+def _journaliser_debut_traitement(
+    request_id: UUID,
+    mode: str,
+    type_pipeline: str,
+    requete: RequeteQuestion,
+) -> None:
+    """Trace le début d'un `traiter()` avec identifiants et question tronquée."""
+    logger.info(
+        "Traitement request_id=%s mode=%s type=%s question=%r",
+        request_id,
+        mode,
+        type_pipeline,
+        requete.question[:80],
+    )
+
+
+def _construire_audit_mock(
+    requete: RequeteQuestion,
+    request_id: UUID,
+    reponse: str,
+) -> EnregistrementAudit:
+    """Construit un EnregistrementAudit pour le mode mock (hash SHA-256 injecté)."""
+    audit = EnregistrementAudit(
+        request_id=request_id,
+        user_query=requete.question,
+        date_contexte=requete.date_contexte,
+        reponse_finale=reponse,
+        niveau_confiance=NiveauConfiance.INCERTAIN,
+    )
+    audit.hash_courant = audit.calculer_hash()
+    return audit
+
+
+def _reponse_retrieval_indisponible(request_id: UUID) -> ReponseQuestion:
+    """Réponse-fallback lorsque le Retriever a échoué complètement."""
+    return ReponseQuestion(
+        request_id=request_id,
+        reponse="Le service de recherche est temporairement indisponible.",
+        niveau_confiance=NiveauConfiance.INCERTAIN,
+    )
+
+
+def _doit_soumettre_validation(
+    requete: RequeteQuestion, niveau_confiance: NiveauConfiance
+) -> bool:
+    """True si l'utilisateur l'a demandé ou si la confiance est faible/incertaine."""
+    return requete.demander_validation_humaine or niveau_confiance in (
+        NiveauConfiance.FAIBLE,
+        NiveauConfiance.INCERTAIN,
+    )
+
+
+def _reponse_ingestion_mock(requete: RequeteIngestion) -> ReponseIngestion:
+    """Réponse-fake retournée en mode mock (aucune action Qdrant)."""
+    document_id = (requete.contenu_json or {}).get("id", "mock")
+    return ReponseIngestion(
+        document_id=str(document_id),
+        chunks_indexes=0,
+        hash_document="",
+        nouvelle_version=False,
+    )
+
+
+def _journaliser_audit_succes(audit: EnregistrementAudit, hash_courant: str) -> None:
+    """Trace un audit persisté avec succès (hash tronqué, agents, confiance)."""
+    logger.info(
+        "AUDIT request_id=%s hash=%s agents=%s confiance=%s",
+        audit.request_id,
+        hash_courant[:16],
+        [a.nom_agent for a in audit.agents_executes],
+        audit.niveau_confiance.value,
+    )
+
+
+def _journaliser_audit_fallback(audit: EnregistrementAudit) -> None:
+    """Trace un audit qui n'a pas pu être persisté (log only, non bloquant)."""
+    logger.info(
+        "AUDIT (log only) request_id=%s agents=%s confiance=%s",
+        audit.request_id,
+        [a.nom_agent for a in audit.agents_executes],
+        audit.niveau_confiance.value,
+    )
+
+
+def _construire_reponse_question(
+    request_id: UUID,
+    reponse_texte: str,
+    evidences: list[EvidenceRecuperee],
+    niveau_confiance: NiveauConfiance,
+    soumettre_validation: bool,
+    tache_validation_id: UUID | None,
+) -> ReponseQuestion:
+    """Assemble le ReponseQuestion final renvoyé à l'API."""
+    return ReponseQuestion(
+        request_id=request_id,
+        reponse=reponse_texte,
+        evidences=evidences,
+        niveau_confiance=niveau_confiance,
+        en_attente_validation=soumettre_validation,
+        tache_validation_id=tache_validation_id,
+    )
+
+
+def _construire_audit_reel(
+    requete: RequeteQuestion,
+    request_id: UUID,
+    evidences: list[EvidenceRecuperee],
+    agents_executes: list[SortieAgent],
+    reponse_texte: str,
+    niveau_confiance: NiveauConfiance,
+    soumettre_validation: bool,
+) -> EnregistrementAudit:
+    """Construit l'EnregistrementAudit final du pipeline réel (hash injecté)."""
+    audit = EnregistrementAudit(
+        request_id=request_id,
+        user_query=requete.question,
+        date_contexte=requete.date_contexte,
+        documents_recuperes=list({e.document_id for e in evidences}),
+        evidences=evidences,
+        agents_executes=agents_executes,
+        reponse_finale=reponse_texte,
+        niveau_confiance=niveau_confiance,
+        necessite_validation_humaine=soumettre_validation,
+    )
+    audit.hash_courant = audit.calculer_hash()
+    return audit
+
+
 class Orchestrateur:
     """Orchestrateur central de Regulatory Agent V2.
 
@@ -115,24 +252,13 @@ class Orchestrateur:
             mode: "real" ou "mock". Si None, lit `cfg.orchestrateur_mode`
                   (renseigné via ORCHESTRATEUR_MODE dans .env), défaut "real".
         """
-        self.mode = mode or cfg.orchestrateur_mode
-        if self.mode not in ("real", "mock"):
-            logger.warning("Mode inconnu '%s', bascule sur 'real'.", self.mode)
-            self.mode = "real"
-
-        # Agents — instanciés en lazy lors du premier appel
+        self.mode = _resoudre_mode(mode)
         self._retriever: Retriever | None = None
         self._ingester: Ingester | None = None
-        # M5 : le client HTTP inter-machines (Mac B / Mac C) est supprimé
-        # avec l'architecture unique. Voir aussi `_http()`, retiré.
-
-        # Sérialise l'usage du registre MLX (_CacheGeneration) : un seul
-        # modèle de génération est actif à la fois (swap/unload sur bascule
-        # d'agent). Sans ce verrou, deux requêtes /ask concurrentes
-        # déportées en thread (voir _executer_bloquant) pourraient faire
-        # basculer/décharger le modèle en pleine génération de l'autre.
+        # Sérialise l'usage du registre MLX : un seul modèle de génération
+        # actif à la fois ; le verrou empêche deux threads d'entrer en swap
+        # concurrent (cf. `_executer_bloquant`).
         self._verrou_agents = asyncio.Lock()
-
         logger.info("Orchestrateur initialisé — mode=%s", self.mode)
 
     # ------------------------------------------------------------------
@@ -157,31 +283,20 @@ class Orchestrateur:
             logger.info("Ingester réel initialisé.")
         return self._ingester
 
-    async def _executer_bloquant(  # noqa: D417
+    async def _executer_bloquant(
         self,
         fonction: Callable[..., T],
         /,
         *args: Any,
         **kwargs: Any,
     ) -> T:
-        """Exécute un appel synchrone potentiellement long (chargement/inférence
-        MLX) dans un thread séparé, pour ne jamais geler la boucle asyncio
-        (sinon /health, /pending et le Watcher deviennent indisponibles
-        pendant toute la durée du retrieval + de la génération LLM).
+        """Exécute un appel synchrone (MLX) dans un thread borné par `_verrou_agents`.
 
-        Protégé par _verrou_agents : le registre MLX (_CacheGeneration)
-        ne garde qu'un seul modèle actif à la fois et le décharge lors
-        d'un changement d'agent — deux appels concurrents non sérialisés
-        pourraient faire basculer le modèle pendant qu'une autre requête
-        génère encore avec lui.
-
-        Args:
-            fonction: Callable synchrone à exécuter (méthode d'agent).
-            *args, **kwargs: Transmis tels quels à `fonction`.
-
-        Returns:
-            La valeur de retour de `fonction`.
-        """  # noqa: D205
+        Le verrou sérialise l'usage du registre MLX (un seul modèle
+        résident à la fois) : deux appels concurrents non sérialisés
+        pourraient basculer le modèle pendant qu'une autre requête
+        génère encore avec lui. Le thread évite de figer l'event loop.
+        """
         async with self._verrou_agents:
             return await asyncio.to_thread(fonction, *args, **kwargs)
 
@@ -267,11 +382,7 @@ class Orchestrateur:
     # ------------------------------------------------------------------
 
     async def traiter(self, requete: RequeteQuestion) -> ReponseQuestion:
-        """Traite une question réglementaire via le pipeline multi-agent.
-
-        Mode real  : Retriever Qdrant → Temporal (filtre déterministe)
-                     → Explainer (assemblage brut) → audit
-        Mode mock  : retourne une réponse simulée immédiatement.
+        """Point d'entrée du pipeline multi-agent (route selon `self.mode`).
 
         Args:
             requete: Question et paramètres de l'utilisateur.
@@ -280,210 +391,238 @@ class Orchestrateur:
             ReponseQuestion avec réponse, preuves et niveau de confiance.
         """
         request_id = uuid4()
-        agents_executes: list[SortieAgent] = []
-        evidences: list[EvidenceRecuperee] = []
-
         type_pipeline = _classifier_requete(requete.question, requete.date_contexte)
-        logger.info(
-            "Traitement request_id=%s mode=%s type=%s question=%r",
-            request_id,
-            self.mode,
-            type_pipeline,
-            requete.question[:80],
+        _journaliser_debut_traitement(request_id, self.mode, type_pipeline, requete)
+        if self.mode == "mock":
+            return await self._traiter_mock(requete, request_id, type_pipeline)
+        return await self._traiter_pipeline_reel(requete, request_id, type_pipeline)
+
+    async def _traiter_mock(
+        self,
+        requete: RequeteQuestion,
+        request_id: UUID,
+        type_pipeline: str,
+    ) -> ReponseQuestion:
+        """Produit une ReponseQuestion simulée + audit, sans dépendance externe."""
+        reponse = (
+            f"[MODE MOCK] Question reçue : '{requete.question}' "
+            f"| type : {type_pipeline} | date : {requete.date_contexte}"
+        )
+        await self._persister_audit(
+            _construire_audit_mock(requete, request_id, reponse)
+        )
+        return ReponseQuestion(
+            request_id=request_id,
+            reponse=reponse,
+            niveau_confiance=NiveauConfiance.INCERTAIN,
         )
 
-        # ----------------------------------------------------------
-        # Mode mock
-        # ----------------------------------------------------------
-        if self.mode == "mock":
-            reponse = (
-                f"[MODE MOCK] Question reçue : '{requete.question}' "
-                f"| type : {type_pipeline} | date : {requete.date_contexte}"
-            )
-            audit = EnregistrementAudit(
-                request_id=request_id,
-                user_query=requete.question,
-                date_contexte=requete.date_contexte,
-                reponse_finale=reponse,
-                niveau_confiance=NiveauConfiance.INCERTAIN,
-            )
-            audit.hash_courant = audit.calculer_hash()
-            await self._persister_audit(audit)
-            return ReponseQuestion(
-                request_id=request_id,
-                reponse=reponse,
-                niveau_confiance=NiveauConfiance.INCERTAIN,
-            )
-
-        # ----------------------------------------------------------
-        # Mode real — Étape 1 : Retrieval
-        # ----------------------------------------------------------
+    async def _traiter_pipeline_reel(
+        self,
+        requete: RequeteQuestion,
+        request_id: UUID,
+        type_pipeline: str,
+    ) -> ReponseQuestion:
+        """Exécute les 4 étapes du pipeline réel puis assemble la ReponseQuestion."""
+        agents_executes: list[SortieAgent] = []
         try:
-            evidences, sortie_retriever = await self._etape_retrieval(
-                question=requete.question,
-                date_contexte=requete.date_contexte,
-                filtres_themes=requete.filtres_themes,
-                filtres_sources=requete.filtres_sources,
-            )
-            agents_executes.append(sortie_retriever)
+            evidences = await self._executer_retrieval(requete, agents_executes)
         except Exception:
             logger.exception("Retrieval échoué")
-            return ReponseQuestion(
-                request_id=request_id,
-                reponse="Le service de recherche est temporairement indisponible.",
-                niveau_confiance=NiveauConfiance.INCERTAIN,
-            )
+            return _reponse_retrieval_indisponible(request_id)
+        evidences = await self._executer_temporal_si_applicable(
+            requete, type_pipeline, evidences, agents_executes
+        )
+        await self._executer_conflit_si_applicable(
+            requete, type_pipeline, evidences, agents_executes, request_id
+        )
+        reponse_texte, niveau_confiance = await self._executer_explainer_avec_repli(
+            requete, type_pipeline, evidences, agents_executes
+        )
+        await self._executer_citation(evidences, agents_executes)
+        return await self._finaliser_reponse(
+            requete,
+            request_id,
+            evidences,
+            agents_executes,
+            reponse_texte,
+            niveau_confiance,
+        )
 
-        # ----------------------------------------------------------
-        # Mode real — Étape 2 : Filtrage temporel (si applicable)
-        # ----------------------------------------------------------
-        if type_pipeline == "temporelle" and evidences:
-            try:
-                evidences, sortie_temporal = await self._etape_temporal(
-                    question=requete.question,
-                    date_contexte=requete.date_contexte,
-                    evidences=evidences,
-                )
-                agents_executes.append(sortie_temporal)
-            except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
-                logger.warning("Agent Temporal échoué, ignoré : %s", exc)
+    async def _executer_retrieval(
+        self,
+        requete: RequeteQuestion,
+        agents_executes: list[SortieAgent],
+    ) -> list[EvidenceRecuperee]:
+        """Étape 1 : appelle le Retriever et ajoute sa SortieAgent à la trace."""
+        evidences, sortie = await self._etape_retrieval(
+            question=requete.question,
+            date_contexte=requete.date_contexte,
+            filtres_themes=requete.filtres_themes,
+            filtres_sources=requete.filtres_sources,
+        )
+        agents_executes.append(sortie)
+        return evidences
 
-        # ----------------------------------------------------------
-        # Mode real — Étape 2b : Détection de conflit (si applicable)
-        # ----------------------------------------------------------
-        if type_pipeline == "conflit" and len(evidences) >= 2:
-            from src.orchestrator_pipeline import etape_conflit
-
-            sortie_conflit = await etape_conflit(
-                self,
+    async def _executer_temporal_si_applicable(
+        self,
+        requete: RequeteQuestion,
+        type_pipeline: str,
+        evidences: list[EvidenceRecuperee],
+        agents_executes: list[SortieAgent],
+    ) -> list[EvidenceRecuperee]:
+        """Étape 2 : filtre temporel (activé pour `type_pipeline == 'temporelle'`)."""
+        if type_pipeline != "temporelle" or not evidences:
+            return evidences
+        try:
+            evidences, sortie = await self._etape_temporal(
                 question=requete.question,
                 date_contexte=requete.date_contexte,
                 evidences=evidences,
-                request_id=request_id,
             )
-            if sortie_conflit is not None:
-                agents_executes.append(sortie_conflit)
+            agents_executes.append(sortie)
+        except Exception as exc:  # noqa: BLE001 — frontière externe : dégradation gracieuse, cf. skill §8
+            logger.warning("Agent Temporal échoué, ignoré : %s", exc)
+        return evidences
 
-        # ----------------------------------------------------------
-        # Mode real — Étape 3 : Explication
-        # ----------------------------------------------------------
+    async def _executer_conflit_si_applicable(
+        self,
+        requete: RequeteQuestion,
+        type_pipeline: str,
+        evidences: list[EvidenceRecuperee],
+        agents_executes: list[SortieAgent],
+        request_id: UUID,
+    ) -> None:
+        """Étape 2b : détection de conflit (activée si `type_pipeline == 'conflit'`)."""
+        if type_pipeline != "conflit" or len(evidences) < 2:
+            return
+        from src.orchestrator_pipeline import etape_conflit
+
+        sortie = await etape_conflit(
+            self,
+            question=requete.question,
+            date_contexte=requete.date_contexte,
+            evidences=evidences,
+            request_id=request_id,
+        )
+        if sortie is not None:
+            agents_executes.append(sortie)
+
+    async def _executer_explainer_avec_repli(
+        self,
+        requete: RequeteQuestion,
+        type_pipeline: str,
+        evidences: list[EvidenceRecuperee],
+        agents_executes: list[SortieAgent],
+    ) -> tuple[str, NiveauConfiance]:
+        """Étape 3 : synthèse Explainer ; sur échec, renvoie un message + INCERTAIN."""
         try:
-            (
-                reponse_texte,
-                niveau_confiance,
-                sortie_explainer,
-            ) = await self._etape_explainer(
+            reponse, confiance, sortie = await self._etape_explainer(
                 question=requete.question,
                 evidences=evidences,
                 type_pipeline=type_pipeline,
                 date_ref=requete.date_contexte,
             )
-            agents_executes.append(sortie_explainer)
+            agents_executes.append(sortie)
         except Exception:
             logger.exception("Explainer échoué")
-            reponse_texte = "Erreur lors de la génération de la réponse."
-            niveau_confiance = NiveauConfiance.INCERTAIN
+            return (
+                "Erreur lors de la génération de la réponse.",
+                NiveauConfiance.INCERTAIN,
+            )
+        return reponse, confiance
 
-        # ----------------------------------------------------------
-        # Mode real — Étape 4 : Citations
-        # ----------------------------------------------------------
+    async def _executer_citation(
+        self,
+        evidences: list[EvidenceRecuperee],
+        agents_executes: list[SortieAgent],
+    ) -> None:
+        """Étape 4 : génération/vérification des citations (ignorée si échec)."""
         from src.orchestrator_pipeline import etape_citation
 
-        sortie_citation = await etape_citation(self, evidences=evidences)
-        if sortie_citation is not None:
-            agents_executes.append(sortie_citation)
+        sortie = await etape_citation(self, evidences=evidences)
+        if sortie is not None:
+            agents_executes.append(sortie)
 
-        # ----------------------------------------------------------
-        # Validation humaine
-        # ----------------------------------------------------------
-        soumettre_validation = (
-            requete.demander_validation_humaine
-            or niveau_confiance in (NiveauConfiance.FAIBLE, NiveauConfiance.INCERTAIN)
+    async def _finaliser_reponse(
+        self,
+        requete: RequeteQuestion,
+        request_id: UUID,
+        evidences: list[EvidenceRecuperee],
+        agents_executes: list[SortieAgent],
+        reponse_texte: str,
+        niveau_confiance: NiveauConfiance,
+    ) -> ReponseQuestion:
+        """Soumet à validation si besoin, persiste l'audit, renvoie la réponse."""
+        soumettre = _doit_soumettre_validation(requete, niveau_confiance)
+        tache_validation_id = await self._soumettre_validation_si_besoin(
+            requete, request_id, reponse_texte, niveau_confiance, soumettre
         )
-
-        tache_validation_id: UUID | None = None
-        if soumettre_validation:
-            tache = TacheValidation(
-                type_file=TypeFilePendante.REPONSES,
-                request_id=request_id,
-                contenu={
-                    "question": requete.question,
-                    "reponse": reponse_texte,
-                    "niveau_confiance": niveau_confiance.value,
-                },
-            )
-            tache_validation_id = tache.tache_id
-            await self._enregistrer_tache_redis(tache)
-
-        # ----------------------------------------------------------
-        # Audit
-        # ----------------------------------------------------------
-        audit = EnregistrementAudit(
-            request_id=request_id,
-            user_query=requete.question,
-            date_contexte=requete.date_contexte,
-            documents_recuperes=list({e.document_id for e in evidences}),
-            evidences=evidences,
-            agents_executes=agents_executes,
-            reponse_finale=reponse_texte,
-            niveau_confiance=niveau_confiance,
-            necessite_validation_humaine=soumettre_validation,
+        audit = _construire_audit_reel(
+            requete,
+            request_id,
+            evidences,
+            agents_executes,
+            reponse_texte,
+            niveau_confiance,
+            soumettre,
         )
-        audit.hash_courant = audit.calculer_hash()
         await self._persister_audit(audit)
-
-        return ReponseQuestion(
-            request_id=request_id,
-            reponse=reponse_texte,
-            evidences=evidences,
-            niveau_confiance=niveau_confiance,
-            en_attente_validation=soumettre_validation,
-            tache_validation_id=tache_validation_id,
+        return _construire_reponse_question(
+            request_id,
+            reponse_texte,
+            evidences,
+            niveau_confiance,
+            soumettre,
+            tache_validation_id,
         )
+
+    async def _soumettre_validation_si_besoin(
+        self,
+        requete: RequeteQuestion,
+        request_id: UUID,
+        reponse_texte: str,
+        niveau_confiance: NiveauConfiance,
+        soumettre: bool,
+    ) -> UUID | None:
+        """Enregistre une TacheValidation Redis quand `soumettre` est True."""
+        if not soumettre:
+            return None
+        tache = TacheValidation(
+            type_file=TypeFilePendante.REPONSES,
+            request_id=request_id,
+            contenu={
+                "question": requete.question,
+                "reponse": reponse_texte,
+                "niveau_confiance": niveau_confiance.value,
+            },
+        )
+        await self._enregistrer_tache_redis(tache)
+        return tache.tache_id
 
     # ------------------------------------------------------------------
     # Ingestion
     # ------------------------------------------------------------------
 
     async def ingerer(self, requete: RequeteIngestion) -> ReponseIngestion:
-        """Ingère un document réglementaire dans Qdrant (chunking + embedding +
-        upsert), en réutilisant la logique de scripts/ingest.py.
+        """Ingère un document réglementaire (chunking + embedding + upsert Qdrant).
 
-        requete.contenu_json est requis et validé comme DocumentReglementaire —
-        l'ingestion depuis une URL (requete.url) n'est pas implémentée et lève
-        une ValueError explicite plutôt qu'un faux succès.
-
-        Si le document (document_id) existe déjà dans la collection Qdrant,
-        l'appel échoue avec DocumentDejaIndexeError sauf si
-        requete.forcer_reindexation=True, auquel cas les chunks existants
-        sont supprimés puis remplacés.
-
-        Args:
-            requete: Requête d'ingestion (source, contenu_json, forcer_reindexation).
-
-        Returns:
-            ReponseIngestion avec le nombre réel de chunks indexés.
+        Mode mock : renvoie une ReponseIngestion factice. Mode real :
+        délègue à `orchestrator_ingest.ingerer_sync` via un thread.
 
         Raises:
-            ValueError: contenu_json absent ou invalide vis-à-vis du schéma
-                DocumentReglementaire.
-            DocumentDejaIndexeError: document déjà indexé sans forcer_reindexation.
-        """  # noqa: D205
+            MissingMetadataError / InvalidDocumentError : contenu_json absent
+                ou invalide vis-à-vis du schéma DocumentReglementaire.
+            DocumentAlreadyIndexedError : document déjà indexé sans
+                `forcer_reindexation`.
+        """
         logger.info(
             "Ingestion déclenchée : source=%s forcer_reindexation=%s",
             requete.source,
             requete.forcer_reindexation,
         )
-
         if self.mode == "mock":
-            document_id = (requete.contenu_json or {}).get("id", "mock")
-            return ReponseIngestion(
-                document_id=str(document_id),
-                chunks_indexes=0,
-                hash_document="",
-                nouvelle_version=False,
-            )
-
+            return _reponse_ingestion_mock(requete)
         return await asyncio.to_thread(self._ingerer_sync, requete)
 
     def _ingerer_sync(self, requete: RequeteIngestion) -> ReponseIngestion:
@@ -530,26 +669,13 @@ class Orchestrateur:
         await _enregistrer(self._nouveau_client_redis, tache)
 
     async def _persister_audit(self, audit: EnregistrementAudit) -> None:
-        """Persiste l'enregistrement d'audit via src/audit.py.
-        JSONL local + PostgreSQL en 127.0.0.1 (architecture unique m4pro2).
-        """  # noqa: D205
+        """Persiste l'audit (JSONL local + PostgreSQL) ; jamais bloquant."""
         try:
             from src.audit import obtenir_gestionnaire
 
             gestionnaire = await obtenir_gestionnaire()
             hash_courant = await gestionnaire.persister(audit)
-            logger.info(
-                "AUDIT request_id=%s hash=%s agents=%s confiance=%s",
-                audit.request_id,
-                hash_courant[:16],
-                [a.nom_agent for a in audit.agents_executes],
-                audit.niveau_confiance.value,
-            )
+            _journaliser_audit_succes(audit, hash_courant)
         except Exception:
             logger.exception("Audit échoué (non bloquant)")
-            logger.info(
-                "AUDIT (log only) request_id=%s agents=%s confiance=%s",
-                audit.request_id,
-                [a.nom_agent for a in audit.agents_executes],
-                audit.niveau_confiance.value,
-            )
+            _journaliser_audit_fallback(audit)
