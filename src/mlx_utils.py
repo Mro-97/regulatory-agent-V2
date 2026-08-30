@@ -87,6 +87,14 @@ def _executer_avec_timeout(  # noqa: D417
         raise GenerationTimeoutError(timeout_seconds) from exc
 
 
+def _compter_tokens(tokenizer: Any, texte: str) -> int:
+    """Compte les tokens de `texte` via `tokenizer.encode` (fallback split blancs)."""
+    try:
+        return len(tokenizer.encode(texte))
+    except Exception:  # noqa: BLE001 — frontière externe : dégradation gracieuse, cf. §8
+        return max(1, len(texte.split()))
+
+
 def _tronquer_pour_embedding(texte: str) -> str:
     """Tronque un texte trop long avant embedding, avec avertissement.
 
@@ -198,7 +206,7 @@ class MLXInference:
         """True si le modèle d'inférence est déjà chargé en mémoire."""
         return self._loaded
 
-    def generate(  # noqa: D417
+    def generate(
         self,
         prompt: str,
         max_tokens: int = 512,
@@ -206,54 +214,63 @@ class MLXInference:
         top_p: float | None = None,
         timeout_seconds: float | None = None,
     ) -> ResultatGeneration:
-        """Génère du texte. Charge le modèle si nécessaire.
-
-        Args:
-            timeout_seconds: Délai max. None = utilise cfg.mlx_timeout_seconds.
-                             0 ou négatif = pas de borne (comportement d'avant).
-        """
+        """Génère du texte via mlx_lm ; lève GenerationFailedError sur échec."""
         if not self._loaded:
             self.load()
+        try:
+            return self._generer_texte(
+                prompt,
+                max_tokens,
+                temperature,
+                top_p,
+                timeout_seconds,
+            )
+        except Exception as exc:
+            from src.errors import GenerationFailedError
+
+            raise GenerationFailedError(self.model_name, cause=str(exc)) from exc
+
+    def _generer_texte(
+        self,
+        prompt: str,
+        max_tokens: int,
+        temperature: float | None,
+        top_p: float | None,
+        timeout_seconds: float | None,
+    ) -> ResultatGeneration:
+        """Appelle `mlx_lm.generate` sous timeout et compose le ResultatGeneration."""
+        from mlx_lm import generate as mlx_generate
+        from mlx_lm.sample_utils import make_sampler
+
         temp = temperature if temperature is not None else self.temperature
         tp = top_p if top_p is not None else self.top_p
         timeout = (
             timeout_seconds if timeout_seconds is not None else cfg.mlx_timeout_seconds
         )
         debut = time.time()
-        try:
-            from mlx_lm import generate as mlx_generate
-            from mlx_lm.sample_utils import make_sampler
-
-            sampler = make_sampler(temp=temp, top_p=tp)
-            texte = _executer_avec_timeout(
-                mlx_generate,
-                timeout,
-                self._model,
-                self._tokenizer,
-                prompt=prompt,
-                max_tokens=max_tokens,
-                sampler=sampler,
-                verbose=False,
-            )
-            duree = time.time() - debut
-            try:
-                tokens_out = len(self._tokenizer.encode(texte))
-            except Exception:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
-                tokens_out = max(1, len(texte.split()))
-            tps = tokens_out / duree if duree > 0 else 0.0
-            return ResultatGeneration(
-                texte=texte,
-                statistiques=StatistiquesGeneration(
-                    modele_id=self.model_name,
-                    tokens_generes=tokens_out,
-                    duree_secondes=round(duree, 3),
-                    tokens_par_seconde=round(tps, 1),
-                ),
-            )
-        except Exception as exc:
-            from src.errors import GenerationFailedError
-
-            raise GenerationFailedError(self.model_name, cause=str(exc)) from exc
+        sampler = make_sampler(temp=temp, top_p=tp)
+        texte = _executer_avec_timeout(
+            mlx_generate,
+            timeout,
+            self._model,
+            self._tokenizer,
+            prompt=prompt,
+            max_tokens=max_tokens,
+            sampler=sampler,
+            verbose=False,
+        )
+        duree = time.time() - debut
+        tokens_out = _compter_tokens(self._tokenizer, texte)
+        tps = tokens_out / duree if duree > 0 else 0.0
+        return ResultatGeneration(
+            texte=texte,
+            statistiques=StatistiquesGeneration(
+                modele_id=self.model_name,
+                tokens_generes=tokens_out,
+                duree_secondes=round(duree, 3),
+                tokens_par_seconde=round(tps, 1),
+            ),
+        )
 
     def generate_avec_messages(
         self,

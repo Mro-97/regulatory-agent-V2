@@ -39,11 +39,15 @@ _CSP_POLITIQUE = (
 )
 
 
-def installer_middlewares(app: FastAPI) -> None:
-    """Attache les middlewares de sécurité et de taille sur l'application.
+_METHODES_AVEC_BODY = {"POST", "PUT", "PATCH", "DELETE"}
+_MSG_TRANSFER_ENCODING_REFUSE = (
+    "Transfer-Encoding non autorisé — Content-Length requis."
+)
+_MSG_REQUETE_TROP_VOLUMINEUSE = "Requête trop volumineuse."
 
-    Appelé une seule fois par src.api au montage.
-    """
+
+def installer_middlewares(app: FastAPI) -> None:
+    """Attache les 2 middlewares de sécurité (en-têtes + taille) sur `app`."""
 
     @app.middleware("http")
     async def en_tetes_securite(
@@ -52,15 +56,7 @@ def installer_middlewares(app: FastAPI) -> None:
     ) -> Response:
         """Ajoute les en-têtes de sécurité à toutes les réponses."""
         reponse = await call_next(request)
-        reponse.headers.setdefault("X-Content-Type-Options", "nosniff")
-        reponse.headers.setdefault("X-Frame-Options", "DENY")
-        reponse.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
-        reponse.headers.setdefault(
-            "Strict-Transport-Security", "max-age=31536000; includeSubDomains"
-        )
-        reponse.headers.setdefault("Content-Security-Policy", _CSP_POLITIQUE)
-        reponse.headers.setdefault("Cross-Origin-Opener-Policy", "same-origin")
-        reponse.headers.setdefault("Cross-Origin-Resource-Policy", "same-site")
+        _appliquer_entetes_securite(reponse)
         return reponse
 
     @app.middleware("http")
@@ -68,35 +64,45 @@ def installer_middlewares(app: FastAPI) -> None:
         request: Request,
         call_next: RequestResponseEndpoint,
     ) -> Response:
-        """Rejette les requêtes trop volumineuses.
-
-        Deux vecteurs à couvrir :
-          - `Content-Length` déclaré et supérieur à la limite → 413.
-          - `Transfer-Encoding: chunked` (ou toute valeur ≠ identity) sur une
-            méthode qui accepte un corps : sans `Content-Length`, la limite
-            précédente était contournable. Les navigateurs légitimes
-            n'émettent jamais de body chunked côté client — on refuse (411).
-        """
-        longueur = request.headers.get("Content-Length")
-        if (
-            longueur
-            and longueur.isdigit()
-            and int(longueur) > cfg.taille_max_requete_octets
-        ):
-            return JSONResponse(
-                status_code=413,
-                content={"detail": "Requête trop volumineuse."},
-            )
-        if request.method in {"POST", "PUT", "PATCH", "DELETE"}:
-            te = (request.headers.get("Transfer-Encoding") or "").strip().lower()
-            if te and te != "identity":
-                return JSONResponse(
-                    status_code=411,
-                    content={
-                        "detail": "Transfer-Encoding non autorisé — Content-Length requis."  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
-                    },
-                )
+        """Rejette 413 (body trop grand) ou 411 (Transfer-Encoding non-identity)."""
+        refus = _controler_taille_et_encoding(request)
+        if refus is not None:
+            return refus
         return await call_next(request)
+
+
+def _appliquer_entetes_securite(reponse: Response) -> None:
+    """Pose les en-têtes de sécurité par défaut (idempotent via setdefault)."""
+    reponse.headers.setdefault("X-Content-Type-Options", "nosniff")
+    reponse.headers.setdefault("X-Frame-Options", "DENY")
+    reponse.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    reponse.headers.setdefault(
+        "Strict-Transport-Security", "max-age=31536000; includeSubDomains"
+    )
+    reponse.headers.setdefault("Content-Security-Policy", _CSP_POLITIQUE)
+    reponse.headers.setdefault("Cross-Origin-Opener-Policy", "same-origin")
+    reponse.headers.setdefault("Cross-Origin-Resource-Policy", "same-site")
+
+
+def _controler_taille_et_encoding(request: Request) -> JSONResponse | None:
+    """Retourne un JSONResponse d'erreur si taille ou Transfer-Encoding invalide."""
+    longueur = request.headers.get("Content-Length")
+    if (
+        longueur
+        and longueur.isdigit()
+        and int(longueur) > cfg.taille_max_requete_octets
+    ):
+        return JSONResponse(
+            status_code=413, content={"detail": _MSG_REQUETE_TROP_VOLUMINEUSE}
+        )
+    if request.method in _METHODES_AVEC_BODY:
+        te = (request.headers.get("Transfer-Encoding") or "").strip().lower()
+        if te and te != "identity":
+            return JSONResponse(
+                status_code=411,
+                content={"detail": _MSG_TRANSFER_ENCODING_REFUSE},
+            )
+    return None
 
 
 def verifier_auth(request: Request) -> None:

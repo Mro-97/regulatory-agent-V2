@@ -36,26 +36,10 @@ ClientFactory = Callable[[], Awaitable["aioredis.Redis"]]
 async def lister_taches_pendantes(
     client_factory: ClientFactory,
 ) -> ReponseTachesPendantes:
-    """Récupère les tâches en attente depuis Redis."""
+    """Retourne toutes les TacheValidation présentes dans les files Redis pendantes."""
     try:
         client = await client_factory()
-        taches: list[TacheValidation] = []
-        par_file: dict[str, int] = {}
-
-        for file in TypeFilePendante:
-            # `redis.asyncio.Redis.lrange` a la même signature générique
-            # `Awaitable[list[Any]] | list[Any]` — cast au moment d'awaiter.
-            cles = await cast(
-                "Awaitable[list[Any]]",
-                client.lrange(file.value, 0, -1),
-            )
-            par_file[file.value] = len(cles)
-            for cle in cles:
-                try:
-                    taches.append(TacheValidation(**json.loads(cle)))
-                except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
-                    logger.warning("Tâche non parsable : %s", exc)
-
+        taches, par_file = await _lister_toutes_les_files(client)
         await client.aclose()
         return ReponseTachesPendantes(
             total=sum(par_file.values()),
@@ -67,51 +51,43 @@ async def lister_taches_pendantes(
         return ReponseTachesPendantes(total=0, par_file={}, taches=[])
 
 
+async def _lister_toutes_les_files(
+    client: aioredis.Redis,
+) -> tuple[list[TacheValidation], dict[str, int]]:
+    """Itère sur chaque `TypeFilePendante` et agrège les taches parsées."""
+    taches: list[TacheValidation] = []
+    par_file: dict[str, int] = {}
+    for file in TypeFilePendante:
+        cles = await cast("Awaitable[list[Any]]", client.lrange(file.value, 0, -1))
+        par_file[file.value] = len(cles)
+        for cle in cles:
+            try:
+                taches.append(TacheValidation(**json.loads(cle)))
+            except Exception as exc:  # noqa: BLE001 — cf. skill §8
+                logger.warning("Tâche non parsable : %s", exc)
+    return taches, par_file
+
+
 async def valider_tache(
     client_factory: ClientFactory,
     tache_id: UUID,
     decision: StatutValidation,
     commentaire: str | None = None,
 ) -> ReponseDecisionValidation:
-    """Applique une décision humaine à une tâche Redis."""
+    """Marque la tâche `tache_id` comme APPROUVE/REJETE et la déplace en Redis."""
     horodatage = datetime.now(UTC)
     try:
         client = await client_factory()
-        tache_trouvee = False
-        for file in TypeFilePendante:
-            cles = await cast(
-                "Awaitable[list[Any]]",
-                client.lrange(file.value, 0, -1),
-            )
-            for cle in cles:
-                try:
-                    donnees = json.loads(cle)
-                    if str(donnees.get("tache_id")) == str(tache_id):
-                        donnees["statut"] = decision.value
-                        donnees["horodatage_traitement"] = horodatage.isoformat()
-                        donnees["commentaire_validateur"] = commentaire
-                        await cast(
-                            "Awaitable[int]",
-                            client.lrem(file.value, 1, cle),
-                        )
-                        await cast(
-                            "Awaitable[int]",
-                            client.lpush(
-                                f"traite_{file.value}",
-                                json.dumps(donnees, ensure_ascii=False),
-                            ),
-                        )
-                        tache_trouvee = True
-                        break
-                except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
-                    logger.warning("Erreur parsing tâche : %s", exc)
-            if tache_trouvee:
-                break
-
+        trouvee = await _appliquer_decision_sur_files(
+            client,
+            tache_id,
+            decision,
+            commentaire,
+            horodatage,
+        )
         await client.aclose()
-        if not tache_trouvee:
-            raise TaskNotFoundError(tache_id)  # noqa: TRY301 — levée intentionnelle rattrapée par le try/except externe pour compatibilité de contrat
-
+        if not trouvee:
+            raise TaskNotFoundError(tache_id)  # noqa: TRY301 — rattrapée pour contrat descendant
         return ReponseDecisionValidation(
             tache_id=tache_id,
             nouveau_statut=decision,
@@ -121,6 +97,58 @@ async def valider_tache(
         raise
     except Exception as exc:
         raise QueueBackendError(str(exc)) from exc
+
+
+async def _appliquer_decision_sur_files(
+    client: aioredis.Redis,
+    tache_id: UUID,
+    decision: StatutValidation,
+    commentaire: str | None,
+    horodatage: datetime,
+) -> bool:
+    """Cherche `tache_id` dans toutes les files ; déplace vers `traite_*` si trouvée."""
+    for file in TypeFilePendante:
+        cles = await cast("Awaitable[list[Any]]", client.lrange(file.value, 0, -1))
+        for cle in cles:
+            if await _essayer_appliquer_a_cle(
+                client,
+                file.value,
+                cle,
+                tache_id,
+                decision,
+                commentaire,
+                horodatage,
+            ):
+                return True
+    return False
+
+
+async def _essayer_appliquer_a_cle(
+    client: aioredis.Redis,
+    nom_file: str,
+    cle: str,
+    tache_id: UUID,
+    decision: StatutValidation,
+    commentaire: str | None,
+    horodatage: datetime,
+) -> bool:
+    """Retire une clé du pending et la pousse dans `traite_*` si son id matche."""
+    try:
+        donnees = json.loads(cle)
+    except Exception as exc:  # noqa: BLE001 — cf. skill §8
+        logger.warning("Erreur parsing tâche : %s", exc)
+        return False
+    if str(donnees.get("tache_id")) != str(tache_id):
+        return False
+    donnees["statut"] = decision.value
+    donnees["horodatage_traitement"] = horodatage.isoformat()
+    donnees["commentaire_validateur"] = commentaire
+    await cast("Awaitable[int]", client.lrem(nom_file, 1, cle))
+    await cast(
+        "Awaitable[int]",
+        client.lpush(f"traite_{nom_file}", json.dumps(donnees, ensure_ascii=False)),
+    )
+    return True
 
 
 async def enregistrer_tache_redis(

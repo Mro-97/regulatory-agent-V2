@@ -11,7 +11,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from src.models import EvidenceRecuperee, NiveauConfiance, SortieAgent
 
@@ -137,67 +137,97 @@ async def etape_conflit(
     evidences: list[EvidenceRecuperee],
     request_id: object,
 ) -> SortieAgent | None:
-    """Étape 2b : détection de conflit (activée quand type_pipeline == 'conflit').
-
-    Ajoute la SortieAgent à retourner à l'orchestrateur (ou None si l'agent
-    a échoué) et soumet une TacheValidation LIENS quand la détection élève
-    le niveau à PROBABLE / CRITIQUE. Le paramètre `request_id` transite
-    dans la tâche à des fins de traçabilité (rattachée à la requête d'origine).
-    """
-    from uuid import UUID
-
-    from src.agents.conflit import AgentConflit
-    from src.models import TacheValidation, TypeFilePendante
-
-    request_uuid = request_id if isinstance(request_id, UUID) else UUID(str(request_id))
-
+    """Étape 2b : détection de conflit (activée quand `type_pipeline == 'conflit'`)."""
     try:
-        # use_llm=True : sous architecture unique m4pro2 (24 Go), le budget
-        # RAM tolère l'analyse LLM des conflits potentiels.
-        agent_conflit = AgentConflit(use_llm=True)
-        resultat_conflit = await orchestrator._executer_bloquant(
-            agent_conflit.analyser,
-            question=question,
-            evidences=evidences,
-            date_ref=date_contexte,
+        resultat_conflit = await _executer_agent_conflit(
+            orchestrator,
+            question,
+            date_contexte,
+            evidences,
         )
-        sortie = SortieAgent(
-            nom_agent="Conflict",
-            machine=orchestrator._machine_pour_agent("Conflict"),
-            contenu={
-                "niveau_global": resultat_conflit.niveau_global.value,
-                "conflits_detectes": len(resultat_conflit.conflits),
-                "mode": resultat_conflit.mode,
-            },
-        )
+        sortie = _sortie_agent_conflit(orchestrator, resultat_conflit)
         if resultat_conflit.necessite_validation_humaine:
-            tache_conflit = TacheValidation(
-                type_file=TypeFilePendante.LIENS,
-                request_id=request_uuid,
-                contenu={
-                    "question": question,
-                    "conflits": [
-                        {
-                            "doc_a": c.evidence_a.document_id,
-                            "art_a": c.evidence_a.article_id,
-                            "doc_b": c.evidence_b.document_id,
-                            "art_b": c.evidence_b.article_id,
-                            "niveau": c.niveau.value,
-                            "description": c.description,
-                        }
-                        for c in resultat_conflit.conflits
-                    ],
-                },
+            await _soumettre_tache_conflit(
+                orchestrator,
+                question,
+                resultat_conflit,
+                request_id,
             )
-            await orchestrator._enregistrer_tache_redis(tache_conflit)
-            logger.warning(
-                "Conflit %s soumis à validation humaine.",
-                resultat_conflit.niveau_global.value,
-            )
-    except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
+    except Exception as exc:  # noqa: BLE001 — frontière externe : dégradation gracieuse, cf. skill §8
         logger.warning("Agent Conflict échoué, ignoré : %s", exc)
         return None
     return sortie
+
+
+async def _executer_agent_conflit(
+    orchestrator: Orchestrateur,
+    question: str,
+    date_contexte: date | None,
+    evidences: list[EvidenceRecuperee],
+) -> object:
+    """Instancie AgentConflit (use_llm=True) et lance l'analyse sous verrou MLX."""
+    from src.agents.conflit import AgentConflit
+
+    agent = AgentConflit(use_llm=True)
+    return await orchestrator._executer_bloquant(
+        agent.analyser,
+        question=question,
+        evidences=evidences,
+        date_ref=date_contexte,
+    )
+
+
+def _sortie_agent_conflit(
+    orchestrator: Orchestrateur,
+    resultat: Any,
+) -> SortieAgent:
+    """Emballe le résultat de l'analyse conflit dans une SortieAgent standard."""
+    return SortieAgent(
+        nom_agent="Conflict",
+        machine=orchestrator._machine_pour_agent("Conflict"),
+        contenu={
+            "niveau_global": resultat.niveau_global.value,
+            "conflits_detectes": len(resultat.conflits),
+            "mode": resultat.mode,
+        },
+    )
+
+
+async def _soumettre_tache_conflit(
+    orchestrator: Orchestrateur,
+    question: str,
+    resultat: Any,
+    request_id: object,
+) -> None:
+    """Pousse une TacheValidation LIENS dans Redis et log l'événement."""
+    from uuid import UUID
+
+    from src.models import TacheValidation, TypeFilePendante
+
+    request_uuid = request_id if isinstance(request_id, UUID) else UUID(str(request_id))
+    tache = TacheValidation(
+        type_file=TypeFilePendante.LIENS,
+        request_id=request_uuid,
+        contenu={
+            "question": question,
+            "conflits": [
+                {
+                    "doc_a": c.evidence_a.document_id,
+                    "art_a": c.evidence_a.article_id,
+                    "doc_b": c.evidence_b.document_id,
+                    "art_b": c.evidence_b.article_id,
+                    "niveau": c.niveau.value,
+                    "description": c.description,
+                }
+                for c in resultat.conflits
+            ],
+        },
+    )
+    await orchestrator._enregistrer_tache_redis(tache)
+    logger.warning(
+        "Conflit %s soumis à validation humaine.",
+        resultat.niveau_global.value,
+    )
 
 
 async def etape_citation(
@@ -208,23 +238,30 @@ async def etape_citation(
     from src.agents.citation import AgentCitation
 
     try:
-        agent_citation = AgentCitation(use_llm=True)
-        resultat_citation = await orchestrator._executer_bloquant(
-            agent_citation.generate,
+        agent = AgentCitation(use_llm=True)
+        resultat = await orchestrator._executer_bloquant(
+            agent.generate,
             evidences=evidences,
         )
-        sortie = SortieAgent(
-            nom_agent="Citation",
-            machine=orchestrator._machine_pour_agent("Citation"),
-            contenu={
-                "mode": resultat_citation.mode,
-                "verifiees": len(resultat_citation.citations_verifiees),
-                "douteuses": len(resultat_citation.citations_douteuses),
-            },
-        )
-        if resultat_citation.avertissement:
-            logger.warning("Citation : %s", resultat_citation.avertissement)
-    except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
+        if resultat.avertissement:
+            logger.warning("Citation : %s", resultat.avertissement)
+        return _sortie_agent_citation(orchestrator, resultat)
+    except Exception as exc:  # noqa: BLE001 — frontière externe : dégradation gracieuse, cf. §8
         logger.warning("Agent Citation échoué, ignoré : %s", exc)
         return None
-    return sortie
+
+
+def _sortie_agent_citation(
+    orchestrator: Orchestrateur,
+    resultat: Any,
+) -> SortieAgent:
+    """Emballe le résultat citation dans une SortieAgent standard."""
+    return SortieAgent(
+        nom_agent="Citation",
+        machine=orchestrator._machine_pour_agent("Citation"),
+        contenu={
+            "mode": resultat.mode,
+            "verifiees": len(resultat.citations_verifiees),
+            "douteuses": len(resultat.citations_douteuses),
+        },
+    )

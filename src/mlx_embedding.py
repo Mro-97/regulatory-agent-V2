@@ -20,6 +20,18 @@ from config import cfg
 
 from src.mlx_utils import _executer_avec_timeout, _tronquer_pour_embedding
 
+
+def _importer_emb_generate() -> Any:
+    """Importe `mlx_embeddings.generate` ; lève ModelLoadError si l'import échoue."""
+    try:
+        from mlx_embeddings import generate as emb_generate
+    except Exception as exc:
+        from src.errors import ModelLoadError
+
+        raise ModelLoadError("mlx-embeddings", cause=str(exc)) from exc
+    return emb_generate
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -104,15 +116,7 @@ class MLXEmbedding:
         return self._loaded
 
     def encode(self, texte: str, timeout_seconds: float | None = None) -> list[float]:
-        """Calcule l'embedding d'un texte.
-
-        Args:
-            texte: Texte à encoder.
-            timeout_seconds: Délai max. None = utilise cfg.mlx_timeout_seconds.
-
-        Returns:
-            Vecteur normalisé (liste de floats, dimension 1024 pour bge-m3).
-        """
+        """Retourne le vecteur d'embedding normalisé de `texte`."""
         if not self._loaded:
             self.load()
         texte = _tronquer_pour_embedding(texte)
@@ -120,86 +124,79 @@ class MLXEmbedding:
             timeout_seconds if timeout_seconds is not None else cfg.mlx_timeout_seconds
         )
         try:
-            if self._st_mode:
-                vecteur = _executer_avec_timeout(self._model.encode, timeout, texte)
-                return cast("list[float]", vecteur.tolist())
-            from mlx_embeddings import generate as emb_generate
-
-            sortie = _executer_avec_timeout(
-                emb_generate,
-                timeout,
-                self._model,
-                self._processor,
-                texts=texte,
-                max_length=512,
-                padding=True,
-                truncation=True,
-            )
-            # text_embeds est déjà normalisé (mean pooling + L2)
-            vecteur = sortie.text_embeds[0]
-            mx.eval(vecteur)
-            return cast("list[float]", vecteur.tolist())
+            return self._encoder_texte_unique(texte, timeout)
         except Exception as exc:
             from src.errors import EmbeddingFailedError
 
             raise EmbeddingFailedError(self.model_name, cause=str(exc)) from exc
+
+    def _encoder_texte_unique(self, texte: str, timeout: float) -> list[float]:
+        """Encodage bas-niveau : soit `sentence-transformers`, soit `mlx_embeddings`."""
+        if self._st_mode:
+            vecteur = _executer_avec_timeout(self._model.encode, timeout, texte)
+            return cast("list[float]", vecteur.tolist())
+        from mlx_embeddings import generate as emb_generate
+
+        sortie = _executer_avec_timeout(
+            emb_generate,
+            timeout,
+            self._model,
+            self._processor,
+            texts=texte,
+            max_length=512,
+            padding=True,
+            truncation=True,
+        )
+        vecteur = sortie.text_embeds[0]
+        mx.eval(vecteur)
+        return cast("list[float]", vecteur.tolist())
 
     def encode_batch(
         self,
         textes: list[str],
         batch_size: int = 32,
     ) -> list[list[float]]:
-        """Calcule les embeddings d'une liste de textes.
-        Traite par lots pour éviter les problèmes mémoire.
-
-        Args:
-            textes:     Liste de textes à encoder.
-            batch_size: Taille des lots.
-
-        Returns:
-            Liste de vecteurs, un par texte.
-        """  # noqa: D205
+        """Encode `textes` par lots pour éviter les explosions mémoire."""
         if not self._loaded:
             self.load()
-
-        try:
-            from mlx_embeddings import generate as emb_generate
-        except Exception as exc:
-            from src.errors import ModelLoadError
-
-            raise ModelLoadError("mlx-embeddings", cause=str(exc)) from exc
-
+        emb_generate = _importer_emb_generate()
         textes = [_tronquer_pour_embedding(t) for t in textes]
         vecteurs: list[list[float]] = []
         total = len(textes)
-
         for debut in range(0, total, batch_size):
             lot = textes[debut : debut + batch_size]
             logger.debug(
-                "Embedding batch %d-%d / %d", debut + 1, debut + len(lot), total
+                "Embedding batch %d-%d / %d",
+                debut + 1,
+                debut + len(lot),
+                total,
             )
-            try:
-                sortie = emb_generate(
-                    self._model,
-                    self._processor,
-                    texts=lot,
-                    max_length=512,
-                    padding=True,
-                    truncation=True,
-                )
-                mx.eval(sortie.text_embeds)
-                for vecteur in sortie.text_embeds:
-                    vecteurs.append(vecteur.tolist())
-            except Exception as exc:
-                from src.errors import EmbeddingFailedError
-
-                raise EmbeddingFailedError(
-                    self.model_name,
-                    cause=str(exc),
-                    batch=(debut, debut + len(lot)),
-                ) from exc
-
+            vecteurs.extend(self._encoder_lot(emb_generate, lot, debut))
         return vecteurs
+
+    def _encoder_lot(
+        self, emb_generate: Any, lot: list[str], debut: int
+    ) -> list[list[float]]:
+        """Encode un lot ; lève EmbeddingFailedError avec la fenêtre du lot."""
+        try:
+            sortie = emb_generate(
+                self._model,
+                self._processor,
+                texts=lot,
+                max_length=512,
+                padding=True,
+                truncation=True,
+            )
+            mx.eval(sortie.text_embeds)
+            return [v.tolist() for v in sortie.text_embeds]
+        except Exception as exc:
+            from src.errors import EmbeddingFailedError
+
+            raise EmbeddingFailedError(
+                self.model_name,
+                cause=str(exc),
+                batch=(debut, debut + len(lot)),
+            ) from exc
 
     def __enter__(self) -> MLXEmbedding:  # noqa: D105
         self.load()

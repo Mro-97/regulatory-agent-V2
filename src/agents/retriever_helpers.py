@@ -126,49 +126,57 @@ def fusionner_passes(
     res_b: list[ScoredPoint],
     top_k: int,
 ) -> list[ScoredPoint]:
-    """Fusionne les résultats des deux passes retrieval avec représentation
-    garantie puis arbitrage global par score.
-
-    1) Chaque passe non vide obtient au moins un slot (empêche l'éviction
-       complète d'une passe par des scores plus élevés de l'autre — B7).
-    2) Les slots restants sont distribués aux meilleurs candidats toutes
-       passes confondues (évite qu'un quota rigide n'évince un candidat
-       à haut score au profit d'un candidat à bas score — B3).
-    3) Le résultat final est trié par score décroissant.
-
-    Returns:
-        Liste de ScoredPoint sans doublon, ≤ `top_k` éléments.
-    """  # noqa: D205
+    """Fusion des 2 passes : représentation garantie + complément par score global."""
     points_bruts: list[ScoredPoint] = []
     ids_vus: set[str] = set()
+    _garantir_representation(res_a, res_b, points_bruts, ids_vus, top_k)
+    _completer_par_score_global(res_a, res_b, points_bruts, ids_vus, top_k)
+    points_bruts.sort(key=lambda p: p.score, reverse=True)
+    return points_bruts
 
-    def _prendre(point: ScoredPoint) -> bool:
-        """Ajoute `point` à la sélection si son id n'a pas déjà été retenu."""
-        if str(point.id) in ids_vus:
-            return False
-        ids_vus.add(str(point.id))
-        points_bruts.append(point)
-        return True
 
+def _garantir_representation(
+    res_a: list[ScoredPoint],
+    res_b: list[ScoredPoint],
+    points_bruts: list[ScoredPoint],
+    ids_vus: set[str],
+    top_k: int,
+) -> None:
+    """Réserve au moins un slot à chaque passe non vide (empêche l'éviction B7)."""
     for source in (res_a, res_b):
         if len(points_bruts) >= top_k:
             break
         for point in source:
-            if _prendre(point):
+            if _prendre_point(point, points_bruts, ids_vus):
                 break
 
-    candidats_restants = sorted(
-        list(res_a) + list(res_b),
-        key=lambda p: p.score,
-        reverse=True,
-    )
-    for point in candidats_restants:
+
+def _completer_par_score_global(
+    res_a: list[ScoredPoint],
+    res_b: list[ScoredPoint],
+    points_bruts: list[ScoredPoint],
+    ids_vus: set[str],
+    top_k: int,
+) -> None:
+    """Complète jusqu'à `top_k` en piochant les meilleurs candidats des 2 passes."""
+    candidats = sorted(list(res_a) + list(res_b), key=lambda p: p.score, reverse=True)
+    for point in candidats:
         if len(points_bruts) >= top_k:
             break
-        _prendre(point)
+        _prendre_point(point, points_bruts, ids_vus)
 
-    points_bruts.sort(key=lambda p: p.score, reverse=True)
-    return points_bruts
+
+def _prendre_point(
+    point: ScoredPoint,
+    points_bruts: list[ScoredPoint],
+    ids_vus: set[str],
+) -> bool:
+    """Ajoute `point` à la sélection si son id n'a pas déjà été retenu."""
+    if str(point.id) in ids_vus:
+        return False
+    ids_vus.add(str(point.id))
+    points_bruts.append(point)
+    return True
 
 
 def point_vers_evidence(point: ScoredPoint) -> EvidenceRecuperee | None:
