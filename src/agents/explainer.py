@@ -306,17 +306,7 @@ class AgentExplainer:
         date_ref: date | None = None,
         type_pipeline: str = "courante",
     ) -> ResultatExplication:
-        """Génère une explication réglementaire à partir des preuves.
-
-        Args:
-            question:      Question originale de l'utilisateur.
-            evidences:     Preuves filtrées (issues du Retriever + Temporal).
-            date_ref:      Date de référence si question temporelle.
-            type_pipeline: "courante", "temporelle" ou "conflit".
-
-        Returns:
-            ResultatExplication avec la réponse et les sources citées.
-        """
+        """Route vers `_synthetiser_avec_llm` ou `_assembler` selon `self.use_llm`."""
         logger.info(
             "Explication — mode=%s type=%s evidences=%d question=%r",
             "llm" if self.use_llm else "assemblage",
@@ -324,18 +314,10 @@ class AgentExplainer:
             len(evidences),
             question[:80],
         )
-
-        if self.use_llm:
-            return self._synthetiser_avec_llm(
-                question=question,
-                evidences=evidences,
-                date_ref=date_ref,
-                type_pipeline=type_pipeline,
-            )
-        else:
-            return self._assembler(
-                question=question,
-                evidences=evidences,
-                date_ref=date_ref,
-                type_pipeline=type_pipeline,
-            )
+        strategie = self._synthetiser_avec_llm if self.use_llm else self._assembler
+        return strategie(
+            question=question,
+            evidences=evidences,
+            date_ref=date_ref,
+            type_pipeline=type_pipeline,
+        )

@@ -120,6 +120,26 @@ def _resultat_citation_vide() -> ResultatCitation:
     )
 
 
+def _citation_depuis_evidence(
+    ev: EvidenceRecuperee,
+    max_extrait: int,
+) -> CitationReglementaire | None:
+    """Construit une CitationReglementaire NON_VERIFIEE ; None si extrait vide."""
+    extrait = ev.texte_extrait.strip()[:max_extrait]
+    if not extrait:
+        logger.warning("Chunk %s ignoré : extrait vide.", ev.chunk_id)
+        return None
+    return CitationReglementaire(
+        document_id=ev.document_id,
+        article_id=ev.article_id,
+        valid_from=ev.valid_from,
+        valid_to=ev.valid_to,
+        extrait=extrait,
+        chunk_id=ev.chunk_id,
+        statut=StatutCitation.NON_VERIFIEE,
+    )
+
+
 def _avertissement_citations_douteuses(nb_douteuses: int) -> str | None:
     """Message d'avertissement si au moins une citation est douteuse (sinon None)."""
     if nb_douteuses == 0:
@@ -214,38 +234,12 @@ class AgentCitation:
         evidences: list[EvidenceRecuperee],
         max_extrait: int = 200,
     ) -> list[CitationReglementaire]:
-        """Génère une citation par EvidenceRecuperee.
-
-        Chaque citation est directement construite depuis les métadonnées
-        du chunk — aucune inférence, aucun risque d'invention.
-
-        Args:
-            evidences:   Preuves récupérées et filtrées.
-            max_extrait: Longueur maximale de l'extrait cité.
-
-        Returns:
-            Liste de CitationReglementaire non encore vérifiées.
-        """
-        citations: list[CitationReglementaire] = []
-
-        for ev in evidences:
-            extrait = ev.texte_extrait.strip()[:max_extrait]
-            if not extrait:
-                logger.warning("Chunk %s ignoré : extrait vide.", ev.chunk_id)
-                continue
-
-            citations.append(
-                CitationReglementaire(
-                    document_id=ev.document_id,
-                    article_id=ev.article_id,
-                    valid_from=ev.valid_from,
-                    valid_to=ev.valid_to,
-                    extrait=extrait,
-                    chunk_id=ev.chunk_id,
-                    statut=StatutCitation.NON_VERIFIEE,
-                )
-            )
-
+        """Une citation par EvidenceRecuperee (métadonnées uniquement)."""
+        citations = [
+            c
+            for c in (_citation_depuis_evidence(ev, max_extrait) for ev in evidences)
+            if c is not None
+        ]
         logger.debug(
             "%d citation(s) générée(s) depuis %d preuve(s)",
             len(citations),

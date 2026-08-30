@@ -333,7 +333,6 @@ class AgentTemporel:
             return _resultat_temporel_vide(date_ref)
         applicables, exclues = self.filtrer(evidences, date_ref)
         chevauchements, lacunes = self.detecter_anomalies(applicables)
-        confiance = _calculer_niveau_confiance(chevauchements, lacunes, applicables)
         explication_llm = self._annoter_si_use_llm(
             question,
             date_ref,
@@ -349,7 +348,11 @@ class AgentTemporel:
             chevauchements=chevauchements,
             lacunes=lacunes,
             explication_llm=explication_llm,
-            niveau_confiance=confiance,
+            niveau_confiance=_calculer_niveau_confiance(
+                chevauchements,
+                lacunes,
+                applicables,
+            ),
         )
 
     def _annoter_si_use_llm(

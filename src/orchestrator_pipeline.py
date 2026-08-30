@@ -12,6 +12,7 @@ import asyncio
 import logging
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
+from uuid import UUID
 
 from src.models import EvidenceRecuperee, NiveauConfiance, SortieAgent
 
@@ -34,10 +35,6 @@ async def etape_retrieval(
     """Étape 1 : récupération des passages pertinents via Qdrant."""
     debut = datetime.now(UTC)
     retriever = orchestrator._obtenir_retriever()
-
-    # Déporté en thread (embedding MLX + requête Qdrant, bloquant) —
-    # ne touche pas le registre de modèles de génération, donc pas
-    # besoin de _verrou_agents ici.
     evidences = await asyncio.to_thread(
         retriever.retrieve,
         question=question,
@@ -45,8 +42,28 @@ async def etape_retrieval(
         filtres_themes=filtres_themes,
         filtres_sources=filtres_sources,
     )
+    duree_ms = int((datetime.now(UTC) - debut).total_seconds() * 1000)
+    sortie = _sortie_agent_retriever(
+        orchestrator,
+        evidences,
+        date_contexte,
+        filtres_themes,
+        filtres_sources,
+        duree_ms,
+    )
+    return evidences, sortie
 
-    sortie = SortieAgent(
+
+def _sortie_agent_retriever(
+    orchestrator: Orchestrateur,
+    evidences: list[EvidenceRecuperee],
+    date_contexte: date | None,
+    filtres_themes: list[str],
+    filtres_sources: list[SourceReglementaire],
+    duree_ms: int,
+) -> SortieAgent:
+    """Emballe le résultat retrieval dans une SortieAgent standard."""
+    return SortieAgent(
         nom_agent="Retriever",
         machine=orchestrator._machine_pour_agent("Retriever"),
         contenu={
@@ -55,9 +72,8 @@ async def etape_retrieval(
             "filtres_themes": filtres_themes,
             "filtres_sources": [s.value for s in filtres_sources],
         },
-        duree_ms=int((datetime.now(UTC) - debut).total_seconds() * 1000),
+        duree_ms=duree_ms,
     )
-    return evidences, sortie
 
 
 async def etape_temporal(
@@ -69,8 +85,6 @@ async def etape_temporal(
     """Étape 2 : analyse temporelle via AgentTemporel."""
     from src.agents.temporal import AgentTemporel
 
-    # use_llm=True : sous architecture unique m4pro2 (24 Go), le budget
-    # RAM tolère l'annotation LLM du raisonnement temporel.
     agent = AgentTemporel(use_llm=True)
     resultat = await orchestrator._executer_bloquant(
         agent.analyser,
@@ -78,7 +92,19 @@ async def etape_temporal(
         evidences=evidences,
         date_contexte=date_contexte,
     )
+    return resultat.evidences_applicables, _sortie_agent_temporal(
+        orchestrator,
+        evidences,
+        resultat,
+    )
 
+
+def _sortie_agent_temporal(
+    orchestrator: Orchestrateur,
+    evidences: list[EvidenceRecuperee],
+    resultat: Any,
+) -> SortieAgent:
+    """Emballe le résultat de l'analyse temporelle dans une SortieAgent."""
     contenu: dict[str, object] = {
         "date_ref": resultat.date_ref.isoformat(),
         "avant_filtrage": len(evidences),
@@ -89,13 +115,11 @@ async def etape_temporal(
     }
     if resultat.explication_llm:
         contenu["explication_llm"] = resultat.explication_llm
-
-    sortie = SortieAgent(
+    return SortieAgent(
         nom_agent="Temporal",
         machine=orchestrator._machine_pour_agent("Temporal"),
         contenu=contenu,
     )
-    return resultat.evidences_applicables, sortie
 
 
 async def etape_explainer(
@@ -116,8 +140,17 @@ async def etape_explainer(
         date_ref=date_ref,
         type_pipeline=type_pipeline,
     )
+    sortie = _sortie_agent_explainer(orchestrator, evidences, resultat)
+    return resultat.reponse, resultat.niveau_confiance, sortie
 
-    sortie = SortieAgent(
+
+def _sortie_agent_explainer(
+    orchestrator: Orchestrateur,
+    evidences: list[EvidenceRecuperee],
+    resultat: Any,
+) -> SortieAgent:
+    """Emballe le résultat de la synthèse Explainer dans une SortieAgent."""
+    return SortieAgent(
         nom_agent="Explainer",
         machine=orchestrator._machine_pour_agent("Explainer"),
         contenu={
@@ -127,7 +160,6 @@ async def etape_explainer(
             "niveau_confiance": resultat.niveau_confiance.value,
         },
     )
-    return resultat.reponse, resultat.niveau_confiance, sortie
 
 
 async def etape_conflit(
@@ -200,27 +232,14 @@ async def _soumettre_tache_conflit(
     request_id: object,
 ) -> None:
     """Pousse une TacheValidation LIENS dans Redis et log l'événement."""
-    from uuid import UUID
-
     from src.models import TacheValidation, TypeFilePendante
 
-    request_uuid = request_id if isinstance(request_id, UUID) else UUID(str(request_id))
     tache = TacheValidation(
         type_file=TypeFilePendante.LIENS,
-        request_id=request_uuid,
+        request_id=_forcer_uuid(request_id),
         contenu={
             "question": question,
-            "conflits": [
-                {
-                    "doc_a": c.evidence_a.document_id,
-                    "art_a": c.evidence_a.article_id,
-                    "doc_b": c.evidence_b.document_id,
-                    "art_b": c.evidence_b.article_id,
-                    "niveau": c.niveau.value,
-                    "description": c.description,
-                }
-                for c in resultat.conflits
-            ],
+            "conflits": [_dict_conflit(c) for c in resultat.conflits],
         },
     )
     await orchestrator._enregistrer_tache_redis(tache)
@@ -228,6 +247,25 @@ async def _soumettre_tache_conflit(
         "Conflit %s soumis à validation humaine.",
         resultat.niveau_global.value,
     )
+
+
+def _forcer_uuid(valeur: object) -> UUID:
+    """Retourne `valeur` si UUID, sinon construit depuis `str(valeur)`."""
+    if isinstance(valeur, UUID):
+        return valeur
+    return UUID(str(valeur))
+
+
+def _dict_conflit(conflit: Any) -> dict[str, str]:
+    """Sérialise un ConflitDetecte en dict compact pour la TacheValidation."""
+    return {
+        "doc_a": conflit.evidence_a.document_id,
+        "art_a": conflit.evidence_a.article_id,
+        "doc_b": conflit.evidence_b.document_id,
+        "art_b": conflit.evidence_b.article_id,
+        "niveau": conflit.niveau.value,
+        "description": conflit.description,
+    }
 
 
 async def etape_citation(

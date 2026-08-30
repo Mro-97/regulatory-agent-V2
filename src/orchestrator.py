@@ -425,19 +425,24 @@ class Orchestrateur:
     ) -> ReponseQuestion:
         """Exécute les 4 étapes du pipeline réel puis assemble la ReponseQuestion."""
         agents_executes: list[SortieAgent] = []
-        try:
-            evidences = await self._executer_retrieval(requete, agents_executes)
-        except Exception:
-            logger.exception("Retrieval échoué")
-            return _reponse_retrieval_indisponible(request_id)
-        evidences = await self._executer_temporal_si_applicable(
-            requete, type_pipeline, evidences, agents_executes
+        evidences_ou_none = await self._executer_retrieval_avec_repli(
+            requete,
+            agents_executes,
         )
-        await self._executer_conflit_si_applicable(
-            requete, type_pipeline, evidences, agents_executes, request_id
+        if evidences_ou_none is None:
+            return _reponse_retrieval_indisponible(request_id)
+        evidences = await self._executer_etapes_intermediaires(
+            requete,
+            type_pipeline,
+            evidences_ou_none,
+            agents_executes,
+            request_id,
         )
         reponse_texte, niveau_confiance = await self._executer_explainer_avec_repli(
-            requete, type_pipeline, evidences, agents_executes
+            requete,
+            type_pipeline,
+            evidences,
+            agents_executes,
         )
         await self._executer_citation(evidences, agents_executes)
         return await self._finaliser_reponse(
@@ -448,6 +453,42 @@ class Orchestrateur:
             reponse_texte,
             niveau_confiance,
         )
+
+    async def _executer_retrieval_avec_repli(
+        self,
+        requete: RequeteQuestion,
+        agents_executes: list[SortieAgent],
+    ) -> list[EvidenceRecuperee] | None:
+        """Retourne les evidences ou None si le Retriever a échoué (loggé)."""
+        try:
+            return await self._executer_retrieval(requete, agents_executes)
+        except Exception:
+            logger.exception("Retrieval échoué")
+            return None
+
+    async def _executer_etapes_intermediaires(
+        self,
+        requete: RequeteQuestion,
+        type_pipeline: str,
+        evidences: list[EvidenceRecuperee],
+        agents_executes: list[SortieAgent],
+        request_id: UUID,
+    ) -> list[EvidenceRecuperee]:
+        """Étapes 2 (temporal) et 2b (conflit) — évidences après filtrage."""
+        evidences = await self._executer_temporal_si_applicable(
+            requete,
+            type_pipeline,
+            evidences,
+            agents_executes,
+        )
+        await self._executer_conflit_si_applicable(
+            requete,
+            type_pipeline,
+            evidences,
+            agents_executes,
+            request_id,
+        )
+        return evidences
 
     async def _executer_retrieval(
         self,
@@ -556,18 +597,23 @@ class Orchestrateur:
         """Soumet à validation si besoin, persiste l'audit, renvoie la réponse."""
         soumettre = _doit_soumettre_validation(requete, niveau_confiance)
         tache_validation_id = await self._soumettre_validation_si_besoin(
-            requete, request_id, reponse_texte, niveau_confiance, soumettre
-        )
-        audit = _construire_audit_reel(
             requete,
             request_id,
-            evidences,
-            agents_executes,
             reponse_texte,
             niveau_confiance,
             soumettre,
         )
-        await self._persister_audit(audit)
+        await self._persister_audit(
+            _construire_audit_reel(
+                requete,
+                request_id,
+                evidences,
+                agents_executes,
+                reponse_texte,
+                niveau_confiance,
+                soumettre,
+            )
+        )
         return _construire_reponse_question(
             request_id,
             reponse_texte,

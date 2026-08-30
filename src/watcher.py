@@ -272,45 +272,36 @@ class Watcher:
         await asyncio.to_thread(sauvegarder_hashes, self._hashes)
 
     async def cycle_verification(self) -> list[AlerteWatcher]:
-        """Vérifie toutes les URLs configurées en un seul cycle.
-
-        Exécute les vérifications en parallèle (une par source)
-        avec un délai entre les sources pour éviter les surcharges.
-
-        Returns:
-            Liste des AlerteWatcher détectées ce cycle.
-        """
+        """Vérifie séquentiellement toutes les URLs configurées ; publie les alertes."""
         if self._en_cours:
             logger.warning("Cycle Watcher déjà en cours — ignoré.")
             return []
-
         self._en_cours = True
         alertes: list[AlerteWatcher] = []
-
         logger.info(
             "Watcher — début du cycle (%d sources configurées).",
             len(SOURCES_CONFIG),
         )
-
         try:
             for config in SOURCES_CONFIG:
-                source = config.source
-                for url in config.urls:
-                    alerte = await self.verifier_url(url, source)
-                    if alerte:
-                        alertes.append(alerte)
-                        await enregistrer_alerte_redis(alerte)
-                    # Délai poli entre requêtes
-                    await asyncio.sleep(2.0)
-
+                await self._verifier_source(config, alertes)
         finally:
             self._en_cours = False
-
-        logger.info(
-            "Watcher — cycle terminé. %d alerte(s) générée(s).",
-            len(alertes),
-        )
+        logger.info("Watcher — cycle terminé. %d alerte(s) générée(s).", len(alertes))
         return alertes
+
+    async def _verifier_source(
+        self,
+        config: _SourceConfig,
+        alertes: list[AlerteWatcher],
+    ) -> None:
+        """Vérifie toutes les URLs d'une source ; publie chaque alerte détectée."""
+        for url in config.urls:
+            alerte = await self.verifier_url(url, config.source)
+            if alerte:
+                alertes.append(alerte)
+                await enregistrer_alerte_redis(alerte)
+            await asyncio.sleep(2.0)  # Délai poli entre requêtes
 
     async def demarrer_boucle(self) -> None:
         """Lance la boucle de surveillance en arrière-plan.

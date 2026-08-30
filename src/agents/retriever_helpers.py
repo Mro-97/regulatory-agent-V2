@@ -24,10 +24,10 @@ from qdrant_client.http.models import (
 from src.models import EvidenceRecuperee
 
 if TYPE_CHECKING:
-    from typing import Any
-
     from qdrant_client.http.models import ScoredPoint
     from src.models import SourceReglementaire
+
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -180,42 +180,52 @@ def _prendre_point(
 
 
 def point_vers_evidence(point: ScoredPoint) -> EvidenceRecuperee | None:
-    """Convertit un ScoredPoint Qdrant en EvidenceRecuperee.
-
-    Retourne None si le payload est incomplet, avec log d'avertissement.
-    """
+    """Convertit un ScoredPoint en EvidenceRecuperee (None si payload incomplet)."""
     payload = point.payload or {}
+    if not _payload_a_champs_requis(payload, point.id):
+        return None
+    try:
+        return _construire_evidence_depuis_payload(payload, point)
+    except Exception as exc:  # noqa: BLE001 — frontière externe : cf. skill §8
+        logger.warning("Conversion échouée pour point.id=%s : %s", point.id, exc)
+        return None
 
-    champs_requis = [
-        "chunk_id",
-        "document_id",
-        "article_id",
-        "texte_chunk",
-        "valid_from",
-    ]
-    for champ in champs_requis:
+
+_CHAMPS_REQUIS_PAYLOAD = [
+    "chunk_id",
+    "document_id",
+    "article_id",
+    "texte_chunk",
+    "valid_from",
+]
+
+
+def _payload_a_champs_requis(payload: dict[str, Any], point_id: Any) -> bool:
+    """True si tous les `_CHAMPS_REQUIS_PAYLOAD` sont présents (log WARNING sinon)."""
+    for champ in _CHAMPS_REQUIS_PAYLOAD:
         if champ not in payload:
             logger.warning(
                 "Chunk ignoré — champ manquant '%s' dans point.id=%s",
                 champ,
-                point.id,
+                point_id,
             )
-            return None
+            return False
+    return True
 
-    try:
-        valid_from = parser_date(payload["valid_from"])
-        valid_to = parser_date(payload["valid_to"]) if payload.get("valid_to") else None
 
-        return EvidenceRecuperee(
-            chunk_id=str(payload["chunk_id"]),
-            document_id=str(payload["document_id"]),
-            article_id=str(payload["article_id"]),
-            texte_extrait=str(payload["texte_chunk"]),
-            score_similarite=round(float(point.score), 4),
-            valid_from=valid_from,
-            valid_to=valid_to,
-        )
-
-    except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
-        logger.warning("Conversion échouée pour point.id=%s : %s", point.id, exc)
-        return None
+def _construire_evidence_depuis_payload(
+    payload: dict[str, Any],
+    point: ScoredPoint,
+) -> EvidenceRecuperee:
+    """Assemble une EvidenceRecuperee depuis un payload Qdrant validé."""
+    valid_from = parser_date(payload["valid_from"])
+    valid_to = parser_date(payload["valid_to"]) if payload.get("valid_to") else None
+    return EvidenceRecuperee(
+        chunk_id=str(payload["chunk_id"]),
+        document_id=str(payload["document_id"]),
+        article_id=str(payload["article_id"]),
+        texte_extrait=str(payload["texte_chunk"]),
+        score_similarite=round(float(point.score), 4),
+        valid_from=valid_from,
+        valid_to=valid_to,
+    )

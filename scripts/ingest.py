@@ -103,37 +103,27 @@ class Ingester:  # noqa: D101
         return chunks
 
     def ingest_document(self, doc: DocumentReglementaire) -> int:
-        """Indexe un DocumentReglementaire déjà en mémoire dans Qdrant.
-
-        Args:
-            doc: Document à indexer.
-
-        Returns:
-            Nombre de points effectivement indexés.
-        """
+        """Chunke `doc`, embed chaque chunk, upsert les points dans Qdrant."""
         chunks = self.chunk_document(doc)
         logger.info("%d chunks générés pour %s", len(chunks), doc.id)
-
-        points = []
-        for chunk in chunks:
-            vector = self.embed_chunk(chunk.texte_chunk)
-            point = PointStruct(
-                id=str(uuid.uuid4()),
-                vector=vector,
-                payload={
-                    **chunk.model_dump(mode="json"),
-                    "original_id": chunk.chunk_id,
-                },
-            )
-            points.append(point)
-
+        points = [self._chunk_vers_point(chunk) for chunk in chunks]
         if not points:
             logger.warning("Aucun point à indexer pour %s", doc.id)
             return 0
-
         self.client.upsert(collection_name=self.collection_name, points=points)
         logger.info("%d points indexés dans Qdrant", len(points))
         return len(points)
+
+    def _chunk_vers_point(self, chunk: Any) -> PointStruct:
+        """Convertit un chunk en PointStruct Qdrant (vecteur + payload)."""
+        return PointStruct(
+            id=str(uuid.uuid4()),
+            vector=self.embed_chunk(chunk.texte_chunk),
+            payload={
+                **chunk.model_dump(mode="json"),
+                "original_id": chunk.chunk_id,
+            },
+        )
 
     def compter_chunks_existants(self, document_id: str) -> int:
         """Compte le nombre de chunks déjà présents pour un document_id donné.

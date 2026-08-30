@@ -53,30 +53,19 @@ T = TypeVar("T")
 _executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="mlx-timed")
 
 
-def _executer_avec_timeout(  # noqa: D417
+def _executer_avec_timeout(
     fn: Callable[..., T],
     timeout_seconds: float | None,
     *args: Any,
     **kwargs: Any,
 ) -> T:
-    """Exécute `fn` en imposant une borne supérieure de temps.
+    """Exécute `fn` sous timeout ; sans borne si `timeout_seconds` ≤ 0 ou None.
 
-    MLX ne fournit pas d'interruption coopérative : un appel bloqué ne
-    peut pas être annulé côté device. Le thread continue en tâche de
-    fond, mais l'appelant récupère la main via `future.result(timeout=)`.
-    Cette borne empêche un modèle figé ou un prompt pathologique de
-    figer l'API indéfiniment.
-
-    Args:
-        fn: Fonction à exécuter (synchrone).
-        timeout_seconds: Délai maximum. None, 0, ou négatif = pas de timeout.
-        *args, **kwargs: Passés à fn.
-
-    Returns:
-        Le résultat de fn.
+    MLX n'a pas d'interruption coopérative : le thread continue en tâche
+    de fond mais l'appelant récupère la main via `future.result(timeout=)`.
 
     Raises:
-        MLXTimeoutError: Si fn dépasse `timeout_seconds`.
+        GenerationTimeoutError: si `fn` dépasse `timeout_seconds`.
     """
     if timeout_seconds is None or timeout_seconds <= 0:
         return fn(*args, **kwargs)
@@ -93,6 +82,25 @@ def _compter_tokens(tokenizer: Any, texte: str) -> int:
         return len(tokenizer.encode(texte))
     except Exception:  # noqa: BLE001 — frontière externe : dégradation gracieuse, cf. §8
         return max(1, len(texte.split()))
+
+
+def _resultat_generation(
+    modele_id: str,
+    texte: str,
+    tokens_out: int,
+    duree: float,
+) -> ResultatGeneration:
+    """Assemble un ResultatGeneration avec ses StatistiquesGeneration."""
+    tps = tokens_out / duree if duree > 0 else 0.0
+    return ResultatGeneration(
+        texte=texte,
+        statistiques=StatistiquesGeneration(
+            modele_id=modele_id,
+            tokens_generes=tokens_out,
+            duree_secondes=round(duree, 3),
+            tokens_par_seconde=round(tps, 1),
+        ),
+    )
 
 
 def _tronquer_pour_embedding(texte: str) -> str:
@@ -248,7 +256,6 @@ class MLXInference:
             timeout_seconds if timeout_seconds is not None else cfg.mlx_timeout_seconds
         )
         debut = time.time()
-        sampler = make_sampler(temp=temp, top_p=tp)
         texte = _executer_avec_timeout(
             mlx_generate,
             timeout,
@@ -256,21 +263,12 @@ class MLXInference:
             self._tokenizer,
             prompt=prompt,
             max_tokens=max_tokens,
-            sampler=sampler,
+            sampler=make_sampler(temp=temp, top_p=tp),
             verbose=False,
         )
         duree = time.time() - debut
         tokens_out = _compter_tokens(self._tokenizer, texte)
-        tps = tokens_out / duree if duree > 0 else 0.0
-        return ResultatGeneration(
-            texte=texte,
-            statistiques=StatistiquesGeneration(
-                modele_id=self.model_name,
-                tokens_generes=tokens_out,
-                duree_secondes=round(duree, 3),
-                tokens_par_seconde=round(tps, 1),
-            ),
-        )
+        return _resultat_generation(self.model_name, texte, tokens_out, duree)
 
     def generate_avec_messages(
         self,

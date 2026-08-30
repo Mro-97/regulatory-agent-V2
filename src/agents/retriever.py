@@ -166,21 +166,7 @@ class Retriever:
         filtres_themes: list[str] | None = None,
         filtres_sources: list[SourceReglementaire] | None = None,
     ) -> list[EvidenceRecuperee]:
-        """Recherche les passages réglementaires pertinents pour une question.
-
-        Retrieval en deux passes temporelles (`valid_to>=date_ref` +
-        `valid_to=null`) fusionnées par score, avec représentation
-        garantie de chaque passe non vide (empêche B7).
-
-        Args:
-            question:        Question réglementaire en langage naturel.
-            date_contexte:   Date de contexte ; défaut = aujourd'hui.
-            filtres_themes:  Restreint aux chunks portant au moins un des thèmes.
-            filtres_sources: Restreint aux chunks issus des sources listées.
-
-        Returns:
-            EvidenceRecuperee[] triée par score décroissant, ≤ `top_k`.
-        """
+        """Retrieval en 2 passes temporelles fusionnées ; ≤ `top_k` evidences."""
         _journaliser_debut_retrieval(
             question, date_contexte, self._top_k, filtres_themes, filtres_sources
         )

@@ -10,7 +10,7 @@ from __future__ import annotations
 import json
 import logging
 import re
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from config import cfg
 from src.agents.conflit import ConflitDetecte, NiveauConflit
@@ -50,37 +50,39 @@ def charger_modele_conflit(modele: MLXInference | None) -> MLXInference:
 
 
 def extraire_verdicts(analyse: str) -> dict[int, str] | None:
-    """Extrait le mapping {numero_conflit → verdict_normalisé} depuis la sortie LLM.
-
-    Retourne None si la sortie n'est pas parsable.
-    """
+    """Retourne {conflit: verdict_normalisé} extrait de la sortie LLM (None si KO)."""
     match = re.search(r"\{[^{}]*\"verdicts\".*?\}\s*\]?\s*\}", analyse, re.DOTALL)
     candidats = [analyse] if match is None else [match.group(0), analyse]
-
     for candidat in candidats:
-        try:
-            donnees = json.loads(candidat)
-        except Exception:  # noqa: BLE001, S112
-            continue
-
-        liste = donnees.get("verdicts") if isinstance(donnees, dict) else None
-        if not isinstance(liste, list):
-            continue
-
-        mapping: dict[int, str] = {}
-        for entree in liste:
-            if not isinstance(entree, dict):
-                continue
-            num = entree.get("conflit")
-            verdict = entree.get("verdict")
-            if not isinstance(num, int) or not isinstance(verdict, str):
-                continue
-            mapping[num] = _normaliser_verdict(verdict)
-
+        mapping = _extraire_mapping_verdicts(candidat)
         if mapping:
             return mapping
-
     return None
+
+
+def _extraire_mapping_verdicts(candidat: str) -> dict[int, str] | None:
+    """Parse `candidat` en JSON, extrait `verdicts` en dict[int, str]."""
+    try:
+        donnees = json.loads(candidat)
+    except Exception:  # noqa: BLE001 — parse best-effort
+        return None
+    liste = donnees.get("verdicts") if isinstance(donnees, dict) else None
+    if not isinstance(liste, list):
+        return None
+    mapping: dict[int, str] = {}
+    for entree in liste:
+        _peupler_mapping_verdict(entree, mapping)
+    return mapping or None
+
+
+def _peupler_mapping_verdict(entree: Any, mapping: dict[int, str]) -> None:
+    """Ajoute une entrée `{conflit: N, verdict: S}` au mapping si bien formée."""
+    if not isinstance(entree, dict):
+        return
+    num = entree.get("conflit")
+    verdict = entree.get("verdict")
+    if isinstance(num, int) and isinstance(verdict, str):
+        mapping[num] = _normaliser_verdict(verdict)
 
 
 def verdict_vers_niveau(

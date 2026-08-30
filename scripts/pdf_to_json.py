@@ -217,6 +217,13 @@ def _parser_arguments() -> argparse.ArgumentParser:
         description="Convertit un PDF réglementaire en JSON canonique.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
+    _ajouter_arguments_document(parser)
+    _ajouter_arguments_dates_et_sortie(parser)
+    return parser
+
+
+def _ajouter_arguments_document(parser: argparse.ArgumentParser) -> None:
+    """Groupe --fichier / --id / --titre / --source."""
     parser.add_argument("--fichier", required=True, type=Path, help="PDF source.")
     parser.add_argument(
         "--id",
@@ -231,6 +238,10 @@ def _parser_arguments() -> argparse.ArgumentParser:
         choices=[s.value for s in SourceReglementaire],
         help="Source institutionnelle.",
     )
+
+
+def _ajouter_arguments_dates_et_sortie(parser: argparse.ArgumentParser) -> None:
+    """Groupe --publication / --vigueur / --themes / --url / --sortie."""
     parser.add_argument(
         "--publication", required=True, help="Date publication (YYYY-MM-DD)."
     )
@@ -245,7 +256,6 @@ def _parser_arguments() -> argparse.ArgumentParser:
         type=Path,
         help="Fichier JSON de sortie (défaut : data/raw/<id>.json).",
     )
-    return parser
 
 
 def _resoudre_chemin_sortie(args: argparse.Namespace) -> Path:

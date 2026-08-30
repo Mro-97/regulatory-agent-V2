@@ -67,24 +67,13 @@ class MLXEmbedding:
         self._loaded = False
 
     def load(self) -> None:
-        """Charge le modèle. Idempotent."""
+        """Charge le modèle (sentence-transformers ou mlx-embeddings). Idempotent."""
         if self._loaded:
             return
         logger.info("Chargement du modèle d'embedding : %s", self.model_name)
         debut = time.time()
         try:
-            if self._st_mode:
-                from sentence_transformers import (  # type: ignore[import-not-found]
-                    SentenceTransformer,
-                )
-
-                nom_court = self.model_name.split("/", 1)[1]
-                self._model = SentenceTransformer(nom_court)
-                self._processor = None
-            else:
-                from mlx_embeddings import load as emb_load  # type: ignore[import-untyped]  # noqa: I001 — ancrage single-ligne du type: ignore
-
-                self._model, self._processor = emb_load(self.model_name)
+            self._model, self._processor = self._instancier_backend()
             self._loaded = True
             logger.info(
                 "Modèle d'embedding chargé en %.1f s : %s (%s)",
@@ -99,6 +88,20 @@ class MLXEmbedding:
             self._processor = None
             self._loaded = False
             raise ModelLoadError(self.model_name, cause=str(exc)) from exc
+
+    def _instancier_backend(self) -> tuple[Any, Any]:
+        """Charge le backend actif (sentence-transformers ou mlx-embeddings)."""
+        if self._st_mode:
+            from sentence_transformers import (  # type: ignore[import-not-found]
+                SentenceTransformer,
+            )
+
+            nom_court = self.model_name.split("/", 1)[1]
+            return SentenceTransformer(nom_court), None
+        from mlx_embeddings import load as emb_load  # type: ignore[import-untyped]  # noqa: I001 — ancrage single-ligne du type: ignore
+
+        modele, processor = emb_load(self.model_name)
+        return modele, processor
 
     def unload(self) -> None:
         """Libère le modèle. Idempotent."""

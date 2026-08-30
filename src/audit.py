@@ -19,7 +19,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, cast
 
@@ -39,6 +39,32 @@ _hash_lock = asyncio.Lock()
 
 # Schéma SQL extrait dans src/audit_schema.py (§12 étape 6).
 from src.audit_schema import SQL_CREATE_TABLE  # noqa: E402
+
+_SQL_INSERT_AUDIT = """
+INSERT INTO audit_trail
+    (request_id, horodatage, user_query, date_contexte,
+     documents, agents, reponse, niveau_confiance,
+     validation_humaine, hash_precedent, hash_courant)
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+ON CONFLICT (hash_courant) DO NOTHING
+"""
+
+
+def _valeurs_insert_audit(audit: EnregistrementAudit) -> tuple[Any, ...]:
+    """Sérialise un EnregistrementAudit en n-uplet pour l'INSERT PostgreSQL."""
+    return (
+        audit.request_id,
+        audit.horodatage,
+        audit.user_query,
+        audit.date_contexte,
+        json.dumps([str(d) for d in audit.documents_recuperes]),
+        json.dumps([a.model_dump(mode="json") for a in audit.agents_executes]),
+        audit.reponse_finale,
+        audit.niveau_confiance.value,
+        audit.necessite_validation_humaine,
+        audit.hash_precedent,
+        audit.hash_courant,
+    )
 
 
 def _bilan_integrite_vide() -> dict[str, int | list[dict[str, object]]]:
@@ -67,35 +93,51 @@ def _verifier_lignes_audit(
     lignes: list[str], hash_ancre: str | None
 ) -> dict[str, int | list[dict[str, object]]]:
     """Itère sur les lignes JSONL, compte valides/invalides, collecte les erreurs."""
-    total = valides = invalides = 0
-    erreurs: list[dict[str, object]] = []
-    hash_precedent_attendu: str | None = hash_ancre
-    precedent_connu = hash_ancre is not None
+    etat = _EtatVerification(hash_precedent_attendu=hash_ancre)
+    etat.precedent_connu = hash_ancre is not None
     for i, ligne in enumerate(lignes):
-        total += 1
-        try:
-            resultat = _verifier_une_ligne(
-                ligne, hash_precedent_attendu, precedent_connu
-            )
-        except Exception as exc:  # noqa: BLE001 — ligne illisible, cf. skill §8
-            invalides += 1
-            erreurs.append({"ligne": i + 1, "erreur": str(exc)})
-            precedent_connu = False
-            continue
-        if resultat.detail is None:
-            valides += 1
-        else:
-            invalides += 1
-            detail_indexe = {**resultat.detail, "ligne": i + 1}
-            erreurs.append(detail_indexe)
-        hash_precedent_attendu = resultat.hash_attendu
-        precedent_connu = True
+        _traiter_ligne_audit(ligne, i, etat)
     return {
-        "total": total,
-        "valides": valides,
-        "invalides": invalides,
-        "erreurs": erreurs,
+        "total": etat.total,
+        "valides": etat.valides,
+        "invalides": etat.invalides,
+        "erreurs": etat.erreurs,
     }
+
+
+@dataclass
+class _EtatVerification:
+    """État mutable accumulé pendant `_verifier_lignes_audit`."""
+
+    hash_precedent_attendu: str | None = None
+    precedent_connu: bool = False
+    total: int = 0
+    valides: int = 0
+    invalides: int = 0
+    erreurs: list[dict[str, object]] = field(default_factory=list)
+
+
+def _traiter_ligne_audit(ligne: str, i: int, etat: _EtatVerification) -> None:
+    """Analyse une ligne JSONL et met à jour `etat` (compteurs + hash attendu)."""
+    etat.total += 1
+    try:
+        resultat = _verifier_une_ligne(
+            ligne,
+            etat.hash_precedent_attendu,
+            etat.precedent_connu,
+        )
+    except Exception as exc:  # noqa: BLE001 — ligne illisible, cf. skill §8
+        etat.invalides += 1
+        etat.erreurs.append({"ligne": i + 1, "erreur": str(exc)})
+        etat.precedent_connu = False
+        return
+    if resultat.detail is None:
+        etat.valides += 1
+    else:
+        etat.invalides += 1
+        etat.erreurs.append({**resultat.detail, "ligne": i + 1})
+    etat.hash_precedent_attendu = resultat.hash_attendu
+    etat.precedent_connu = True
 
 
 @dataclass(frozen=True)
@@ -187,47 +229,43 @@ class GestionnaireAudit:
         CHEMIN_AUDIT_LOCAL.parent.mkdir(parents=True, exist_ok=True)
 
     async def initialiser(self) -> None:
-        """Initialise la connexion PostgreSQL et crée la table si nécessaire.
-        Si PostgreSQL est indisponible, continue en mode local uniquement.
-
-        Le chaînage reprend au dernier hash connu (PostgreSQL ou JSONL local).
-        """  # noqa: D205
+        """Ouvre le pool PostgreSQL si DSN fourni ; sinon reste en mode local."""
         global _hash_precedent
 
         if _hash_precedent is None:
             _hash_precedent = await asyncio.to_thread(self._charger_dernier_hash_local)
-
         if not self.postgres_dsn:
             logger.info("Audit : mode local uniquement (pas de DSN PostgreSQL).")
             return
-
         try:
-            import asyncpg  # type: ignore[import-untyped]
-
-            self._pool = await asyncpg.create_pool(
-                self.postgres_dsn,
-                min_size=cfg.postgres_pool_min_size,
-                max_size=cfg.postgres_pool_max_size,
-                command_timeout=cfg.postgres_command_timeout,
-            )
-            async with self._pool.acquire() as conn:
-                await conn.execute(SQL_CREATE_TABLE)
-                # Récupérer le dernier hash pour le chaînage
-                row = await conn.fetchrow(
-                    "SELECT hash_courant FROM audit_trail ORDER BY id DESC LIMIT 1"
-                )
-                if row:
-                    _hash_precedent = row["hash_courant"]
-
-            self._postgres_ok = True
-            logger.info(
-                "Audit PostgreSQL initialisé. Dernier hash : %s",
-                (_hash_precedent or "aucun")[:16],
-            )
-
-        except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
+            await self._initialiser_postgres()
+        except Exception as exc:  # noqa: BLE001 — frontière externe : dégradation gracieuse, cf. §8
             logger.warning("PostgreSQL indisponible, mode local uniquement : %s", exc)
             self._postgres_ok = False
+
+    async def _initialiser_postgres(self) -> None:
+        """Ouvre le pool asyncpg, applique le DDL, récupère le dernier hash."""
+        global _hash_precedent
+        import asyncpg  # type: ignore[import-untyped]
+
+        self._pool = await asyncpg.create_pool(
+            self.postgres_dsn,
+            min_size=cfg.postgres_pool_min_size,
+            max_size=cfg.postgres_pool_max_size,
+            command_timeout=cfg.postgres_command_timeout,
+        )
+        async with self._pool.acquire() as conn:
+            await conn.execute(SQL_CREATE_TABLE)
+            row = await conn.fetchrow(
+                "SELECT hash_courant FROM audit_trail ORDER BY id DESC LIMIT 1"
+            )
+            if row:
+                _hash_precedent = row["hash_courant"]
+        self._postgres_ok = True
+        logger.info(
+            "Audit PostgreSQL initialisé. Dernier hash : %s",
+            (_hash_precedent or "aucun")[:16],
+        )
 
     def _charger_dernier_hash_local(self) -> str | None:
         """Retourne le dernier hash_courant du fichier JSONL local, ou None."""
@@ -318,34 +356,12 @@ class GestionnaireAudit:
             f.write(ligne)
 
     async def _persister_postgres(self, audit: EnregistrementAudit) -> bool:
-        """INSERT dans la table audit_trail PostgreSQL. Retourne le succès."""
+        """INSERT `audit_trail` (ON CONFLICT DO NOTHING) ; False si pool absent."""
         if not self._pool:
             return False
         try:
             async with self._pool.acquire() as conn:
-                await conn.execute(
-                    """
-                    INSERT INTO audit_trail
-                        (request_id, horodatage, user_query, date_contexte,
-                         documents, agents, reponse, niveau_confiance,
-                         validation_humaine, hash_precedent, hash_courant)
-                    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
-                    ON CONFLICT (hash_courant) DO NOTHING
-                    """,
-                    audit.request_id,
-                    audit.horodatage,
-                    audit.user_query,
-                    audit.date_contexte,
-                    json.dumps([str(d) for d in audit.documents_recuperes]),
-                    json.dumps(
-                        [a.model_dump(mode="json") for a in audit.agents_executes]
-                    ),
-                    audit.reponse_finale,
-                    audit.niveau_confiance.value,
-                    audit.necessite_validation_humaine,
-                    audit.hash_precedent,
-                    audit.hash_courant,
-                )
+                await conn.execute(_SQL_INSERT_AUDIT, *_valeurs_insert_audit(audit))
             return True  # noqa: TRY300 — sortie normale du bloc try
         except Exception:
             logger.exception("INSERT audit PostgreSQL échoué")
