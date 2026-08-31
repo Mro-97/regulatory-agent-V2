@@ -18,6 +18,10 @@ import sys
 import uvicorn
 from config import cfg
 
+# Ré-export pour `uvicorn main:app` / `gunicorn main:app` — l'app FastAPI
+# vit dans src.api ; ce module est le point d'entrée « python main.py ».
+from src.api import app as app
+
 logging.basicConfig(
     level=logging.DEBUG if cfg.debug else logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s — %(message)s",
