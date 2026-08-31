@@ -134,11 +134,7 @@ class Retriever:
         limite: int,
         filtre: Filter | None = None,
     ) -> list[ScoredPoint]:
-        """Exécute une recherche vectorielle Qdrant.
-
-        Raises:
-            VectorStoreError: Si Qdrant est inaccessible.
-        """
+        """Recherche vectorielle Qdrant (lève VectorStoreError si inaccessible)."""
         try:
             resultats = self._client.query_points(
                 collection_name=self._collection,
@@ -148,12 +144,12 @@ class Retriever:
                 with_payload=True,
                 with_vectors=False,
             )
-            return resultats.points  # noqa: TRY300 — sortie normale du bloc try
         except Exception as exc:
             from src.errors import VectorStoreError
 
             logger.exception("Erreur Qdrant (%s)", self._collection)
             raise VectorStoreError(self._collection, cause=str(exc)) from exc
+        return resultats.points
 
     # ------------------------------------------------------------------
     # Point d'entrée principal

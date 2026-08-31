@@ -247,28 +247,39 @@ class MLXInference:
         timeout_seconds: float | None,
     ) -> ResultatGeneration:
         """Appelle `mlx_lm.generate` sous timeout et compose le ResultatGeneration."""
-        from mlx_lm import generate as mlx_generate
-        from mlx_lm.sample_utils import make_sampler
-
         temp = temperature if temperature is not None else self.temperature
         tp = top_p if top_p is not None else self.top_p
         timeout = (
             timeout_seconds if timeout_seconds is not None else cfg.mlx_timeout_seconds
         )
         debut = time.time()
-        texte = _executer_avec_timeout(
+        texte = self._invoquer_mlx_generate(prompt, max_tokens, temp, tp, timeout)
+        duree = time.time() - debut
+        tokens_out = _compter_tokens(self._tokenizer, texte)
+        return _resultat_generation(self.model_name, texte, tokens_out, duree)
+
+    def _invoquer_mlx_generate(
+        self,
+        prompt: str,
+        max_tokens: int,
+        temp: float,
+        top_p: float,
+        timeout: float | None,
+    ) -> str:
+        """Appelle `mlx_lm.generate` sous timeout, avec sampler configuré."""
+        from mlx_lm import generate as mlx_generate
+        from mlx_lm.sample_utils import make_sampler
+
+        return _executer_avec_timeout(
             mlx_generate,
             timeout,
             self._model,
             self._tokenizer,
             prompt=prompt,
             max_tokens=max_tokens,
-            sampler=make_sampler(temp=temp, top_p=tp),
+            sampler=make_sampler(temp=temp, top_p=top_p),
             verbose=False,
         )
-        duree = time.time() - debut
-        tokens_out = _compter_tokens(self._tokenizer, texte)
-        return _resultat_generation(self.model_name, texte, tokens_out, duree)
 
     def generate_avec_messages(
         self,
@@ -322,17 +333,8 @@ class _CacheGeneration:
         temperature: float = 0.1,
         top_p: float = 0.9,
     ) -> MLXInference:
-        """Retourne l'instance de `model_name` ; décharge le modèle actif si un
-        autre est demandé (un seul modèle de génération résident à la fois).
-        """  # noqa: D205
-        if (
-            self._actif
-            and self._actif != model_name
-            and self._instances.get(self._actif) is not None
-            and self._instances[self._actif].est_charge
-        ):
-            logger.info("Swap modèle : %s → %s", self._actif, model_name)
-            self._instances[self._actif].unload()
+        """Retourne l'instance ; décharge l'actif si un autre modèle est demandé."""
+        self._decharger_si_swap(model_name)
         if model_name not in self._instances:
             self._instances[model_name] = MLXInference(
                 model_name=model_name,
@@ -342,6 +344,13 @@ class _CacheGeneration:
             )
         self._actif = model_name
         return self._instances[model_name]
+
+    def _decharger_si_swap(self, model_name: str) -> None:
+        """Décharge le modèle actif s'il diffère de `model_name` (swap RAM)."""
+        actif = self._instances.get(self._actif) if self._actif else None
+        if self._actif and self._actif != model_name and actif and actif.est_charge:
+            logger.info("Swap modèle : %s → %s", self._actif, model_name)
+            actif.unload()
 
     def unload_all(self) -> None:
         """Décharge toutes les instances mémorisées et remet à zéro l'actif."""

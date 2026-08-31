@@ -149,6 +149,20 @@ def _avertissement_citations_douteuses(nb_douteuses: int) -> str | None:
     )
 
 
+def _assembler_resultat_citation(
+    verifiees: list[CitationReglementaire],
+    douteuses: list[CitationReglementaire],
+    mode: str,
+) -> ResultatCitation:
+    """Compose ResultatCitation + avertissement dérivé des citations douteuses."""
+    return ResultatCitation(
+        citations_verifiees=verifiees,
+        citations_douteuses=douteuses,
+        mode=mode,
+        avertissement=_avertissement_citations_douteuses(len(douteuses)),
+    )
+
+
 # ---------------------------------------------------------------------------
 # Structures
 # ---------------------------------------------------------------------------
@@ -325,12 +339,7 @@ class AgentCitation:
             citations=citations_brutes,
             evidences_reference=evidences,
         )
-        return ResultatCitation(
-            citations_verifiees=verifiees,
-            citations_douteuses=douteuses,
-            mode=mode,
-            avertissement=_avertissement_citations_douteuses(len(douteuses)),
-        )
+        return _assembler_resultat_citation(verifiees, douteuses, mode)
 
     def _produire_citations_brutes(
         self,

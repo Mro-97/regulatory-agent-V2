@@ -69,56 +69,45 @@ class PromptTemplate:
 def _decouper_sections(contenu: str) -> tuple[str, str]:
     """Découpe le contenu brut d'un .md en `(system, user)`.
 
-    Les sections sont introduites par `# system` et `# user` en début de
-    ligne ; l'ordre est libre mais chaque section doit apparaître une
-    seule fois. Le texte hors section (préambule) est ignoré.
+    Les sections sont introduites par `# system` / `# user` en début de
+    ligne (ordre libre, une seule occurrence chacune). Le préambule hors
+    section est ignoré.
     """
     from src.errors import MalformedPromptError
 
-    sections: dict[str, list[str]] = {"system": [], "user": []}
-    courante: str | None = None
-    for ligne in contenu.splitlines():
-        depouillee = ligne.strip()
-        if depouillee == _MARQUEUR_SYSTEM:
-            courante = "system"
-            continue
-        if depouillee == _MARQUEUR_USER:
-            courante = "user"
-            continue
-        if courante is not None:
-            sections[courante].append(ligne)
-
+    sections = _extraire_sections(contenu)
     if not sections["system"] or not sections["user"]:
-        manque = [k for k, v in sections.items() if not v]
-        raise MalformedPromptError(manque)
+        raise MalformedPromptError([k for k, v in sections.items() if not v])
     return (
         "\n".join(sections["system"]).strip() + "\n",
         "\n".join(sections["user"]).strip() + "\n",
     )
 
 
+def _extraire_sections(contenu: str) -> dict[str, list[str]]:
+    """Ventile chaque ligne du contenu vers la section active (`system`/`user`)."""
+    sections: dict[str, list[str]] = {"system": [], "user": []}
+    courante: str | None = None
+    for ligne in contenu.splitlines():
+        depouillee = ligne.strip()
+        if depouillee == _MARQUEUR_SYSTEM:
+            courante = "system"
+        elif depouillee == _MARQUEUR_USER:
+            courante = "user"
+        elif courante is not None:
+            sections[courante].append(ligne)
+    return sections
+
+
 @lru_cache(maxsize=32)
 def charger_prompt(identifiant: str, version: int) -> PromptTemplate:
-    """Charge un gabarit versionné depuis `prompts/`.
-
-    Args:
-        identifiant: Chemin logique `<agent>/<tache>`, ex. `temporal/annoter`.
-        version:     Entier positif — la version du gabarit à charger.
-
-    Returns:
-        `PromptTemplate` prêt à `rendre(**variables)`.
-
-    Raises:
-        ConfigurationError: Si le fichier n'existe pas ou est mal formé.
-    """
+    """Charge un gabarit `<identifiant>.v<version>.md` depuis `prompts/`."""
     from src.errors import PromptNotFoundError
 
     chemin = _PROMPTS_DIR / f"{identifiant}.v{version}.md"
     if not chemin.exists():
         raise PromptNotFoundError(chemin)
-
-    contenu = chemin.read_text(encoding="utf-8")
-    system_txt, user_txt = _decouper_sections(contenu)
+    system_txt, user_txt = _decouper_sections(chemin.read_text(encoding="utf-8"))
     return PromptTemplate(
         identifiant=PromptIdentifiant(identifiant=identifiant, version=version),
         system=Template(system_txt),

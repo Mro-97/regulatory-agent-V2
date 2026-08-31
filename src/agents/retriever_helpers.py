@@ -95,30 +95,32 @@ def construire_filtres_passes(
 ) -> tuple[Filter, Filter]:
     """Construit les deux filtres Qdrant du retrieval temporel à deux passes.
 
-    Passe A : `valid_from <= date_ref ET valid_to >= date_ref`
-    Passe B : `valid_from <= date_ref ET valid_to = null`
-
-    Ajoute aux deux passes les conditions communes optionnelles (thèmes,
-    sources).
-
-    Returns:
-        Tuple (filtre_passe_a, filtre_passe_b).
+    Passe A : `valid_from <= date_ref ET valid_to >= date_ref`.
+    Passe B : `valid_from <= date_ref ET valid_to = null`.
+    Ajoute aux deux les conditions communes (thèmes, sources) si présentes.
     """
     cond_from = filtre_valid_from(date_ref)
-    cond_to_present = filtre_valid_to_present(date_ref)
-    cond_to_null = filtre_valid_to_null()
+    communes = _conditions_communes(filtres_themes_liste, filtres_sources_liste)
+    filtre_passe_a = Filter(
+        must=[cond_from, filtre_valid_to_present(date_ref), *communes]
+    )
+    filtre_passe_b = Filter(must=[cond_from, filtre_valid_to_null(), *communes])
+    return filtre_passe_a, filtre_passe_b
 
-    conditions_communes: list[Any] = []
+
+def _conditions_communes(
+    filtres_themes_liste: list[str],
+    filtres_sources_liste: list[SourceReglementaire],
+) -> list[Any]:
+    """Conditions Qdrant optionnelles (thèmes, sources) partagées entre passes."""
+    conditions: list[Any] = []
     cond_themes = filtre_themes(filtres_themes_liste)
     if cond_themes is not None:
-        conditions_communes.append(cond_themes)
+        conditions.append(cond_themes)
     cond_sources = filtre_sources(filtres_sources_liste)
     if cond_sources is not None:
-        conditions_communes.append(cond_sources)
-
-    filtre_passe_a = Filter(must=[cond_from, cond_to_present, *conditions_communes])
-    filtre_passe_b = Filter(must=[cond_from, cond_to_null, *conditions_communes])
-    return filtre_passe_a, filtre_passe_b
+        conditions.append(cond_sources)
+    return conditions
 
 
 def fusionner_passes(

@@ -174,28 +174,25 @@ def _decouper_article(
 
 
 def detecter_chapitres(texte: str) -> list[dict[str, Any]]:
-    """Détecte les chapitres et sections dans le texte.
-
-    Args:
-        texte: Texte brut.
-
-    Returns:
-        Liste de dicts {id, titre, debut}.
-    """
-    chapitres = []
-    for pattern in PATTERNS_CHAPITRE:
-        for match in pattern.finditer(texte):
-            chapitres.append(
-                {
-                    "id": f"chap_{match.group(1).lower()}",
-                    "titre": (
-                        match.group(2).strip()
-                        if match.lastindex is not None and match.lastindex >= 2
-                        else ""
-                    ),
-                    "debut": match.start(),
-                }
-            )
-
+    """Détecte chapitres/sections ; retourne dicts {id, titre, debut} triés."""
+    chapitres = [
+        _dict_chapitre(match)
+        for pattern in PATTERNS_CHAPITRE
+        for match in pattern.finditer(texte)
+    ]
     chapitres.sort(key=lambda c: c["debut"])
     return chapitres
+
+
+def _dict_chapitre(match: re.Match[str]) -> dict[str, Any]:
+    """Sérialise un match de chapitre en dict {id, titre, debut}."""
+    titre = (
+        match.group(2).strip()
+        if match.lastindex is not None and match.lastindex >= 2
+        else ""
+    )
+    return {
+        "id": f"chap_{match.group(1).lower()}",
+        "titre": titre,
+        "debut": match.start(),
+    }

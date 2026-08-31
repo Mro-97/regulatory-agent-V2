@@ -83,7 +83,32 @@ def construire_document(
     chapitres = _decouper_en_chapitres(
         articles_bruts, chapitres_bruts, entry_into_force
     )
-    doc = DocumentReglementaire(
+    doc = _instancier_document(
+        doc_id,
+        titre,
+        source,
+        publication_date,
+        entry_into_force,
+        themes,
+        url_source,
+        chapitres,
+    )
+    doc.hash_document = doc.calculer_hash()
+    return doc
+
+
+def _instancier_document(
+    doc_id: str,
+    titre: str,
+    source: SourceReglementaire,
+    publication_date: date,
+    entry_into_force: date,
+    themes: list[str],
+    url_source: str | None,
+    chapitres: list[Chapitre],
+) -> DocumentReglementaire:
+    """Instancie DocumentReglementaire (version = date d'entrée en vigueur ISO)."""
+    return DocumentReglementaire(
         id=doc_id,
         titre=titre,
         source=source,
@@ -94,8 +119,6 @@ def construire_document(
         themes=themes,
         chapitres=chapitres,
     )
-    doc.hash_document = doc.calculer_hash()
-    return doc
 
 
 def _decouper_en_chapitres(

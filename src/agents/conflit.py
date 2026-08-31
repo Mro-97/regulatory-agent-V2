@@ -353,11 +353,21 @@ class AgentConflit:
         ) + self._detecter_incoherences_internes(evidences)
         if not tous_conflits:
             return _resultat_conflit_vide()
-        analyse_llm, mode = None, "deterministe"
-        if self.use_llm:
-            tous_conflits, analyse_llm = self._analyser_avec_llm(
-                question=question,
-                conflits=tous_conflits,
-            )
-            mode = "llm"
+        tous_conflits, analyse_llm, mode = self._raffiner_via_llm(
+            question, tous_conflits
+        )
         return _assembler_resultat_conflit(tous_conflits, analyse_llm, mode)
+
+    def _raffiner_via_llm(
+        self,
+        question: str,
+        conflits: list[ConflitDetecte],
+    ) -> tuple[list[ConflitDetecte], str | None, str]:
+        """Passe (conflits, analyse, mode) après LLM (ou déterministe si off)."""
+        if not self.use_llm:
+            return conflits, None, "deterministe"
+        raffines, analyse = self._analyser_avec_llm(
+            question=question,
+            conflits=conflits,
+        )
+        return raffines, analyse, "llm"

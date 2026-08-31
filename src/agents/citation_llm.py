@@ -39,23 +39,12 @@ def extraire_avec_llm(
     reponse_explainer: str,
     evidences: list[EvidenceRecuperee],
 ) -> list[CitationReglementaire] | None:
-    """Utilise Mistral 7B pour identifier quels passages des preuves
-    ont été utilisés dans la réponse de l'Explainer.
+    """Identifie via Mistral 7B les chunks cités dans la réponse Explainer.
 
-    Le LLM reçoit la réponse et les textes des preuves, et retourne
-    les chunk_id des preuves effectivement citées. La vérification
-    déterministe s'applique ensuite via `AgentCitation.verify()`.
-
-    Args:
-        modele:            Instance MLXInference déjà chargée.
-        reponse_explainer: Texte généré par l'Explainer.
-        evidences:         Preuves disponibles.
-
-    Returns:
-        Liste de citations identifiées (statut NON_VERIFIEE avant verify()),
-        liste vide si le LLM répond AUCUN, ou None en cas d'échec — dans ce
-        dernier cas l'appelant retombe sur la génération déterministe.
-    """  # noqa: D205
+    Retourne les CitationReglementaire (statut NON_VERIFIEE, vérifiées
+    ensuite via `AgentCitation.verify()`), [] si le LLM répond AUCUN,
+    ou None en cas d'échec — l'appelant retombe alors sur le déterministe.
+    """
     messages = _preparer_messages_citation(reponse_explainer, evidences)
     try:
         texte = _appeler_llm_citation(modele, messages)
@@ -96,10 +85,9 @@ def _resoudre_chunk_ids_en_citations(
     texte: str, evidences: list[EvidenceRecuperee]
 ) -> list[CitationReglementaire]:
     """Convertit CSV chunk_id → citations (chunks inconnus loggés puis droppés)."""
-    chunk_ids_bruts = [c.strip() for c in texte.split(",")]
     index_chunks = {ev.chunk_id: ev for ev in evidences}
     citations: list[CitationReglementaire] = []
-    for chunk_id in chunk_ids_bruts:
+    for chunk_id in (c.strip() for c in texte.split(",")):
         ev = index_chunks.get(chunk_id)
         if ev is None:
             logger.warning(
@@ -107,14 +95,17 @@ def _resoudre_chunk_ids_en_citations(
                 chunk_id,
             )
             continue
-        citations.append(
-            CitationReglementaire(
-                document_id=ev.document_id,
-                article_id=ev.article_id,
-                valid_from=ev.valid_from,
-                valid_to=ev.valid_to,
-                extrait=ev.texte_extrait[:200],
-                chunk_id=ev.chunk_id,
-            )
-        )
+        citations.append(_citation_depuis_evidence_llm(ev))
     return citations
+
+
+def _citation_depuis_evidence_llm(ev: EvidenceRecuperee) -> CitationReglementaire:
+    """Fabrique une CitationReglementaire (statut par défaut NON_VERIFIEE)."""
+    return CitationReglementaire(
+        document_id=ev.document_id,
+        article_id=ev.article_id,
+        valid_from=ev.valid_from,
+        valid_to=ev.valid_to,
+        extrait=ev.texte_extrait[:200],
+        chunk_id=ev.chunk_id,
+    )

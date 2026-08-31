@@ -26,6 +26,24 @@ CHUNK_SIZE = 600
 OVERLAP = 50
 
 
+def _filtre_selector_document(document_id: str) -> Any:
+    """Sélecteur Qdrant ciblant tous les points d'un `document_id` donné."""
+    from qdrant_client.models import (
+        FieldCondition,
+        Filter,
+        FilterSelector,
+        MatchValue,
+    )
+
+    return FilterSelector(
+        filter=Filter(
+            must=[
+                FieldCondition(key="document_id", match=MatchValue(value=document_id))
+            ]
+        )
+    )
+
+
 class Ingester:  # noqa: D101
     def __init__(  # noqa: D107
         self,
@@ -151,28 +169,13 @@ class Ingester:  # noqa: D101
             return 0
 
     def supprimer_chunks_document(self, document_id: str) -> int:
-        """Supprime tous les points Qdrant portant un `document_id` donné.
-
-        Retourne le nombre de points supprimés (avant suppression).
-        """
-        from qdrant_client.models import (
-            FieldCondition,
-            Filter,
-            FilterSelector,
-            MatchValue,
-        )
-
+        """Supprime tous les points Qdrant d'un `document_id` (retourne le nb)."""
         avant = self.compter_chunks_existants(document_id)
         if avant == 0:
             return 0
-        filtre = Filter(
-            must=[
-                FieldCondition(key="document_id", match=MatchValue(value=document_id))
-            ]
-        )
         self.client.delete(
             collection_name=self.collection_name,
-            points_selector=FilterSelector(filter=filtre),
+            points_selector=_filtre_selector_document(document_id),
         )
         logger.info("Supprimé %d chunk(s) pour document_id=%s", avant, document_id)
         return avant

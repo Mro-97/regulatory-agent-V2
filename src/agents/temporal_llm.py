@@ -62,10 +62,15 @@ def annoter_avec_llm(
         return resultat.texte.strip()
     except Exception:
         logger.exception("Annotation LLM échouée")
-        return (
-            f"Analyse temporelle déterministe — "
-            f"{len(applicables)} version(s) applicable(s) à {date_ref}."
-        )
+        return _repli_deterministe(date_ref, applicables)
+
+
+def _repli_deterministe(date_ref: date, applicables: list[EvidenceRecuperee]) -> str:
+    """Message de repli utilisé quand l'annotation LLM échoue."""
+    return (
+        f"Analyse temporelle déterministe — "
+        f"{len(applicables)} version(s) applicable(s) à {date_ref}."
+    )
 
 
 def _preparer_messages_temporal(

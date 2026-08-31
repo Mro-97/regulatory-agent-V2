@@ -77,26 +77,43 @@ async def valider_tache(
     """Marque la tâche `tache_id` comme APPROUVE/REJETE et la déplace en Redis."""
     horodatage = datetime.now(UTC)
     try:
-        client = await client_factory()
-        trouvee = await _appliquer_decision_sur_files(
-            client,
+        return await _appliquer_et_repondre(
+            client_factory,
             tache_id,
             decision,
             commentaire,
             horodatage,
         )
-        await client.aclose()
-        if not trouvee:
-            raise TaskNotFoundError(tache_id)  # noqa: TRY301 — rattrapée pour contrat descendant
-        return ReponseDecisionValidation(
-            tache_id=tache_id,
-            nouveau_statut=decision,
-            horodatage_traitement=horodatage,
-        )
     except TaskNotFoundError:
         raise
     except Exception as exc:
         raise QueueBackendError(str(exc)) from exc
+
+
+async def _appliquer_et_repondre(
+    client_factory: ClientFactory,
+    tache_id: UUID,
+    decision: StatutValidation,
+    commentaire: str | None,
+    horodatage: datetime,
+) -> ReponseDecisionValidation:
+    """Applique la décision Redis puis retourne la ReponseDecisionValidation."""
+    client = await client_factory()
+    trouvee = await _appliquer_decision_sur_files(
+        client,
+        tache_id,
+        decision,
+        commentaire,
+        horodatage,
+    )
+    await client.aclose()
+    if not trouvee:
+        raise TaskNotFoundError(tache_id)
+    return ReponseDecisionValidation(
+        tache_id=tache_id,
+        nouveau_statut=decision,
+        horodatage_traitement=horodatage,
+    )
 
 
 async def _appliquer_decision_sur_files(
@@ -133,12 +150,8 @@ async def _essayer_appliquer_a_cle(
     horodatage: datetime,
 ) -> bool:
     """Retire une clé du pending et la pousse dans `traite_*` si son id matche."""
-    try:
-        donnees = json.loads(cle)
-    except Exception as exc:  # noqa: BLE001 — cf. skill §8
-        logger.warning("Erreur parsing tâche : %s", exc)
-        return False
-    if str(donnees.get("tache_id")) != str(tache_id):
+    donnees = _charger_json_tache(cle)
+    if donnees is None or str(donnees.get("tache_id")) != str(tache_id):
         return False
     donnees["statut"] = decision.value
     donnees["horodatage_traitement"] = horodatage.isoformat()
@@ -149,6 +162,15 @@ async def _essayer_appliquer_a_cle(
         client.lpush(f"traite_{nom_file}", json.dumps(donnees, ensure_ascii=False)),
     )
     return True
+
+
+def _charger_json_tache(cle: str) -> dict[str, Any] | None:
+    """Parse une clé JSON de tâche ; retourne None (et log) si illisible."""
+    try:
+        return cast("dict[str, Any]", json.loads(cle))
+    except Exception as exc:  # noqa: BLE001 — cf. skill §8
+        logger.warning("Erreur parsing tâche : %s", exc)
+        return None
 
 
 async def enregistrer_tache_redis(

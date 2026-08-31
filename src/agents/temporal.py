@@ -50,31 +50,32 @@ _DATE_MAX_RAISONNABLE = date(2100, 12, 31)
 
 
 def _valider_date_contexte(valeur: object) -> date | None:
-    """Normalise et valide une date de contexte réglementaire.
+    """Normalise et valide une date de contexte (None, date ou datetime).
 
-    Accepte None, un `date`, ou un `datetime` (converti en date UTC).
-    Rejette tout autre type et toute date hors [1900-01-01, 2100-12-31].
-    Ces bornes sont volontairement larges — elles écartent les valeurs
-    aberrantes (année 1 ou 9999) sans contraindre l'usage légitime.
+    Rejette tout autre type et toute date hors [1900-01-01, 2100-12-31] —
+    bornes larges qui écartent seulement les valeurs aberrantes (année 1
+    ou 9999) sans contraindre l'usage légitime.
     """
-    from src.errors import InvalidContextDateError
-
     if valeur is None:
         return None
     if isinstance(valeur, datetime):
         valeur = valeur.date()
     if not isinstance(valeur, date):
-        raise InvalidContextDateError(
-            reason=f"type reçu {type(valeur).__name__}",
-            value=valeur,
-        )
+        _rejeter_date_contexte(f"type reçu {type(valeur).__name__}", valeur)
     if not (_DATE_MIN_RAISONNABLE <= valeur <= _DATE_MAX_RAISONNABLE):
-        raise InvalidContextDateError(
-            reason=f"{valeur} hors intervalle "
+        _rejeter_date_contexte(
+            f"{valeur} hors intervalle "
             f"[{_DATE_MIN_RAISONNABLE}, {_DATE_MAX_RAISONNABLE}]",
-            value=valeur,
+            valeur,
         )
     return valeur
+
+
+def _rejeter_date_contexte(raison: str, valeur: object) -> None:
+    """Lève InvalidContextDateError (import local pour éviter un cycle)."""
+    from src.errors import InvalidContextDateError
+
+    raise InvalidContextDateError(reason=raison, value=valeur)
 
 
 def _raison_exclusion_temporelle(ev: EvidenceRecuperee, date_ref: date) -> str | None:
@@ -159,6 +160,28 @@ def _resultat_temporel_vide(date_ref: date) -> ResultatTemporel:
         evidences_applicables=[],
         evidences_exclues=[],
         niveau_confiance=NiveauConfiance.INCERTAIN,
+    )
+
+
+def _assembler_resultat_temporel(
+    date_ref: date,
+    applicables: list[EvidenceRecuperee],
+    exclues: list[EvidenceTemporelle],
+    chevauchements: list[str],
+    lacunes: list[str],
+    explication_llm: str | None,
+) -> ResultatTemporel:
+    """Compose le ResultatTemporel final avec niveau_confiance dérivé."""
+    return ResultatTemporel(
+        date_ref=date_ref,
+        evidences_applicables=applicables,
+        evidences_exclues=exclues,
+        chevauchements=chevauchements,
+        lacunes=lacunes,
+        explication_llm=explication_llm,
+        niveau_confiance=_calculer_niveau_confiance(
+            chevauchements, lacunes, applicables
+        ),
     )
 
 
@@ -341,18 +364,13 @@ class AgentTemporel:
             chevauchements,
             lacunes,
         )
-        return ResultatTemporel(
-            date_ref=date_ref,
-            evidences_applicables=applicables,
-            evidences_exclues=exclues,
-            chevauchements=chevauchements,
-            lacunes=lacunes,
-            explication_llm=explication_llm,
-            niveau_confiance=_calculer_niveau_confiance(
-                chevauchements,
-                lacunes,
-                applicables,
-            ),
+        return _assembler_resultat_temporel(
+            date_ref,
+            applicables,
+            exclues,
+            chevauchements,
+            lacunes,
+            explication_llm,
         )
 
     def _annoter_si_use_llm(

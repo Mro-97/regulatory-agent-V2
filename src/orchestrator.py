@@ -425,12 +425,38 @@ class Orchestrateur:
     ) -> ReponseQuestion:
         """Exécute les 4 étapes du pipeline réel puis assemble la ReponseQuestion."""
         agents_executes: list[SortieAgent] = []
+        etape = await self._executer_etapes_pipeline(
+            requete,
+            request_id,
+            type_pipeline,
+            agents_executes,
+        )
+        if etape is None:
+            return _reponse_retrieval_indisponible(request_id)
+        evidences, reponse_texte, niveau_confiance = etape
+        return await self._finaliser_reponse(
+            requete,
+            request_id,
+            evidences,
+            agents_executes,
+            reponse_texte,
+            niveau_confiance,
+        )
+
+    async def _executer_etapes_pipeline(
+        self,
+        requete: RequeteQuestion,
+        request_id: UUID,
+        type_pipeline: str,
+        agents_executes: list[SortieAgent],
+    ) -> tuple[list[EvidenceRecuperee], str, NiveauConfiance] | None:
+        """Exécute retrieval → étapes intermédiaires → explainer → citation."""
         evidences_ou_none = await self._executer_retrieval_avec_repli(
             requete,
             agents_executes,
         )
         if evidences_ou_none is None:
-            return _reponse_retrieval_indisponible(request_id)
+            return None
         evidences = await self._executer_etapes_intermediaires(
             requete,
             type_pipeline,
@@ -445,14 +471,7 @@ class Orchestrateur:
             agents_executes,
         )
         await self._executer_citation(evidences, agents_executes)
-        return await self._finaliser_reponse(
-            requete,
-            request_id,
-            evidences,
-            agents_executes,
-            reponse_texte,
-            niveau_confiance,
-        )
+        return evidences, reponse_texte, niveau_confiance
 
     async def _executer_retrieval_avec_repli(
         self,
@@ -603,16 +622,14 @@ class Orchestrateur:
             niveau_confiance,
             soumettre,
         )
-        await self._persister_audit(
-            _construire_audit_reel(
-                requete,
-                request_id,
-                evidences,
-                agents_executes,
-                reponse_texte,
-                niveau_confiance,
-                soumettre,
-            )
+        await self._construire_et_persister_audit(
+            requete,
+            request_id,
+            evidences,
+            agents_executes,
+            reponse_texte,
+            niveau_confiance,
+            soumettre,
         )
         return _construire_reponse_question(
             request_id,
@@ -622,6 +639,28 @@ class Orchestrateur:
             soumettre,
             tache_validation_id,
         )
+
+    async def _construire_et_persister_audit(
+        self,
+        requete: RequeteQuestion,
+        request_id: UUID,
+        evidences: list[EvidenceRecuperee],
+        agents_executes: list[SortieAgent],
+        reponse_texte: str,
+        niveau_confiance: NiveauConfiance,
+        soumettre: bool,
+    ) -> None:
+        """Assemble puis persiste l'EnregistrementAudit du pipeline réel."""
+        audit = _construire_audit_reel(
+            requete,
+            request_id,
+            evidences,
+            agents_executes,
+            reponse_texte,
+            niveau_confiance,
+            soumettre,
+        )
+        await self._persister_audit(audit)
 
     async def _soumettre_validation_si_besoin(
         self,

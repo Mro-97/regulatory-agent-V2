@@ -52,34 +52,31 @@ async def initialiser_audit() -> None:
 
 
 def valider_configuration_demarrage() -> list[str]:
-    """Vérifie au démarrage les invariants critiques de configuration.
-
-    L'ancien comportement fail-closed s'appliquait à CHAQUE requête (503 sur
-    tous les endpoints protégés) sans jamais l'annoncer au démarrage. Un
-    déploiement avec `.env` incomplet passait donc en apparence sans erreur.
-    Cette fonction rend le défaut détectable dès le boot : la liste des
-    erreurs retournée est utilisée par `main` pour refuser le démarrage.
-
-    Returns:
-        Liste des messages d'erreur. Vide si la configuration est valide.
-    """
+    """Vérifie au démarrage les invariants critiques (retourne les erreurs)."""
     erreurs: list[str] = []
+    _erreur_api_key_manquante(erreurs)
+    _erreur_rate_limiter_multi_worker(erreurs)
+    return erreurs
+
+
+def _erreur_api_key_manquante(erreurs: list[str]) -> None:
+    """Ajoute une erreur si `cfg.api_key` est vide (fail-closed silencieux)."""
     if not cfg.api_key or not cfg.api_key.strip():
         erreurs.append(
             "API_KEY vide — définir la variable API_KEY dans .env avant démarrage. "
             "Sans clé, l'API applique un fail-closed (503) sur chaque requête."
         )
+
+
+def _erreur_rate_limiter_multi_worker(erreurs: list[str]) -> None:
+    """Signale que le rate limiter en mémoire n'est pas partagé entre workers."""
     if cfg.api_workers > 1 and cfg.rate_limit_max_requetes > 0:
-        # M2 : le rate limiter est mono-process (LimiteurDebit en mémoire) —
-        # en multi-worker chaque worker a son propre compteur, la limite
-        # effective est multipliée par le nombre de workers.
         erreurs.append(
             f"api_workers={cfg.api_workers} > 1 avec rate_limit_max_requetes>0 : "
             "le rate limiter en mémoire n'est pas partagé entre workers, "
             "la limite effective est multipliée par le nombre de workers. "
             "Utiliser un backend Redis partagé ou fixer api_workers=1."
         )
-    return erreurs
 
 
 if __name__ == "__main__":

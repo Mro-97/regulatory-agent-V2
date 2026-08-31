@@ -132,6 +132,15 @@ def _construire_sources_citees(evidences: list[EvidenceRecuperee]) -> list[str]:
     ]
 
 
+def _bloc_source(ev: EvidenceRecuperee) -> str:
+    """Formate une preuve en bloc `<SOURCE …>…</SOURCE>` pour le contexte LLM."""
+    validite = f"{ev.valid_from} → {ev.valid_to or 'en vigueur'}"
+    return (
+        f"<SOURCE document={ev.document_id} article={ev.article_id} "
+        f"validite={validite}>\n{ev.texte_extrait.strip()}\n</SOURCE>"
+    )
+
+
 def _construire_contexte_temporel(date_ref: date | None, type_pipeline: str) -> str:
     """Retourne la clause temporelle du prompt (vide si non-temporelle)."""
     if not date_ref or type_pipeline != "temporelle":
@@ -223,31 +232,16 @@ class AgentExplainer:
         evidences: list[EvidenceRecuperee],
         max_chars: int = 6000,
     ) -> str:
-        """Construit le contexte réglementaire à passer au LLM.
-        Limité à max_chars pour ne pas dépasser la fenêtre de contexte.
-
-        Args:
-            evidences:  Preuves à inclure.
-            max_chars:  Limite en caractères.
-
-        Returns:
-            Texte structuré pour le prompt système.
-        """  # noqa: D205
+        """Construit le contexte LLM depuis les preuves (borné à `max_chars`)."""
         blocs: list[str] = []
         total = 0
-
         for ev in evidences:
-            validite = f"{ev.valid_from} → {ev.valid_to or 'en vigueur'}"
-            bloc = (
-                f"<SOURCE document={ev.document_id} article={ev.article_id} "
-                f"validite={validite}>\n{ev.texte_extrait.strip()}\n</SOURCE>"
-            )
+            bloc = _bloc_source(ev)
             if total + len(bloc) > max_chars:
                 blocs.append("... [contexte tronqué pour respecter la limite]")
                 break
             blocs.append(bloc)
             total += len(bloc)
-
         return "\n\n---\n\n".join(blocs)
 
     def _synthetiser_avec_llm(

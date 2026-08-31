@@ -34,13 +34,12 @@ async def etape_retrieval(
 ) -> tuple[list[EvidenceRecuperee], SortieAgent]:
     """Étape 1 : récupération des passages pertinents via Qdrant."""
     debut = datetime.now(UTC)
-    retriever = orchestrator._obtenir_retriever()
-    evidences = await asyncio.to_thread(
-        retriever.retrieve,
-        question=question,
-        date_contexte=date_contexte,
-        filtres_themes=filtres_themes,
-        filtres_sources=filtres_sources,
+    evidences = await _appeler_retriever(
+        orchestrator,
+        question,
+        date_contexte,
+        filtres_themes,
+        filtres_sources,
     )
     duree_ms = int((datetime.now(UTC) - debut).total_seconds() * 1000)
     sortie = _sortie_agent_retriever(
@@ -52,6 +51,24 @@ async def etape_retrieval(
         duree_ms,
     )
     return evidences, sortie
+
+
+async def _appeler_retriever(
+    orchestrator: Orchestrateur,
+    question: str,
+    date_contexte: date | None,
+    filtres_themes: list[str],
+    filtres_sources: list[SourceReglementaire],
+) -> list[EvidenceRecuperee]:
+    """Exécute `retriever.retrieve` en thread bloquant."""
+    retriever = orchestrator._obtenir_retriever()
+    return await asyncio.to_thread(
+        retriever.retrieve,
+        question=question,
+        date_contexte=date_contexte,
+        filtres_themes=filtres_themes,
+        filtres_sources=filtres_sources,
+    )
 
 
 def _sortie_agent_retriever(
@@ -185,7 +202,7 @@ async def etape_conflit(
                 resultat_conflit,
                 request_id,
             )
-    except Exception as exc:  # noqa: BLE001 — frontière externe : dégradation gracieuse, cf. skill §8
+    except Exception as exc:  # noqa: BLE001 — frontière externe, cf. skill §8
         logger.warning("Agent Conflict échoué, ignoré : %s", exc)
         return None
     return sortie
