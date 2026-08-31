@@ -67,13 +67,16 @@ class MLXEmbedding:
         self._loaded = False
 
     def load(self) -> None:
-        """Charge le modèle (sentence-transformers ou mlx-embeddings). Idempotent."""
+        """Charge le modèle sous timeout (sentence-transformers ou mlx-embeddings)."""
         if self._loaded:
             return
         logger.info("Chargement du modèle d'embedding : %s", self.model_name)
         debut = time.time()
         try:
-            self._model, self._processor = self._instancier_backend()
+            self._model, self._processor = _executer_avec_timeout(
+                self._instancier_backend,
+                cfg.mlx_load_timeout_seconds,
+            )
             self._loaded = True
             logger.info(
                 "Modèle d'embedding chargé en %.1f s : %s (%s)",

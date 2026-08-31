@@ -32,6 +32,26 @@ class TestValidationConfigDemarrage:
         import main
         from config import cfg
 
-        monkeypatch.setattr(cfg, "api_key", "clef-secrete-123")
+        monkeypatch.setattr(cfg, "api_key", "a" * 32)
         erreurs = main.valider_configuration_demarrage()
         assert erreurs == []
+
+    def test_refuse_api_key_placeholder(self, monkeypatch):  # noqa: ANN001, ANN201
+        """Refuse la valeur placeholder de .env.example (non configuré)."""
+        import main
+        from config import cfg
+
+        monkeypatch.setattr(cfg, "api_key", "remplacez-par-une-cle-longue-et-aleatoire")
+        erreurs = main.valider_configuration_demarrage()
+        assert erreurs, "API_KEY = placeholder doit être signalée"
+        assert any("placeholder" in e for e in erreurs)
+
+    def test_refuse_api_key_trop_courte(self, monkeypatch):  # noqa: ANN001, ANN201
+        """Refuse une clé < 32 caractères (risque de bruteforce)."""
+        import main
+        from config import cfg
+
+        monkeypatch.setattr(cfg, "api_key", "a" * 31)
+        erreurs = main.valider_configuration_demarrage()
+        assert erreurs, "API_KEY trop courte doit être signalée"
+        assert any("trop courte" in e for e in erreurs)

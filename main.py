@@ -63,12 +63,38 @@ def valider_configuration_demarrage() -> list[str]:
     return erreurs
 
 
+_API_KEY_PLACEHOLDER = "remplacez-par-une-cle-longue-et-aleatoire"
+_API_KEY_LONGUEUR_MIN = 32
+_COMMANDE_GEN_CLE = (
+    "python3 -c \"import secrets; print('API_KEY=' + secrets.token_urlsafe(32))\""
+)
+
+
 def _erreur_api_key_manquante(erreurs: list[str]) -> None:
-    """Ajoute une erreur si `cfg.api_key` est vide (fail-closed silencieux)."""
-    if not cfg.api_key or not cfg.api_key.strip():
+    """Refuse le boot si `cfg.api_key` est vide, placeholder, ou trop courte.
+
+    Trois cas fail-closed :
+    - clé vide → aucun endpoint métier ne pourra répondre (503 systématique) ;
+    - valeur placeholder de `.env.example` → déploiement non configuré ;
+    - clé < 32 caractères → bruteforce triviale.
+    """
+    cle = (cfg.api_key or "").strip()
+    if not cle:
         erreurs.append(
             "API_KEY vide — définir la variable API_KEY dans .env avant démarrage. "
-            "Sans clé, l'API applique un fail-closed (503) sur chaque requête."
+            f"Générer une clé sûre : {_COMMANDE_GEN_CLE}"
+        )
+        return
+    if cle == _API_KEY_PLACEHOLDER:
+        erreurs.append(
+            "API_KEY = valeur placeholder de .env.example — remplacer par une clé "
+            f"réelle avant déploiement. Générer : {_COMMANDE_GEN_CLE}"
+        )
+        return
+    if len(cle) < _API_KEY_LONGUEUR_MIN:
+        erreurs.append(
+            f"API_KEY trop courte ({len(cle)} < {_API_KEY_LONGUEUR_MIN} caractères) — "
+            f"risque de bruteforce. Générer : {_COMMANDE_GEN_CLE}"
         )
 
 

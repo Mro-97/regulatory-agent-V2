@@ -126,6 +126,17 @@ class Parametres(BaseSettings):
             "prompt pathologique de figer l'API indéfiniment."
         ),
     )
+    mlx_load_timeout_seconds: float = Field(
+        default=180.0,
+        description=(
+            "Délai maximum (secondes) accordé au chargement d'un modèle MLX. "
+            "Distinct de `mlx_timeout_seconds` (borne l'inférence) car un "
+            "premier chargement légitime — mmap sur ~1 GB de poids, "
+            "initialisation du tokenizer — peut dépasser la minute. "
+            "0 ou négatif = pas de timeout. Empêche un fichier de poids "
+            "corrompu (ex. safetensors sparse) de figer l'API au démarrage."
+        ),
+    )
     mlx_taille_max_texte_embedding: int = Field(
         default=8000,
         description=(
