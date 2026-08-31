@@ -60,7 +60,13 @@ class TestBug8QuestionMaxLength:
             env=env,
             capture_output=True,
             text=True,
-            timeout=30,
+            # 240 s : sur un poste saturé en I/O (Spotlight en réindexation
+            # après installation/téléchargement, disque quasi plein),
+            # le seul `from src.models import RequeteQuestion` d'un
+            # sous-process frais peut dépasser 3 min. Le vrai bug qu'on
+            # teste (dérivation de max_length depuis cfg) est instantané ;
+            # on veut isoler cette assertion des latences d'I/O système.
+            timeout=240,
         )
         assert resultat.returncode == 0, (
             f"stdout={resultat.stdout!r} stderr={resultat.stderr!r}"

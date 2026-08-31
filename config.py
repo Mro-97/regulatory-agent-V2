@@ -57,9 +57,17 @@ class Parametres(BaseSettings):
         description="Clé API partagée (en-tête X-API-Key). Vide = accès refusé (fail-closed).",  # noqa: E501
     )
     cors_origins_str: str = Field(
-        default="http://localhost,http://127.0.0.1",
+        default=(
+            "http://localhost,http://127.0.0.1,"
+            "http://localhost:8000,http://127.0.0.1:8000"
+        ),
         alias="CORS_ORIGINS",
-        description="Origines navigateur autorisées (CORS), séparées par des virgules.",
+        description=(
+            "Origines navigateur autorisées (CORS), séparées par des virgules. "
+            "Un navigateur envoie `Origin: http(s)://host:port` (avec port) — "
+            "chaque combinaison hôte:port doit être listée explicitement, la "
+            "comparaison est exacte. En prod : restreindre au vrai domaine."
+        ),
     )
     exposer_docs: bool = Field(
         default=False,
@@ -216,6 +224,24 @@ class Parametres(BaseSettings):
         description=(
             "Base du backoff exponentiel entre tentatives : "
             "attente = base * 2^(tentative-1) secondes."
+        ),
+    )
+    watcher_actif: bool = Field(
+        default=True,
+        description=(
+            "Active la boucle de surveillance dans le process API. "
+            "Passer à false quand le Watcher tourne dans un process séparé "
+            "(gunicorn multi-worker, ou déploiement avec supervisord/systemd) "
+            "pour éviter les cycles concurrents et libérer la boucle asyncio "
+            "de l'API des requêtes réseau du Watcher."
+        ),
+    )
+    watcher_delai_demarrage_secondes: float = Field(
+        default=30.0,
+        description=(
+            "Délai après le boot avant le premier cycle Watcher. Laisse à "
+            "l'API le temps de terminer son startup et de servir /health "
+            "sans concurrence I/O du Watcher."
         ),
     )
 

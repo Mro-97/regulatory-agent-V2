@@ -172,7 +172,7 @@ async def _appliquer_decision_validation(
     fonctionnellement qu'un statut cible différent.
     """
     try:
-        return await orchestrateur.valider_tache(
+        reponse = await orchestrateur.valider_tache(
             tache_id=requete.tache_id,
             decision=decision,
             commentaire=requete.commentaire,
@@ -182,6 +182,16 @@ async def _appliquer_decision_validation(
     except Exception:
         logger.exception("Erreur %s", endpoint)
         raise _erreur_500(_MSG_ERREUR_VALIDATION) from None
+    # Trace d'audit applicative — Redis conserve le détail complet
+    # (commentaire, contenu), on ne journalise ici que l'identifiant
+    # et le statut pour rester traçable même si Redis est purgé.
+    logger.info(
+        "Décision validation — endpoint=%s tache_id=%s statut=%s",
+        endpoint,
+        reponse.tache_id,
+        reponse.nouveau_statut.value,
+    )
+    return reponse
 
 
 # ---------------------------------------------------------------------------

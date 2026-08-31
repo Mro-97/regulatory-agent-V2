@@ -18,9 +18,20 @@ import sys
 import uvicorn
 from config import cfg
 
-# Ré-export pour `uvicorn main:app` / `gunicorn main:app` — l'app FastAPI
-# vit dans src.api ; ce module est le point d'entrée « python main.py ».
-from src.api import app as app
+
+# Ré-export lazy de `app` pour `uvicorn main:app` / `gunicorn main:app`.
+# On passe par __getattr__ (PEP 562) plutôt qu'un import top-level : ça
+# évite de charger toute la stack FastAPI (src.api → src.orchestrator →
+# src.agents.*) au moindre `import main`, ce qui alourdissait chaque test
+# qui référence `valider_configuration_demarrage`. Uvicorn accède à
+# l'attribut `app` du module, ce qui déclenche l'import à la demande.
+def __getattr__(name: str) -> object:
+    if name == "app":
+        from src.api import app
+
+        return app
+    raise AttributeError(f"module 'main' has no attribute {name!r}")  # noqa: TRY003
+
 
 logging.basicConfig(
     level=logging.DEBUG if cfg.debug else logging.INFO,
@@ -33,10 +44,23 @@ logger = logging.getLogger(__name__)
 
 
 async def demarrer_watcher() -> None:
-    """Lance le Watcher en tâche de fond."""
+    """Lance le Watcher en tâche de fond, après un délai de warm-up.
+
+    Le délai (`watcher_delai_demarrage_secondes`) évite que le premier cycle
+    du Watcher entre en concurrence I/O avec le startup uvicorn et retarde
+    la disponibilité de `/health`. Désactivable via `watcher_actif=false`
+    quand le Watcher tourne dans un process séparé.
+    """
+    if not cfg.watcher_actif:
+        logger.info("Watcher désactivé (watcher_actif=false).")
+        return
     try:
         from src.watcher import Watcher
 
+        delai = cfg.watcher_delai_demarrage_secondes
+        if delai > 0:
+            logger.info("Watcher — attente %.1f s avant premier cycle.", delai)
+            await asyncio.sleep(delai)
         watcher = Watcher()
         logger.info("Watcher démarré en arrière-plan.")
         await watcher.demarrer_boucle()
@@ -60,7 +84,24 @@ def valider_configuration_demarrage() -> list[str]:
     erreurs: list[str] = []
     _erreur_api_key_manquante(erreurs)
     _erreur_rate_limiter_multi_worker(erreurs)
+    _erreur_debug_et_docs_exposes(erreurs)
     return erreurs
+
+
+def _erreur_debug_et_docs_exposes(erreurs: list[str]) -> None:
+    """Refuse la combinaison `DEBUG=true` + `EXPOSER_DOCS=true` (fuite prod).
+
+    Debug tolère les logs verbeux en dev, docs exposées tolère Swagger.
+    Les deux ensemble = fuite d'info assurée en prod (schémas + verbosité
+    des tracebacks). Un déploiement doit passer au moins l'un des deux
+    à false.
+    """
+    if cfg.debug and cfg.exposer_docs:
+        erreurs.append(
+            "DEBUG=true et EXPOSER_DOCS=true simultanément — combinaison "
+            "interdite en dehors du poste de développement (fuite de schémas "
+            "et de tracebacks). Passer au moins l'un des deux à false."
+        )
 
 
 _API_KEY_PLACEHOLDER = "remplacez-par-une-cle-longue-et-aleatoire"
