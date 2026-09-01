@@ -158,10 +158,17 @@ def _preparer_messages_synthese(
     date_ref: date | None,
     type_pipeline: str,
 ) -> list[dict[str, str]]:
-    """Charge le gabarit `explainer/synthetiser` v1 et le rend avec les variables."""
+    """Charge le gabarit `explainer/synthetiser` v2 et le rend avec les variables.
+
+    v2 (2026-09-01) durcit le prompt : interdiction stricte de sources
+    externes, fallback obligatoire si le corpus est insuffisant, réponse
+    figée pour les questions hors droit réglementaire, refus de générer
+    du code ou de révéler l'architecture. Défense frontale contre le
+    prompt-injection persistant identifié lors de l'audit sécu.
+    """
     from src.prompts_loader import charger_prompt
 
-    return charger_prompt("explainer/synthetiser", 1).rendre(
+    return charger_prompt("explainer/synthetiser", 2).rendre(
         question=question,
         contexte=contexte,
         contexte_temporel=_construire_contexte_temporel(date_ref, type_pipeline),
