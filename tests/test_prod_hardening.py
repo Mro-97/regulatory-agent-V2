@@ -17,7 +17,7 @@ from __future__ import annotations
 class TestCorsOriginsDefaut:
     """La conftest override `cors_origins_str` pour les tests, on inspecte donc
     la valeur par défaut du Field directement plutôt que `cfg.cors_origins`.
-    """  # noqa: D205
+    """
 
     def _defaut(self) -> list[str]:
         from config import Parametres
@@ -86,8 +86,9 @@ class TestWatcherFlags:
         assert cfg.watcher_delai_demarrage_secondes > 0
 
     def test_demarrer_watcher_court_circuite_si_inactif(
-        self, monkeypatch
-    ):  # noqa: ANN001, ANN201
+        self,
+        monkeypatch,  # noqa: ANN001
+    ) -> None:
         """`demarrer_watcher()` ne fait rien si `watcher_actif=false`."""
         import asyncio
 
@@ -97,3 +98,23 @@ class TestWatcherFlags:
         monkeypatch.setattr(cfg, "watcher_actif", False)
         # doit terminer sans importer src.watcher ni sleep
         asyncio.run(main.demarrer_watcher())
+
+
+class TestPendingRedisIndisponible:
+    """`/pending` doit renvoyer 503 si Redis est HS, plutôt qu'une liste vide
+    (qui laissait un opérateur croire qu'il n'y avait rien à valider).
+    """
+
+    def test_lister_taches_pendantes_leve_queue_backend_error(self):  # noqa: ANN201
+        """La couche orchestrator lève `QueueBackendError` si le factory échoue."""
+        import asyncio
+
+        import pytest
+        from src.errors import QueueBackendError
+        from src.orchestrator_validation import lister_taches_pendantes
+
+        async def factory_ko():  # noqa: ANN202
+            raise ConnectionRefusedError("Redis down")  # noqa: TRY003 — msg de test
+
+        with pytest.raises(QueueBackendError):
+            asyncio.run(lister_taches_pendantes(factory_ko))

@@ -150,6 +150,7 @@ _MSG_ERREUR_INGESTION = "Erreur interne lors de l'ingestion."
 _MSG_ERREUR_VALIDATION = "Erreur interne lors de la validation."
 _MSG_ERREUR_PENDING = "Erreur interne lors de la récupération des tâches."
 _MSG_ERREUR_ASK = "Erreur interne lors du traitement de la question."
+_MSG_QUEUE_INDISPONIBLE = "File de validation temporairement indisponible."
 
 
 def _erreur_500(detail: str) -> HTTPException:
@@ -157,6 +158,11 @@ def _erreur_500(detail: str) -> HTTPException:
     return HTTPException(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=detail
     )
+
+
+def _erreur_503(detail: str) -> HTTPException:
+    """Fabrique une HTTPException 503 (backend externe indisponible)."""
+    return HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=detail)
 
 
 async def _appliquer_decision_validation(
@@ -297,8 +303,15 @@ async def ingerer(
 )
 async def pending(orchestrateur: OrchestrateurDep) -> ReponseTachesPendantes:
     """Liste les tâches Redis en attente de validation humaine."""
+    from src.errors import QueueBackendError
+
     try:
         return await orchestrateur.lister_taches_pendantes()
+    except QueueBackendError as exc:
+        # Backend HS : 503 explicite plutôt qu'une liste vide qui laisse
+        # croire à un opérateur que rien n'est en attente.
+        logger.exception("Redis indisponible pour /pending")
+        raise _erreur_503(_MSG_QUEUE_INDISPONIBLE) from exc
     except Exception:
         logger.exception("Erreur /pending")
         raise _erreur_500(_MSG_ERREUR_PENDING) from None

@@ -36,19 +36,24 @@ ClientFactory = Callable[[], Awaitable["aioredis.Redis"]]
 async def lister_taches_pendantes(
     client_factory: ClientFactory,
 ) -> ReponseTachesPendantes:
-    """Retourne toutes les TacheValidation présentes dans les files Redis pendantes."""
+    """Retourne les TacheValidation présentes dans les files Redis pendantes.
+
+    Lève `QueueBackendError` si Redis est injoignable — un opérateur qui
+    consulte `/pending` doit distinguer « aucune tâche » d'un backend HS
+    (auparavant on renvoyait `total=0`, masquant la panne d'infra).
+    """
     try:
         client = await client_factory()
         taches, par_file = await _lister_toutes_les_files(client)
         await client.aclose()
-        return ReponseTachesPendantes(
-            total=sum(par_file.values()),
-            par_file=par_file,
-            taches=taches,
-        )
-    except Exception:
-        logger.exception("Redis inaccessible")
-        return ReponseTachesPendantes(total=0, par_file={}, taches=[])
+    except Exception as exc:
+        logger.exception("Redis inaccessible pour /pending")
+        raise QueueBackendError(str(exc)) from exc
+    return ReponseTachesPendantes(
+        total=sum(par_file.values()),
+        par_file=par_file,
+        taches=taches,
+    )
 
 
 async def _lister_toutes_les_files(
