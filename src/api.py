@@ -40,9 +40,11 @@ from fastapi.templating import Jinja2Templates
 # `src.api._limiteur`, il doit rester atteignable comme attribut de module.
 from src.api_security import (
     AuthDep,
-    DebitDep,
     OrigineDep,
     installer_middlewares,
+)
+from src.api_security import (
+    DebitDep as DebitDep,  # ré-exporté pour compat descendante (import ext.)
 )
 from src.api_security import (
     LimiteurDebit as LimiteurDebit,
@@ -119,6 +121,13 @@ templates = Jinja2Templates(directory=str(DOSSIER_TEMPLATES))
 # src/api_security.py (§12 étape 6). Les décorateurs @app.middleware sont
 # posés ci-dessous via installer_middlewares().
 installer_middlewares(app)
+
+# Rate limit ajouté en dernier pour être exécuté en premier (Starlette LIFO) :
+# comptage effectué avant parsing du body → les requêtes malformées
+# consomment aussi le quota (auparavant elles court-circuitaient DebitDep).
+from src.rate_limit_middleware import installer_rate_limit  # noqa: E402
+
+installer_rate_limit(app)
 
 
 # ---------------------------------------------------------------------------
@@ -251,7 +260,7 @@ async def health() -> dict[str, object]:
     tags=["Requêtes"],
     summary="Poser une question réglementaire",
     description="Pipeline RAG complet : retrieval vectoriel → filtrage temporel → explication LLM → citations.",  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
-    dependencies=[AuthDep, OrigineDep, DebitDep],
+    dependencies=[AuthDep, OrigineDep],  # rate limit géré par middleware
 )
 async def poser_question(
     requete: RequeteQuestion,
@@ -273,7 +282,7 @@ async def poser_question(
     tags=["Ingestion"],
     summary="Ingérer un document",
     description="Ajoute un document JSON canonique (format DocumentReglementaire) au corpus Qdrant.",  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
-    dependencies=[AuthDep, OrigineDep, DebitDep],
+    dependencies=[AuthDep, OrigineDep],  # rate limit géré par middleware
 )
 async def ingerer(
     requete: RequeteIngestion,

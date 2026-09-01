@@ -1,38 +1,48 @@
 # Regulatory Agent V2 — Dépendances
-# Toutes sous licence permissive (MIT, Apache 2.0, BSD)
-# Aucune dépendance OpenAI / Anthropic / Google
+# Toutes sous licence permissive (MIT, Apache 2.0, BSD).
+# Aucune dépendance OpenAI / Anthropic / Google — inférence 100 % locale.
+#
+# Audit 2026-09-01 : chaque ligne ci-dessous est utilisée par un import
+# direct dans src/, scripts/, main.py ou tests/. Ne rien retirer sans
+# grep préalable — plusieurs libs sont importées à l'intérieur de fonctions
+# (lazy) et n'apparaissent pas dans un audit statique naïf.
 
 # --- Inférence locale (Apple Silicon) ---
-mlx>=0.16,<1.0
-mlx-lm>=0.16,<1.0
-mlx-embeddings>=0.1,<1.0
+mlx>=0.16,<1.0                  # src/mlx_embedding.py — cœur MLX (mx.core)
+mlx-lm>=0.16,<1.0               # src/mlx_utils.py — génération LLM
+mlx-embeddings>=0.1,<1.0        # src/mlx_embedding.py — bge-m3 (XLMRoberta)
 
-# --- API ---
-fastapi>=0.111,<1.0
-uvicorn[standard]>=0.29,<1.0
-jinja2>=3.1,<4.0
+# --- API HTTP ---
+fastapi>=0.111,<1.0             # src/api.py — routing, DI, validation
+uvicorn[standard]>=0.29,<1.0    # main.py — uvloop + httptools pour perf
+jinja2>=3.1,<4.0                # src/api.py — Jinja2Templates pour /
 
-# --- Modèles de données ---
-pydantic>=2.7,<3.0
-pydantic-settings>=2.3,<3.0
+# --- Modèles de données / configuration ---
+pydantic>=2.7,<3.0              # src/models.py — validation + sérialisation
+pydantic-settings>=2.3,<3.0     # config.py — BaseSettings (lecture .env)
 
-# --- Base vectorielle ---
-qdrant-client>=1.9,<2.0
+# --- Bases de données ---
+qdrant-client>=1.9,<2.0         # src/agents/retriever.py, scripts/ingest.py
+redis>=5.0,<6.0                 # src/orchestrator_validation.py (redis.asyncio)
+asyncpg>=0.29,<1.0              # src/audit.py — pool PostgreSQL (audit chaîné)
 
-# --- File de messages / cache ---
-redis>=5.0,<6.0
+# --- HTTP client ---
+httpx>=0.27,<1.0                # src/watcher.py + tests (starlette TestClient)
 
-# --- Base relationnelle (audit, m4pro2 en 127.0.0.1) ---
-asyncpg>=0.29,<1.0
-
-# --- Utilitaires ---
-httpx>=0.27,<1.0
-# python-dotenv est tiré transitivement par pydantic-settings ; version
-# verrouillée ici pour éviter une rétro-installation en 0.21.x.
+# --- Chargement des variables d'environnement ---
+# Tiré transitivement par pydantic-settings ; version verrouillée ici
+# pour éviter une rétro-installation en 0.21.x.
 python-dotenv>=1.0,<2.0
 
+# --- Téléchargement des modèles Hugging Face ---
+# Utilisé implicitement par mlx-embeddings.load() quand le chemin n'est
+# pas encore présent localement, et par scripts/launcher.py pour le
+# pré-chauffage. Déclaré explicitement pour verrouiller la version et
+# rendre l'intention lisible.
+huggingface-hub>=0.24,<1.0
+
 # --- Conversion PDF ---
-pdfplumber>=0.11,<1.0
+pdfplumber>=0.11,<1.0           # scripts/pdf_parsing.py — détection articles
 
 # --- Tests ---
-pytest>=9.0.3,<10.0
+pytest>=9.0.3,<10.0             # tests/

@@ -227,6 +227,29 @@ class TestRateLimiting:
         # Une autre IP n'est pas affectée
         assert limiteur.autoriser("ip-b")
 
+    def test_requete_invalide_consomme_quota(self, client):  # noqa: ANN001, ANN201
+        """Régression : le middleware compte avant Pydantic.
+
+        Avant, une requête au JSON invalide (rejetée en 422) court-circuitait
+        `DebitDep` et ne touchait pas le compteur — un attaquant pouvait
+        bombarder sans jamais épuiser son quota. Le middleware doit compter
+        chaque requête, même celle qui finira en 422.
+        """
+        original = api_security_module._limiteur
+        try:
+            api_security_module._limiteur = LimiteurDebit(
+                max_requetes=2, fenetre_secondes=60
+            )
+            entetes = {"X-API-Key": CLE, "Content-Type": "application/json"}
+            r1 = client.post("/ask", content=b"pas-du-json", headers=entetes)
+            r2 = client.post("/ask", content=b"pas-du-json", headers=entetes)
+            r3 = client.post("/ask", content=b"pas-du-json", headers=entetes)
+            assert r1.status_code == 422
+            assert r2.status_code == 422
+            assert r3.status_code == 429
+        finally:
+            api_security_module._limiteur = original
+
 
 # ---------------------------------------------------------------------------
 # Limites de taille et schémas
