@@ -19,6 +19,7 @@ from src.models import EvidenceRecuperee, NiveauConfiance, SortieAgent
 if TYPE_CHECKING:
     from datetime import date
 
+    from src.agents.citation import ResultatCitation
     from src.agents.conflit import ResultatConflit
     from src.models import SourceReglementaire
     from src.orchestrator import Orchestrateur
@@ -289,8 +290,14 @@ def _dict_conflit(conflit: Any) -> dict[str, str]:
 async def etape_citation(
     orchestrator: Orchestrateur,
     evidences: list[EvidenceRecuperee],
-) -> SortieAgent | None:
-    """Étape 4 : génération et vérification des citations."""
+    reponse_explainer: str | None = None,
+) -> tuple[SortieAgent, ResultatCitation] | None:
+    """Étape 4 : génération et vérification des citations.
+
+    Avec `reponse_explainer`, l'agent (Mistral 7B) vérifie que les
+    affirmations de la réponse sont ancrées dans les preuves ; sans, la
+    vérification reste déterministe (citations = métadonnées des preuves).
+    """
     from src.agents.citation import AgentCitation
 
     try:
@@ -298,10 +305,11 @@ async def etape_citation(
         resultat = await orchestrator._executer_bloquant(
             agent.generate,
             evidences=evidences,
+            reponse_explainer=reponse_explainer,
         )
         if resultat.avertissement:
             logger.warning("Citation : %s", resultat.avertissement)
-        return _sortie_agent_citation(orchestrator, resultat)
+        return _sortie_agent_citation(orchestrator, resultat), resultat
     except Exception as exc:  # noqa: BLE001 — frontière externe : dégradation gracieuse, cf. §8
         logger.warning("Agent Citation échoué, ignoré : %s", exc)
         return None

@@ -261,6 +261,17 @@ class Parametres(BaseSettings):
             "« faible ». Entre les deux seuils : « moyen »."
         ),
     )
+    citation_verifie_ancrage: bool = Field(
+        default=True,
+        description=(
+            "Passe le texte de la réponse à l'agent Citation (Mistral 7B) "
+            "pour vérifier que chaque affirmation est ancrée dans une "
+            "preuve. Une citation non retrouvée abaisse `niveau_confiance` "
+            "d'un cran (INCERTAIN si aucune n'est ancrée). Coût : un "
+            "chargement modèle + un swap MLX par requête. `false` = "
+            "vérification déterministe seule (rapide, sans effet confiance)."
+        ),
+    )
 
     # ------------------------------------------------------------------
     # Watcher

@@ -43,6 +43,7 @@ if TYPE_CHECKING:
     import redis.asyncio as aioredis
     from scripts.ingest import Ingester
 
+    from src.agents.citation import ResultatCitation
     from src.agents.retriever import Retriever
 
 from src.models import (
@@ -146,6 +147,32 @@ _CONFIANCES_A_VALIDER = (
     NiveauConfiance.FAIBLE,
     NiveauConfiance.INCERTAIN,
 )
+
+_ORDRE_CONFIANCE = (
+    NiveauConfiance.ELEVE,
+    NiveauConfiance.MOYEN,
+    NiveauConfiance.FAIBLE,
+    NiveauConfiance.INCERTAIN,
+)
+
+
+def _confiance_apres_citation(
+    niveau: NiveauConfiance, resultat: ResultatCitation | None
+) -> NiveauConfiance:
+    """Abaisse la confiance si la réponse contient des affirmations non ancrées.
+
+    L'agent Citation compare les passages cités dans la réponse aux
+    preuves : `citations_douteuses` = affirmations introuvables dans le
+    corpus récupéré. Aucune citation ancrée mais au moins une douteuse →
+    INCERTAIN ; sinon au moins une douteuse → un cran plus bas. `resultat`
+    absent (étape ignorée / échec) → confiance inchangée.
+    """
+    if resultat is None or not resultat.citations_douteuses:
+        return niveau
+    if not resultat.citations_verifiees:
+        return NiveauConfiance.INCERTAIN
+    idx = min(_ORDRE_CONFIANCE.index(niveau) + 1, len(_ORDRE_CONFIANCE) - 1)
+    return _ORDRE_CONFIANCE[idx]
 
 
 def _doit_soumettre_validation(
@@ -480,7 +507,12 @@ class Orchestrateur:
             evidences,
             agents_executes,
         )
-        await self._executer_citation(evidences, agents_executes)
+        resultat_citation = await self._executer_citation(
+            evidences, reponse_texte, agents_executes
+        )
+        niveau_confiance = _confiance_apres_citation(
+            niveau_confiance, resultat_citation
+        )
         return evidences, reponse_texte, niveau_confiance
 
     async def _executer_retrieval_avec_repli(
@@ -605,14 +637,21 @@ class Orchestrateur:
     async def _executer_citation(
         self,
         evidences: list[EvidenceRecuperee],
+        reponse_texte: str,
         agents_executes: list[SortieAgent],
-    ) -> None:
-        """Étape 4 : génération/vérification des citations (ignorée si échec)."""
+    ) -> ResultatCitation | None:
+        """Étape 4 : citations + verdict d'ancrage (ignorée si échec)."""
         from src.orchestrator_pipeline import etape_citation
 
-        sortie = await etape_citation(self, evidences=evidences)
-        if sortie is not None:
-            agents_executes.append(sortie)
+        reponse = reponse_texte if cfg.citation_verifie_ancrage else None
+        paire = await etape_citation(
+            self, evidences=evidences, reponse_explainer=reponse
+        )
+        if paire is None:
+            return None
+        sortie, resultat = paire
+        agents_executes.append(sortie)
+        return resultat
 
     async def _finaliser_reponse(
         self,
