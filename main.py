@@ -92,7 +92,25 @@ def valider_configuration_demarrage() -> list[str]:
     _erreur_api_key_manquante(erreurs)
     _erreur_rate_limiter_multi_worker(erreurs)
     _erreur_debug_et_docs_exposes(erreurs)
+    _erreur_dimension_embedding_incoherente(erreurs)
     return erreurs
+
+
+def _erreur_dimension_embedding_incoherente(erreurs: list[str]) -> None:
+    """Refuse le boot si `embedding_dimension` != `qdrant_vecteur_taille`.
+
+    Un modèle d'embedding qui ne produit pas la dimension de la collection
+    Qdrant fait échouer toutes les recherches silencieusement (0 evidence,
+    réponses non ancrées) — observé quand `.env` pointait `BAAI/bge-m3`
+    (KO) au lieu de `sentence-transformers/BAAI/bge-m3`.
+    """
+    if cfg.embedding_dimension != cfg.qdrant_vecteur_taille:
+        erreurs.append(
+            f"EMBEDDING_DIMENSION ({cfg.embedding_dimension}) != "
+            f"QDRANT_VECTEUR_TAILLE ({cfg.qdrant_vecteur_taille}) — le modèle "
+            f"'{cfg.modele_embedding}' et la collection Qdrant sont "
+            "incompatibles, toute recherche renverra 0 résultat."
+        )
 
 
 def _erreur_debug_et_docs_exposes(erreurs: list[str]) -> None:

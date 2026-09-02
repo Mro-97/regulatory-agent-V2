@@ -119,15 +119,24 @@ class Parametres(BaseSettings):
     )
 
     modele_embedding: str = Field(
-        default="sentence-transformers/all-MiniLM-L6-v2",
+        default="sentence-transformers/BAAI/bge-m3",
         description=(
-            "Modèle d'embedding. Deux backends dans MLXEmbedding : "
-            "'sentence-transformers/<id>' (repli utilisé quand mlx_embeddings "
-            "déclenche 'There is no Stream(gpu, 2)') ou un identifiant natif "
-            "mlx-embeddings ('BAAI/bge-m3', 'models/bge-m3-mlx')."
+            "Modèle d'embedding (requêtes + chunks). Deux backends dans "
+            "MLXEmbedding : 'sentence-transformers/<id>' (torch, CPU/MPS, "
+            "stable — défaut) ou un identifiant natif mlx-embeddings "
+            "('models/bge-m3-mlx' local). La voie MLX crashe 'Stream(gpu, N)' "
+            "sur certaines versions de mlx ; le repo HF nu 'BAAI/bge-m3' n'a "
+            "pas de safetensors. DOIT produire `embedding_dimension`."
         ),
     )
-    embedding_dimension: int = Field(default=384)
+    embedding_dimension: int = Field(
+        default=1024,
+        description=(
+            "Dimension des vecteurs d'embedding. DOIT égaler "
+            "`qdrant_vecteur_taille` (le boot refuse un écart) — sinon toute "
+            "recherche vectorielle échoue silencieusement."
+        ),
+    )
 
     modele_retriever: str = Field(default="mlx-community/Mistral-7B-Instruct-v0.3-4bit")
     modele_temporal: str = Field(default="mlx-community/Qwen2.5-7B-Instruct-4bit")

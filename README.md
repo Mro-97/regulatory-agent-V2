@@ -118,15 +118,21 @@ openssl rand -hex 32
 3. **Remplir le fichier `.env`** avec les valeurs suivantes :
 
 ```ini
-REGULATORY_API_KEY=<ta_clé_hex>
+API_KEY=<ta_clé_hex>
+
+# Embedding — le backend sentence-transformers est le défaut retenu
+# (torch CPU/MPS, stable). EMBEDDING_DIMENSION doit égaler la taille des
+# vecteurs de la collection Qdrant, sinon le boot refuse de démarrer.
+MODELE_EMBEDDING=sentence-transformers/BAAI/bge-m3
+EMBEDDING_DIMENSION=1024
 
 # Services (tout en local)
 QDRANT_HOST=127.0.0.1
 QDRANT_PORT=6333
+QDRANT_VECTEUR_TAILLE=1024
 REDIS_HOST=127.0.0.1
 REDIS_PORT=6379
-POSTGRES_HOST=127.0.0.1
-POSTGRES_PORT=5432
+POSTGRES_DSN=postgresql://user:motdepasse@127.0.0.1:5432/regulatory
 API_HOST=127.0.0.1
 API_PORT=8000
 ```
