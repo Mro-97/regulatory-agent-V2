@@ -114,6 +114,21 @@ function conf_bandeau(n,enAttente){
   return `<div class="conf-bandeau ${cls}">⚠️ ${esc(msg)}</div>`;
 }
 function est_abroge(vt){if(!vt)return false;const d=new Date(vt);return !isNaN(d.getTime())&&d<new Date();}
+function wireSuivi(el){
+  const b=el.querySelector(".btn-suivi");if(!b)return;
+  b.addEventListener("click",async()=>{
+    const tid=b.dataset.tid;b.disabled=true;const t0=b.textContent;b.textContent="…";
+    try{
+      const r=await apiFetch(`/tache/${tid}`);
+      if(!r.ok){b.textContent=r.status===404?"Tâche introuvable":"Erreur";return;}
+      const t=await r.json();
+      const map={"approuvé":["✓ Réponse validée","badge-eleve"],"rejeté":["✗ Réponse rejetée","badge-faible"],"escaladé":["⚠️ Escaladée","badge-moyen"],"en_attente":["⏳ Toujours en attente","badge-attente"]};
+      const [txt,cls]=map[t.statut]||[`Statut : ${t.statut}`,"badge-incertain"];
+      const span=document.createElement("span");span.className=`badge ${cls}`;span.textContent=txt;b.replaceWith(span);
+      if(t.commentaire_validateur)toast(`Validateur : ${t.commentaire_validateur}`,"info");
+    }catch{b.textContent=t0;b.disabled=false;toast("Serveur injoignable","error");}
+  });
+}
 function wireSignaler(el){
   const b=el.querySelector(".btn-signaler");if(!b)return;
   b.addEventListener("click",()=>{
@@ -186,21 +201,55 @@ function ajouterMsgUser(texte){const el=document.createElement("div");el.classNa
 function ajouterTyping(){const el=document.createElement("div");el.className="msg-typing";el.id="typing-tmp";el.innerHTML=`<div class="msg-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div><div class="typing-bubble"><div class="tp"></div><div class="tp"></div><div class="tp"></div></div>`;chatMessages.appendChild(el);scrollBas();}
 function supprimerTyping(){document.getElementById("typing-tmp")?.remove();}
 
-function afficherReponse(data){
+function md_export(data,question,dateCtx){
+  const nl="\n";
+  const src=(data.evidences||[]).map(ev=>{
+    const fin=ev.valid_to||"en vigueur";const ab=est_abroge(ev.valid_to)?" — n'est plus en vigueur":"";
+    const ex=ev.texte_extrait?`${nl}> ${String(ev.texte_extrait).replace(/\s*\n+\s*/g," ")}${nl}`:"";
+    return `### ${ev.document_id} / ${ev.article_id}${nl}Validité : ${ev.valid_from} → ${fin}${ab}${nl}${ex}`;
+  }).join(nl);
+  return `# Question réglementaire${nl}${nl}`+
+    `**Question :** ${question||"(non disponible)"}${nl}`+
+    (dateCtx?`**Date de contexte :** ${dateCtx}${nl}`:"")+
+    `**Généré le :** ${new Date().toISOString()}${nl}`+
+    `**Niveau de confiance :** ${lbl_conf(data.niveau_confiance)}${nl}${nl}`+
+    `## Réponse${nl}${nl}${data.reponse}${nl}${nl}`+
+    `## Sources (${(data.evidences||[]).length})${nl}${nl}${src}${nl}${nl}`+
+    `---${nl}⚠️ Réponse générée automatiquement à partir du corpus réglementaire indexé. `+
+    `Ne constitue pas un avis juridique — vérifier les textes officiels (EUR-Lex, Légifrance).${nl}`;
+}
+function telecharger_texte(nom,contenu){
+  const blob=new Blob([contenu],{type:"text/markdown;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");a.href=url;a.download=nom;
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function wireExport(el,build){
+  const b=el.querySelector(".btn-export");if(!b)return;
+  b.addEventListener("click",()=>{
+    const d=new Date();const p=n=>String(n).padStart(2,"0");
+    const nom=`reponse-reglementaire-${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}.md`;
+    telecharger_texte(nom,build());toast("Export Markdown téléchargé","info");
+  });
+}
+function afficherReponse(data,question,dateCtx){
   const nc=cls_conf(data.niveau_confiance);
   let sources="";
   if(data.evidences?.length){
     const items=data.evidences.slice(0,8).map(ev=>{const abroge=est_abroge(ev.valid_to);const fin=ev.valid_to||"en vigueur";const vmark=abroge?" · n'est plus en vigueur":"";const ex=ev.texte_extrait?`<div class="src-excerpt">${esc(ev.texte_extrait.slice(0,160))}...</div>`:"";return `<div class="src-item${abroge?" src-abroge":""}"><div class="src-ref">${esc(ev.document_id)} / ${esc(ev.article_id)}</div><div class="src-valid${abroge?" abroge":""}">${esc(String(ev.valid_from))} → ${esc(String(fin))}${vmark}</div>${ex}</div>`;}).join("");
     sources=`<button class="sources-toggle"><span>📎 ${data.evidences.length} source${data.evidences.length>1?"s":""} citée${data.evidences.length>1?"s":""}</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button><div class="sources-body">${items}</div>`;
   }
-  const attente=data.en_attente_validation?`<span class="badge badge-attente">⏳ En attente de validation</span>`:"";
+  const suivi=data.tache_validation_id?`<button class="btn-suivi" data-tid="${esc(String(data.tache_validation_id))}">Vérifier le statut</button>`:"";
+  const attente=data.en_attente_validation?`<span class="badge badge-attente">⏳ En attente de validation</span>${suivi}`:"";
   const bandeau=conf_bandeau(data.niveau_confiance,data.en_attente_validation);
   const el=document.createElement("div");el.className="msg-sys";
   const signaler=data.request_id?`<button class="btn-signaler" data-rid="${esc(String(data.request_id))}">⚑ Signaler</button>`:"";
-  el.innerHTML=`<div class="msg-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div><div class="msg-sys-inner"><div class="msg-card">${bandeau}<div>${esc(data.reponse)}</div>${sources}</div><div class="msg-meta"><span class="badge badge-${nc}">${lbl_conf(data.niveau_confiance)}</span>${attente}${signaler}</div></div>`;
+  const exporter=`<button class="btn-export">⬇ Exporter</button>`;
+  el.innerHTML=`<div class="msg-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div><div class="msg-sys-inner"><div class="msg-card">${bandeau}<div>${esc(data.reponse)}</div>${sources}</div><div class="msg-meta"><span class="badge badge-${nc}">${lbl_conf(data.niveau_confiance)}</span>${attente}${signaler}${exporter}</div></div>`;
   const btn=el.querySelector(".sources-toggle");const body=el.querySelector(".sources-body");
   if(btn&&body){btn.addEventListener("click",()=>{const o=body.classList.toggle("visible");btn.classList.toggle("open",o);});}
-  wireSignaler(el);
+  wireSignaler(el);wireSuivi(el);wireExport(el,()=>md_export(data,question,dateCtx));
   chatMessages.appendChild(el);scrollBas();
 }
 
@@ -223,7 +272,7 @@ async function envoyerQuestion(){
       afficherErreurChat(m);toast(m,"error");return;
     }
     const data=await r.json();sessionQueries++;
-    afficherReponse(data);ajouterActivite(question,data.niveau_confiance,ts);
+    afficherReponse(data,question,date);ajouterActivite(question,data.niveau_confiance,ts);
     historiqueSession.unshift({question,reponse:data.reponse,conf:data.niveau_confiance,ts});
     majKPIs();if(data.en_attente_validation)toast("Réponse soumise à validation humaine","warning");
   }catch{supprimerTyping();afficherErreurChat("Impossible de joindre l'API. Vérifiez que le serveur est démarré.");toast("Serveur inaccessible","error");}

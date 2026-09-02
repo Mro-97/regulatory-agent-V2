@@ -751,6 +751,12 @@ class Orchestrateur:
             self._nouveau_client_redis, tache_id, decision, commentaire
         )
 
+    async def obtenir_tache(self, tache_id: UUID) -> TacheValidation | None:
+        """Récupère une tâche par id (pendante ou traitée) depuis Redis (délégué)."""
+        from src.orchestrator_validation import obtenir_tache as _obtenir
+
+        return await _obtenir(self._nouveau_client_redis, tache_id)
+
     # ------------------------------------------------------------------
     # Méthodes internes
     # ------------------------------------------------------------------

@@ -27,6 +27,7 @@ import logging
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Annotated
+from uuid import UUID
 
 from config import cfg
 from fastapi import Depends, FastAPI, HTTPException, Request, status
@@ -58,6 +59,7 @@ from src.models import (
     ReponseFeedback,
     ReponseIngestion,
     ReponseQuestion,
+    ReponseSuiviTache,
     ReponseTachesPendantes,
     RequeteDecisionValidation,
     RequeteFeedback,
@@ -363,6 +365,38 @@ async def rejeter(
     """Rejette la tâche identifiée par `tache_id` (statut → REJETE)."""
     return await _appliquer_decision_validation(
         orchestrateur, requete, StatutValidation.REJETE, endpoint="/reject"
+    )
+
+
+@app.get(
+    "/tache/{tache_id}",
+    response_model=ReponseSuiviTache,
+    tags=["Validation"],
+    summary="Suivi d'une tâche de validation",
+    description="Statut courant d'une tâche (en attente / approuvée / rejetée) par son id.",  # noqa: E501
+    dependencies=[AuthDep],
+)
+async def suivi_tache(
+    tache_id: UUID,
+    orchestrateur: OrchestrateurDep,
+) -> ReponseSuiviTache:
+    """Retourne le statut courant d'une tâche pour le demandeur qui la suit."""
+    from src.errors import QueueBackendError
+
+    try:
+        tache = await orchestrateur.obtenir_tache(tache_id)
+    except QueueBackendError as exc:
+        logger.exception("Redis indisponible pour /tache")
+        raise _erreur_503(_MSG_QUEUE_INDISPONIBLE) from exc
+    if tache is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Tâche introuvable.")
+    return ReponseSuiviTache(
+        tache_id=tache.tache_id,
+        statut=tache.statut,
+        horodatage_creation=tache.horodatage_creation,
+        horodatage_traitement=tache.horodatage_traitement,
+        commentaire_validateur=tache.commentaire_validateur,
+        escaladee=tache.escaladee,
     )
 
 

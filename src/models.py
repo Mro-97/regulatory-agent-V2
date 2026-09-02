@@ -381,6 +381,7 @@ class AlerteWatcher(BaseModel):
 from src.schemas import ReponseDecisionValidation as ReponseDecisionValidation  # noqa: E402, I001
 from src.schemas import ReponseFeedback as ReponseFeedback  # noqa: E402
 from src.schemas import ReponseIngestion as ReponseIngestion  # noqa: E402
+from src.schemas import ReponseSuiviTache as ReponseSuiviTache  # noqa: E402
 from src.schemas import ReponseQuestion as ReponseQuestion  # noqa: E402
 from src.schemas import ReponseTachesPendantes as ReponseTachesPendantes  # noqa: E402
 from src.schemas import RequeteDecisionValidation as RequeteDecisionValidation  # noqa: E402

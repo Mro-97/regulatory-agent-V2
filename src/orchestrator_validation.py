@@ -73,6 +73,42 @@ async def _lister_toutes_les_files(
     return taches, par_file
 
 
+async def obtenir_tache(
+    client_factory: ClientFactory,
+    tache_id: UUID,
+) -> TacheValidation | None:
+    """Cherche une tâche par id dans les files pendantes ET traitées.
+
+    Retourne `None` si introuvable ; lève `QueueBackendError` si Redis KO.
+    Sert le suivi côté demandeur (`GET /tache/{id}`).
+    """
+    try:
+        client = await client_factory()
+        try:
+            return await _chercher_tache_par_id(client, tache_id)
+        finally:
+            await client.aclose()
+    except Exception as exc:
+        logger.exception("Redis inaccessible pour le suivi de tâche")
+        raise QueueBackendError(str(exc)) from exc
+
+
+async def _chercher_tache_par_id(
+    client: aioredis.Redis,
+    tache_id: UUID,
+) -> TacheValidation | None:
+    """Parcourt `<file>` et `traite_<file>` de chaque `TypeFilePendante`."""
+    cible = str(tache_id)
+    for file in TypeFilePendante:
+        for nom in (file.value, f"traite_{file.value}"):
+            cles = await cast("Awaitable[list[Any]]", client.lrange(nom, 0, -1))
+            for cle in cles:
+                donnees = _charger_json_tache(cle)
+                if donnees and str(donnees.get("tache_id")) == cible:
+                    return TacheValidation(**donnees)
+    return None
+
+
 async def valider_tache(
     client_factory: ClientFactory,
     tache_id: UUID,

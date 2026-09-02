@@ -107,6 +107,17 @@ class ReponseDecisionValidation(BaseModel):
     horodatage_traitement: datetime
 
 
+class ReponseSuiviTache(BaseModel):
+    """Corps de la réponse GET /tache/{tache_id} — suivi par le demandeur."""
+
+    tache_id: UUID
+    statut: StatutValidation
+    horodatage_creation: datetime
+    horodatage_traitement: datetime | None = Field(default=None)
+    commentaire_validateur: str | None = Field(default=None)
+    escaladee: bool = Field(default=False)
+
+
 class RequeteFeedback(BaseModel):
     """Corps de la requête POST /feedback (signalement d'une réponse)."""
 
