@@ -13,6 +13,7 @@ choix éditorial (Phase 2), pas un doublon mécanique.
 Usage :
     python scripts/dedup_qdrant.py            # dry-run, lecture seule
     python scripts/dedup_qdrant.py --apply    # snapshot puis suppression
+    python scripts/dedup_qdrant.py --rapport  # inventaire document_id + paires _FULL
 """
 
 from __future__ import annotations
@@ -51,10 +52,9 @@ def _empreinte(payload: dict[str, Any]) -> str:
     return f"{payload.get('document_id')}|{payload.get('article_id')}|{h}"
 
 
-def _grouper(client: QdrantClient, collection: str) -> tuple[int, dict[str, list[Any]]]:
-    """Parcourt la collection et regroupe les ids par empreinte exacte."""
-    groupes: dict[str, list[Any]] = defaultdict(list)
-    total = 0
+def _parcourir(client: QdrantClient, collection: str) -> list[Any]:
+    """Retourne tous les points de la collection (payload, sans vecteurs)."""
+    tous: list[Any] = []
     offset: Any = None
     while True:
         points, offset = client.scroll(
@@ -64,11 +64,36 @@ def _grouper(client: QdrantClient, collection: str) -> tuple[int, dict[str, list
             with_payload=True,
             with_vectors=False,
         )
-        for point in points:
-            total += 1
-            groupes[_empreinte(point.payload or {})].append(point.id)
+        tous.extend(points)
         if offset is None:
-            return total, groupes
+            return tous
+
+
+def _grouper(points: list[Any]) -> tuple[int, dict[str, list[Any]]]:
+    """Regroupe les ids par empreinte exacte (document_id | article_id | hash)."""
+    groupes: dict[str, list[Any]] = defaultdict(list)
+    for point in points:
+        groupes[_empreinte(point.payload or {})].append(point.id)
+    return len(points), groupes
+
+
+def _rapport(points: list[Any]) -> None:
+    """Inventaire par document_id, met en évidence les paires `X` / `X_FULL`."""
+    par_doc: dict[str, int] = defaultdict(int)
+    for point in points:
+        par_doc[str((point.payload or {}).get("document_id"))] += 1
+    logger.info("documents distincts : %d", len(par_doc))
+    paires = sorted(d for d in par_doc if f"{d}_FULL" in par_doc)
+    if not paires:
+        logger.info("aucune paire base / _FULL — Phase 2 sans objet.")
+    for base in paires:
+        logger.info(
+            "  %-32s %6d pts   |   %s_FULL %6d pts",
+            base,
+            par_doc[base],
+            base,
+            par_doc[f"{base}_FULL"],
+        )
 
 
 def _ids_redondants(groupes: dict[str, list[Any]]) -> list[Any]:
@@ -94,11 +119,20 @@ def main() -> None:
     """Point d'entrée CLI : dry-run par défaut, `--apply` pour exécuter."""
     parser = argparse.ArgumentParser(description="Purge des doublons exacts Qdrant.")
     parser.add_argument("--apply", action="store_true", help="exécute les suppressions")
+    parser.add_argument(
+        "--rapport", action="store_true", help="inventaire document_id + paires _FULL"
+    )
     args = parser.parse_args()
 
     client = _client()
     collection = cfg.qdrant_collection
-    total, groupes = _grouper(client, collection)
+    points = _parcourir(client, collection)
+
+    if args.rapport:
+        _rapport(points)
+        return
+
+    total, groupes = _grouper(points)
     a_supprimer = _ids_redondants(groupes)
 
     logger.info("total points        : %d", total)
