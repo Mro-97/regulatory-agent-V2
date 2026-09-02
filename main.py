@@ -40,6 +40,13 @@ logging.basicConfig(
     handlers=[logging.StreamHandler(sys.stdout)],
 )
 
+# Loggers HTTP tiers bruyants : capés à INFO même en DEBUG applicatif.
+# `httpcore.http11` en particulier dump tous les headers de chaque
+# requête (observé : 200 kB/cycle Watcher sur les sources CNIL). On
+# garde les infos utiles (méthode + URL + code) sans le bruit binaire.
+for _bruyant in ("httpcore", "httpcore.http11", "httpcore.connection", "httpx"):
+    logging.getLogger(_bruyant).setLevel(logging.INFO)
+
 logger = logging.getLogger(__name__)
 
 
