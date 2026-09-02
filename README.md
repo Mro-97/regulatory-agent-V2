@@ -135,25 +135,37 @@ API_PORT=8000
 
 ## 🧪 Lancer les services
 
-### Démarrer Qdrant (base vectorielle)
+### En une commande (recommandé)
 
 ```bash
-./qdrant --port 6333 > /tmp/qdrant.log 2>&1 &
+python3 scripts/launcher.py
 ```
 
-### Démarrer Redis (cache & files d’attente)
+Le launcher vérifie `.env`/API_KEY, démarre Qdrant + Redis s’ils sont
+absents, pré-charge bge-m3 en tâche de fond puis lance l’API. Ajouter
+`--skip-warmup` pour sauter le pré-chargement du modèle d’embedding.
+
+### Démarrage manuel (si besoin)
 
 ```bash
-redis-server --port 6379 &
-```
-
-### Démarrer l’API
-
-```bash
-python main.py
+./qdrant --port 6333 > logs/qdrant.log 2>&1 &
+redis-server --port 6379 > logs/redis.log 2>&1 &
+python3 main.py
 ```
 
 L’API est accessible sur `http://127.0.0.1:8000`.
+
+### Checklist déploiement production
+
+Avant tout déploiement, vérifier dans `.env` :
+
+- `API_KEY` définie, ≥ 32 caractères, ≠ placeholder de `.env.example`
+  (sinon `main.py` refuse le boot).
+- `DEBUG=false` (obligatoire — logs verbeux + tracebacks fuient sinon).
+- `EXPOSER_DOCS=false` (Swagger désactivé).
+- `CORS_ORIGINS` restreint au(x) vrai(s) domaine(s), avec port.
+- `WATCHER_ACTIF=false` si un process séparé exécute la veille.
+- `ORCHESTRATEUR_MODE=real` (et non `mock`).
 
 ---
 
