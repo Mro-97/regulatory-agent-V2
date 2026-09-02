@@ -11,9 +11,15 @@ Ne touche PAS aux paires `X` / `X_FULL` (document_id distincts) : c'est un
 choix éditorial (Phase 2), pas un doublon mécanique.
 
 Usage :
-    python scripts/dedup_qdrant.py            # dry-run, lecture seule
-    python scripts/dedup_qdrant.py --apply    # snapshot puis suppression
-    python scripts/dedup_qdrant.py --rapport  # inventaire document_id + paires _FULL
+    python scripts/dedup_qdrant.py                 # dry-run doublons exacts
+    python scripts/dedup_qdrant.py --apply         # snapshot puis suppression
+    python scripts/dedup_qdrant.py --rapport       # inventaire + paires _FULL
+    python scripts/dedup_qdrant.py --purger-bases  # dry-run Phase 2
+    python scripts/dedup_qdrant.py --purger-bases --apply   # exécute la Phase 2
+
+Phase 2 (`--purger-bases`) : quand `X` et `X_FULL` coexistent, `X_FULL`
+est la version complète — on supprime tous les points de `X` (ingestion
+partielle/ancienne du même texte).
 """
 
 from __future__ import annotations
@@ -96,6 +102,16 @@ def _rapport(points: list[Any]) -> None:
         )
 
 
+def _ids_des_bases_avec_full(points: list[Any]) -> tuple[list[str], list[Any]]:
+    """Retourne (document_ids des bases, ids de leurs points) quand `X_FULL` existe."""
+    par_doc: dict[str, list[Any]] = defaultdict(list)
+    for point in points:
+        par_doc[str((point.payload or {}).get("document_id"))].append(point.id)
+    bases = sorted(d for d in par_doc if f"{d}_FULL" in par_doc)
+    ids = [i for base in bases for i in par_doc[base]]
+    return bases, ids
+
+
 def _ids_redondants(groupes: dict[str, list[Any]]) -> list[Any]:
     """Pour chaque groupe de taille > 1, garde le plus petit id, rend les autres."""
     surplus: list[Any] = []
@@ -122,6 +138,11 @@ def main() -> None:
     parser.add_argument(
         "--rapport", action="store_true", help="inventaire document_id + paires _FULL"
     )
+    parser.add_argument(
+        "--purger-bases",
+        action="store_true",
+        help="Phase 2 : supprime les document_id X quand X_FULL existe",
+    )
     args = parser.parse_args()
 
     client = _client()
@@ -130,6 +151,20 @@ def main() -> None:
 
     if args.rapport:
         _rapport(points)
+        return
+
+    if args.purger_bases:
+        bases, ids = _ids_des_bases_avec_full(points)
+        logger.info("bases à supprimer : %s", bases or "(aucune)")
+        logger.info("points concernés  : %d", len(ids))
+        if not args.apply:
+            logger.info("\nDRY-RUN — relancer avec --apply pour exécuter.")
+        elif ids:
+            _supprimer(client, collection, ids)
+            logger.info(
+                "\npoints_count final : %s",
+                client.get_collection(collection).points_count,
+            )
         return
 
     total, groupes = _grouper(points)
