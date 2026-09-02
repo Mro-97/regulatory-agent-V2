@@ -262,6 +262,13 @@ class AgentExplainer:
         """Synthèse LLM (Qwen 2.5 7B) avec repli sur assemblage en cas d'échec."""
         from src.errors import ModelNotLoadedError
 
+        if not evidences:
+            logger.warning(
+                "Explainer — aucune preuve : réponse INCERTAIN, pas d'appel LLM "
+                "(garde-fou anti-réponse non sourcée)"
+            )
+            return _resultat_assemblage_vide()
+
         self._charger_modele()
         if self._modele is None:
             raise ModelNotLoadedError("Explainer")
