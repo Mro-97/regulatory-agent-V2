@@ -121,16 +121,41 @@ class Ingester:  # noqa: D101
         return chunks
 
     def ingest_document(self, doc: DocumentReglementaire) -> int:
-        """Chunke `doc`, embed chaque chunk, upsert les points dans Qdrant."""
+        """Chunke `doc`, sanitize, embed chaque chunk, upsert dans Qdrant."""
         chunks = self.chunk_document(doc)
         logger.info("%d chunks générés pour %s", len(chunks), doc.id)
-        points = [self._chunk_vers_point(chunk) for chunk in chunks]
+        chunks_traites = self._appliquer_sanitizer(chunks)
+        points = [self._chunk_vers_point(c) for c in chunks_traites]
         if not points:
             logger.warning("Aucun point à indexer pour %s", doc.id)
             return 0
         self.client.upsert(collection_name=self.collection_name, points=points)
         logger.info("%d points indexés dans Qdrant", len(points))
         return len(points)
+
+    def _appliquer_sanitizer(
+        self, chunks: list[MetadonneesChunk]
+    ) -> list[MetadonneesChunk]:
+        """Filtre + annote les chunks selon `cfg.ingest_mode_sanitizer`."""
+        from src.ingest_sanitizer import ModeSanitizer, appliquer_politique
+
+        try:
+            mode = ModeSanitizer(cfg.ingest_mode_sanitizer)
+        except ValueError:
+            logger.warning(
+                "ingest_mode_sanitizer='%s' inconnu, fallback 'annoter'.",
+                cfg.ingest_mode_sanitizer,
+            )
+            mode = ModeSanitizer.ANNOTER
+        conserves: list[MetadonneesChunk] = []
+        for chunk in chunks:
+            traite = appliquer_politique(chunk.texte_chunk, mode, chunk.chunk_id)
+            if traite is None:
+                continue
+            if traite != chunk.texte_chunk:
+                chunk = chunk.model_copy(update={"texte_chunk": traite})
+            conserves.append(chunk)
+        return conserves
 
     def _chunk_vers_point(self, chunk: Any) -> PointStruct:
         """Convertit un chunk en PointStruct Qdrant (vecteur + payload)."""

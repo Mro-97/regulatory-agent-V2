@@ -241,6 +241,16 @@ class ModelNotLoadedError(InferenceError):
         self.agent = agent
 
 
+class ModelSwapThrottledError(InferenceError):
+    """Le quota de swaps de modèle MLX par minute est épuisé (anti-DoS)."""
+
+    def __init__(self, swaps_par_minute: int) -> None:  # noqa: D107 — constructeur documenté par la classe (§0.2)
+        super().__init__(
+            f"Trop de swaps MLX (>{swaps_par_minute}/min) — service occupé"
+        )
+        self.swaps_par_minute = swaps_par_minute
+
+
 class GenerationTimeoutError(InferenceError):
     """La génération MLX a dépassé le délai imparti."""
 

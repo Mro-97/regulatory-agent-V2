@@ -320,11 +320,12 @@ class MLXInference:
 
 
 class _CacheGeneration:
-    """Un seul modèle de génération actif à la fois."""
+    """Un seul modèle de génération actif à la fois — swap throttlé anti-DoS."""
 
     def __init__(self) -> None:
         self._instances: dict[str, MLXInference] = {}
         self._actif: str | None = None
+        self._historique_swaps: list[float] = []
 
     def get(
         self,
@@ -346,11 +347,30 @@ class _CacheGeneration:
         return self._instances[model_name]
 
     def _decharger_si_swap(self, model_name: str) -> None:
-        """Décharge le modèle actif s'il diffère de `model_name` (swap RAM)."""
+        """Décharge l'actif si `model_name` diffère (soumis au throttle)."""
         actif = self._instances.get(self._actif) if self._actif else None
-        if self._actif and self._actif != model_name and actif and actif.est_charge:
-            logger.info("Swap modèle : %s → %s", self._actif, model_name)
-            actif.unload()
+        est_un_swap = (
+            self._actif is not None
+            and self._actif != model_name
+            and actif is not None
+            and actif.est_charge
+        )
+        if not est_un_swap:
+            return
+        self._verifier_quota_swaps()
+        logger.info("Swap modèle : %s → %s", self._actif, model_name)
+        actif.unload()  # type: ignore[union-attr]
+
+    def _verifier_quota_swaps(self) -> None:
+        """Lève `ModelSwapThrottledError` si trop de swaps dans les 60 s."""
+        from src.errors import ModelSwapThrottledError
+
+        maintenant = time.monotonic()
+        borne = maintenant - 60.0
+        self._historique_swaps = [t for t in self._historique_swaps if t > borne]
+        if len(self._historique_swaps) >= cfg.mlx_max_swaps_par_minute:
+            raise ModelSwapThrottledError(cfg.mlx_max_swaps_par_minute)
+        self._historique_swaps.append(maintenant)
 
     def unload_all(self) -> None:
         """Décharge toutes les instances mémorisées et remet à zéro l'actif."""

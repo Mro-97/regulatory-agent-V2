@@ -145,6 +145,27 @@ class Parametres(BaseSettings):
             "corrompu (ex. safetensors sparse) de figer l'API au démarrage."
         ),
     )
+    ingest_mode_sanitizer: str = Field(
+        default="annoter",
+        description=(
+            "Politique du sanitizer d'ingestion contre le prompt injection "
+            "persistant : 'off' (aucune action), 'annoter' (défaut : "
+            "encapsule les chunks suspects entre marqueurs défensifs), "
+            "'bloquer' (rejette les chunks DANGEREUX). Cf. "
+            "src/ingest_sanitizer.py pour les patterns détectés."
+        ),
+    )
+    mlx_max_swaps_par_minute: int = Field(
+        default=3,
+        description=(
+            "Nombre maximum de swaps de modèle MLX (unload + load) tolérés "
+            "par minute — anti-DoS. Un attaquant qui alterne rapidement des "
+            "questions classées vers Qwen/Mistral/DeepSeek forcerait des "
+            "swaps ~1 GB à la chaîne, gelant l'API. Au-delà de ce seuil, "
+            "`_CacheGeneration.get()` lève `ModelSwapThrottledError` et le "
+            "pipeline dégrade en réponse « service temporairement occupé »."
+        ),
+    )
     mlx_taille_max_texte_embedding: int = Field(
         default=8000,
         description=(

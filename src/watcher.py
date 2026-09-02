@@ -217,11 +217,22 @@ class Watcher:
     async def _tenter_fetch(
         self, url: str, source: SourceReglementaire
     ) -> _ResultatTentativeFetch:
-        """Une tentative HTTP : succès, arrêt (4xx), ou erreur à réessayer."""
+        """Une tentative HTTP : succès, arrêt (4xx ou URL interne), ou à réessayer."""
+        from src.http_safety import (
+            UrlInterneRefuseeError,
+            resoudre_url_publique_ou_lever,
+        )
+
         try:
+            resoudre_url_publique_ou_lever(url)
             client = await self._http()
             rep = await client.get(url)
             rep.raise_for_status()
+        except UrlInterneRefuseeError as exc:
+            logger.warning(
+                "Watcher — URL refusée (SSRF prévention) : %s — %s", url, exc
+            )
+            return _ResultatTentativeFetch(contenu=None, arreter=True, erreur=exc)
         except httpx.HTTPStatusError as exc:
             statut = exc.response.status_code
             if 400 <= statut < 500:
