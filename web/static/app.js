@@ -1,5 +1,5 @@
 "use strict";
-const API={ask:"/ask",pending:"/pending",approve:"/approve",reject:"/reject",health:"/health"};
+const API={ask:"/ask",pending:"/pending",approve:"/approve",reject:"/reject",health:"/health",feedback:"/feedback"};
 // C1: la clé API n'est plus injectée dans le HTML. L'utilisateur la saisit
 // une fois par onglet, elle est conservée en sessionStorage (jamais persistée).
 // Sur 401, apiFetch purge la clé, re-prompte, et retente UNE seule fois.
@@ -114,6 +114,24 @@ function conf_bandeau(n,enAttente){
   return `<div class="conf-bandeau ${cls}">⚠️ ${esc(msg)}</div>`;
 }
 function est_abroge(vt){if(!vt)return false;const d=new Date(vt);return !isNaN(d.getTime())&&d<new Date();}
+function wireSignaler(el){
+  const b=el.querySelector(".btn-signaler");if(!b)return;
+  b.addEventListener("click",()=>{
+    const rid=b.dataset.rid;
+    const box=document.createElement("span");box.className="signaler-box";
+    box.innerHTML=`<select class="signaler-motif"><option value="reponse_incorrecte">Réponse incorrecte</option><option value="source_hors_sujet">Source hors sujet</option><option value="source_manquante">Source manquante</option><option value="confiance_trompeuse">Confiance trompeuse</option><option value="autre">Autre</option></select><button class="signaler-go">Envoyer</button><button class="signaler-x">×</button>`;
+    b.replaceWith(box);
+    box.querySelector(".signaler-x").addEventListener("click",()=>box.replaceWith(b));
+    box.querySelector(".signaler-go").addEventListener("click",async()=>{
+      const motif=box.querySelector(".signaler-motif").value;const go=box.querySelector(".signaler-go");go.disabled=true;
+      try{
+        const r=await apiFetch(API.feedback,{method:"POST",body:JSON.stringify({request_id:rid,motif})});
+        if(r.ok){box.replaceWith(document.createTextNode("✓ Signalé — merci"));toast("Signalement enregistré","info");}
+        else{toast("Échec du signalement","error");go.disabled=false;}
+      }catch{toast("Serveur inaccessible","error");go.disabled=false;}
+    });
+  });
+}
 
 function toast(msg,type="info",dur=3500){
   const ic={success:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>',error:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',warning:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'};
@@ -178,9 +196,11 @@ function afficherReponse(data){
   const attente=data.en_attente_validation?`<span class="badge badge-attente">⏳ En attente de validation</span>`:"";
   const bandeau=conf_bandeau(data.niveau_confiance,data.en_attente_validation);
   const el=document.createElement("div");el.className="msg-sys";
-  el.innerHTML=`<div class="msg-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div><div class="msg-sys-inner"><div class="msg-card">${bandeau}<div>${esc(data.reponse)}</div>${sources}</div><div class="msg-meta"><span class="badge badge-${nc}">${lbl_conf(data.niveau_confiance)}</span>${attente}</div></div>`;
+  const signaler=data.request_id?`<button class="btn-signaler" data-rid="${esc(String(data.request_id))}">⚑ Signaler</button>`:"";
+  el.innerHTML=`<div class="msg-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div><div class="msg-sys-inner"><div class="msg-card">${bandeau}<div>${esc(data.reponse)}</div>${sources}</div><div class="msg-meta"><span class="badge badge-${nc}">${lbl_conf(data.niveau_confiance)}</span>${attente}${signaler}</div></div>`;
   const btn=el.querySelector(".sources-toggle");const body=el.querySelector(".sources-body");
   if(btn&&body){btn.addEventListener("click",()=>{const o=body.classList.toggle("visible");btn.classList.toggle("open",o);});}
+  wireSignaler(el);
   chatMessages.appendChild(el);scrollBas();
 }
 

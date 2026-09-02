@@ -22,6 +22,7 @@ Sécurité :
 
 from __future__ import annotations
 
+import json
 import logging
 from datetime import UTC, datetime
 from pathlib import Path
@@ -54,10 +55,12 @@ from src.api_security import (
 )
 from src.models import (
     ReponseDecisionValidation,
+    ReponseFeedback,
     ReponseIngestion,
     ReponseQuestion,
     ReponseTachesPendantes,
     RequeteDecisionValidation,
+    RequeteFeedback,
     RequeteIngestion,
     RequeteQuestion,
     StatutValidation,
@@ -159,6 +162,7 @@ _MSG_ERREUR_INGESTION = "Erreur interne lors de l'ingestion."
 _MSG_ERREUR_VALIDATION = "Erreur interne lors de la validation."
 _MSG_ERREUR_PENDING = "Erreur interne lors de la récupération des tâches."
 _MSG_ERREUR_ASK = "Erreur interne lors du traitement de la question."
+_MSG_ERREUR_FEEDBACK = "Erreur interne lors de l'enregistrement du signalement."
 _MSG_QUEUE_INDISPONIBLE = "File de validation temporairement indisponible."
 
 
@@ -360,3 +364,40 @@ async def rejeter(
     return await _appliquer_decision_validation(
         orchestrateur, requete, StatutValidation.REJETE, endpoint="/reject"
     )
+
+
+def _enregistrer_signalement(requete: RequeteFeedback) -> ReponseFeedback:
+    """Ajoute une ligne JSONL au fichier de signalements (append atomique)."""
+    horodatage = datetime.now(UTC)
+    ligne = {
+        "horodatage": horodatage.isoformat(),
+        "request_id": str(requete.request_id),
+        "motif": requete.motif.value,
+        "commentaire": requete.commentaire,
+    }
+    chemin = Path(cfg.feedback_local_path)
+    chemin.parent.mkdir(parents=True, exist_ok=True)
+    with chemin.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(ligne, ensure_ascii=False) + "\n")
+    logger.info(
+        "Signalement — request_id=%s motif=%s", requete.request_id, requete.motif.value
+    )
+    return ReponseFeedback(horodatage=horodatage)
+
+
+@app.post(
+    "/feedback",
+    response_model=ReponseFeedback,
+    status_code=202,
+    tags=["Qualité"],
+    summary="Signaler une réponse",
+    description="Enregistre un signalement utilisateur sur une réponse (revue qualité, calibration).",  # noqa: E501
+    dependencies=[AuthDep, OrigineDep],
+)
+async def signaler(requete: RequeteFeedback) -> ReponseFeedback:
+    """Journalise un signalement (`request_id` + motif + commentaire) en JSONL."""
+    try:
+        return _enregistrer_signalement(requete)
+    except OSError:
+        logger.exception("Écriture du signalement impossible")
+        raise _erreur_500(_MSG_ERREUR_FEEDBACK) from None

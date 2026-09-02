@@ -72,6 +72,16 @@ class NiveauConfiance(StrEnum):
     INCERTAIN = "incertain"
 
 
+class MotifFeedback(StrEnum):
+    """Motif d'un signalement utilisateur sur une réponse (POST /feedback)."""
+
+    REPONSE_INCORRECTE = "reponse_incorrecte"
+    SOURCE_HORS_SUJET = "source_hors_sujet"
+    SOURCE_MANQUANTE = "source_manquante"
+    CONFIANCE_TROMPEUSE = "confiance_trompeuse"
+    AUTRE = "autre"
+
+
 # ---------------------------------------------------------------------------
 # Domaine réglementaire
 # ---------------------------------------------------------------------------
@@ -369,10 +379,12 @@ class AlerteWatcher(BaseModel):
 # `X as X` rend le symbole explicitement exporté (mypy --strict).
 # fmt: off
 from src.schemas import ReponseDecisionValidation as ReponseDecisionValidation  # noqa: E402, I001
+from src.schemas import ReponseFeedback as ReponseFeedback  # noqa: E402
 from src.schemas import ReponseIngestion as ReponseIngestion  # noqa: E402
 from src.schemas import ReponseQuestion as ReponseQuestion  # noqa: E402
 from src.schemas import ReponseTachesPendantes as ReponseTachesPendantes  # noqa: E402
 from src.schemas import RequeteDecisionValidation as RequeteDecisionValidation  # noqa: E402
+from src.schemas import RequeteFeedback as RequeteFeedback  # noqa: E402
 from src.schemas import RequeteIngestion as RequeteIngestion  # noqa: E402
 from src.schemas import RequeteQuestion as RequeteQuestion  # noqa: E402
 # fmt: on

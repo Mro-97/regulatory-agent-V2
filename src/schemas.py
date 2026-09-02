@@ -19,6 +19,7 @@ from pydantic import BaseModel, Field, model_validator
 
 from src.models import (
     EvidenceRecuperee,
+    MotifFeedback,
     NiveauConfiance,
     SourceReglementaire,
     StatutValidation,
@@ -104,3 +105,18 @@ class ReponseDecisionValidation(BaseModel):
     tache_id: UUID
     nouveau_statut: StatutValidation
     horodatage_traitement: datetime
+
+
+class RequeteFeedback(BaseModel):
+    """Corps de la requête POST /feedback (signalement d'une réponse)."""
+
+    request_id: UUID = Field(..., description="request_id de la ReponseQuestion visée.")
+    motif: MotifFeedback
+    commentaire: str | None = Field(default=None, max_length=2000)
+
+
+class ReponseFeedback(BaseModel):
+    """Corps de la réponse POST /feedback."""
+
+    enregistre: bool = Field(default=True)
+    horodatage: datetime

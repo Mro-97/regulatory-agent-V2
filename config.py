@@ -315,6 +315,13 @@ class Parametres(BaseSettings):
     # Audit
     # ------------------------------------------------------------------
     audit_local_path: Path = Field(default=Path("data/audit.jsonl"))
+    feedback_local_path: Path = Field(
+        default=Path("data/feedback.jsonl"),
+        description=(
+            "Fichier JSONL des signalements utilisateur (POST /feedback) — "
+            "revue qualité et jeu de calibration des seuils de confiance."
+        ),
+    )
 
     # ------------------------------------------------------------------
     # Chemins locaux
