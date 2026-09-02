@@ -92,6 +92,45 @@ def _resultat_assemblage_vide() -> ResultatExplication:
     )
 
 
+# Fragments produits de façon déterministe par le prompt v2 quand le LLM
+# refuse ou ne trouve pas d'information : une réponse qui les contient
+# n'est pas une réponse fondée, quel que soit le score de retrieval.
+_MARQUEURS_REPONSE_NON_FONDEE = (
+    "je ne peux pas répondre",
+    "ne contiennent pas d'information",
+    "ne contient pas d'information",
+)
+
+
+def _reponse_est_non_fondee(reponse: str) -> bool:
+    """True si la réponse LLM est un refus explicite ou un « aucune info »."""
+    minuscule = reponse.lower()
+    return any(marqueur in minuscule for marqueur in _MARQUEURS_REPONSE_NON_FONDEE)
+
+
+def _evaluer_confiance(
+    reponse: str, evidences: list[EvidenceRecuperee]
+) -> NiveauConfiance:
+    """Dérive le niveau de confiance d'une synthèse LLM.
+
+    Refus ou « aucune information » dans la réponse → INCERTAIN. Sinon,
+    seuils sur la similarité cosinus moyenne des preuves (calibrés pour
+    l'embedding courant, cf. `cfg.explainer_confiance_moyenne_*`) ;
+    scores absents → INCERTAIN.
+    """
+    if _reponse_est_non_fondee(reponse):
+        return NiveauConfiance.INCERTAIN
+    scores = [e.score_similarite for e in evidences if e.score_similarite is not None]
+    if not scores:
+        return NiveauConfiance.INCERTAIN
+    moyenne = sum(scores) / len(scores)
+    if moyenne >= cfg.explainer_confiance_moyenne_elevee:
+        return NiveauConfiance.ELEVE
+    if moyenne >= cfg.explainer_confiance_moyenne_faible:
+        return NiveauConfiance.MOYEN
+    return NiveauConfiance.FAIBLE
+
+
 def _entete_assemblage(date_ref: date | None, type_pipeline: str) -> str:
     """Formatte l'en-tête d'un assemblage (temporel ou courant)."""
     if date_ref and type_pipeline == "temporelle":
@@ -278,15 +317,18 @@ class AgentExplainer:
             question, contexte, date_ref, type_pipeline
         )
         try:
-            return self._generer_synthese(messages, sources_citees)
+            return self._generer_synthese(messages, sources_citees, evidences)
         except Exception:
             logger.exception("Synthèse LLM échouée, bascule sur assemblage")
             return self._assembler(question, evidences, date_ref, type_pipeline)
 
     def _generer_synthese(
-        self, messages: list[dict[str, str]], sources_citees: list[str]
+        self,
+        messages: list[dict[str, str]],
+        sources_citees: list[str],
+        evidences: list[EvidenceRecuperee],
     ) -> ResultatExplication:
-        """Appelle le LLM et vérifie que la réponse n'est pas vide."""
+        """Appelle le LLM, vérifie la réponse et en dérive le niveau de confiance."""
         from src.errors import StructuredOutputError
 
         assert self._modele is not None  # noqa: S101 — invariant garanti par le caller
@@ -300,7 +342,7 @@ class AgentExplainer:
         return ResultatExplication(
             reponse=reponse,
             sources_citees=sources_citees,
-            niveau_confiance=NiveauConfiance.ELEVE,
+            niveau_confiance=_evaluer_confiance(reponse, evidences),
             mode="llm",
         )
 

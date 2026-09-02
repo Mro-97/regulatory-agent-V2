@@ -234,6 +234,25 @@ class Parametres(BaseSettings):
     hitl_delai_escalade_heures: int = Field(default=72)
     hitl_seuil_confiance_validation: float = Field(default=0.6)
 
+    # Seuils de confiance de l'Explainer, sur la similarité cosinus moyenne
+    # des preuves. Calibrés pour le backend d'embedding courant
+    # (sentence-transformers/BAAI/bge-m3) — à re-mesurer si `modele_embedding`
+    # change (les distributions de score varient d'un modèle à l'autre).
+    explainer_confiance_moyenne_elevee: float = Field(
+        default=0.50,
+        description=(
+            "Moyenne des scores de similarité au-delà de laquelle la réponse "
+            "Explainer est notée « élevé »."
+        ),
+    )
+    explainer_confiance_moyenne_faible: float = Field(
+        default=0.42,
+        description=(
+            "En dessous de cette moyenne, la réponse Explainer est notée "
+            "« faible ». Entre les deux seuils : « moyen »."
+        ),
+    )
+
     # ------------------------------------------------------------------
     # Watcher
     # ------------------------------------------------------------------
