@@ -198,8 +198,16 @@ function scrollBas(){chatMessages.scrollTop=chatMessages.scrollHeight;}
 
 function ajouterMsgUser(texte){const el=document.createElement("div");el.className="msg-user";el.innerHTML=`<div class="msg-user-bubble">${esc(texte)}</div>`;chatMessages.appendChild(el);scrollBas();}
 
-function ajouterTyping(){const el=document.createElement("div");el.className="msg-typing";el.id="typing-tmp";el.innerHTML=`<div class="msg-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div><div class="typing-bubble"><div class="tp"></div><div class="tp"></div><div class="tp"></div></div>`;chatMessages.appendChild(el);scrollBas();}
-function supprimerTyping(){document.getElementById("typing-tmp")?.remove();}
+const ETAPES_PIPELINE=[[0,"Recherche des textes applicables…"],[2200,"Analyse de la validité temporelle…"],[5200,"Rédaction de la synthèse…"],[9000,"Vérification des citations…"]];
+let _typingTimers=[];
+function ajouterTyping(){
+  const el=document.createElement("div");el.className="msg-typing";el.id="typing-tmp";
+  el.innerHTML=`<div class="msg-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div><div class="typing-bubble"><div class="tp"></div><div class="tp"></div><div class="tp"></div><span class="typing-etape"></span></div>`;
+  chatMessages.appendChild(el);scrollBas();
+  const lab=el.querySelector(".typing-etape");
+  _typingTimers=ETAPES_PIPELINE.map(([ms,txt])=>setTimeout(()=>{if(lab)lab.textContent=txt;},ms));
+}
+function supprimerTyping(){_typingTimers.forEach(clearTimeout);_typingTimers=[];document.getElementById("typing-tmp")?.remove();}
 
 function md_export(data,question,dateCtx){
   const nl="\n";
