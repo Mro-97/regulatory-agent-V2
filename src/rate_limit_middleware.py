@@ -7,10 +7,10 @@ compteur, ce qui permettait à un attaquant de bombarder l'endpoint sans
 chaque requête vers un endpoint sensible incrémente le compteur, même
 si elle finit par échouer à la validation Pydantic.
 
-Le limiteur mémoire (`_limiteur`) est réutilisé depuis `src.api_security`
-pour garder une seule source de vérité (les tests monkey-patchent cet
-attribut). En multi-worker, la limite effective reste * N — cf. le
-warning déjà émis par `main.valider_configuration_demarrage()`.
+Le comptage est délégué à `RateLimiterRedis` (src/rate_limit_redis.py),
+clé composite `{api_key}:{client_ip}` partagée entre workers via Redis.
+Si Redis est KO, le limiteur retombe automatiquement sur le compteur
+mémoire de `src.api_security` (que les tests monkey-patchent).
 """
 
 from __future__ import annotations
@@ -37,6 +37,11 @@ def _cle_client(request: Request) -> str:
     return request.client.host if request.client else "inconnu"
 
 
+def _cle_api(request: Request) -> str:
+    """Retourne la clé API de l'en-tête `X-API-Key` (ou 'no-api-key' si absente)."""
+    return request.headers.get("X-API-Key") or "no-api-key"
+
+
 def _est_rate_limite(chemin: str) -> bool:
     """True si `chemin` correspond à un endpoint sensible à rate-limiter."""
     return chemin in _CHEMINS_RATE_LIMITES
@@ -48,7 +53,7 @@ def _reponse_429() -> JSONResponse:
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
-    """Comptage par IP avant parsing du body — bloque en 429 si quota dépassé."""
+    """Comptage `{api_key}:{ip}` avant parsing du body — 429 si quota dépassé."""
 
     async def dispatch(
         self,
@@ -58,11 +63,12 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         """Incrémente le compteur puis délègue, ou renvoie 429 si épuisé."""
         if not _est_rate_limite(request.url.path):
             return await call_next(request)
-        # Résolution paresseuse pour respecter le monkey-patch des tests
-        # (`src.api_security._limiteur` remplacé à chaud dans certains tests).
-        from src.api_security import _limiteur
+        # Import paresseux : évite de charger `redis.asyncio` au démarrage et
+        # laisse les tests monkey-patcher `src.api_security._limiteur`.
+        from src.rate_limit_redis import get_rate_limiter
 
-        if not _limiteur.autoriser(_cle_client(request)):
+        limiteur = get_rate_limiter()
+        if not await limiteur.is_allowed(_cle_api(request), _cle_client(request)):
             return _reponse_429()
         return await call_next(request)
 

@@ -33,6 +33,7 @@ source_modules =
     src.ingest_sanitizer
     src.api_security
     src.rate_limit_middleware
+    src.rate_limit_redis
 forbidden_modules =
     src.api
 
@@ -57,6 +58,7 @@ forbidden_modules =
     src.api
     src.api_security
     src.rate_limit_middleware
+    src.rate_limit_redis
     src.http_safety
     src.ingest_sanitizer
 
@@ -73,4 +75,5 @@ forbidden_modules =
     src.api
     src.api_security
     src.rate_limit_middleware
+    src.rate_limit_redis
     src.watcher

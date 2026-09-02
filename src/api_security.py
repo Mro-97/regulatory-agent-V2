@@ -15,11 +15,15 @@ import hmac
 import time
 from collections import defaultdict
 from threading import Lock
+from typing import TYPE_CHECKING
 
 from config import cfg
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import RequestResponseEndpoint
+
+if TYPE_CHECKING:
+    from src.rate_limit_redis import RateLimiterRedis
 
 _CSP_POLITIQUE = (
     # M3 : défense en profondeur — restreint les origines de scripts,
@@ -140,6 +144,10 @@ def verifier_origine(request: Request) -> None:
     )
 
 
+# À terme, remplacer par Redis : `LimiteurDebit` ne sert plus que de
+# fallback à `RateLimiterRedis` (src/rate_limit_redis.py) quand Redis est
+# injoignable. Le comptage nominal, partagé entre workers, se fait côté
+# Redis avec la clé composite `{api_key}:{ip}`.
 class LimiteurDebit:
     """Limiteur de débit en mémoire (fenêtre glissante), clé = adresse IP.
 
@@ -209,6 +217,13 @@ def verifier_rate_limit(request: Request) -> None:
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail="Trop de requêtes, réessayez plus tard.",
         )
+
+
+def get_rate_limiter() -> RateLimiterRedis:
+    """Retourne le rate limiter nominal (Redis, fallback mémoire intégré)."""
+    from src.rate_limit_redis import get_rate_limiter as _get_rate_limiter
+
+    return _get_rate_limiter()
 
 
 AuthDep = Depends(verifier_auth)

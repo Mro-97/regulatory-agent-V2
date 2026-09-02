@@ -87,9 +87,26 @@ class Parametres(BaseSettings):
         default=4000, description="Longueur max d'une question."
     )
 
-    # Rate limiting (par IP)
+    # Rate limiting (par IP) — limiteur mémoire, fallback local mono-process.
     rate_limit_max_requetes: int = Field(default=30)
     rate_limit_fenetre_secondes: int = Field(default=60)
+
+    # Rate limiting Redis — compteur partagé entre workers, clé {api_key}:{ip}.
+    redis_rate_limit_max_requests: int = Field(
+        default=30,
+        description=(
+            "Seuil du rate limiter Redis (src/rate_limit_redis.py), partagé "
+            "entre workers. Distinct de `rate_limit_max_requetes` qui ne "
+            "borne que le fallback mémoire local activé si Redis est KO."
+        ),
+    )
+    redis_rate_limit_window_seconds: int = Field(
+        default=60,
+        description=(
+            "Fenêtre (secondes) du rate limiter Redis. Le TTL est posé sur "
+            "la clé `rl:{api_key}:{ip}` à sa première requête."
+        ),
+    )
 
     # ------------------------------------------------------------------
     # Modèles MLX — chargement local sur m4pro2, un seul actif à la fois
