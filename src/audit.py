@@ -246,7 +246,7 @@ class GestionnaireAudit:
     async def _initialiser_postgres(self) -> None:
         """Ouvre le pool asyncpg, applique le DDL, récupère le dernier hash."""
         global _hash_precedent
-        import asyncpg  # type: ignore[import-untyped]
+        import asyncpg
 
         self._pool = await asyncpg.create_pool(
             self.postgres_dsn,

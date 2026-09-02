@@ -51,7 +51,7 @@ def _extraire_hostname(url: str) -> str:
 def _resoudre_toutes_les_ips(hostname: str) -> list[str]:
     """Retourne toutes les IPs (v4 et v6) auxquelles `hostname` résout."""
     infos = socket.getaddrinfo(hostname, None)
-    return list({info[4][0] for info in infos})
+    return list({str(info[4][0]) for info in infos})
 
 
 def resoudre_url_publique_ou_lever(url: str) -> None:

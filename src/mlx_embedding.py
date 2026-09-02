@@ -15,7 +15,7 @@ import logging
 import time
 from typing import Any, cast
 
-import mlx.core as mx  # type: ignore[import-not-found]
+import mlx.core as mx
 from config import cfg
 
 from src.mlx_utils import _executer_avec_timeout, _tronquer_pour_embedding
@@ -95,13 +95,11 @@ class MLXEmbedding:
     def _instancier_backend(self) -> tuple[Any, Any]:
         """Charge le backend actif (sentence-transformers ou mlx-embeddings)."""
         if self._st_mode:
-            from sentence_transformers import (  # type: ignore[import-not-found]
-                SentenceTransformer,
-            )
+            from sentence_transformers import SentenceTransformer
 
             nom_court = self.model_name.split("/", 1)[1]
             return SentenceTransformer(nom_court), None
-        from mlx_embeddings import load as emb_load  # type: ignore[import-untyped]  # noqa: I001 — ancrage single-ligne du type: ignore
+        from mlx_embeddings import load as emb_load
 
         modele, processor = emb_load(self.model_name)
         return modele, processor

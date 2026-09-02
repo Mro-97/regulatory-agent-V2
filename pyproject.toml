@@ -72,6 +72,22 @@ warn_unreachable = true
 disallow_any_explicit = false
 plugins = ["pydantic.mypy"]
 
+# Dépendances sans stubs ni marqueur py.typed. Le code selon la machine
+# lève 'import-not-found' (paquet absent du venv mypy) ou 'import-untyped'
+# (présent mais non typé) ; centraliser ici évite les '# type: ignore'
+# inline qui deviennent 'unused-ignore' quand le code d'erreur change.
+[[tool.mypy.overrides]]
+module = [
+    "mlx",
+    "mlx.*",
+    "mlx_embeddings",
+    "mlx_embeddings.*",
+    "sentence_transformers",
+    "sentence_transformers.*",
+    "asyncpg",
+]
+ignore_missing_imports = true
+
 # ---------------------------------------------------------------------------
 # interrogate — couverture des docstrings
 # ---------------------------------------------------------------------------

@@ -31,7 +31,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, NoReturn
 
 from src.models import EvidenceRecuperee, NiveauConfiance
 
@@ -71,7 +71,7 @@ def _valider_date_contexte(valeur: object) -> date | None:
     return valeur
 
 
-def _rejeter_date_contexte(raison: str, valeur: object) -> None:
+def _rejeter_date_contexte(raison: str, valeur: object) -> NoReturn:
     """Lève InvalidContextDateError (import local pour éviter un cycle)."""
     from src.errors import InvalidContextDateError
 

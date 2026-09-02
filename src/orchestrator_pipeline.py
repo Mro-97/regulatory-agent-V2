@@ -19,6 +19,7 @@ from src.models import EvidenceRecuperee, NiveauConfiance, SortieAgent
 if TYPE_CHECKING:
     from datetime import date
 
+    from src.agents.conflit import ResultatConflit
     from src.models import SourceReglementaire
     from src.orchestrator import Orchestrateur
 
@@ -213,7 +214,7 @@ async def _executer_agent_conflit(
     question: str,
     date_contexte: date | None,
     evidences: list[EvidenceRecuperee],
-) -> object:
+) -> ResultatConflit:
     """Instancie AgentConflit (use_llm=True) et lance l'analyse sous verrou MLX."""
     from src.agents.conflit import AgentConflit
 
