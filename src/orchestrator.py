@@ -141,13 +141,23 @@ def _reponse_retrieval_indisponible(request_id: UUID) -> ReponseQuestion:
     )
 
 
+_CONFIANCES_A_VALIDER = (
+    NiveauConfiance.MOYEN,
+    NiveauConfiance.FAIBLE,
+    NiveauConfiance.INCERTAIN,
+)
+
+
 def _doit_soumettre_validation(
     requete: RequeteQuestion, niveau_confiance: NiveauConfiance
 ) -> bool:
-    """True si l'utilisateur l'a demandé ou si la confiance est faible/incertaine."""
-    return requete.demander_validation_humaine or niveau_confiance in (
-        NiveauConfiance.FAIBLE,
-        NiveauConfiance.INCERTAIN,
+    """True si l'utilisateur l'a demandé ou si la confiance n'est pas `ELEVE`.
+
+    Seule une réponse `ELEVE` (preuves fortement pertinentes, pas de refus
+    LLM) sort sans revue humaine ; `MOYEN` et en dessous sont escaladés.
+    """
+    return (
+        requete.demander_validation_humaine or niveau_confiance in _CONFIANCES_A_VALIDER
     )
 
 
