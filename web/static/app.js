@@ -104,6 +104,16 @@ function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").repl
 function heure(iso){return new Date(iso).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});}
 function cls_conf(n){return{élevé:"eleve",moyen:"moyen",faible:"faible"}[n]||"incertain";}
 function lbl_conf(n){return{élevé:"Confiance élevée",moyen:"Confiance moyenne",faible:"Confiance faible",incertain:"Incertain"}[n]||n;}
+function conf_bandeau(n,enAttente){
+  let msg="";
+  if(n==="moyen")msg="Fiabilité moyenne — recoupez avec les textes officiels avant tout usage.";
+  else if(n!=="élevé")msg="Réponse peu fiable — vérifiez chaque source citée, ne pas utiliser telle quelle.";
+  if(enAttente)msg=(msg?msg+" ":"")+"Cette réponse a été transmise pour validation humaine.";
+  if(!msg)return"";
+  const cls=n==="élevé"?"cb-info":(n==="moyen"?"cb-moyen":"cb-faible");
+  return `<div class="conf-bandeau ${cls}">⚠️ ${esc(msg)}</div>`;
+}
+function est_abroge(vt){if(!vt)return false;const d=new Date(vt);return !isNaN(d.getTime())&&d<new Date();}
 
 function toast(msg,type="info",dur=3500){
   const ic={success:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>',error:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',warning:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'};
@@ -162,12 +172,13 @@ function afficherReponse(data){
   const nc=cls_conf(data.niveau_confiance);
   let sources="";
   if(data.evidences?.length){
-    const items=data.evidences.slice(0,8).map(ev=>{const fin=ev.valid_to||"en vigueur";const ex=ev.texte_extrait?`<div class="src-excerpt">${esc(ev.texte_extrait.slice(0,160))}...</div>`:"";return `<div class="src-item"><div class="src-ref">${esc(ev.document_id)} / ${esc(ev.article_id)}</div><div class="src-valid">${esc(String(ev.valid_from))} → ${esc(String(fin))}</div>${ex}</div>`;}).join("");
+    const items=data.evidences.slice(0,8).map(ev=>{const abroge=est_abroge(ev.valid_to);const fin=ev.valid_to||"en vigueur";const vmark=abroge?" · n'est plus en vigueur":"";const ex=ev.texte_extrait?`<div class="src-excerpt">${esc(ev.texte_extrait.slice(0,160))}...</div>`:"";return `<div class="src-item${abroge?" src-abroge":""}"><div class="src-ref">${esc(ev.document_id)} / ${esc(ev.article_id)}</div><div class="src-valid${abroge?" abroge":""}">${esc(String(ev.valid_from))} → ${esc(String(fin))}${vmark}</div>${ex}</div>`;}).join("");
     sources=`<button class="sources-toggle"><span>📎 ${data.evidences.length} source${data.evidences.length>1?"s":""} citée${data.evidences.length>1?"s":""}</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button><div class="sources-body">${items}</div>`;
   }
   const attente=data.en_attente_validation?`<span class="badge badge-attente">⏳ En attente de validation</span>`:"";
+  const bandeau=conf_bandeau(data.niveau_confiance,data.en_attente_validation);
   const el=document.createElement("div");el.className="msg-sys";
-  el.innerHTML=`<div class="msg-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div><div class="msg-sys-inner"><div class="msg-card"><div>${esc(data.reponse)}</div>${sources}</div><div class="msg-meta"><span class="badge badge-${nc}">${lbl_conf(data.niveau_confiance)}</span>${attente}</div></div>`;
+  el.innerHTML=`<div class="msg-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div><div class="msg-sys-inner"><div class="msg-card">${bandeau}<div>${esc(data.reponse)}</div>${sources}</div><div class="msg-meta"><span class="badge badge-${nc}">${lbl_conf(data.niveau_confiance)}</span>${attente}</div></div>`;
   const btn=el.querySelector(".sources-toggle");const body=el.querySelector(".sources-body");
   if(btn&&body){btn.addEventListener("click",()=>{const o=body.classList.toggle("visible");btn.classList.toggle("open",o);});}
   chatMessages.appendChild(el);scrollBas();
@@ -184,7 +195,13 @@ async function envoyerQuestion(){
     const body={question};if(date)body.date_contexte=date;
     const r=await apiFetch(API.ask,{method:"POST",body:JSON.stringify(body)});
     supprimerTyping();
-    if(!r.ok){const e=await r.json().catch(()=>({}));afficherErreurChat(e.detail||`Erreur ${r.status}`);toast(e.detail||"Erreur serveur","error");return;}
+    if(!r.ok){
+      const e=await r.json().catch(()=>({}));
+      let m=e.detail||`Erreur ${r.status}`;
+      if(r.status===429)m="Trop de requêtes — patientez environ une minute avant de réessayer.";
+      else if(r.status===503)m="Service momentanément indisponible (modèle occupé ou file d'attente). Réessayez dans quelques instants.";
+      afficherErreurChat(m);toast(m,"error");return;
+    }
     const data=await r.json();sessionQueries++;
     afficherReponse(data);ajouterActivite(question,data.niveau_confiance,ts);
     historiqueSession.unshift({question,reponse:data.reponse,conf:data.niveau_confiance,ts});

@@ -189,6 +189,12 @@ svg{display:block;}
 .badge-faible{background:var(--red-bg);color:var(--red);}
 .badge-incertain{background:var(--bg-elevated);color:var(--txt-3);}
 .badge-attente{background:var(--amber-bg);color:var(--amber);}
+.conf-bandeau{font-size:12px;font-weight:500;padding:8px 12px;border-radius:var(--radius);margin-bottom:10px;line-height:1.45;}
+.conf-bandeau.cb-faible{background:var(--red-bg);color:var(--red);}
+.conf-bandeau.cb-moyen{background:var(--amber-bg);color:var(--amber);}
+.conf-bandeau.cb-info{background:var(--bg-elevated);color:var(--txt-3);}
+.src-item.src-abroge{border-left-color:var(--red);}
+.src-valid.abroge{color:var(--red);font-weight:600;}
 .sources-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;padding:8px 16px;font-size:12px;font-weight:500;color:var(--txt-3);border-top:1px solid var(--border-lite);transition:background var(--trans);background:none;}
 .sources-toggle:hover{background:var(--bg-hover);color:var(--txt-2);}
 .sources-toggle svg{width:13px;height:13px;transition:transform var(--trans);}
