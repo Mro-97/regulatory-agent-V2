@@ -31,6 +31,7 @@ from qdrant_client.http.models import (
 
 from src.agents.retriever_helpers import (
     construire_filtres_passes,
+    dedupliquer_evidences,
     fusionner_passes,
     point_vers_evidence,
 )
@@ -72,10 +73,12 @@ def _convertir_points_en_evidences(
     points: list[ScoredPoint],
 ) -> list[EvidenceRecuperee]:
     """Convertit une liste de ScoredPoint en EvidenceRecuperee[] (drop les None)."""
-    evidences = [e for e in (point_vers_evidence(p) for p in points) if e is not None]
+    brutes = [e for e in (point_vers_evidence(p) for p in points) if e is not None]
+    evidences = dedupliquer_evidences(brutes)
     logger.info(
-        "Retrieval terminé — %d/%d chunks retournés",
+        "Retrieval terminé — %d chunks (%d bruts, %d points)",
         len(evidences),
+        len(brutes),
         len(points),
     )
     return evidences

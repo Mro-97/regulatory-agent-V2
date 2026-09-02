@@ -183,6 +183,29 @@ def _prendre_point(
     return True
 
 
+def dedupliquer_evidences(
+    evidences: list[EvidenceRecuperee],
+) -> list[EvidenceRecuperee]:
+    """Collapse les chunks identiques (doc + article + texte), garde le meilleur score.
+
+    La collection Qdrant contient des doublons d'ingestion (le même
+    passage réinséré à chaque run). Sans ce filtre, un unique passage
+    occupe plusieurs slots du top-k et fausse la moyenne de confiance de
+    l'Explainer. Résultat trié par score décroissant.
+    """
+    par_cle: dict[tuple[str, str, str], EvidenceRecuperee] = {}
+    for ev in evidences:
+        cle = (ev.document_id, ev.article_id, ev.texte_extrait)
+        gardee = par_cle.get(cle)
+        if gardee is None or (ev.score_similarite or 0.0) > (
+            gardee.score_similarite or 0.0
+        ):
+            par_cle[cle] = ev
+    return sorted(
+        par_cle.values(), key=lambda e: e.score_similarite or 0.0, reverse=True
+    )
+
+
 def point_vers_evidence(point: ScoredPoint) -> EvidenceRecuperee | None:
     """Convertit un ScoredPoint en EvidenceRecuperee (None si payload incomplet)."""
     payload = point.payload or {}
