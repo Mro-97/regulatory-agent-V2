@@ -41,10 +41,18 @@ class _ClientMock:
 
 
 def _watcher_avec_client(monkeypatch, tmp_path, sequence):  # noqa: ANN001, ANN202
+    from src import http_safety
     from src import watcher as watcher_module
 
     monkeypatch.setattr(watcher_module, "CHEMIN_HASHES", tmp_path / "hashes.json")
     monkeypatch.setattr(cfg, "watcher_backoff_secondes", 0.0)
+    # Ces tests portent sur le retry HTTP, pas sur la deny-list SSRF.
+    # `_tenter_fetch` résout le DNS avant tout appel client ; sur des
+    # hostnames fictifs (`https://ex/1`) ça lèverait avant le mock. On
+    # neutralise donc la vérification d'URL publique ici.
+    monkeypatch.setattr(
+        http_safety, "resoudre_url_publique_ou_lever", lambda _url: None
+    )
     w = Watcher()
     client = _ClientMock(sequence)
 
