@@ -25,6 +25,9 @@ logger = logging.getLogger(__name__)
 CHUNK_SIZE = 600
 OVERLAP = 50
 
+# Namespace pour dériver un id de point Qdrant stable depuis un chunk_id.
+_NS_CHUNK = uuid.uuid5(uuid.NAMESPACE_URL, "regulatory-agent/chunk")
+
 
 def _filtre_selector_document(document_id: str) -> Any:
     """Sélecteur Qdrant ciblant tous les points d'un `document_id` donné."""
@@ -64,21 +67,27 @@ class Ingester:  # noqa: D101
             self._recreate_collection()
 
     def _load_embedding_model(self) -> Any:
-        from sentence_transformers import SentenceTransformer
+        """Backend d'embedding — le MÊME que le retriever (source unique).
 
-        model = SentenceTransformer("all-MiniLM-L6-v2")
-        logger.info("Modèle d'embedding : all-MiniLM-L6-v2 (dim=384)")
-        return model
+        `cfg.modele_embedding` (bge-m3, dim `cfg.embedding_dimension`) au
+        lieu d'un `all-MiniLM-L6-v2` local 384-dim : ingérer avec un modèle
+        différent de la recherche produisait des vecteurs incompatibles
+        avec la collection.
+        """
+        from src.mlx_utils import get_embedding
+
+        return get_embedding(cfg.modele_embedding)
 
     def _recreate_collection(self) -> None:
+        dim = cfg.embedding_dimension
         if self.client.collection_exists(self.collection_name):
             self.client.delete_collection(self.collection_name)
             logger.info("Collection '%s' supprimée", self.collection_name)
         self.client.create_collection(
             collection_name=self.collection_name,
-            vectors_config=VectorParams(size=384, distance=Distance.COSINE),
+            vectors_config=VectorParams(size=dim, distance=Distance.COSINE),
         )
-        logger.info("Collection '%s' créée (dim=384)", self.collection_name)
+        logger.info("Collection '%s' créée (dim=%d)", self.collection_name, dim)
 
     def embed_chunk(self, text: str) -> list[float]:  # noqa: D102
         vec = self.embedding_model.encode(text)
@@ -121,7 +130,14 @@ class Ingester:  # noqa: D101
         return chunks
 
     def ingest_document(self, doc: DocumentReglementaire) -> int:
-        """Chunke `doc`, sanitize, embed chaque chunk, upsert dans Qdrant."""
+        """Ré-indexe `doc` : purge ses points existants, puis chunk + embed + upsert.
+
+        Idempotent : deux appels successifs sur le même document laissent
+        la collection identique (les `id` de points sont dérivés du
+        `chunk_id` — cf. `_chunk_vers_point` — et la purge en tête retire
+        les chunks devenus orphelins si le découpage a changé).
+        """
+        self.supprimer_chunks_document(doc.id)
         chunks = self.chunk_document(doc)
         logger.info("%d chunks générés pour %s", len(chunks), doc.id)
         chunks_traites = self._appliquer_sanitizer(chunks)
@@ -158,9 +174,14 @@ class Ingester:  # noqa: D101
         return conserves
 
     def _chunk_vers_point(self, chunk: Any) -> PointStruct:
-        """Convertit un chunk en PointStruct Qdrant (vecteur + payload)."""
+        """Convertit un chunk en PointStruct Qdrant (id déterministe = uuid5(chunk_id)).
+
+        L'`id` dérive du `chunk_id` stable (`{doc}_{article}_part{n}`) :
+        ré-ingérer un chunk inchangé écrase le point au lieu d'en créer
+        un doublon (cause des ~14 k doublons exacts dans la collection).
+        """
         return PointStruct(
-            id=str(uuid.uuid4()),
+            id=str(uuid.uuid5(_NS_CHUNK, chunk.chunk_id)),
             vector=self.embed_chunk(chunk.texte_chunk),
             payload={
                 **chunk.model_dump(mode="json"),
