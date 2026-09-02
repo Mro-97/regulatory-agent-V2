@@ -13,6 +13,7 @@ import re
 from typing import TYPE_CHECKING, Any
 
 from config import cfg
+
 from src.agents.conflit import ConflitDetecte, NiveauConflit
 
 if TYPE_CHECKING:

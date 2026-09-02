@@ -80,6 +80,11 @@ jobs:
       - name: pip-audit — vulnérabilités dépendances (bloquant §7)
         run: pip-audit -r requirements.txt
 
+      - name: import-linter — contrats d'architecture (bloquant §9)
+        # 3 contrats dans .importlinter : src.api = frontière, src.models
+        # = feuille, src.agents ne connaît pas l'orchestrateur ni l'API.
+        run: lint-imports
+
   tests:
     runs-on: ubuntu-latest
     steps:

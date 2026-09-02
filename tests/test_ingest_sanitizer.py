@@ -8,7 +8,6 @@ positifs) et que du contenu réglementaire légitime ne l'est pas
 from __future__ import annotations
 
 import pytest
-
 from src.ingest_sanitizer import (
     ModeSanitizer,
     NiveauMenace,
@@ -87,9 +86,7 @@ class TestAppliquerPolitique:
     def test_annoter_laisse_les_sains(self):  # noqa: ANN201
         """Mode ANNOTER : chunk SAIN reste inchangé."""
         payload = "Article 6 du RGPD sur la licéité du traitement."
-        assert (
-            appliquer_politique(payload, ModeSanitizer.ANNOTER, "c1") == payload
-        )
+        assert appliquer_politique(payload, ModeSanitizer.ANNOTER, "c1") == payload
 
     def test_bloquer_rejette_les_dangereux(self):  # noqa: ANN201
         """Mode BLOQUER : DANGEREUX renvoie None (skip)."""

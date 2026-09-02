@@ -28,6 +28,7 @@ from qdrant_client.http.models import (
     Filter,
     ScoredPoint,
 )
+
 from src.agents.retriever_helpers import (
     construire_filtres_passes,
     fusionner_passes,

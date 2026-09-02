@@ -12,6 +12,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from config import cfg
+
 from src.agents.citation import CitationReglementaire
 
 if TYPE_CHECKING:

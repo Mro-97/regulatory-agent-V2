@@ -39,10 +39,12 @@ def _est_ip_interne(ip_str: str) -> bool:
 
 
 def _extraire_hostname(url: str) -> str:
-    """Extrait le hostname d'une URL, lève ValueError si vide."""
+    """Extrait le hostname d'une URL, lève UrlSansHostnameError si vide."""
+    from src.errors import UrlSansHostnameError
+
     hostname = urlparse(url).hostname
     if not hostname:
-        raise ValueError(f"URL sans hostname : {url}")  # noqa: TRY003
+        raise UrlSansHostnameError(url)
     return hostname
 
 
@@ -65,7 +67,9 @@ def resoudre_url_publique_ou_lever(url: str) -> None:
     except socket.gaierror as exc:
         # Hostname non résoluble = pas de risque SSRF immédiat, on laisse
         # httpx échouer normalement avec un message clair.
-        raise ValueError(f"DNS non résolu pour {hostname} : {exc}") from exc  # noqa: TRY003
+        from src.errors import DnsIrresoluError
+
+        raise DnsIrresoluError(hostname, str(exc)) from exc
     for ip in ips:
         if _est_ip_interne(ip):
             raise UrlInterneRefuseeError(url, ip)

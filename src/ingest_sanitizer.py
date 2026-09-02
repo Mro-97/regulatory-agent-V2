@@ -39,7 +39,7 @@ class NiveauMenace(StrEnum):
 class ModeSanitizer(StrEnum):
     """Politique d'application du sanitizer à l'ingestion."""
 
-    OFF = "off"          # rien ne change (mode legacy)
+    OFF = "off"  # rien ne change (mode legacy)
     ANNOTER = "annoter"  # encapsule les suspects dans un marqueur défensif
     BLOQUER = "bloquer"  # rejette les DANGEREUX, annote les SUSPECT
 
@@ -53,7 +53,10 @@ class Verdict:
 
 
 _PATTERNS_DANGEREUX: tuple[re.Pattern[str], ...] = (
-    re.compile(r"ignore(?:\s+all)?(?:\s+les)?\s+(?:previous|précédentes?)\s+instructions", re.IGNORECASE),  # noqa: E501
+    re.compile(
+        r"ignore(?:\s+all)?(?:\s+les)?\s+(?:previous|précédentes?)\s+instructions",
+        re.IGNORECASE,
+    ),
     re.compile(r"\[SYSTEM\s+OVERRIDE\]", re.IGNORECASE),
     re.compile(r"<\s*SOURCE(?:\s|>|/)", re.IGNORECASE),
     re.compile(r"<\|(?:im_start|im_end|system|user|assistant)\|?>", re.IGNORECASE),
@@ -64,7 +67,9 @@ _PATTERNS_DANGEREUX: tuple[re.Pattern[str], ...] = (
 _PATTERNS_SUSPECTS: tuple[re.Pattern[str], ...] = (
     re.compile(r"tu\s+es\s+(?:maintenant|désormais)\s+(?:un|une)\s+", re.IGNORECASE),
     re.compile(r"réponds\s+(?:uniquement|toujours)\s+", re.IGNORECASE),
-    re.compile(r"affiche\s+(?:ta|ton|le)\s+(?:configuration|prompt|clé)", re.IGNORECASE),
+    re.compile(
+        r"affiche\s+(?:ta|ton|le)\s+(?:configuration|prompt|clé)", re.IGNORECASE
+    ),
     re.compile(r"reveal\s+(?:the\s+)?(?:system|prompt|key)", re.IGNORECASE),
 )
 
@@ -110,9 +115,7 @@ def appliquer_politique(texte: str, mode: ModeSanitizer, chunk_id: str) -> str |
     if verdict.niveau == NiveauMenace.SAIN:
         return texte
     if verdict.niveau == NiveauMenace.DANGEREUX and mode == ModeSanitizer.BLOQUER:
-        logger.warning(
-            "Chunk %s REJETÉ par sanitizer : %s", chunk_id, verdict.motif
-        )
+        logger.warning("Chunk %s REJETÉ par sanitizer : %s", chunk_id, verdict.motif)
         return None
     logger.warning(
         "Chunk %s ANNOTÉ par sanitizer (%s) : %s",

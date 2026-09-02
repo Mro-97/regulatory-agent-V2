@@ -1,0 +1,76 @@
+; regulatory-code-standards §9 — contrats d'architecture (import-linter).
+;
+; Objectif : figer les invariants de couches déjà respectés à ce jour et
+; empêcher toute régression. Les contrats sont volontairement peu nombreux
+; et précis — mieux vaut 3 contrats vérifiés que 10 aspirationnels qui
+; échouent en CI et se font désactiver.
+
+[importlinter]
+root_packages =
+    src
+
+[importlinter:contract:api-est-frontiere]
+name = src.api est frontière — jamais importé par les couches métier
+type = forbidden
+source_modules =
+    src.agents
+    src.models
+    src.errors
+    src.orchestrator
+    src.orchestrator_ingest
+    src.orchestrator_pipeline
+    src.orchestrator_validation
+    src.classification
+    src.watcher
+    src.watcher_helpers
+    src.mlx_utils
+    src.mlx_embedding
+    src.prompts_loader
+    src.audit
+    src.audit_schema
+    src.schemas
+    src.http_safety
+    src.ingest_sanitizer
+    src.api_security
+    src.rate_limit_middleware
+forbidden_modules =
+    src.api
+
+[importlinter:contract:models-est-feuille]
+name = src.models ne dépend que de config, src.errors et stdlib
+type = forbidden
+source_modules =
+    src.models
+forbidden_modules =
+    src.agents
+    src.orchestrator
+    src.orchestrator_ingest
+    src.orchestrator_pipeline
+    src.orchestrator_validation
+    src.classification
+    src.watcher
+    src.watcher_helpers
+    src.mlx_utils
+    src.mlx_embedding
+    src.prompts_loader
+    src.audit
+    src.api
+    src.api_security
+    src.rate_limit_middleware
+    src.http_safety
+    src.ingest_sanitizer
+
+[importlinter:contract:agents-nignorent-orchestration]
+name = src.agents ne connaît ni l'orchestrateur ni l'API
+type = forbidden
+source_modules =
+    src.agents
+forbidden_modules =
+    src.orchestrator
+    src.orchestrator_ingest
+    src.orchestrator_pipeline
+    src.orchestrator_validation
+    src.api
+    src.api_security
+    src.rate_limit_middleware
+    src.watcher

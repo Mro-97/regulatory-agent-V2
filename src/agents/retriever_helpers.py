@@ -21,10 +21,12 @@ from qdrant_client.http.models import (
     MatchAny,
     PayloadField,
 )
+
 from src.models import EvidenceRecuperee
 
 if TYPE_CHECKING:
     from qdrant_client.http.models import ScoredPoint
+
     from src.models import SourceReglementaire
 
 from typing import Any

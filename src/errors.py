@@ -241,6 +241,22 @@ class ModelNotLoadedError(InferenceError):
         self.agent = agent
 
 
+class UrlSansHostnameError(ValueError):
+    """URL malformée : impossible d'en extraire un hostname."""
+
+    def __init__(self, url: str) -> None:  # noqa: D107 — constructeur documenté par la classe (§0.2)
+        super().__init__(f"URL sans hostname : {url}")
+        self.url = url
+
+
+class DnsIrresoluError(ValueError):
+    """Le hostname n'est résoluble par aucun serveur DNS."""
+
+    def __init__(self, hostname: str, cause: str) -> None:  # noqa: D107 — constructeur documenté par la classe (§0.2)
+        super().__init__(f"DNS non résolu pour {hostname} : {cause}")
+        self.hostname = hostname
+
+
 class ModelSwapThrottledError(InferenceError):
     """Le quota de swaps de modèle MLX par minute est épuisé (anti-DoS)."""
 

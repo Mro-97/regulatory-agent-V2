@@ -39,6 +39,7 @@ from datetime import date
 from typing import TYPE_CHECKING
 
 from config import cfg
+
 from src.models import EvidenceRecuperee, NiveauConfiance
 
 if TYPE_CHECKING:
