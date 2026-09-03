@@ -28,7 +28,7 @@ from __future__ import annotations
 import gc
 import logging
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import TimeoutError as FuturesTimeoutError
 from dataclasses import dataclass
@@ -281,6 +281,22 @@ class MLXInference:
             verbose=False,
         )
 
+    def _prompt_depuis_messages(self, messages: list[dict[str, str]]) -> str:
+        """Applique le chat template ; repli sur un formatage ROLE: contenu."""
+        try:
+            return str(
+                self._tokenizer.apply_chat_template(
+                    messages,
+                    tokenize=False,
+                    add_generation_prompt=True,
+                )
+            )
+        except Exception:  # noqa: BLE001 — frontière externe : dégradation gracieuse, cf. skill §8
+            return (
+                "\n".join(f"{m['role'].upper()}: {m['content']}" for m in messages)
+                + "\nASSISTANT:"
+            )
+
     def generate_avec_messages(
         self,
         messages: list[dict[str, str]],
@@ -290,18 +306,38 @@ class MLXInference:
         """Génère depuis une liste de messages avec chat template."""
         if not self._loaded:
             self.load()
-        try:
-            prompt = self._tokenizer.apply_chat_template(
-                messages,
-                tokenize=False,
-                add_generation_prompt=True,
-            )
-        except Exception:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
-            prompt = (
-                "\n".join(f"{m['role'].upper()}: {m['content']}" for m in messages)
-                + "\nASSISTANT:"
-            )
+        prompt = self._prompt_depuis_messages(messages)
         return self.generate(prompt, max_tokens=max_tokens, temperature=temperature)
+
+    def stream_generer_avec_messages(
+        self,
+        messages: list[dict[str, str]],
+        max_tokens: int = 512,
+        temperature: float | None = None,
+    ) -> Iterator[str]:
+        """Génère en flux : yield chaque fragment de texte au fil de l'inférence.
+
+        Générateur SYNCHRONE (mlx_lm.stream_generate) — l'appelant async
+        doit le pomper dans un thread (cf. Orchestrateur.traiter_stream).
+        """
+        if not self._loaded:
+            self.load()
+        from mlx_lm import stream_generate
+        from mlx_lm.sample_utils import make_sampler
+
+        prompt = self._prompt_depuis_messages(messages)
+        temp = temperature if temperature is not None else self.temperature
+        sampler = make_sampler(temp=temp, top_p=self.top_p)
+        for reponse in stream_generate(
+            self._model,
+            self._tokenizer,
+            prompt=prompt,
+            max_tokens=max_tokens,
+            sampler=sampler,
+        ):
+            fragment = getattr(reponse, "text", "")
+            if fragment:
+                yield fragment
 
     def __enter__(self) -> MLXInference:  # noqa: D105
         self.load()

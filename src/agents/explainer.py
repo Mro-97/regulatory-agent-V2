@@ -34,6 +34,7 @@ Dépendances : src/mlx_utils.py, src/models.py
 from __future__ import annotations
 
 import logging
+from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import date
 from typing import TYPE_CHECKING
@@ -290,6 +291,38 @@ class AgentExplainer:
             blocs.append(bloc)
             total += len(bloc)
         return "\n\n---\n\n".join(blocs)
+
+    def expliquer_stream(
+        self,
+        question: str,
+        evidences: list[EvidenceRecuperee],
+        date_ref: date | None = None,
+        type_pipeline: str = "courante",
+    ) -> Iterator[str]:
+        """Génère la synthèse en flux (fragments de texte).
+
+        Sans preuve → yield le message « aucun passage » et s'arrête (pas
+        d'appel LLM). La confiance / les sources sont recalculées par
+        l'appelant sur le texte accumulé (`_evaluer_confiance`,
+        `_construire_sources_citees`).
+        """
+        from src.errors import ModelNotLoadedError
+
+        if not evidences:
+            yield _MSG_AUCUN_PASSAGE
+            return
+        self._charger_modele()
+        if self._modele is None:
+            raise ModelNotLoadedError("Explainer")
+        messages = _preparer_messages_synthese(
+            question,
+            self._construire_contexte(evidences),
+            date_ref,
+            type_pipeline,
+        )
+        yield from self._modele.stream_generer_avec_messages(
+            messages=messages, max_tokens=cfg.mlx_max_tokens
+        )
 
     def _synthetiser_avec_llm(
         self,

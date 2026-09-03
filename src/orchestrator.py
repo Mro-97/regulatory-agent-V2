@@ -32,7 +32,8 @@ from __future__ import annotations
 import asyncio
 import logging
 import platform
-from collections.abc import Callable
+import queue
+from collections.abc import AsyncIterator, Callable, Iterator
 from datetime import date
 from typing import TYPE_CHECKING, Any, TypeVar
 from uuid import UUID, uuid4
@@ -154,6 +155,9 @@ _ORDRE_CONFIANCE = (
     NiveauConfiance.FAIBLE,
     NiveauConfiance.INCERTAIN,
 )
+
+_MSG_ERREUR_STREAM = "Erreur interne lors du traitement de la question."
+_MSG_ECHEC_SYNTHESE = "Erreur lors de la génération de la réponse."
 
 
 def _confiance_apres_citation(
@@ -433,6 +437,102 @@ class Orchestrateur:
         if self.mode == "mock":
             return await self._traiter_mock(requete, request_id, type_pipeline)
         return await self._traiter_pipeline_reel(requete, request_id, type_pipeline)
+
+    async def traiter_stream(
+        self, requete: RequeteQuestion
+    ) -> AsyncIterator[tuple[str, dict[str, Any]]]:
+        """Pipeline en flux : émet ('etape'|'token'|'fin'|'erreur', charge).
+
+        Même pipeline que `traiter` mais la synthèse Explainer est diffusée
+        fragment par fragment ; citation + finalisation (HITL, audit) ont
+        lieu après le dernier token, avant l'événement 'fin'.
+        """
+        request_id = uuid4()
+        type_pipeline = _classifier_requete(requete.question, requete.date_contexte)
+        _journaliser_debut_traitement(request_id, self.mode, type_pipeline, requete)
+        try:
+            if self.mode == "mock":
+                reponse = await self._traiter_mock(requete, request_id, type_pipeline)
+                yield "token", {"t": reponse.reponse}
+                yield "fin", reponse.model_dump(mode="json")
+                return
+            async for evenement in self._stream_pipeline_reel(
+                requete, request_id, type_pipeline
+            ):
+                yield evenement
+        except Exception:
+            logger.exception("traiter_stream échoué")
+            yield "erreur", {"detail": _MSG_ERREUR_STREAM}
+
+    async def _stream_pipeline_reel(
+        self, requete: RequeteQuestion, request_id: UUID, type_pipeline: str
+    ) -> AsyncIterator[tuple[str, dict[str, Any]]]:
+        """Retrieval + temporel (await), puis synthèse diffusée, puis citation."""
+        from src.agents.explainer import AgentExplainer, _evaluer_confiance
+
+        agents: list[SortieAgent] = []
+        yield "etape", {"phase": "recherche"}
+        evidences_ou_none = await self._executer_retrieval_avec_repli(requete, agents)
+        if evidences_ou_none is None:
+            reponse = _reponse_retrieval_indisponible(request_id)
+            yield "token", {"t": reponse.reponse}
+            yield "fin", reponse.model_dump(mode="json")
+            return
+        yield "etape", {"phase": "temporel"}
+        evidences = await self._executer_etapes_intermediaires(
+            requete, type_pipeline, evidences_ou_none, agents, request_id
+        )
+        yield "etape", {"phase": "synthese"}
+        agent = AgentExplainer(use_llm=True)
+        morceaux: list[str] = []
+        async for fragment in self._stream_sous_verrou(
+            lambda: agent.expliquer_stream(
+                question=requete.question,
+                evidences=evidences,
+                date_ref=requete.date_contexte,
+                type_pipeline=type_pipeline,
+            )
+        ):
+            morceaux.append(fragment)
+            yield "token", {"t": fragment}
+        texte = "".join(morceaux).strip() or _MSG_ECHEC_SYNTHESE
+        confiance = _evaluer_confiance(texte, evidences)
+        yield "etape", {"phase": "citations"}
+        resultat_citation = await self._executer_citation(evidences, texte, agents)
+        confiance = _confiance_apres_citation(confiance, resultat_citation)
+        reponse = await self._finaliser_reponse(
+            requete, request_id, evidences, agents, texte, confiance
+        )
+        yield "fin", reponse.model_dump(mode="json")
+
+    async def _stream_sous_verrou(
+        self, generateur_factory: Callable[[], Iterator[str]]
+    ) -> AsyncIterator[str]:
+        """Pompe un générateur synchrone (MLX) dans un thread, sous `_verrou_agents`."""
+        file: queue.Queue[tuple[str, Any]] = queue.Queue(maxsize=128)
+
+        def _travailleur() -> None:
+            try:
+                for fragment in generateur_factory():
+                    file.put(("f", fragment))
+            except Exception as exc:  # noqa: BLE001 — remonté côté async
+                file.put(("e", exc))
+            finally:
+                file.put(("fin", None))
+
+        loop = asyncio.get_running_loop()
+        async with self._verrou_agents:
+            futur = loop.run_in_executor(None, _travailleur)
+            while True:
+                genre, charge = await loop.run_in_executor(None, file.get)
+                if genre == "f":
+                    yield charge
+                elif genre == "e":
+                    await futur
+                    raise charge
+                else:
+                    break
+            await futur
 
     async def _traiter_mock(
         self,

@@ -1,5 +1,5 @@
 "use strict";
-const API={ask:"/ask",pending:"/pending",approve:"/approve",reject:"/reject",health:"/health",feedback:"/feedback"};
+const API={ask:"/ask",askStream:"/ask/stream",pending:"/pending",approve:"/approve",reject:"/reject",health:"/health",feedback:"/feedback"};
 // C1: la clé API n'est plus injectée dans le HTML. L'utilisateur la saisit
 // une fois par onglet, elle est conservée en sessionStorage (jamais persistée).
 // Sur 401, apiFetch purge la clé, re-prompte, et retente UNE seule fois.
@@ -274,13 +274,63 @@ function afficherReponse(data,question,dateCtx){
 
 function afficherErreurChat(msg){const el=document.createElement("div");el.className="msg-sys";el.innerHTML=`<div class="msg-avatar" style="background:var(--red-bg);border-color:rgba(248,81,73,.3);color:var(--red)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="msg-sys-inner"><div class="msg-card" style="color:var(--red)">${esc(msg)}</div></div>`;chatMessages.appendChild(el);scrollBas();}
 
-async function envoyerQuestion(){
-  const question=champQuestion.value.trim();if(!question||enCours)return;
-  supprimerWelcome();enCours=true;btnEnvoyer.disabled=true;
-  const date=champDate.value||null;champQuestion.value="";champQuestion.style.height="46px";
-  ajouterMsgUser(question);ajouterTyping();const ts=new Date().toISOString();
+const PHASES_STREAM={recherche:"Recherche des textes applicables…",temporel:"Analyse de la validité temporelle…",synthese:"Rédaction de la synthèse…",citations:"Vérification des citations…"};
+
+function demarrerCarteStream(){
+  const el=document.createElement("div");el.className="msg-sys";
+  el.innerHTML=`<div class="msg-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div><div class="msg-sys-inner"><div class="msg-card"><div class="stream-txt"></div><div class="stream-etape"></div></div></div>`;
+  chatMessages.appendChild(el);scrollBas();
+  return {el,txt:el.querySelector(".stream-txt"),etape:el.querySelector(".stream-etape")};
+}
+
+function _parseFrameSSE(frame){
+  let ev="message",data="";
+  for(const ligne of frame.split("\n")){
+    if(ligne.startsWith("event:"))ev=ligne.slice(6).trim();
+    else if(ligne.startsWith("data:"))data+=ligne.slice(5).trim();
+  }
+  return {ev,data};
+}
+
+async function envoyerQuestionStream(body,question,date,ts){
+  let r;
+  try{r=await apiFetch(API.askStream,{method:"POST",body:JSON.stringify(body)});}
+  catch{return false;}
+  if(!r.ok||!r.body||!r.body.getReader)return false;
+  const carte=demarrerCarteStream();
+  const reader=r.body.getReader();const dec=new TextDecoder();
+  let buf="",texte="",fin=null,err=null;
   try{
-    const body={question};if(date)body.date_contexte=date;
+    for(;;){
+      const {value,done}=await reader.read();if(done)break;
+      buf+=dec.decode(value,{stream:true});
+      let i;
+      while((i=buf.indexOf("\n\n"))>=0){
+        const frame=buf.slice(0,i);buf=buf.slice(i+2);
+        if(!frame.trim())continue;
+        const {ev,data}=_parseFrameSSE(frame);
+        if(ev==="token"){texte+=JSON.parse(data).t;carte.txt.textContent=texte;scrollBas();}
+        else if(ev==="etape"){carte.etape.textContent=PHASES_STREAM[JSON.parse(data).phase]||"";}
+        else if(ev==="fin"){fin=JSON.parse(data);}
+        else if(ev==="erreur"){err=JSON.parse(data).detail;}
+      }
+    }
+  }catch{err=err||"Flux interrompu.";}
+  carte.el.remove();
+  if(fin){
+    sessionQueries++;
+    afficherReponse(fin,question,date);ajouterActivite(question,fin.niveau_confiance,ts);
+    historiqueSession.unshift({question,reponse:fin.reponse,conf:fin.niveau_confiance,ts});
+    majKPIs();if(fin.en_attente_validation)toast("Réponse soumise à validation humaine","warning");
+  }else{
+    afficherErreurChat(err||"Réponse incomplète.");toast(err||"Erreur serveur","error");
+  }
+  return true;
+}
+
+async function envoyerQuestionSimple(body,question,date,ts){
+  ajouterTyping();
+  try{
     const r=await apiFetch(API.ask,{method:"POST",body:JSON.stringify(body)});
     supprimerTyping();
     if(!r.ok){
@@ -295,7 +345,18 @@ async function envoyerQuestion(){
     historiqueSession.unshift({question,reponse:data.reponse,conf:data.niveau_confiance,ts});
     majKPIs();if(data.en_attente_validation)toast("Réponse soumise à validation humaine","warning");
   }catch{supprimerTyping();afficherErreurChat("Impossible de joindre l'API. Vérifiez que le serveur est démarré.");toast("Serveur inaccessible","error");}
-  finally{enCours=false;btnEnvoyer.disabled=false;champQuestion.focus();}
+}
+
+async function envoyerQuestion(){
+  const question=champQuestion.value.trim();if(!question||enCours)return;
+  supprimerWelcome();enCours=true;btnEnvoyer.disabled=true;
+  const date=champDate.value||null;champQuestion.value="";champQuestion.style.height="46px";
+  ajouterMsgUser(question);const ts=new Date().toISOString();
+  const body={question};if(date)body.date_contexte=date;
+  try{
+    const stream=await envoyerQuestionStream(body,question,date,ts);
+    if(!stream)await envoyerQuestionSimple(body,question,date,ts);
+  }finally{enCours=false;btnEnvoyer.disabled=false;champQuestion.focus();}
 }
 
 document.getElementById("btn-new-chat").addEventListener("click",()=>{chatMessages.innerHTML=`<div class="chat-welcome" id="chat-welcome"><div class="welcome-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div><h2>Que souhaitez-vous analyser ?</h2><p>Le système interroge le corpus réglementaire indexé,<br>identifie les versions applicables et cite chaque source précisément.</p><div class="chips"><button class="chip" data-q="Quelles sont les obligations de notification d'une violation de données selon le RGPD ?">Notification violation · RGPD art. 33</button><button class="chip" data-q="Quelles mesures de sécurité techniques sont requises par l'article 32 du RGPD ?">Mesures sécurité · art. 32</button><button class="chip" data-q="Y a-t-il une contradiction entre les délais de notification du RGPD et de NIS2 ?">Conflit RGPD / NIS2</button><button class="chip" data-q="Quelles sont les obligations des entités essentielles selon NIS2 ?">Entités essentielles · NIS2</button></div></div>`;activerChips();});

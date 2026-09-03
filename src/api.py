@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import json
 import logging
+from collections.abc import AsyncIterator
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Annotated
@@ -32,7 +33,7 @@ from uuid import UUID
 from config import cfg
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -279,6 +280,39 @@ async def poser_question(
     except Exception:
         logger.exception("Erreur /ask")
         raise _erreur_500(_MSG_ERREUR_ASK) from None
+
+
+async def _sse_ask(
+    requete: RequeteQuestion, orchestrateur: Orchestrateur
+) -> AsyncIterator[str]:
+    """Formatte les événements de `traiter_stream` en trames Server-Sent Events."""
+    try:
+        async for evenement, charge in orchestrateur.traiter_stream(requete):
+            corps = json.dumps(charge, ensure_ascii=False)
+            yield f"event: {evenement}\ndata: {corps}\n\n"
+    except Exception:
+        logger.exception("Flux /ask/stream interrompu")
+        yield 'event: erreur\ndata: {"detail": "Flux interrompu."}\n\n'
+
+
+@app.post(
+    "/ask/stream",
+    tags=["Requêtes"],
+    summary="Poser une question — réponse diffusée (SSE)",
+    description="Comme /ask, mais diffuse la synthèse token par token (text/event-stream) : événements `etape`, `token`, `fin`, `erreur`.",  # noqa: E501
+    dependencies=[AuthDep, OrigineDep],
+)
+async def poser_question_stream(
+    requete: RequeteQuestion,
+    orchestrateur: OrchestrateurDep,
+) -> StreamingResponse:
+    """Diffuse la réponse en Server-Sent Events."""
+    logger.info("POST /ask/stream — %r", requete.question[:80])
+    return StreamingResponse(
+        _sse_ask(requete, orchestrateur),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 @app.post(

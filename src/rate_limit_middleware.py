@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 # Chemins sensibles rate-limités par IP. Les endpoints de lecture
 # (/health, /pending) et les mutations validées humainement (/approve,
 # /reject) restent hors quota — leur coût serveur est minime.
-_CHEMINS_RATE_LIMITES: frozenset[str] = frozenset({"/ask", "/ingest"})
+_CHEMINS_RATE_LIMITES: frozenset[str] = frozenset({"/ask", "/ask/stream", "/ingest"})
 
 _MSG_TROP_DE_REQUETES = "Trop de requêtes, réessayez plus tard."
 
