@@ -26,6 +26,10 @@ partielle/ancienne du même texte).
 `--purger-micro` : supprime les points dont `texte_chunk` fait moins de
 `cfg.ingest_taille_min_chunk` caractères (fragments « paragraphe 3 »,
 « — Article 33 » : bruit de retrieval sans valeur).
+
+`--purger-docs prefixe [prefixe ...]` : supprime tous les points dont le
+`document_id` commence par l'un des préfixes (données synthétiques, PDF
+mal parsés, doublons à retirer). Toujours en dry-run sans `--apply`.
 """
 
 from __future__ import annotations
@@ -118,6 +122,18 @@ def _ids_des_bases_avec_full(points: list[Any]) -> tuple[list[str], list[Any]]:
     return bases, ids
 
 
+def _ids_par_prefixe_doc(points: list[Any], prefixes: list[str]) -> list[Any]:
+    """Ids des points dont `document_id` commence par l'un des `prefixes`."""
+    return [
+        p.id
+        for p in points
+        if any(
+            str((p.payload or {}).get("document_id", "")).startswith(pref)
+            for pref in prefixes
+        )
+    ]
+
+
 def _ids_micro_chunks(points: list[Any]) -> list[Any]:
     """Ids des points dont `texte_chunk` < `cfg.ingest_taille_min_chunk` caractères."""
     mini = cfg.ingest_taille_min_chunk
@@ -181,6 +197,12 @@ def main() -> None:
         action="store_true",
         help="supprime les chunks < cfg.ingest_taille_min_chunk caractères",
     )
+    parser.add_argument(
+        "--purger-docs",
+        nargs="+",
+        metavar="PREFIXE",
+        help="supprime les points dont le document_id commence par PREFIXE",
+    )
     args = parser.parse_args()
 
     client = _client()
@@ -200,6 +222,12 @@ def main() -> None:
     if args.purger_micro:
         ids = _ids_micro_chunks(points)
         logger.info("seuil : %d caractères", cfg.ingest_taille_min_chunk)
+        _executer_purge(client, collection, ids, args.apply)
+        return
+
+    if args.purger_docs:
+        ids = _ids_par_prefixe_doc(points, args.purger_docs)
+        logger.info("préfixes : %s", args.purger_docs)
         _executer_purge(client, collection, ids, args.apply)
         return
 
