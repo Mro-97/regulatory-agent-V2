@@ -114,6 +114,15 @@ function conf_bandeau(n,enAttente){
   return `<div class="conf-bandeau ${cls}">⚠️ ${esc(msg)}</div>`;
 }
 function est_abroge(vt){if(!vt)return false;const d=new Date(vt);return !isNaN(d.getTime())&&d<new Date();}
+// Lien de recherche EUR-Lex pour un document_id qui encode année+numéro
+// (ex. RGPD_2016_679, DIRECTIVE_2002_58). Recherche « rapide » : toujours
+// une page de résultats, jamais un 404 sur un CELEX deviné. Renvoie "" si
+// pas de motif année/numéro (textes nationaux CNIL/ANSSI/INRS).
+function lien_eurlex(docId){
+  const m=String(docId||"").match(/((?:19|20)\d{2})[_/](\d{1,4})/);
+  if(!m)return"";
+  return `https://eur-lex.europa.eu/search.html?scope=EURLEX&lang=fr&type=quick&text=${m[1]}%2F${m[2]}`;
+}
 function wireSuivi(el){
   const b=el.querySelector(".btn-suivi");if(!b)return;
   b.addEventListener("click",async()=>{
@@ -214,7 +223,9 @@ function md_export(data,question,dateCtx){
   const src=(data.evidences||[]).map(ev=>{
     const fin=ev.valid_to||"en vigueur";const ab=est_abroge(ev.valid_to)?" — n'est plus en vigueur":"";
     const ex=ev.texte_extrait?`${nl}> ${String(ev.texte_extrait).replace(/\s*\n+\s*/g," ")}${nl}`:"";
-    return `### ${ev.document_id} / ${ev.article_id}${nl}Validité : ${ev.valid_from} → ${fin}${ab}${nl}${ex}`;
+    const url=lien_eurlex(ev.document_id);
+    const lien=url?`${nl}${url}${nl}`:"";
+    return `### ${ev.document_id} / ${ev.article_id}${nl}Validité : ${ev.valid_from} → ${fin}${ab}${nl}${lien}${ex}`;
   }).join(nl);
   return `# Question réglementaire${nl}${nl}`+
     `**Question :** ${question||"(non disponible)"}${nl}`+
@@ -245,7 +256,7 @@ function afficherReponse(data,question,dateCtx){
   const nc=cls_conf(data.niveau_confiance);
   let sources="";
   if(data.evidences?.length){
-    const items=data.evidences.slice(0,8).map(ev=>{const abroge=est_abroge(ev.valid_to);const fin=ev.valid_to||"en vigueur";const vmark=abroge?" · n'est plus en vigueur":"";const ex=ev.texte_extrait?`<div class="src-excerpt">${esc(ev.texte_extrait.slice(0,160))}...</div>`:"";return `<div class="src-item${abroge?" src-abroge":""}"><div class="src-ref">${esc(ev.document_id)} / ${esc(ev.article_id)}</div><div class="src-valid${abroge?" abroge":""}">${esc(String(ev.valid_from))} → ${esc(String(fin))}${vmark}</div>${ex}</div>`;}).join("");
+    const items=data.evidences.slice(0,8).map(ev=>{const abroge=est_abroge(ev.valid_to);const fin=ev.valid_to||"en vigueur";const vmark=abroge?" · n'est plus en vigueur":"";const ex=ev.texte_extrait?`<div class="src-excerpt">${esc(ev.texte_extrait.slice(0,160))}...</div>`:"";const url=lien_eurlex(ev.document_id);const ref=`${esc(ev.document_id)} / ${esc(ev.article_id)}`;const refHtml=url?`<a class="src-ref" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${ref} ↗</a>`:`<div class="src-ref">${ref}</div>`;return `<div class="src-item${abroge?" src-abroge":""}">${refHtml}<div class="src-valid${abroge?" abroge":""}">${esc(String(ev.valid_from))} → ${esc(String(fin))}${vmark}</div>${ex}</div>`;}).join("");
     sources=`<button class="sources-toggle"><span>📎 ${data.evidences.length} source${data.evidences.length>1?"s":""} citée${data.evidences.length>1?"s":""}</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button><div class="sources-body">${items}</div>`;
   }
   const suivi=data.tache_validation_id?`<button class="btn-suivi" data-tid="${esc(String(data.tache_validation_id))}">Vérifier le statut</button>`:"";
