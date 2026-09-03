@@ -76,10 +76,18 @@ def _enveloppe(
     }
 
 
-def _article(num: str, titre: str, texte: str, valid_from: str) -> dict[str, Any]:
+def _article(
+    num: str, titre: str, texte: str, valid_from: str, prefixe: str = "art"
+) -> dict[str, Any]:
+    """Un article, une section ou un contrôle.
+
+    `prefixe` : `art` (EUR-Lex), `sec` (guides prose), `ctrl` (NIST OSCAL)
+    — évite que la section 33 d'un guide collisionne avec « article 33 »
+    d'un règlement au retrieval.
+    """
     return {
-        "id": f"art_{num}",
-        "titre": titre[:200] or f"Article {num}",
+        "id": f"{prefixe}_{num}",
+        "titre": titre[:200] or f"{prefixe} {num}",
         "texte": texte.strip(),
         "validite": {"valid_from": valid_from, "valid_to": None},
         "citations": [],
@@ -157,7 +165,7 @@ def convertir_pdf_prose(brut: bytes, src: Any) -> dict[str, Any]:
             sections[-1][2].append(ligne)
 
     articles = [
-        _article(_slug(ident), titre, "\n".join(corps), src.entry_into_force)
+        _article(_slug(ident), titre, "\n".join(corps), src.entry_into_force, "sec")
         for ident, titre, corps in sections
         if len("\n".join(corps).strip()) >= 40
     ]
@@ -198,6 +206,7 @@ def convertir_nist_oscal(brut: bytes, src: Any) -> dict[str, Any]:
                     str(ctrl.get("title", "")),
                     texte,
                     src.entry_into_force,
+                    "ctrl",
                 )
             )
     if not articles:

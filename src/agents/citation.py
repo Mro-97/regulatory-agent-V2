@@ -139,10 +139,13 @@ def sources_referencees(
     gardees: list[EvidenceRecuperee] = []
     for ev in evidences:
         identifiant = ev.article_id.lower()
-        numero = _numero_article(ev.article_id)
         cite = identifiant in texte
-        if not cite and numero:
-            cite = re.search(rf"\bart(?:icle|\.)?\s*{numero}\b", texte) is not None
+        # « article 33 » ne vaut que pour un vrai article (préfixe art_),
+        # pas pour la 33e section d'un guide (sec_33) ou un contrôle.
+        if not cite and identifiant.startswith("art_"):
+            numero = _numero_article(ev.article_id)
+            if numero:
+                cite = re.search(rf"\bart(?:icle|\.)?\s*{numero}\b", texte) is not None
         if cite:
             gardees.append(ev)
     return gardees or list(evidences)
