@@ -347,12 +347,20 @@ async function envoyerQuestionSimple(body,question,date,ts){
   }catch{supprimerTyping();afficherErreurChat("Impossible de joindre l'API. Vérifiez que le serveur est démarré.");toast("Serveur inaccessible","error");}
 }
 
+document.getElementById("src-filtres")?.addEventListener("click",e=>{
+  const b=e.target.closest(".src-tag");if(b)b.classList.toggle("actif");
+});
+function sourcesSelectionnees(){
+  return [...document.querySelectorAll("#src-filtres .src-tag.actif")].map(b=>b.dataset.src);
+}
+
 async function envoyerQuestion(){
   const question=champQuestion.value.trim();if(!question||enCours)return;
   supprimerWelcome();enCours=true;btnEnvoyer.disabled=true;
   const date=champDate.value||null;champQuestion.value="";champQuestion.style.height="46px";
   ajouterMsgUser(question);const ts=new Date().toISOString();
   const body={question};if(date)body.date_contexte=date;
+  const srcs=sourcesSelectionnees();if(srcs.length)body.filtres_sources=srcs;
   try{
     const stream=await envoyerQuestionStream(body,question,date,ts);
     if(!stream)await envoyerQuestionSimple(body,question,date,ts);
