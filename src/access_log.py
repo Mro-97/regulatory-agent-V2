@@ -38,6 +38,23 @@ def _empreinte_cle(fournie: str | None) -> str:
     return hashlib.sha256(proposee.encode("utf-8")).hexdigest()[:8]
 
 
+def _identite(request: Request) -> str:
+    """Nom lisible du client : X-User, sinon X-Client-Id, sinon empreinte de clé."""
+    entete = request.headers.get("X-User") or request.headers.get("X-Client-Id")
+    return entete[:40] if entete else _empreinte_cle(request.headers.get("X-API-Key"))
+
+
+def _ip_client_reelle(request: Request) -> str:
+    """IP du navigateur si un proxy la transmet (XFF / X-Real-IP), sinon '-'.
+
+    Un simple tunnel `ssh -L` ne la transmet PAS : tout arrive en 127.0.0.1.
+    """
+    xff = request.headers.get("X-Forwarded-For")
+    if xff:
+        return xff.split(",")[0].strip()
+    return request.headers.get("X-Real-IP", "-")
+
+
 def _motif(request: Request, statut: int) -> str:
     """Raison lisible d'un statut >= 400, dérivée des en-têtes de la requête."""
     if statut == 401:
@@ -55,17 +72,20 @@ def _motif(request: Request, statut: int) -> str:
 def _journaliser(request: Request, statut: int, duree_ms: int) -> None:
     """Émet la ligne d'accès (WARNING si statut >= 400, INFO sinon)."""
     niveau = logger.warning if statut >= 400 else logger.info
+    question = getattr(request.state, "question", None)
     niveau(
-        "acces ip=%s xff=%s cle=%s methode=%s chemin=%s statut=%d duree_ms=%d "
-        "motif=%s origin=%s ua=%r ref=%s",
-        request.client.host if request.client else "?",
-        request.headers.get("X-Forwarded-For", "-"),
+        "acces user=%s cle=%s ip=%s ip_client=%s methode=%s chemin=%s statut=%d "
+        "duree_ms=%d motif=%s question=%r origin=%s ua=%r ref=%s",
+        _identite(request),
         _empreinte_cle(request.headers.get("X-API-Key")),
+        request.client.host if request.client else "?",
+        _ip_client_reelle(request),
         request.method,
         request.url.path,
         statut,
         duree_ms,
         _motif(request, statut) if statut >= 400 else "-",
+        (question[:200] if question else "-"),
         request.headers.get("Origin", "-"),
         request.headers.get("User-Agent", "-")[:_UA_MAX],
         request.headers.get("Referer", "-"),

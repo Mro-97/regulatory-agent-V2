@@ -279,8 +279,10 @@ async def health() -> dict[str, object]:
 async def poser_question(
     requete: RequeteQuestion,
     orchestrateur: OrchestrateurDep,
+    request: Request,
 ) -> ReponseQuestion:
     """Traite une question réglementaire via le pipeline multi-agent."""
+    request.state.question = requete.question
     logger.info("POST /ask — %r", requete.question[:80])
     try:
         return await orchestrateur.traiter(requete)
@@ -312,8 +314,10 @@ async def _sse_ask(
 async def poser_question_stream(
     requete: RequeteQuestion,
     orchestrateur: OrchestrateurDep,
+    request: Request,
 ) -> StreamingResponse:
     """Diffuse la réponse en Server-Sent Events."""
+    request.state.question = requete.question
     logger.info("POST /ask/stream — %r", requete.question[:80])
     return StreamingResponse(
         _sse_ask(requete, orchestrateur),

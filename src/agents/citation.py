@@ -110,6 +110,37 @@ def _journaliser_verification(
     )
 
 
+def _numero_article(article_id: str) -> str:
+    """Extrait la première suite de chiffres d'un `article_id` (`art_33` → `33`)."""
+    trouve = re.search(r"\d+", article_id or "")
+    return trouve.group(0) if trouve else ""
+
+
+def sources_referencees(
+    reponse_texte: str,
+    evidences: list[EvidenceRecuperee],
+) -> list[EvidenceRecuperee]:
+    """Sous-ensemble des `evidences` effectivement mentionnées dans la réponse.
+
+    Une preuve est retenue si son `article_id` brut (`art_33`) ou son
+    numéro cité en toutes lettres (« article 33 », « art. 33 ») apparaît
+    dans le texte — pas le `document_id` seul, trop large (nommer le RGPD
+    une fois n'implique pas les 15 articles). Si rien ne matche (réponse
+    sans citation reconnaissable), renvoie tout — on ne masque jamais.
+    """
+    texte = (reponse_texte or "").lower()
+    gardees: list[EvidenceRecuperee] = []
+    for ev in evidences:
+        identifiant = ev.article_id.lower()
+        numero = _numero_article(ev.article_id)
+        cite = identifiant in texte
+        if not cite and numero:
+            cite = re.search(rf"\bart(?:icle|\.)?\s*{numero}\b", texte) is not None
+        if cite:
+            gardees.append(ev)
+    return gardees or list(evidences)
+
+
 def _resultat_citation_vide() -> ResultatCitation:
     """ResultatCitation vide avec avertissement 'aucune preuve disponible'."""
     return ResultatCitation(

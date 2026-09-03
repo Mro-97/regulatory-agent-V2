@@ -15,9 +15,20 @@ function _obtenirCle(){
   return k||_demanderCle();
 }
 let API_KEY=_obtenirCle();
+// Identifiant de navigateur stable (pas un secret) : permet de distinguer
+// les postes dans le journal d'accès serveur, même derrière un tunnel SSH
+// où toutes les requêtes arrivent en 127.0.0.1.
+function _clientId(){
+  try{
+    let c=localStorage.getItem("clientId");
+    if(!c){c=(crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random())).slice(0,18);localStorage.setItem("clientId",c);}
+    return c;
+  }catch(_){return "anon";}
+}
+const CLIENT_ID=_clientId();
 async function apiFetch(url,opts){
   opts=opts||{};
-  const h=Object.assign({},opts.headers||{},{"X-API-Key":API_KEY});
+  const h=Object.assign({},opts.headers||{},{"X-API-Key":API_KEY,"X-Client-Id":CLIENT_ID});
   if(opts.body&&!h["Content-Type"])h["Content-Type"]="application/json";
   const r=await fetch(url,Object.assign({},opts,{headers:h}));
   if(r.status===401){
@@ -26,7 +37,7 @@ async function apiFetch(url,opts){
     const k=_demanderCle("Clé API invalide — veuillez la ressaisir :");
     if(!k)return r;
     API_KEY=k;
-    const h2=Object.assign({},opts.headers||{},{"X-API-Key":API_KEY});
+    const h2=Object.assign({},opts.headers||{},{"X-API-Key":API_KEY,"X-Client-Id":CLIENT_ID});
     if(opts.body&&!h2["Content-Type"])h2["Content-Type"]="application/json";
     const r2=await fetch(url,Object.assign({},opts,{headers:h2}));
     if(r2.ok)_marquerAuth(true,"Clé API validée");

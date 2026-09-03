@@ -468,6 +468,7 @@ class Orchestrateur:
         self, requete: RequeteQuestion, request_id: UUID, type_pipeline: str
     ) -> AsyncIterator[tuple[str, dict[str, Any]]]:
         """Retrieval + temporel (await), puis synthèse diffusée, puis citation."""
+        from src.agents.citation import sources_referencees
         from src.agents.explainer import AgentExplainer, _evaluer_confiance
 
         agents: list[SortieAgent] = []
@@ -497,6 +498,7 @@ class Orchestrateur:
             yield "token", {"t": fragment}
         texte = "".join(morceaux).strip() or _MSG_ECHEC_SYNTHESE
         confiance = _evaluer_confiance(texte, evidences)
+        evidences = sources_referencees(texte, evidences)
         yield "etape", {"phase": "citations"}
         resultat_citation = await self._executer_citation(evidences, texte, agents)
         confiance = _confiance_apres_citation(confiance, resultat_citation)
@@ -588,6 +590,8 @@ class Orchestrateur:
         agents_executes: list[SortieAgent],
     ) -> tuple[list[EvidenceRecuperee], str, NiveauConfiance] | None:
         """Exécute retrieval → étapes intermédiaires → explainer → citation."""
+        from src.agents.citation import sources_referencees
+
         evidences_ou_none = await self._executer_retrieval_avec_repli(
             requete,
             agents_executes,
@@ -607,6 +611,7 @@ class Orchestrateur:
             evidences,
             agents_executes,
         )
+        evidences = sources_referencees(reponse_texte, evidences)
         resultat_citation = await self._executer_citation(
             evidences, reponse_texte, agents_executes
         )

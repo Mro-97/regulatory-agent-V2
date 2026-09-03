@@ -42,10 +42,26 @@ def test_empreinte_cle_valeurs() -> None:
 def test_acces_200_ligne_structuree(client, logs_acces) -> None:  # noqa: ANN001
     client.get("/health")
     ligne = _lignes(logs_acces)[-1]
-    assert ligne.startswith("acces ip=")
+    assert ligne.startswith("acces user=")
     assert "chemin=/health" in ligne
     assert "statut=200" in ligne
     assert "motif=-" in ligne
+
+
+def test_acces_logue_la_question_et_le_client_id(client, logs_acces) -> None:  # noqa: ANN001
+    client.post(
+        "/ask",
+        json={"question": "Quel est le délai de notification d'une violation ?"},
+        headers={"X-API-Key": CLE, "X-Client-Id": "poste-alice"},
+    )
+    ligne = _lignes(logs_acces)[-1]
+    assert "user=poste-alice" in ligne
+    assert "délai de notification" in ligne
+
+
+def test_acces_user_repli_sur_x_user(client, logs_acces) -> None:  # noqa: ANN001
+    client.get("/health", headers={"X-User": "julien"})
+    assert "user=julien" in _lignes(logs_acces)[-1]
 
 
 def test_acces_401_motif_cle_absente(client, logs_acces) -> None:  # noqa: ANN001
