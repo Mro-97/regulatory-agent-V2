@@ -32,6 +32,8 @@ from qdrant_client.http.models import (
 from src.agents.retriever_helpers import (
     construire_filtres_passes,
     dedupliquer_evidences,
+    extraire_numeros_articles,
+    filtre_articles,
     fusionner_passes,
     point_vers_evidence,
 )
@@ -67,6 +69,25 @@ def _journaliser_debut_retrieval(
         filtres_themes or [],
         [s.value for s in (filtres_sources or [])],
     )
+
+
+def _prioriser_articles_cites(
+    prioritaires: list[ScoredPoint],
+    bruts: list[ScoredPoint],
+    top_k: int,
+) -> list[ScoredPoint]:
+    """Place les chunks de l'article explicitement cité en tête, puis complète."""
+    vus: set[str] = set()
+    fusion: list[ScoredPoint] = []
+    for point in (*prioritaires, *bruts):
+        cle = str(point.id)
+        if cle in vus:
+            continue
+        vus.add(cle)
+        fusion.append(point)
+        if len(fusion) >= top_k:
+            break
+    return fusion
 
 
 def _convertir_points_en_evidences(
@@ -174,13 +195,28 @@ class Retriever:
         if not vecteur:
             return []
         date_ref = date_contexte or datetime.now(UTC).date()
+        points_articles = self._passe_articles_cites(question, vecteur)
         points_bruts = self._executer_deux_passes(
             vecteur, date_ref, filtres_themes, filtres_sources
         )
-        if not points_bruts:
+        fusionnes = _prioriser_articles_cites(
+            points_articles, points_bruts, self._top_k
+        )
+        if not fusionnes:
             logger.warning("Aucun chunk trouvé pour : %r", question[:80])
             return []
-        return _convertir_points_en_evidences(points_bruts)
+        return _convertir_points_en_evidences(fusionnes)
+
+    def _passe_articles_cites(
+        self, question: str, vecteur: list[float]
+    ) -> list[ScoredPoint]:
+        """Passe ciblée `article_id` si la question cite un ou des numéros."""
+        numeros = extraire_numeros_articles(question)
+        filtre = filtre_articles(numeros)
+        if filtre is None:
+            return []
+        logger.info("Retrieval — articles cités dans la question : %s", numeros)
+        return self._rechercher_passe("articles_cites", vecteur, filtre)
 
     def _encoder_question_ou_vide(self, question: str) -> list[float]:
         """Retourne l'embedding, ou une liste vide si l'inférence échoue."""

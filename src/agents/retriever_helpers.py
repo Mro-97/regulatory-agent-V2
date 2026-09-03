@@ -10,6 +10,7 @@ fusion, tri).
 from __future__ import annotations
 
 import logging
+import re
 from datetime import date, datetime
 from typing import TYPE_CHECKING
 
@@ -181,6 +182,34 @@ def _prendre_point(
     ids_vus.add(str(point.id))
     points_bruts.append(point)
     return True
+
+
+_RE_ARTICLE = re.compile(r"\bart(?:icle|\.)?\s*(\d{1,4})\b", re.IGNORECASE)
+
+
+def extraire_numeros_articles(question: str) -> list[str]:
+    """Numéros d'article cités dans la question (« article 33 », « art. 5 »)."""
+    vus: dict[str, None] = {}
+    for m in _RE_ARTICLE.finditer(question or ""):
+        vus.setdefault(m.group(1), None)
+    return list(vus)
+
+
+def filtre_articles(numeros: list[str]) -> Filter | None:
+    """Filtre Qdrant `article_id ∈ {art_N, art_N_v1, art_N_v2, art_N_v3}`.
+
+    La recherche vectorielle seule ne fait pas remonter « article 33 »
+    quand la question n'en décrit pas le contenu ; cette passe cible
+    l'`article_id` exact en complément.
+    """
+    if not numeros:
+        return None
+    valeurs = [
+        forme
+        for n in numeros
+        for forme in (f"art_{n}", f"art_{n}_v1", f"art_{n}_v2", f"art_{n}_v3")
+    ]
+    return Filter(must=[FieldCondition(key="article_id", match=MatchAny(any=valeurs))])
 
 
 def dedupliquer_evidences(
