@@ -103,7 +103,7 @@ _MARQUEURS_REPONSE_NON_FONDEE = (
 )
 
 
-def _reponse_est_non_fondee(reponse: str) -> bool:
+def reponse_est_non_fondee(reponse: str) -> bool:
     """True si la réponse LLM est un refus explicite ou un « aucune info »."""
     minuscule = reponse.lower()
     return any(marqueur in minuscule for marqueur in _MARQUEURS_REPONSE_NON_FONDEE)
@@ -119,7 +119,7 @@ def _evaluer_confiance(
     l'embedding courant, cf. `cfg.explainer_confiance_moyenne_*`) ;
     scores absents → INCERTAIN.
     """
-    if _reponse_est_non_fondee(reponse):
+    if reponse_est_non_fondee(reponse):
         return NiveauConfiance.INCERTAIN
     scores = [e.score_similarite for e in evidences if e.score_similarite is not None]
     if not scores:

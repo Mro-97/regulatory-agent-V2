@@ -42,9 +42,17 @@ def test_reference_par_article_id_brut() -> None:
     assert [e.article_id for e in gardees] == ["art_70"]
 
 
-def test_aucune_reference_reconnue_renvoie_tout() -> None:
-    texte = "Je ne peux pas répondre à cette question."
+def test_vraie_reponse_sans_citation_reconnue_renvoie_tout() -> None:
+    texte = "Le responsable de traitement doit notifier la violation sous 72 heures."
     assert len(sources_referencees(texte, _TOUTES)) == len(_TOUTES)
+
+
+def test_reponse_de_refus_ne_cite_rien() -> None:
+    for texte in (
+        "1) Je ne peux pas répondre à cette question.",
+        "Les sources disponibles ne contiennent pas d'information permettant …",
+    ):
+        assert sources_referencees(texte, _TOUTES) == []
 
 
 def test_liste_vide() -> None:

@@ -125,9 +125,16 @@ def sources_referencees(
     Une preuve est retenue si son `article_id` brut (`art_33`) ou son
     numéro cité en toutes lettres (« article 33 », « art. 33 ») apparaît
     dans le texte — pas le `document_id` seul, trop large (nommer le RGPD
-    une fois n'implique pas les 15 articles). Si rien ne matche (réponse
-    sans citation reconnaissable), renvoie tout — on ne masque jamais.
+    une fois n'implique pas les 15 articles).
+
+    Deux cas particuliers : une réponse de refus / « aucune information »
+    ne cite RIEN → liste vide. Une vraie réponse sans citation
+    reconnaissable → on renvoie tout (fail-safe, on ne masque jamais).
     """
+    from src.agents.explainer import reponse_est_non_fondee
+
+    if reponse_est_non_fondee(reponse_texte or ""):
+        return []
     texte = (reponse_texte or "").lower()
     gardees: list[EvidenceRecuperee] = []
     for ev in evidences:

@@ -69,10 +69,19 @@ def _motif(request: Request, statut: int) -> str:
     )
 
 
-def _journaliser(request: Request, statut: int, duree_ms: int) -> None:
-    """Émet la ligne d'accès (WARNING si statut >= 400, INFO sinon)."""
+CHEMINS_LOGUES_PAR_LA_ROUTE = frozenset({"/ask", "/ask/stream"})
+
+
+def journaliser_acces_requete(
+    request: Request, statut: int, duree_ms: int, question: str | None = None
+) -> None:
+    """Émet la ligne d'accès (WARNING si statut >= 400, INFO sinon).
+
+    Appelée par le middleware pour tout endpoint, et directement par les
+    routes `/ask*` (qui passent `question` — non récupérable côté
+    middleware à travers `BaseHTTPMiddleware`).
+    """
     niveau = logger.warning if statut >= 400 else logger.info
-    question = getattr(request.state, "question", None)
     niveau(
         "acces user=%s cle=%s ip=%s ip_client=%s methode=%s chemin=%s statut=%d "
         "duree_ms=%d motif=%s question=%r origin=%s ua=%r ref=%s",
@@ -106,7 +115,13 @@ def installer_journal_acces(app: FastAPI) -> None:
     ) -> Response:
         debut = time.perf_counter()
         reponse = await call_next(request)
-        _journaliser(
-            request, reponse.status_code, int((time.perf_counter() - debut) * 1000)
+        duree_ms = int((time.perf_counter() - debut) * 1000)
+        # Pour /ask*, la route logue elle-même (avec la question). Le
+        # middleware ne complète que les rejets avant-route (401/403/429…).
+        deja_logue = (
+            request.url.path in CHEMINS_LOGUES_PAR_LA_ROUTE
+            and reponse.status_code < 400
         )
+        if not deja_logue:
+            journaliser_acces_requete(request, reponse.status_code, duree_ms)
         return reponse

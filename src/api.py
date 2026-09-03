@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import json
 import logging
+import time
 from collections.abc import AsyncIterator
 from datetime import UTC, datetime
 from pathlib import Path
@@ -282,13 +283,20 @@ async def poser_question(
     request: Request,
 ) -> ReponseQuestion:
     """Traite une question réglementaire via le pipeline multi-agent."""
-    request.state.question = requete.question
-    logger.info("POST /ask — %r", requete.question[:80])
+    from src.access_log import journaliser_acces_requete
+
+    debut = time.perf_counter()
+    statut = 200
     try:
         return await orchestrateur.traiter(requete)
     except Exception:
+        statut = 500
         logger.exception("Erreur /ask")
         raise _erreur_500(_MSG_ERREUR_ASK) from None
+    finally:
+        journaliser_acces_requete(
+            request, statut, int((time.perf_counter() - debut) * 1000), requete.question
+        )
 
 
 async def _sse_ask(
@@ -317,8 +325,9 @@ async def poser_question_stream(
     request: Request,
 ) -> StreamingResponse:
     """Diffuse la réponse en Server-Sent Events."""
-    request.state.question = requete.question
-    logger.info("POST /ask/stream — %r", requete.question[:80])
+    from src.access_log import journaliser_acces_requete
+
+    journaliser_acces_requete(request, 200, 0, requete.question)
     return StreamingResponse(
         _sse_ask(requete, orchestrateur),
         media_type="text/event-stream",
