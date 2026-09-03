@@ -14,6 +14,10 @@ os.environ.setdefault("POSTGRES_DSN", "")
 os.environ.setdefault("REDIS_PASSWORD", "")
 os.environ.setdefault("AUDIT_LOCAL_PATH", "/tmp/regulatory_agent_test_audit.jsonl")  # noqa: S108 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
 os.environ.setdefault("TAILLE_MAX_REQUETE_OCTETS", "2097152")
+# Filtre de longueur minimale des chunks désactivé par défaut en test :
+# les fixtures d'ingestion utilisent des textes volontairement courts.
+# `test_ingest_min_chunk.py` réactive le seuil explicitement.
+os.environ.setdefault("INGEST_TAILLE_MIN_CHUNK", "0")
 
 
 # ---------------------------------------------------------------------------

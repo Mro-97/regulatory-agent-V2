@@ -16,10 +16,16 @@ Usage :
     python scripts/dedup_qdrant.py --rapport       # inventaire + paires _FULL
     python scripts/dedup_qdrant.py --purger-bases  # dry-run Phase 2
     python scripts/dedup_qdrant.py --purger-bases --apply   # exécute la Phase 2
+    python scripts/dedup_qdrant.py --purger-micro           # dry-run micro-chunks
+    python scripts/dedup_qdrant.py --purger-micro --apply   # supprime les micro-chunks
 
 Phase 2 (`--purger-bases`) : quand `X` et `X_FULL` coexistent, `X_FULL`
 est la version complète — on supprime tous les points de `X` (ingestion
 partielle/ancienne du même texte).
+
+`--purger-micro` : supprime les points dont `texte_chunk` fait moins de
+`cfg.ingest_taille_min_chunk` caractères (fragments « paragraphe 3 »,
+« — Article 33 » : bruit de retrieval sans valeur).
 """
 
 from __future__ import annotations
@@ -112,6 +118,16 @@ def _ids_des_bases_avec_full(points: list[Any]) -> tuple[list[str], list[Any]]:
     return bases, ids
 
 
+def _ids_micro_chunks(points: list[Any]) -> list[Any]:
+    """Ids des points dont `texte_chunk` < `cfg.ingest_taille_min_chunk` caractères."""
+    mini = cfg.ingest_taille_min_chunk
+    return [
+        p.id
+        for p in points
+        if len(str((p.payload or {}).get("texte_chunk", "")).strip()) < mini
+    ]
+
+
 def _ids_redondants(groupes: dict[str, list[Any]]) -> list[Any]:
     """Pour chaque groupe de taille > 1, garde le plus petit id, rend les autres."""
     surplus: list[Any] = []
@@ -119,6 +135,23 @@ def _ids_redondants(groupes: dict[str, list[Any]]) -> list[Any]:
         if len(ids) > 1:
             surplus.extend(sorted(ids, key=str)[1:])
     return surplus
+
+
+def _executer_purge(
+    client: QdrantClient, collection: str, ids: list[Any], appliquer: bool
+) -> None:
+    """Affiche le compte puis supprime (si `appliquer`), sinon dry-run."""
+    logger.info("points concernés : %d", len(ids))
+    if not appliquer:
+        logger.info("\nDRY-RUN — relancer avec --apply pour exécuter.")
+        return
+    if not ids:
+        logger.info("\nRien à supprimer.")
+        return
+    _supprimer(client, collection, ids)
+    logger.info(
+        "\npoints_count final : %s", client.get_collection(collection).points_count
+    )
 
 
 def _supprimer(client: QdrantClient, collection: str, ids: list[Any]) -> None:
@@ -143,6 +176,11 @@ def main() -> None:
         action="store_true",
         help="Phase 2 : supprime les document_id X quand X_FULL existe",
     )
+    parser.add_argument(
+        "--purger-micro",
+        action="store_true",
+        help="supprime les chunks < cfg.ingest_taille_min_chunk caractères",
+    )
     args = parser.parse_args()
 
     client = _client()
@@ -156,15 +194,13 @@ def main() -> None:
     if args.purger_bases:
         bases, ids = _ids_des_bases_avec_full(points)
         logger.info("bases à supprimer : %s", bases or "(aucune)")
-        logger.info("points concernés  : %d", len(ids))
-        if not args.apply:
-            logger.info("\nDRY-RUN — relancer avec --apply pour exécuter.")
-        elif ids:
-            _supprimer(client, collection, ids)
-            logger.info(
-                "\npoints_count final : %s",
-                client.get_collection(collection).points_count,
-            )
+        _executer_purge(client, collection, ids, args.apply)
+        return
+
+    if args.purger_micro:
+        ids = _ids_micro_chunks(points)
+        logger.info("seuil : %d caractères", cfg.ingest_taille_min_chunk)
+        _executer_purge(client, collection, ids, args.apply)
         return
 
     total, groupes = _grouper(points)

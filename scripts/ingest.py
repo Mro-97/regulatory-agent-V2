@@ -109,11 +109,22 @@ class Ingester:  # noqa: D101
 
     def chunk_document(self, doc: DocumentReglementaire) -> list[MetadonneesChunk]:  # noqa: D102
         chunks = []
+        mini = cfg.ingest_taille_min_chunk
         for chapitre in doc.chapitres:
             for article in chapitre.articles:
                 # Découper l'article en chunks
                 text_chunks = self.chunk_text(article.texte)
                 for idx, chunk_text in enumerate(text_chunks):
+                    if len(chunk_text.strip()) < mini:
+                        logger.debug(
+                            "Chunk écarté (%d < %d car.) : %s_%s_part%d",
+                            len(chunk_text.strip()),
+                            mini,
+                            doc.id,
+                            article.id,
+                            idx + 1,
+                        )
+                        continue
                     chunk = MetadonneesChunk(
                         chunk_id=f"{doc.id}_{article.id}_part{idx + 1}",
                         document_id=doc.id,

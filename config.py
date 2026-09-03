@@ -171,6 +171,16 @@ class Parametres(BaseSettings):
             "corrompu (ex. safetensors sparse) de figer l'API au démarrage."
         ),
     )
+    ingest_taille_min_chunk: int = Field(
+        default=80,
+        description=(
+            "Longueur minimale (caractères, après strip) d'un chunk indexé. "
+            "En dessous, le chunk est écarté : les micro-fragments type "
+            "« paragraphe 3 » ou « — Article 33 » polluent le retrieval "
+            "sans apporter d'information. Sert aussi de critère à "
+            "`scripts/dedup_qdrant.py --purger-micro`."
+        ),
+    )
     ingest_mode_sanitizer: str = Field(
         default="annoter",
         description=(
