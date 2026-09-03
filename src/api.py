@@ -135,6 +135,13 @@ from src.rate_limit_middleware import installer_rate_limit  # noqa: E402
 
 installer_rate_limit(app)
 
+# Journal d'accès en dernier => middleware le plus externe : il voit le
+# statut final, y compris les 429/413/411 posés par les middlewares
+# internes.
+from src.access_log import installer_journal_acces  # noqa: E402
+
+installer_journal_acces(app)
+
 
 # ---------------------------------------------------------------------------
 # Orchestrateur

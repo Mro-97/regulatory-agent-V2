@@ -34,6 +34,7 @@ source_modules =
     src.api_security
     src.rate_limit_middleware
     src.rate_limit_redis
+    src.access_log
 forbidden_modules =
     src.api
 
@@ -59,6 +60,7 @@ forbidden_modules =
     src.api_security
     src.rate_limit_middleware
     src.rate_limit_redis
+    src.access_log
     src.http_safety
     src.ingest_sanitizer
 
@@ -76,4 +78,5 @@ forbidden_modules =
     src.api_security
     src.rate_limit_middleware
     src.rate_limit_redis
+    src.access_log
     src.watcher
