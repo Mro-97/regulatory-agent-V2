@@ -47,14 +47,29 @@ def test_articles_ou_docs_differents_sont_conserves() -> None:
     assert len(out) == 3
 
 
-def test_resultat_trie_par_score_decroissant() -> None:
+def test_preserve_ordre_d_entree() -> None:
+    # Le tri appartient à l'appelant : dedup ne réordonne pas (sinon la
+    # priorisation « article cité en tête » serait annulée).
     evidences = [
         _ev("c1", "RGPD", "art_1", "a", 0.30),
         _ev("c2", "RGPD", "art_2", "b", 0.70),
         _ev("c3", "RGPD", "art_3", "c", 0.50),
     ]
     scores = [e.score_similarite for e in dedupliquer_evidences(evidences)]
-    assert scores == [0.70, 0.50, 0.30]
+    assert scores == [0.30, 0.70, 0.50]
+
+
+def test_dedup_garde_meilleur_score_a_la_position_du_premier() -> None:
+    evidences = [
+        _ev("c1", "RGPD", "art_1", "meme texte", 0.20),
+        _ev("c2", "NIS2", "art_9", "autre", 0.90),
+        _ev("c3", "RGPD", "art_1", "meme texte", 0.80),
+    ]
+    out = dedupliquer_evidences(evidences)
+    assert [(e.document_id, e.score_similarite) for e in out] == [
+        ("RGPD", 0.80),
+        ("NIS2", 0.90),
+    ]
 
 
 def test_liste_vide() -> None:

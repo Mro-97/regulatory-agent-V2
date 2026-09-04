@@ -261,7 +261,11 @@ def dedupliquer_evidences(
     La collection Qdrant contient des doublons d'ingestion (le même
     passage réinséré à chaque run). Sans ce filtre, un unique passage
     occupe plusieurs slots du top-k et fausse la moyenne de confiance de
-    l'Explainer. Résultat trié par score décroissant.
+    l'Explainer.
+
+    L'ORDRE d'entrée est préservé (le tri appartient à l'appelant :
+    `fusionner_passes` trie par score, puis `_prioriser_articles_cites`
+    place l'article explicitement cité en tête — re-trier ici l'annulait).
     """
     par_cle: dict[tuple[str, str, str], EvidenceRecuperee] = {}
     for ev in evidences:
@@ -271,9 +275,7 @@ def dedupliquer_evidences(
             gardee.score_similarite or 0.0
         ):
             par_cle[cle] = ev
-    return sorted(
-        par_cle.values(), key=lambda e: e.score_similarite or 0.0, reverse=True
-    )
+    return list(par_cle.values())
 
 
 def point_vers_evidence(point: ScoredPoint) -> EvidenceRecuperee | None:
