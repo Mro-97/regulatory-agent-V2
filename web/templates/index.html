@@ -8,7 +8,18 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/style.css?v={{ asset_v }}">
 </head>
-<body class="dark">
+<body class="t-sepia">
+  <script>
+    /* Applique le thème choisi avant le rendu du contenu (anti-flash). */
+    (function(){
+      try{
+        var s=localStorage.getItem("theme");
+        if(["t-dim","t-slate","dark"].indexOf(s)>-1){
+          document.body.className=s;
+        }
+      }catch(e){}
+    })();
+  </script>
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-top">
       <div class="brand">
@@ -51,7 +62,12 @@
       <div class="topbar-left" id="topbar-title"><h1>Bonjour,</h1><p>Voici l'essentiel de votre veille réglementaire.</p></div>
       <div class="topbar-right">
         <div class="mode-badge"><span class="mode-dot"></span>MODE LOCAL</div>
-        <button class="icon-btn" id="btn-theme" title="Thème"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></button>
+        <div class="theme-switch" id="theme-switch" role="group" aria-label="Thème">
+          <button class="theme-swatch sw-sepia" data-theme="t-sepia" title="Sépia" aria-label="Sépia"></button>
+          <button class="theme-swatch sw-dim" data-theme="t-dim" title="Charbon" aria-label="Charbon"></button>
+          <button class="theme-swatch sw-slate" data-theme="t-slate" title="Ardoise" aria-label="Ardoise"></button>
+          <button class="theme-swatch sw-dark" data-theme="dark" title="Sombre" aria-label="Sombre"></button>
+        </div>
         <div class="user-badge"><div class="user-avatar">QM</div><span>QHSE Manager</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
       </div>
     </header>
