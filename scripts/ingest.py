@@ -245,12 +245,42 @@ class Ingester:  # noqa: D101
         logger.info("Document chargé : %s - %s", doc.id, doc.titre)
         self.ingest_document(doc)
 
+    def ingest_dossier(self, dossier: Path) -> None:
+        """Ingère tous les `*.json` d'un dossier avec un seul Ingester (1 modèle).
+
+        Continue sur erreur ; récapitule à la fin. Idempotent
+        (`ingest_document` purge le document avant réinsertion).
+        """
+        fichiers = sorted(dossier.glob("*.json"))
+        if not fichiers:
+            logger.warning("Aucun JSON dans %s", dossier)
+            return
+        total_chunks, echecs = 0, []
+        for i, chemin in enumerate(fichiers, 1):
+            logger.info("[%d/%d] %s", i, len(fichiers), chemin.name)
+            try:
+                with chemin.open(encoding="utf-8") as f:
+                    doc = DocumentReglementaire(**json.load(f))
+                total_chunks += self.ingest_document(doc)
+            except Exception:
+                logger.exception("  échec %s", chemin.name)
+                echecs.append(chemin.name)
+        logger.info(
+            "Terminé : %d/%d documents, %d chunks%s",
+            len(fichiers) - len(echecs),
+            len(fichiers),
+            total_chunks,
+            f" — échecs : {', '.join(echecs)}" if echecs else "",
+        )
+
 
 def main() -> None:  # noqa: D103
     parser = argparse.ArgumentParser(
         description="Ingérer un JSON réglementaire dans Qdrant"
     )
-    parser.add_argument("--json", required=True, help="Chemin vers le fichier JSON")
+    entree = parser.add_mutually_exclusive_group(required=True)
+    entree.add_argument("--json", help="Chemin vers un fichier JSON")
+    entree.add_argument("--dir", help="Dossier de *.json à ingérer en lot")
     parser.add_argument(
         "--collection", default="regulatory_chunks", help="Nom de la collection Qdrant"
     )
@@ -258,7 +288,10 @@ def main() -> None:  # noqa: D103
     args = parser.parse_args()
 
     ingester = Ingester(collection_name=args.collection, recreate=args.recreate)
-    ingester.ingest_json(Path(args.json))
+    if args.dir:
+        ingester.ingest_dossier(Path(args.dir))
+    else:
+        ingester.ingest_json(Path(args.json))
 
 
 if __name__ == "__main__":
