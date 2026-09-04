@@ -31,10 +31,22 @@
   --trans: 150ms ease;
   --shadow: 0 4px 16px rgba(0,0,0,0.4);
 }
-body.light {
-  --bg-base:#f1f5f9;--bg-sidebar:#e8edf5;--bg-card:#ffffff;--bg-elevated:#f8fafc;--bg-hover:#e2e8f0;
-  --border:#cbd5e1;--border-lite:#e2e8f0;--txt-1:#0f172a;--txt-2:#334155;--txt-3:#64748b;
-  --blue-bg:#dbeafe;--green-bg:#dcfce7;--amber-bg:#fef3c7;--red-bg:#fee2e2;--purple-bg:#ede9fe;
+/* Thèmes alternatifs — le bouton #btn-theme fait défiler dark → dim → sepia → slate */
+body.t-dim {
+  --bg-base:#1a1d23;--bg-sidebar:#15171c;--bg-card:#22262e;--bg-elevated:#2a2f38;--bg-hover:#313741;
+  --border:#3a4048;--border-lite:#2a2f38;--txt-1:#e8e6e3;--txt-2:#b8b5b0;--txt-3:#85827c;
+}
+body.t-sepia {
+  --bg-base:#f4efe6;--bg-sidebar:#ece5d8;--bg-card:#fbf8f1;--bg-elevated:#f0ebe0;--bg-hover:#e6dfd0;
+  --border:#d8cdb8;--border-lite:#e6dfd0;--txt-1:#3a3226;--txt-2:#5c5344;--txt-3:#8a7f6b;
+  --blue:#3b6fa8;--blue-bg:#e3ecf5;--green:#3f8a4e;--green-bg:#e2efe0;--amber:#b3702a;--amber-bg:#f7ecd6;
+  --red:#c0453c;--red-bg:#f7ddd8;--purple:#7a5aa8;--purple-bg:#ece4f2;--shadow:0 4px 16px rgba(90,70,40,.12);
+}
+body.t-slate {
+  --bg-base:#eef1f6;--bg-sidebar:#e4e8f0;--bg-card:#ffffff;--bg-elevated:#f6f8fb;--bg-hover:#e0e5ee;
+  --border:#cdd5e0;--border-lite:#e0e5ee;--txt-1:#1a202c;--txt-2:#3d4757;--txt-3:#6b7688;
+  --blue:#2f6fb0;--blue-bg:#dbeafe;--green-bg:#dcfce7;--amber:#b26a1f;--amber-bg:#fef3c7;
+  --red:#c53b32;--red-bg:#fee2e2;--purple-bg:#ede9fe;--shadow:0 4px 16px rgba(30,41,59,.10);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;}

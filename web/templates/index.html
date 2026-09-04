@@ -6,7 +6,7 @@
   <title>Regulatory Agent V2</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/style.css?v={{ asset_v }}">
 </head>
 <body class="dark">
   <aside class="sidebar" id="sidebar">
@@ -112,6 +112,6 @@
   <div class="toast-zone" id="toast-zone"></div>
   <!-- C1: la clé API n'est plus injectée dans le HTML. Elle est saisie
        par prompt() puis stockée en sessionStorage (cf. web/static/app.js). -->
-  <script src="/static/app.js"></script>
+  <script src="/static/app.js?v={{ asset_v }}"></script>
 </body>
 </html>

@@ -124,6 +124,17 @@ app.mount("/static", StaticFiles(directory=str(DOSSIER_STATIC)), name="static")
 templates = Jinja2Templates(directory=str(DOSSIER_TEMPLATES))
 
 
+def _version_assets() -> str:
+    """Empreinte des assets front (mtime app.js + style.css) pour casser le cache."""
+    try:
+        mtimes = sum(
+            (DOSSIER_STATIC / f).stat().st_mtime for f in ("app.js", "style.css")
+        )
+        return str(int(mtimes))
+    except OSError:
+        return cfg.app_version
+
+
 # Middlewares, dépendances de sécurité et limiteur de débit extraits dans
 # src/api_security.py (§12 étape 6). Les décorateurs @app.middleware sont
 # posés ci-dessous via installer_middlewares().
@@ -236,7 +247,11 @@ async def interface(request: Request) -> HTMLResponse:
     # visible via `view source` pour tout visiteur non authentifié).
     # Le frontend la demande à l'utilisateur au premier chargement de
     # l'onglet et la stocke en sessionStorage.
-    return templates.TemplateResponse(request=request, name="index.html")
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={"asset_v": _version_assets()},
+    )
 
 
 # ---------------------------------------------------------------------------
