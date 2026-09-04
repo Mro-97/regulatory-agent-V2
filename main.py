@@ -273,6 +273,7 @@ if __name__ == "__main__":
             host=cfg.api_host,
             port=cfg.api_port,
             log_level="debug" if cfg.debug else "info",
+            server_header=False,  # pas de fingerprint « server: uvicorn »
         )
         server = uvicorn.Server(config)
         try:

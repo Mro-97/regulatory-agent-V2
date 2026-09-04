@@ -7,16 +7,22 @@ quelques lignes dans `data/feedback.jsonl`).
 ## Lancement
 
 ```bash
-export B=http://127.0.0.1:8000          # en prod : https://ton-domaine
-export KEY='<vraie_cle_API>'
-export ORIGIN="$B"
+export B=http://127.0.0.1:8002          # port réel (cf. .env API_PORT) ; prod : https://ton-domaine
+export BASE=$B
+export ORIGIN=$B                        # doit matcher une valeur de CORS_ORIGINS
+export KEY=$(grep -E '^API_KEY=' .env | cut -d= -f2-)
 
 bash security/pentest.sh   | tee /tmp/rapport_pentest.txt
-python3 security/llm_abuse.py | tee /tmp/rapport_llm.txt
+venv/bin/python security/llm_abuse.py | tee /tmp/rapport_llm.txt
 
 # charge soutenue (optionnel)
 RUN_FLOOD=1 bash security/pentest.sh
 ```
+
+`pentest.sh` fait un **préflight** : si `KEY` n'authentifie pas, il s'arrête
+(sinon toutes les sections authentifiées renvoient 401 et leurs verdicts
+sont faux). Compter ~6 min (3 pauses de 60 s pour vider la fenêtre du
+rate-limiter).
 
 ## Lecture
 
