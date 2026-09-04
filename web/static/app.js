@@ -94,7 +94,15 @@ async function validerCleAuDemarrage(){
   return false;
 }
 let enCours=false,sessionQueries=0,filtreActif="all",tachesData=[],activiteSession=[],historiqueSession=[];
-const chatMessages=document.getElementById("chat-messages"),champQuestion=document.getElementById("champ-question"),champDate=document.getElementById("champ-date"),btnEnvoyer=document.getElementById("btn-envoyer"),toastZone=document.getElementById("toast-zone");
+const chatMessages=document.getElementById("chat-messages"),champQuestion=document.getElementById("champ-question"),champDate=document.getElementById("champ-date"),btnEnvoyer=document.getElementById("btn-envoyer"),btnStop=document.getElementById("btn-stop"),toastZone=document.getElementById("toast-zone");
+
+// Barre de chargement globale (haut de page). Compteur : plusieurs
+// opérations simultanées la gardent visible tant qu'il en reste une.
+let _chargeN=0;
+function barLoad(actif){
+  _chargeN=Math.max(0,_chargeN+(actif?1:-1));
+  document.getElementById("load-bar")?.classList.toggle("on",_chargeN>0);
+}
 
 function switchView(id){
   document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
@@ -105,7 +113,7 @@ function switchView(id){
   const t=titres[id]||["Regulatory Agent V2",""];
   document.querySelector(".topbar-left h1").textContent=t[0];
   document.querySelector(".topbar-left p").textContent=t[1];
-  if(id==="validation")chargerTaches();
+  if(id==="validation")rafraichirTaches();
   if(id==="historique")rendrHisto();
 }
 document.querySelectorAll("[data-view]").forEach(el=>{el.addEventListener("click",e=>{e.preventDefault();switchView(el.dataset.view);});});
@@ -193,10 +201,14 @@ function wireSignaler(el){
   });
 }
 
+const TOAST_IC={success:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>',error:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',warning:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'};
+function _fermerToast(el){el.classList.add("out");setTimeout(()=>el.remove(),210);}
 function toast(msg,type="info",dur=3500){
-  const ic={success:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>',error:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',warning:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'};
-  const el=document.createElement("div");el.className=`toast ${type}`;el.innerHTML=`${ic[type]||ic.info}<span>${esc(msg)}</span>`;toastZone.appendChild(el);
-  setTimeout(()=>{el.classList.add("out");setTimeout(()=>el.remove(),210);},dur);
+  const el=document.createElement("div");el.className=`toast ${type}`;
+  el.innerHTML=`${TOAST_IC[type]||TOAST_IC.info}<span>${esc(msg)}</span><button class="toast-x" type="button" aria-label="Fermer">&times;</button>`;
+  el.querySelector(".toast-x").addEventListener("click",()=>_fermerToast(el));
+  toastZone.appendChild(el);
+  if(dur>0)setTimeout(()=>_fermerToast(el),dur);
 }
 
 async function majKPIs(){
@@ -399,15 +411,18 @@ function sourcesSelectionnees(){
 
 let _ctrlEnCours=null;
 function _modeStop(actif){
-  btnEnvoyer.classList.toggle("stop",actif);
-  btnEnvoyer.title=actif?"Arrêter":"Envoyer";
+  document.body.classList.toggle("req-busy",actif);
+  btnEnvoyer.disabled=actif;
+  btnEnvoyer.setAttribute("aria-busy",actif?"true":"false");
 }
+function arreterRequete(){if(_ctrlEnCours)_ctrlEnCours.abort();}
+btnStop.addEventListener("click",arreterRequete);
 
 async function envoyerQuestion(){
-  if(enCours){if(_ctrlEnCours)_ctrlEnCours.abort();return;}
+  if(enCours)return;
   const question=champQuestion.value.trim();if(!question)return;
-  supprimerWelcome();enCours=true;_modeStop(true);
-  const date=champDate.value||null;champQuestion.value="";champQuestion.style.height="46px";
+  supprimerWelcome();enCours=true;_modeStop(true);barLoad(true);
+  const date=champDate.value||null;champQuestion.value="";champQuestion.style.height="48px";
   ajouterMsgUser(question);const ts=new Date().toISOString();
   const body={question};if(date)body.date_contexte=date;
   const srcs=sourcesSelectionnees();if(srcs.length)body.filtres_sources=srcs;
@@ -416,7 +431,7 @@ async function envoyerQuestion(){
   try{
     const stream=await envoyerQuestionStream(body,question,date,ts,sig);
     if(!stream)await envoyerQuestionSimple(body,question,date,ts,sig);
-  }finally{enCours=false;_ctrlEnCours=null;_modeStop(false);champQuestion.focus();}
+  }finally{enCours=false;_ctrlEnCours=null;_modeStop(false);barLoad(false);champQuestion.focus();}
 }
 
 document.getElementById("btn-new-chat").addEventListener("click",()=>{chatMessages.innerHTML=`<div class="chat-welcome" id="chat-welcome"><div class="welcome-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div><h2>Que souhaitez-vous analyser ?</h2><p>Le système interroge le corpus réglementaire indexé,<br>identifie les versions applicables et cite chaque source précisément.</p><div class="chips"><button class="chip" data-q="Quelles sont les obligations de notification d'une violation de données selon le RGPD ?">Notification violation · RGPD art. 33</button><button class="chip" data-q="Quelles mesures de sécurité techniques sont requises par l'article 32 du RGPD ?">Mesures sécurité · art. 32</button><button class="chip" data-q="Y a-t-il une contradiction entre les délais de notification du RGPD et de NIS2 ?">Conflit RGPD / NIS2</button><button class="chip" data-q="Quelles sont les obligations des entités essentielles selon NIS2 ?">Entités essentielles · NIS2</button></div></div>`;activerChips();});
@@ -455,7 +470,15 @@ async function decider(id,action,el){
 }
 
 document.querySelectorAll(".filter").forEach(f=>{f.addEventListener("click",()=>{document.querySelectorAll(".filter").forEach(x=>x.classList.remove("active"));f.classList.add("active");filtreActif=f.dataset.filter;rendrVal();});});
-document.getElementById("btn-refresh-val")?.addEventListener("click",chargerTaches);
+function rafraichirTaches(btn){
+  if(btn)btn.classList.add("loading");
+  const nav=document.querySelector('.nav-item[data-view="validation"]');
+  nav?.classList.add("sync");barLoad(true);
+  return chargerTaches().finally(()=>{
+    if(btn)btn.classList.remove("loading");nav?.classList.remove("sync");barLoad(false);
+  });
+}
+document.getElementById("btn-refresh-val")?.addEventListener("click",e=>rafraichirTaches(e.currentTarget));
 
 function rendrHisto(){
   const el=document.getElementById("hist-list");
@@ -467,7 +490,7 @@ function activerChips(){document.querySelectorAll(".chip[data-q]").forEach(c=>{c
 activerChips();
 btnEnvoyer.addEventListener("click",envoyerQuestion);
 champQuestion.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();envoyerQuestion();}});
-champQuestion.addEventListener("input",()=>{champQuestion.style.height="46px";champQuestion.style.height=Math.min(champQuestion.scrollHeight,130)+"px";});
+champQuestion.addEventListener("input",()=>{champQuestion.style.height="48px";champQuestion.style.height=Math.min(champQuestion.scrollHeight,130)+"px";});
 
 // Validation de la clé AVANT tout polling, pour éviter l'illusion de
 // connexion quand /health (public) affiche "OPÉRATIONNEL" alors que la
