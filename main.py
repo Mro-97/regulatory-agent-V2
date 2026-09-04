@@ -274,6 +274,11 @@ if __name__ == "__main__":
             port=cfg.api_port,
             log_level="debug" if cfg.debug else "info",
             server_header=False,  # pas de fingerprint « server: uvicorn »
+            # uvicorn ne doit PAS interpréter X-Forwarded-For/-Proto lui-même :
+            # sinon `request.client.host` est réécrit depuis un en-tête
+            # falsifiable (défaut : confiance à 127.0.0.1). C'est src/net.py,
+            # piloté par TRUSTED_PROXIES, qui décide — un seul endroit.
+            proxy_headers=False,
         )
         server = uvicorn.Server(config)
         try:

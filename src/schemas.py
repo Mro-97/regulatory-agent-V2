@@ -15,7 +15,13 @@ from typing import Annotated, Any
 from uuid import UUID
 
 from config import cfg
-from pydantic import BaseModel, Field, StringConstraints, model_validator
+from pydantic import (
+    BaseModel,
+    Field,
+    StringConstraints,
+    field_validator,
+    model_validator,
+)
 
 from src.models import (
     EvidenceRecuperee,
@@ -48,6 +54,15 @@ class RequeteQuestion(BaseModel):
         default_factory=list, max_length=20
     )
     demander_validation_humaine: bool = Field(default=False)
+
+    @field_validator("question")
+    @classmethod
+    def _question_non_vide(cls, v: str) -> str:
+        """Refuse une question qui n'est que des espaces (min_length ne strip pas)."""
+        if not v.strip():
+            msg = "question vide ou uniquement des espaces"
+            raise ValueError(msg)
+        return v
 
 
 class ReponseQuestion(BaseModel):
