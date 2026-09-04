@@ -9,17 +9,7 @@
   <link rel="stylesheet" href="/static/style.css?v={{ asset_v }}">
 </head>
 <body class="t-sepia">
-  <script>
-    /* Applique le thème choisi avant le rendu du contenu (anti-flash). */
-    (function(){
-      try{
-        var s=localStorage.getItem("theme");
-        if(["t-dim","t-slate","dark"].indexOf(s)>-1){
-          document.body.className=s;
-        }
-      }catch(e){}
-    })();
-  </script>
+  <script src="/static/theme-init.js?v={{ asset_v }}"></script>
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-top">
       <div class="brand">

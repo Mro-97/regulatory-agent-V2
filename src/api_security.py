@@ -75,6 +75,14 @@ def installer_middlewares(app: FastAPI) -> None:
         return await call_next(request)
 
 
+_PERMISSIONS_POLICY = (
+    "accelerometer=(), autoplay=(), camera=(), display-capture=(), "
+    "encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), "
+    "magnetometer=(), microphone=(), midi=(), payment=(), usb=(), "
+    "xr-spatial-tracking=()"
+)
+
+
 def _appliquer_entetes_securite(reponse: Response) -> None:
     """Pose les en-têtes de sécurité par défaut (idempotent via setdefault)."""
     reponse.headers.setdefault("X-Content-Type-Options", "nosniff")
@@ -86,6 +94,9 @@ def _appliquer_entetes_securite(reponse: Response) -> None:
     reponse.headers.setdefault("Content-Security-Policy", _CSP_POLITIQUE)
     reponse.headers.setdefault("Cross-Origin-Opener-Policy", "same-origin")
     reponse.headers.setdefault("Cross-Origin-Resource-Policy", "same-site")
+    reponse.headers.setdefault("Permissions-Policy", _PERMISSIONS_POLICY)
+    # Fingerprint : ne pas annoncer le serveur d'application.
+    reponse.headers["Server"] = "regulatory-agent"
 
 
 def _controler_taille_et_encoding(request: Request) -> JSONResponse | None:
@@ -109,22 +120,36 @@ def _controler_taille_et_encoding(request: Request) -> JSONResponse | None:
     return None
 
 
+def cle_api_valide(fournie: str | None) -> bool:
+    """True si `fournie` correspond à l'une des clés acceptées (temps constant).
+
+    Toutes les clés configurées sont comparées, sans court-circuit, pour ne
+    pas exposer par le temps de réponse combien de clés existent ni laquelle
+    a matché.
+    """
+    proposee = (fournie or "").strip()
+    valides = cfg.cles_api_valides
+    ok = False
+    for attendue in valides:
+        if hmac.compare_digest(proposee, attendue):
+            ok = True
+    return ok and bool(proposee)
+
+
 def verifier_auth(request: Request) -> None:
-    """Exige une clé API valide (fail-closed : API_KEY vide = refus).
+    """Exige une clé API valide (fail-closed : aucune clé configurée = refus).
 
     Un `.strip()` défensif est appliqué des deux côtés : sinon un copier-coller
     de la clé qui embarque un espace ou un retour ligne (typique quand on
     colle depuis un .env dans un prompt) tombe systématiquement en 401
     (`hmac.compare_digest` étant strict au caractère près).
     """
-    attendue = (cfg.api_key or "").strip()
-    if not attendue:
+    if not cfg.cles_api_valides:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Authentification non configurée.",
         )
-    fournie = request.headers.get("X-API-Key", "").strip()
-    if not fournie or not hmac.compare_digest(fournie, attendue):
+    if not cle_api_valide(request.headers.get("X-API-Key")):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Clé API invalide.",
@@ -211,7 +236,9 @@ _limiteur = LimiteurDebit(
 
 def verifier_rate_limit(request: Request) -> None:
     """Limite le débit par IP sur les endpoints coûteux."""
-    cle = request.client.host if request.client else "inconnu"
+    from src.net import ip_client
+
+    cle = ip_client(request)
     if not _limiteur.autoriser(cle):
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,

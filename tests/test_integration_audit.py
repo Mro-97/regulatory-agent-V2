@@ -200,13 +200,34 @@ class TestAuditTrail:
             audit_module.CHEMIN_AUDIT_LOCAL = original
             audit_module._hash_precedent = None
 
-    def test_health_expose_statut_audit(self):  # noqa: ANN201
-        """L'endpoint /health doit exposer le statut de synchronisation de l'audit."""
+    def test_health_public_ne_fuit_pas_le_statut_audit(self):  # noqa: ANN201
+        """/health public : uniquement statut + horodatage (durcissement 09/04).
+
+        Le détail d'audit (backend Postgres, désynchronisations) est passé
+        derrière l'authentification sur /health/details — pas de
+        fingerprinting d'infra pour un visiteur non authentifié.
+        """
         from fastapi.testclient import TestClient
         from src import api as api_module
 
         client = TestClient(api_module.app)
         rep = client.get("/health")
+        assert rep.status_code == 200
+        donnees = rep.json()
+        assert set(donnees) == {"statut", "horodatage"}
+        assert "audit" not in donnees
+
+    def test_health_details_expose_statut_audit_avec_cle(self):  # noqa: ANN201
+        """/health/details (clé API) expose le statut de synchronisation de l'audit."""
+        from fastapi.testclient import TestClient
+        from src import api as api_module
+
+        client = TestClient(api_module.app)
+        assert client.get("/health/details").status_code == 401
+        rep = client.get(
+            "/health/details",
+            headers={"X-API-Key": "cle-de-test-0123456789abcdef"},
+        )
         assert rep.status_code == 200
         donnees = rep.json()
         assert "audit" in donnees

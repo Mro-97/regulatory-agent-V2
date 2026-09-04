@@ -87,13 +87,45 @@ async def initialiser_audit() -> None:
 
 
 def valider_configuration_demarrage() -> list[str]:
-    """Vérifie au démarrage les invariants critiques (retourne les erreurs)."""
+    """Vérifie au démarrage les invariants critiques (retourne les erreurs).
+
+    Appelée par `main.py` (lancement direct) ET par le lifespan de
+    `src/api.py` — donc effective aussi sous `gunicorn main:app` /
+    `uvicorn main:app`, où `__main__` ne s'exécute pas.
+    """
     erreurs: list[str] = []
     _erreur_api_key_manquante(erreurs)
     _erreur_rate_limiter_multi_worker(erreurs)
     _erreur_debug_et_docs_exposes(erreurs)
     _erreur_dimension_embedding_incoherente(erreurs)
+    _erreurs_mode_production(erreurs)
     return erreurs
+
+
+def _erreurs_mode_production(erreurs: list[str]) -> None:
+    """Invariants supplémentaires quand `ENVIRONNEMENT=prod` (durcissement).
+
+    En prod on refuse tout ce qui, en dev, n'est qu'un avertissement :
+    verbosité de debug, docs exposées, et un bind public sans proxy de
+    confiance déclaré (sinon rate-limit et journal d'accès sont aveugles
+    à l'IP réelle des clients).
+    """
+    if cfg.environnement != "prod":
+        return
+    if cfg.debug:
+        erreurs.append(
+            "ENVIRONNEMENT=prod avec DEBUG=true — interdit (tracebacks/verbosité)."
+        )
+    if cfg.exposer_docs:
+        erreurs.append(
+            "ENVIRONNEMENT=prod avec EXPOSER_DOCS=true — interdit (fuite de schémas)."
+        )
+    if cfg.api_host == "0.0.0.0" and not cfg.trusted_proxies:  # noqa: S104
+        erreurs.append(
+            "ENVIRONNEMENT=prod, bind 0.0.0.0 et TRUSTED_PROXIES vide — l'IP "
+            "client vue serait celle du proxy (rate-limit et logs cassés). "
+            "Déclarer l'IP du proxy dans TRUSTED_PROXIES."
+        )
 
 
 def _erreur_dimension_embedding_incoherente(erreurs: list[str]) -> None:
@@ -137,30 +169,31 @@ _COMMANDE_GEN_CLE = (
 
 
 def _erreur_api_key_manquante(erreurs: list[str]) -> None:
-    """Refuse le boot si `cfg.api_key` est vide, placeholder, ou trop courte.
+    """Refuse le boot si aucune clé API valide n'est configurée.
 
-    Trois cas fail-closed :
-    - clé vide → aucun endpoint métier ne pourra répondre (503 systématique) ;
+    Examine `API_KEY` et chaque entrée de `API_KEYS`. Cas fail-closed :
+    - aucune clé → aucun endpoint métier ne répondra (503 systématique) ;
     - valeur placeholder de `.env.example` → déploiement non configuré ;
-    - clé < 32 caractères → bruteforce triviale.
+    - clé < 32 caractères → bruteforce trop accessible.
     """
-    cle = (cfg.api_key or "").strip()
-    if not cle:
+    cles = cfg.cles_api_valides
+    if not cles:
         erreurs.append(
-            "API_KEY vide — définir la variable API_KEY dans .env avant démarrage. "
-            f"Générer une clé sûre : {_COMMANDE_GEN_CLE}"
+            "Aucune clé API — définir API_KEY (ou API_KEYS) dans .env avant "
+            f"démarrage. Générer une clé sûre : {_COMMANDE_GEN_CLE}"
         )
         return
-    if cle == _API_KEY_PLACEHOLDER:
+    if any(c == _API_KEY_PLACEHOLDER for c in cles):
         erreurs.append(
             "API_KEY = valeur placeholder de .env.example — remplacer par une clé "
             f"réelle avant déploiement. Générer : {_COMMANDE_GEN_CLE}"
         )
         return
-    if len(cle) < _API_KEY_LONGUEUR_MIN:
+    courtes = [c for c in cles if len(c) < _API_KEY_LONGUEUR_MIN]
+    if courtes:
         erreurs.append(
-            f"API_KEY trop courte ({len(cle)} < {_API_KEY_LONGUEUR_MIN} caractères) — "
-            f"risque de bruteforce. Générer : {_COMMANDE_GEN_CLE}"
+            f"{len(courtes)} clé(s) API trop courte(s) (< {_API_KEY_LONGUEUR_MIN} "
+            f"caractères) — risque de bruteforce. Générer : {_COMMANDE_GEN_CLE}"
         )
 
 

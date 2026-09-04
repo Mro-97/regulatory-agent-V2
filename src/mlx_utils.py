@@ -32,6 +32,7 @@ from collections.abc import Callable, Iterator
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import TimeoutError as FuturesTimeoutError
 from dataclasses import dataclass
+from threading import Lock
 from typing import Any, TypeVar
 
 from config import cfg
@@ -51,6 +52,24 @@ T = TypeVar("T")
 # Un unique executor dédié aux appels MLX bornés dans le temps. Un thread
 # unique suffit : MLX sérialise déjà l'accès aux poids sur le device.
 _executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="mlx-timed")
+_executor_lock = Lock()
+
+
+def _recycler_executor() -> None:
+    """Remplace l'executor après un timeout.
+
+    MLX n'a pas d'interruption coopérative : sur timeout, le thread reste
+    bloqué sur la génération en cours. Avec `max_workers=1`, tout appel
+    suivant attendrait derrière ce thread mort — une seule génération
+    pathologique gèlerait `/ask` pour tout le monde jusqu'au redémarrage.
+    On abandonne donc l'executor (son thread est orphelin, borné à 1 par
+    timeout) et on en crée un neuf pour les requêtes suivantes.
+    """
+    global _executor
+    with _executor_lock:
+        ancien = _executor
+        _executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="mlx-timed")
+    ancien.shutdown(wait=False, cancel_futures=True)
 
 
 def _executer_avec_timeout(
@@ -61,18 +80,22 @@ def _executer_avec_timeout(
 ) -> T:
     """Exécute `fn` sous timeout ; sans borne si `timeout_seconds` ≤ 0 ou None.
 
-    MLX n'a pas d'interruption coopérative : le thread continue en tâche
-    de fond mais l'appelant récupère la main via `future.result(timeout=)`.
+    MLX n'a pas d'interruption coopérative : sur timeout le thread continue
+    en tâche de fond, mais l'executor est recyclé (`_recycler_executor`)
+    pour que la requête suivante ne reste pas coincée derrière lui.
 
     Raises:
         GenerationTimeoutError: si `fn` dépasse `timeout_seconds`.
     """
     if timeout_seconds is None or timeout_seconds <= 0:
         return fn(*args, **kwargs)
-    future = _executor.submit(fn, *args, **kwargs)
+    with _executor_lock:
+        executor = _executor
+    future = executor.submit(fn, *args, **kwargs)
     try:
         return future.result(timeout=timeout_seconds)
     except FuturesTimeoutError as exc:
+        _recycler_executor()
         raise GenerationTimeoutError(timeout_seconds) from exc
 
 

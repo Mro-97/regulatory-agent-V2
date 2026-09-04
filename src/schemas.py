@@ -11,11 +11,11 @@ from __future__ import annotations
 
 import json
 from datetime import date, datetime
-from typing import Any
+from typing import Annotated, Any
 from uuid import UUID
 
 from config import cfg
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, StringConstraints, model_validator
 
 from src.models import (
     EvidenceRecuperee,
@@ -25,6 +25,10 @@ from src.models import (
     StatutValidation,
     TacheValidation,
 )
+
+# Un libellé de filtre : court, espaces rognés. Borne le coût de traitement
+# et empêche d'injecter une charge arbitraire via la liste.
+_LibelleFiltre = Annotated[str, StringConstraints(max_length=64, strip_whitespace=True)]
 
 
 class RequeteQuestion(BaseModel):
@@ -39,8 +43,10 @@ class RequeteQuestion(BaseModel):
     date_contexte: date | None = Field(
         default=None, description="Date de contexte réglementaire."
     )
-    filtres_themes: list[str] = Field(default_factory=list)
-    filtres_sources: list[SourceReglementaire] = Field(default_factory=list)
+    filtres_themes: list[_LibelleFiltre] = Field(default_factory=list, max_length=20)
+    filtres_sources: list[SourceReglementaire] = Field(
+        default_factory=list, max_length=20
+    )
     demander_validation_humaine: bool = Field(default=False)
 
 

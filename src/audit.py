@@ -350,10 +350,14 @@ class GestionnaireAudit:
             return False
 
     def _ecrire_ligne_local(self, ligne: str) -> None:
-        """Écriture synchrone déléguée au threadpool (évite de bloquer l'event loop)."""
-        CHEMIN_AUDIT_LOCAL.parent.mkdir(parents=True, exist_ok=True)
-        with CHEMIN_AUDIT_LOCAL.open("a", encoding="utf-8") as f:
-            f.write(ligne)
+        """Écriture synchrone déléguée au threadpool (évite de bloquer l'event loop).
+
+        Passe par `ecrire_ligne_protegee` : le fichier d'audit contient les
+        questions en clair, il doit rester en 0600 (dossier parent 0700).
+        """
+        from src.stockage_local import ecrire_ligne_protegee
+
+        ecrire_ligne_protegee(CHEMIN_AUDIT_LOCAL, ligne)
 
     async def _persister_postgres(self, audit: EnregistrementAudit) -> bool:
         """INSERT `audit_trail` (ON CONFLICT DO NOTHING) ; False si pool absent."""

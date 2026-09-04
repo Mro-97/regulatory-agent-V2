@@ -35,6 +35,8 @@ source_modules =
     src.rate_limit_middleware
     src.rate_limit_redis
     src.access_log
+    src.net
+    src.stockage_local
 forbidden_modules =
     src.api
 
@@ -63,6 +65,8 @@ forbidden_modules =
     src.access_log
     src.http_safety
     src.ingest_sanitizer
+    src.net
+    src.stockage_local
 
 [importlinter:contract:agents-nignorent-orchestration]
 name = src.agents ne connaît ni l'orchestrateur ni l'API
@@ -79,4 +83,6 @@ forbidden_modules =
     src.rate_limit_middleware
     src.rate_limit_redis
     src.access_log
+    src.net
+    src.stockage_local
     src.watcher

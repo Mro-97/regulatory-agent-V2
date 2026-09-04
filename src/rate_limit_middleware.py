@@ -24,26 +24,45 @@ if TYPE_CHECKING:
     from fastapi import FastAPI, Request, Response
     from starlette.middleware.base import RequestResponseEndpoint
 
-# Chemins sensibles rate-limités par IP. Les endpoints de lecture
-# (/health, /pending) et les mutations validées humainement (/approve,
-# /reject) restent hors quota — leur coût serveur est minime.
-_CHEMINS_RATE_LIMITES: frozenset[str] = frozenset({"/ask", "/ask/stream", "/ingest"})
+# Endpoints rate-limités par IP : les coûteux (pipeline MLX) et ceux qui
+# écrivent sur disque (/feedback). Les lectures et mutations validées
+# humainement (/pending, /tache, /approve, /reject) sont peu coûteuses,
+# authentifiées et pollées par l'UI — hors quota. Le comptage se fait
+# AVANT l'auth et le parsing du body.
+_CHEMINS_RATE_LIMITES: frozenset[str] = frozenset(
+    {"/ask", "/ask/stream", "/ingest", "/feedback"}
+)
 
 _MSG_TROP_DE_REQUETES = "Trop de requêtes, réessayez plus tard."
 
 
 def _cle_client(request: Request) -> str:
-    """Retourne l'adresse IP du client (ou 'inconnu' si non renseignée)."""
-    return request.client.host if request.client else "inconnu"
+    """IP du client d'origine (via proxy de confiance si configuré)."""
+    from src.net import ip_client
+
+    return ip_client(request)
 
 
-def _cle_api(request: Request) -> str:
-    """Retourne la clé API de l'en-tête `X-API-Key` (ou 'no-api-key' si absente)."""
-    return request.headers.get("X-API-Key") or "no-api-key"
+def _scope_cle(request: Request) -> str:
+    """Portée du compteur : empreinte de la clé API si valide, sinon `invalide`.
+
+    Sans cette normalisation, faire varier l'en-tête `X-API-Key` à chaque
+    requête créait un compteur neuf à chaque fois → contournement total du
+    rate-limit avant l'auth (brute-force de clé, flood de logs). Toutes les
+    requêtes non authentifiées d'une IP partagent donc un seul seau.
+    """
+    import hashlib
+
+    from src.api_security import cle_api_valide
+
+    fournie = (request.headers.get("X-API-Key") or "").strip()
+    if fournie and cle_api_valide(fournie):
+        return hashlib.sha256(fournie.encode("utf-8")).hexdigest()[:12]
+    return "invalide"
 
 
 def _est_rate_limite(chemin: str) -> bool:
-    """True si `chemin` correspond à un endpoint sensible à rate-limiter."""
+    """True si `chemin` est un endpoint sensible à rate-limiter."""
     return chemin in _CHEMINS_RATE_LIMITES
 
 
@@ -68,7 +87,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         from src.rate_limit_redis import get_rate_limiter
 
         limiteur = get_rate_limiter()
-        if not await limiteur.is_allowed(_cle_api(request), _cle_client(request)):
+        if not await limiteur.is_allowed(_scope_cle(request), _cle_client(request)):
             return _reponse_429()
         return await call_next(request)
 

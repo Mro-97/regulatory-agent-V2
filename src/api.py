@@ -26,17 +26,19 @@ import json
 import logging
 import time
 from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Annotated
 from uuid import UUID
 
 from config import cfg
-from fastapi import Depends, FastAPI, HTTPException, Request, status
+from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from starlette.middleware.base import RequestResponseEndpoint
 
 # `LimiteurDebit` et `_limiteur` ont été déplacés vers src/api_security.py
 # (§12 étape 6). Les alias `X as X` ci-dessous les ré-exportent sous leur
@@ -79,10 +81,37 @@ DOSSIER_TEMPLATES = RACINE / "web" / "templates"
 
 
 # ---------------------------------------------------------------------------
+# Cycle de vie — validation de configuration au démarrage
+# ---------------------------------------------------------------------------
+
+
+@asynccontextmanager
+async def _cycle_de_vie(_app: FastAPI) -> AsyncIterator[None]:
+    """Refuse de servir si la configuration de démarrage est invalide.
+
+    `main.py` fait déjà cette vérif quand on lance `python3 main.py`, mais
+    PAS sous `gunicorn main:app` / `uvicorn main:app` (où `__main__` ne
+    tourne pas). Ce lifespan la rejoue : un worker gunicorn mal configuré
+    (clé placeholder, DEBUG+DOCS, ENVIRONNEMENT=prod incohérent…) ne
+    démarre pas.
+    """
+    from main import valider_configuration_demarrage
+
+    erreurs = valider_configuration_demarrage()
+    if erreurs:
+        for err in erreurs:
+            logger.critical("Configuration invalide : %s", err)
+        message = "Démarrage refusé — configuration invalide : " + " | ".join(erreurs)
+        raise RuntimeError(message)
+    yield
+
+
+# ---------------------------------------------------------------------------
 # Application FastAPI
 # ---------------------------------------------------------------------------
 
 app = FastAPI(
+    lifespan=_cycle_de_vie,
     title=cfg.app_nom,
     version=cfg.app_version,
     description="""
@@ -128,7 +157,8 @@ def _version_assets() -> str:
     """Empreinte des assets front (mtime app.js + style.css) pour casser le cache."""
     try:
         mtimes = sum(
-            (DOSSIER_STATIC / f).stat().st_mtime for f in ("app.js", "style.css")
+            (DOSSIER_STATIC / f).stat().st_mtime
+            for f in ("app.js", "style.css", "theme-init.js")
         )
         return str(int(mtimes))
     except OSError:
@@ -153,6 +183,63 @@ installer_rate_limit(app)
 from src.access_log import installer_journal_acces  # noqa: E402
 
 installer_journal_acces(app)
+
+
+@app.middleware("http")
+async def _rediriger_https(
+    request: Request, call_next: RequestResponseEndpoint
+) -> Response:
+    """Redirige http → https (308) si `forcer_https`, sauf /health.
+
+    Le schéma d'origine vient de `X-Forwarded-Proto` uniquement si le pair
+    est un `trusted_proxy` (cf. src/net) — sinon un client ne peut pas
+    prétendre être déjà en https.
+    """
+    if cfg.forcer_https and request.url.path != "/health":
+        from src.net import schema_origine
+
+        if schema_origine(request) == "http":
+            cible = request.url.replace(scheme="https")
+            return RedirectResponse(str(cible), status_code=308)
+    return await call_next(request)
+
+
+# Garde de concurrence pour le pipeline /ask.
+#
+# Un timeout MLX n'interrompt pas le thread de génération (src/mlx_utils y
+# recycle l'exécuteur après un timeout pour ne pas rester bloqué). Ce
+# plafond côté API borne en plus le nombre de pipelines simultanés : au-delà
+# on répond 503 tout de suite plutôt que d'empiler des requêtes qui
+# attendraient toutes le verrou MLX.
+#
+# Compteur simple : l'event loop asyncio est mono-thread et il n'y a aucun
+# `await` entre le test et l'incrément — pas besoin de verrou. `entrer()`
+# renvoie False si saturé ; l'appelant lève alors le 503.
+_MSG_ASK_SATURE = "Service occupé (trop de requêtes simultanées) — réessayez."
+
+
+class _GardeAsk:
+    """Plafond non bloquant du nombre de pipelines /ask simultanés."""
+
+    def __init__(self, maximum: int) -> None:
+        self.maximum = maximum
+        self.en_cours = 0
+
+    def entrer(self) -> bool:
+        """Réserve une place ; False si le plafond est atteint (<=0 = illimité)."""
+        if self.maximum <= 0:
+            return True
+        if self.en_cours >= self.maximum:
+            return False
+        self.en_cours += 1
+        return True
+
+    def sortir(self) -> None:
+        """Libère une place (borne à 0)."""
+        self.en_cours = max(0, self.en_cours - 1)
+
+
+_ask_garde = _GardeAsk(cfg.ask_max_concurrent)
 
 
 # ---------------------------------------------------------------------------
@@ -251,6 +338,7 @@ async def interface(request: Request) -> HTMLResponse:
         request=request,
         name="index.html",
         context={"asset_v": _version_assets()},
+        headers={"Cache-Control": "no-store"},
     )
 
 
@@ -263,13 +351,28 @@ async def interface(request: Request) -> HTMLResponse:
     "/health",
     tags=["Système"],
     summary="État du système",
-    description="Vérifie que l'API est opérationnelle. Retourne l'horodatage et la version.",  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
+    description="Vérifie que l'API est opérationnelle. Retourne l'horodatage.",
 )
 async def health() -> dict[str, object]:
-    """Endpoint public de santé : statut + horodatage + statut d'audit."""
-    # M4 : /health est public — on n'expose ni le nom d'application ni la
-    # version (fingerprinting). Le statut audit reste utile aux sondes
-    # d'exploitation locales et ne révèle pas d'info versionnée.
+    """Endpoint public de santé : uniquement statut + horodatage.
+
+    Rien d'autre n'est exposé sans authentification (ni nom/version
+    d'application — fingerprinting — ni état du backend d'audit). Le
+    détail d'audit est disponible sur `/health/details` (clé API requise).
+    """
+    return {"statut": "ok", "horodatage": datetime.now(UTC).isoformat()}
+
+
+@app.get(
+    "/health/details",
+    tags=["Système"],
+    summary="État détaillé (authentifié)",
+    description="Comme /health, plus l'état du backend d'audit. Exige X-API-Key.",
+    dependencies=[AuthDep],
+    include_in_schema=False,
+)
+async def health_details() -> dict[str, object]:
+    """Santé + état du backend d'audit — réservé aux appelants authentifiés."""
     reponse: dict[str, object] = {
         "statut": "ok",
         "horodatage": datetime.now(UTC).isoformat(),
@@ -280,7 +383,7 @@ async def health() -> dict[str, object]:
         gestionnaire = await obtenir_gestionnaire()
         reponse["audit"] = gestionnaire.statut()
     except Exception:
-        logger.exception("Statut audit indisponible pour /health")
+        logger.exception("Statut audit indisponible pour /health/details")
     return reponse
 
 
@@ -302,6 +405,9 @@ async def poser_question(
 
     debut = time.perf_counter()
     statut = 200
+    if not _ask_garde.entrer():
+        journaliser_acces_requete(request, 503, 0, requete.question)
+        raise _erreur_503(_MSG_ASK_SATURE)
     try:
         return await orchestrateur.traiter(requete)
     except Exception:
@@ -309,6 +415,7 @@ async def poser_question(
         logger.exception("Erreur /ask")
         raise _erreur_500(_MSG_ERREUR_ASK) from None
     finally:
+        _ask_garde.sortir()
         journaliser_acces_requete(
             request, statut, int((time.perf_counter() - debut) * 1000), requete.question
         )
@@ -317,7 +424,11 @@ async def poser_question(
 async def _sse_ask(
     requete: RequeteQuestion, orchestrateur: Orchestrateur
 ) -> AsyncIterator[str]:
-    """Formatte les événements de `traiter_stream` en trames Server-Sent Events."""
+    """Formatte les événements de `traiter_stream` en trames Server-Sent Events.
+
+    La place réservée dans `_ask_garde` (prise par la route) est libérée
+    ici, quand le flux se termine ou est interrompu.
+    """
     try:
         async for evenement, charge in orchestrateur.traiter_stream(requete):
             corps = json.dumps(charge, ensure_ascii=False)
@@ -325,6 +436,8 @@ async def _sse_ask(
     except Exception:
         logger.exception("Flux /ask/stream interrompu")
         yield 'event: erreur\ndata: {"detail": "Flux interrompu."}\n\n'
+    finally:
+        _ask_garde.sortir()
 
 
 @app.post(
@@ -342,6 +455,9 @@ async def poser_question_stream(
     """Diffuse la réponse en Server-Sent Events."""
     from src.access_log import journaliser_acces_requete
 
+    if not _ask_garde.entrer():
+        journaliser_acces_requete(request, 503, 0, requete.question)
+        raise _erreur_503(_MSG_ASK_SATURE)
     journaliser_acces_requete(request, 200, 0, requete.question)
     return StreamingResponse(
         _sse_ask(requete, orchestrateur),
@@ -471,6 +587,8 @@ async def suivi_tache(
 
 def _enregistrer_signalement(requete: RequeteFeedback) -> ReponseFeedback:
     """Ajoute une ligne JSONL au fichier de signalements (append atomique)."""
+    from src.stockage_local import ecrire_ligne_protegee
+
     horodatage = datetime.now(UTC)
     ligne = {
         "horodatage": horodatage.isoformat(),
@@ -478,10 +596,9 @@ def _enregistrer_signalement(requete: RequeteFeedback) -> ReponseFeedback:
         "motif": requete.motif.value,
         "commentaire": requete.commentaire,
     }
-    chemin = Path(cfg.feedback_local_path)
-    chemin.parent.mkdir(parents=True, exist_ok=True)
-    with chemin.open("a", encoding="utf-8") as f:
-        f.write(json.dumps(ligne, ensure_ascii=False) + "\n")
+    ecrire_ligne_protegee(
+        Path(cfg.feedback_local_path), json.dumps(ligne, ensure_ascii=False) + "\n"
+    )
     logger.info(
         "Signalement — request_id=%s motif=%s", requete.request_id, requete.motif.value
     )

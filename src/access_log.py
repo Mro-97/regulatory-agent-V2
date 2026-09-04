@@ -39,20 +39,30 @@ def _empreinte_cle(fournie: str | None) -> str:
 
 
 def _identite(request: Request) -> str:
-    """Nom lisible du client : X-User, sinon X-Client-Id, sinon empreinte de clé."""
+    """Nom lisible du client : X-User, sinon X-Client-Id, sinon empreinte de clé.
+
+    Les valeurs d'en-tête sont nettoyées (pas de CR/LF/contrôle) avant
+    d'entrer dans la ligne de log — sinon un client peut y injecter de
+    fausses lignes `acces ...`.
+    """
+    from src.net import nettoyer_entete
+
     entete = request.headers.get("X-User") or request.headers.get("X-Client-Id")
-    return entete[:40] if entete else _empreinte_cle(request.headers.get("X-API-Key"))
+    if entete:
+        return nettoyer_entete(entete, taille_max=40)
+    return _empreinte_cle(request.headers.get("X-API-Key"))
 
 
 def _ip_client_reelle(request: Request) -> str:
-    """IP du navigateur si un proxy la transmet (XFF / X-Real-IP), sinon '-'.
+    """IP du client d'origine.
 
-    Un simple tunnel `ssh -L` ne la transmet PAS : tout arrive en 127.0.0.1.
+    Via `X-Forwarded-For` / `X-Real-IP` UNIQUEMENT si le pair direct est un
+    `trusted_proxy` (cf. `src.net.ip_client`). Sinon l'en-tête est ignoré
+    (falsifiable) et on renvoie le pair TCP direct.
     """
-    xff = request.headers.get("X-Forwarded-For")
-    if xff:
-        return xff.split(",")[0].strip()
-    return request.headers.get("X-Real-IP", "-")
+    from src.net import ip_client
+
+    return ip_client(request)
 
 
 def _motif(request: Request, statut: int) -> str:
@@ -81,6 +91,8 @@ def journaliser_acces_requete(
     routes `/ask*` (qui passent `question` — non récupérable côté
     middleware à travers `BaseHTTPMiddleware`).
     """
+    from src.net import nettoyer_entete
+
     niveau = logger.warning if statut >= 400 else logger.info
     niveau(
         "acces user=%s cle=%s ip=%s ip_client=%s methode=%s chemin=%s statut=%d "
@@ -90,14 +102,14 @@ def journaliser_acces_requete(
         request.client.host if request.client else "?",
         _ip_client_reelle(request),
         request.method,
-        request.url.path,
+        nettoyer_entete(request.url.path, taille_max=200),
         statut,
         duree_ms,
         _motif(request, statut) if statut >= 400 else "-",
         (question[:200] if question else "-"),
-        request.headers.get("Origin", "-"),
-        request.headers.get("User-Agent", "-")[:_UA_MAX],
-        request.headers.get("Referer", "-"),
+        nettoyer_entete(request.headers.get("Origin")),
+        nettoyer_entete(request.headers.get("User-Agent"), taille_max=_UA_MAX),
+        nettoyer_entete(request.headers.get("Referer")),
     )
 
 

@@ -31,6 +31,17 @@ class Parametres(BaseSettings):
     app_nom: str = Field(default="Regulatory Agent V2")
     app_version: str = Field(default="0.1.0")
     debug: bool = Field(default=False)
+    environnement: str = Field(
+        default="dev",
+        alias="ENVIRONNEMENT",
+        description=(
+            "'dev' (poste local, tolérant) ou 'prod'. En 'prod' le démarrage "
+            "REFUSE : debug=true, exposer_docs=true, une clé API absente / "
+            "placeholder / < 32 car., et api_host=0.0.0.0 sans trusted_proxies. "
+            "La validation tourne aussi bien sous `python3 main.py` que sous "
+            "gunicorn/uvicorn (lifespan de src/api.py)."
+        ),
+    )
     orchestrateur_mode: str = Field(
         default="real",
         description=(
@@ -55,6 +66,47 @@ class Parametres(BaseSettings):
     api_key: str = Field(
         default="",
         description="Clé API partagée (en-tête X-API-Key). Vide = accès refusé (fail-closed).",  # noqa: E501
+    )
+    api_keys_str: str = Field(
+        default="",
+        alias="API_KEYS",
+        description=(
+            "Clés API supplémentaires acceptées, séparées par des virgules. "
+            "Permet la rotation sans coupure (ajouter la nouvelle, retirer "
+            "l'ancienne au cycle suivant) et la révocation (retirer une clé). "
+            "Toutes sont comparées en temps constant. `api_key` reste "
+            "acceptée si définie."
+        ),
+    )
+    trusted_proxies_str: str = Field(
+        default="",
+        alias="TRUSTED_PROXIES",
+        description=(
+            "IP (ou CIDR) des proxys inverses de confiance, séparées par des "
+            "virgules. SEULES ces IP voient leurs en-têtes X-Forwarded-For / "
+            "X-Real-IP / X-Forwarded-Proto pris en compte (IP client réelle, "
+            "rate-limit, schéma). Vide = on ne fait jamais confiance à ces "
+            "en-têtes (le pair TCP direct fait foi)."
+        ),
+    )
+    forcer_https: bool = Field(
+        default=False,
+        description=(
+            "Redirige toute requête http vers https (308), sauf /health. "
+            "Le schéma d'origine est lu dans X-Forwarded-Proto UNIQUEMENT si "
+            "le pair est un trusted_proxy. À activer en prod derrière un "
+            "terminateur TLS."
+        ),
+    )
+    ask_max_concurrent: int = Field(
+        default=2,
+        description=(
+            "Nombre maximum de pipelines /ask (et /ask/stream) exécutés "
+            "simultanément. Au-delà, l'API répond 503 immédiatement plutôt "
+            "que d'empiler des générations MLX (un timeout MLX n'interrompt "
+            "pas le thread : sans ce plafond, des générations abandonnées "
+            "s'accumulent). 0 = pas de plafond."
+        ),
     )
     cors_origins_str: str = Field(
         default=(
@@ -87,13 +139,18 @@ class Parametres(BaseSettings):
         default=4000, description="Longueur max d'une question."
     )
 
-    # Rate limiting (par IP) — limiteur mémoire, fallback local mono-process.
-    rate_limit_max_requetes: int = Field(default=30)
+    # Rate limiting (par IP d'origine) — limiteur mémoire, fallback mono-process.
+    # 60/min : marge confortable pour l'UI (polling /pending + questions),
+    # bloque net un attaquant (atteint en ~2 s). S'applique à TOUS les
+    # endpoints sauf /health et l'interface.
+    rate_limit_max_requetes: int = Field(default=60)
     rate_limit_fenetre_secondes: int = Field(default=60)
 
-    # Rate limiting Redis — compteur partagé entre workers, clé {api_key}:{ip}.
+    # Rate limiting Redis — compteur partagé entre workers, clé {scope}:{ip}
+    # où scope = empreinte de la clé API si valide, sinon un seau commun
+    # `invalide` (empêche le contournement par rotation de l'en-tête X-API-Key).
     redis_rate_limit_max_requests: int = Field(
-        default=30,
+        default=60,
         description=(
             "Seuil du rate limiter Redis (src/rate_limit_redis.py), partagé "
             "entre workers. Distinct de `rate_limit_max_requetes` qui ne "
@@ -367,6 +424,21 @@ class Parametres(BaseSettings):
     def cors_origins(self) -> list[str]:
         """Origines CORS parsées depuis cors_origins_str."""
         return [o.strip() for o in self.cors_origins_str.split(",") if o.strip()]
+
+    @property
+    def cles_api_valides(self) -> list[str]:
+        """Toutes les clés API acceptées (api_key + api_keys), dédupliquées."""
+        brut = [self.api_key, *self.api_keys_str.split(",")]
+        vues: list[str] = []
+        for c in (x.strip() for x in brut):
+            if c and c not in vues:
+                vues.append(c)
+        return vues
+
+    @property
+    def trusted_proxies(self) -> list[str]:
+        """IP/CIDR des proxys de confiance, parsés depuis trusted_proxies_str."""
+        return [p.strip() for p in self.trusted_proxies_str.split(",") if p.strip()]
 
 
 cfg = Parametres()
