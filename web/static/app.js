@@ -232,7 +232,7 @@ function rendrPendingPreview(taches){
     const niv=niveaux[t.type_file]||"moyen";
     const lbl=labels[t.type_file]||"ÉLEVÉ";
     const conf=Math.floor(Math.random()*30+60);
-    const col=niv==="critique"?"#f85149":niv==="eleve"?"#f0883e":"#4a90d9";
+    const col=niv==="critique"?"#f85149":niv==="eleve"?"#f0883e":"#45b8ac";
     const circ=2*Math.PI*16;const dash=circ*(1-conf/100);
     return `<div class="pending-item"><div class="pending-head"><span class="pending-level ${niv}">${lbl}</span></div><div class="pending-body"><div><div class="pending-title">${esc(q.slice(0,50))}${q.length>50?"…":""}</div></div><div class="pending-conf"><div class="pending-conf-label">Confiance</div><svg class="conf-ring" viewBox="0 0 36 36"><circle cx="18" cy="18" r="16" fill="none" stroke="var(--border)" stroke-width="3"/><circle cx="18" cy="18" r="16" fill="none" stroke="${col}" stroke-width="3" stroke-dasharray="${circ}" stroke-dashoffset="${dash}" transform="rotate(-90 18 18)" stroke-linecap="round"/></svg><div class="pending-conf-val">${conf}%</div></div><button class="btn-examiner" onclick="switchView('validation')">Examiner</button></div></div>`;
   }).join("");
