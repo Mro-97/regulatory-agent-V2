@@ -245,6 +245,8 @@ a.src-ref:hover{text-decoration:underline;}
 .src-tag{font-size:11px;padding:2px 8px;border-radius:10px;border:1px solid var(--border-lite);color:var(--txt-3);background:none;transition:all var(--trans);}
 .src-tag:hover{color:var(--txt-2);}
 .src-tag.actif{background:var(--blue-bg);color:var(--blue);border-color:var(--blue);font-weight:600;}
+.opt-toggle{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--txt-3);margin-bottom:10px;cursor:pointer;user-select:none;}
+.opt-toggle input{accent-color:var(--blue);cursor:pointer;}
 .input-row{display:flex;gap:10px;align-items:flex-end;}
 .question-input{flex:1;min-height:46px;max-height:130px;padding:11px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);color:var(--txt-1);font-size:14px;resize:none;outline:none;line-height:1.5;overflow-y:auto;transition:border-color var(--trans);}
 .question-input:focus{border-color:var(--blue);}

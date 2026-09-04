@@ -398,6 +398,7 @@ async function envoyerQuestion(){
   ajouterMsgUser(question);const ts=new Date().toISOString();
   const body={question};if(date)body.date_contexte=date;
   const srcs=sourcesSelectionnees();if(srcs.length)body.filtres_sources=srcs;
+  if(document.getElementById("opt-revue-humaine")?.checked)body.demander_validation_humaine=true;
   _ctrlEnCours=new AbortController();const sig=_ctrlEnCours.signal;
   try{
     const stream=await envoyerQuestionStream(body,question,date,ts,sig);
