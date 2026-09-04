@@ -33,6 +33,7 @@ from src.agents.retriever_helpers import (
     construire_filtres_passes,
     dedupliquer_evidences,
     extraire_numeros_articles,
+    extraire_reglement,
     filtre_articles,
     fusionner_passes,
     point_vers_evidence,
@@ -212,10 +213,15 @@ class Retriever:
     ) -> list[ScoredPoint]:
         """Passe ciblée `article_id` si la question cite un ou des numéros."""
         numeros = extraire_numeros_articles(question)
-        filtre = filtre_articles(numeros)
+        reglement = extraire_reglement(question)
+        filtre = filtre_articles(numeros, reglement)
         if filtre is None:
             return []
-        logger.info("Retrieval — articles cités dans la question : %s", numeros)
+        logger.info(
+            "Retrieval — articles %s cités%s",
+            numeros,
+            f" ({reglement})" if reglement else "",
+        )
         return self._rechercher_passe("articles_cites", vecteur, filtre)
 
     def _encoder_question_ou_vide(self, question: str) -> list[float]:

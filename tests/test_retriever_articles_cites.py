@@ -10,7 +10,11 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 from src.agents.retriever import _prioriser_articles_cites
-from src.agents.retriever_helpers import extraire_numeros_articles, filtre_articles
+from src.agents.retriever_helpers import (
+    extraire_numeros_articles,
+    extraire_reglement,
+    filtre_articles,
+)
 
 
 def test_extraire_numeros_articles() -> None:
@@ -19,12 +23,26 @@ def test_extraire_numeros_articles() -> None:
     assert extraire_numeros_articles("obligations de notification") == []
 
 
+def test_extraire_reglement() -> None:
+    assert extraire_reglement("que dit l'article 33 du RGPD") == "RGPD_2016_679"
+    assert extraire_reglement("article 21 NIS 2") == "NIS2_2022_2555"
+    assert extraire_reglement("eIDAS 2 article 5") == "EIDAS2_2024_1183"
+    assert extraire_reglement("obligations générales") is None
+
+
 def test_filtre_articles_formes_versionnees() -> None:
     f = filtre_articles(["33"])
     assert f is not None
     valeurs = f.must[0].match.any
     assert "art_33" in valeurs and "art_33_v1" in valeurs
     assert filtre_articles([]) is None
+
+
+def test_filtre_articles_ajoute_le_reglement() -> None:
+    f = filtre_articles(["33"], "RGPD_2016_679")
+    assert f is not None
+    assert len(f.must) == 2
+    assert f.must[1].match.value == "RGPD_2016_679"
 
 
 def _pt(pid: str) -> SimpleNamespace:

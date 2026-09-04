@@ -20,6 +20,7 @@ from qdrant_client.http.models import (
     Filter,
     IsNullCondition,
     MatchAny,
+    MatchValue,
     PayloadField,
 )
 
@@ -186,6 +187,30 @@ def _prendre_point(
 
 _RE_ARTICLE = re.compile(r"\bart(?:icle|\.)?\s*(\d{1,4})\b", re.IGNORECASE)
 
+# Mots-clés de règlement → document_id exact du corpus. Clés triées du plus
+# long au plus court à l'usage (« eidas 2 » avant « eidas », etc.).
+_REGLEMENTS: dict[str, str] = {
+    "data governance act": "DGA_2022_868",
+    "cyber resilience act": "CRA_2024_2847",
+    "cybersecurity act": "CSA_2019_881",
+    "règlement ia": "AI_ACT_2024_1689",
+    "reglement ia": "AI_ACT_2024_1689",
+    "ai act": "AI_ACT_2024_1689",
+    "data act": "DATA_ACT_2023_2854",
+    "eidas 2": "EIDAS2_2024_1183",
+    "eidas2": "EIDAS2_2024_1183",
+    "eprivacy": "EPRIVACY_2002_58",
+    "eidas": "EIDAS_2014_910",
+    "nis 2": "NIS2_2022_2555",
+    "nis2": "NIS2_2022_2555",
+    "rgpd": "RGPD_2016_679",
+    "gdpr": "RGPD_2016_679",
+    "dora": "DORA_2022_2554",
+    "dga": "DGA_2022_868",
+    "cra": "CRA_2024_2847",
+    "cer": "CER_2022_2557",
+}
+
 
 def extraire_numeros_articles(question: str) -> list[str]:
     """Numéros d'article cités dans la question (« article 33 », « art. 5 »)."""
@@ -195,12 +220,23 @@ def extraire_numeros_articles(question: str) -> list[str]:
     return list(vus)
 
 
-def filtre_articles(numeros: list[str]) -> Filter | None:
-    """Filtre Qdrant `article_id ∈ {art_N, art_N_v1, art_N_v2, art_N_v3}`.
+def extraire_reglement(question: str) -> str | None:
+    """`document_id` du règlement nommé dans la question, sinon None."""
+    minuscule = (question or "").lower()
+    for cle in sorted(_REGLEMENTS, key=len, reverse=True):
+        if cle in minuscule:
+            return _REGLEMENTS[cle]
+    return None
+
+
+def filtre_articles(
+    numeros: list[str], document_id: str | None = None
+) -> Filter | None:
+    """Filtre Qdrant sur `article_id ∈ {art_N, art_N_v1..v3}`, +`document_id`.
 
     La recherche vectorielle seule ne fait pas remonter « article 33 »
     quand la question n'en décrit pas le contenu ; cette passe cible
-    l'`article_id` exact en complément.
+    l'`article_id` exact — et le règlement quand il est nommé.
     """
     if not numeros:
         return None
@@ -209,7 +245,12 @@ def filtre_articles(numeros: list[str]) -> Filter | None:
         for n in numeros
         for forme in (f"art_{n}", f"art_{n}_v1", f"art_{n}_v2", f"art_{n}_v3")
     ]
-    return Filter(must=[FieldCondition(key="article_id", match=MatchAny(any=valeurs))])
+    must = [FieldCondition(key="article_id", match=MatchAny(any=valeurs))]
+    if document_id:
+        must.append(
+            FieldCondition(key="document_id", match=MatchValue(value=document_id))
+        )
+    return Filter(must=must)
 
 
 def dedupliquer_evidences(
