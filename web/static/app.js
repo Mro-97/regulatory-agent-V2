@@ -109,7 +109,15 @@ function switchView(id){
   if(id==="historique")rendrHisto();
 }
 document.querySelectorAll("[data-view]").forEach(el=>{el.addEventListener("click",e=>{e.preventDefault();switchView(el.dataset.view);});});
-document.getElementById("btn-theme").addEventListener("click",()=>document.body.classList.toggle("light"));
+(function initTheme(){
+  let t="light";
+  try{t=localStorage.getItem("theme")||"light";}catch(_){}
+  document.body.classList.toggle("light",t==="light");
+})();
+document.getElementById("btn-theme").addEventListener("click",()=>{
+  const clair=document.body.classList.toggle("light");
+  try{localStorage.setItem("theme",clair?"light":"dark");}catch(_){}
+});
 
 function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;").replace(/`/g,"&#96;");}
 function heure(iso){return new Date(iso).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});}
@@ -303,10 +311,10 @@ function _parseFrameSSE(frame){
   return {ev,data};
 }
 
-async function envoyerQuestionStream(body,question,date,ts){
+async function envoyerQuestionStream(body,question,date,ts,signal){
   let r;
-  try{r=await apiFetch(API.askStream,{method:"POST",body:JSON.stringify(body)});}
-  catch{return false;}
+  try{r=await apiFetch(API.askStream,{method:"POST",body:JSON.stringify(body),signal});}
+  catch(e){if(e&&e.name==="AbortError"){toast("Requête annulée","info");return true;}return false;}
   if(!r.ok||!r.body||!r.body.getReader)return false;
   const carte=demarrerCarteStream();
   const reader=r.body.getReader();const dec=new TextDecoder();
@@ -326,7 +334,10 @@ async function envoyerQuestionStream(body,question,date,ts){
         else if(ev==="erreur"){err=JSON.parse(data).detail;}
       }
     }
-  }catch{err=err||"Flux interrompu.";}
+  }catch(e){
+    if(e&&e.name==="AbortError"){carte.el.remove();toast("Requête annulée","info");return true;}
+    err=err||"Flux interrompu.";
+  }
   carte.el.remove();
   if(fin){
     sessionQueries++;
@@ -339,10 +350,10 @@ async function envoyerQuestionStream(body,question,date,ts){
   return true;
 }
 
-async function envoyerQuestionSimple(body,question,date,ts){
+async function envoyerQuestionSimple(body,question,date,ts,signal){
   ajouterTyping();
   try{
-    const r=await apiFetch(API.ask,{method:"POST",body:JSON.stringify(body)});
+    const r=await apiFetch(API.ask,{method:"POST",body:JSON.stringify(body),signal});
     supprimerTyping();
     if(!r.ok){
       const e=await r.json().catch(()=>({}));
@@ -355,7 +366,11 @@ async function envoyerQuestionSimple(body,question,date,ts){
     afficherReponse(data,question,date);ajouterActivite(question,data.niveau_confiance,ts);
     historiqueSession.unshift({question,reponse:data.reponse,conf:data.niveau_confiance,ts});
     majKPIs();if(data.en_attente_validation)toast("Réponse soumise à validation humaine","warning");
-  }catch{supprimerTyping();afficherErreurChat("Impossible de joindre l'API. Vérifiez que le serveur est démarré.");toast("Serveur inaccessible","error");}
+  }catch(e){
+    supprimerTyping();
+    if(e&&e.name==="AbortError"){toast("Requête annulée","info");return;}
+    afficherErreurChat("Impossible de joindre l'API. Vérifiez que le serveur est démarré.");toast("Serveur inaccessible","error");
+  }
 }
 
 document.getElementById("src-filtres")?.addEventListener("click",e=>{
@@ -365,17 +380,25 @@ function sourcesSelectionnees(){
   return [...document.querySelectorAll("#src-filtres .src-tag.actif")].map(b=>b.dataset.src);
 }
 
+let _ctrlEnCours=null;
+function _modeStop(actif){
+  btnEnvoyer.classList.toggle("stop",actif);
+  btnEnvoyer.title=actif?"Arrêter":"Envoyer";
+}
+
 async function envoyerQuestion(){
-  const question=champQuestion.value.trim();if(!question||enCours)return;
-  supprimerWelcome();enCours=true;btnEnvoyer.disabled=true;
+  if(enCours){if(_ctrlEnCours)_ctrlEnCours.abort();return;}
+  const question=champQuestion.value.trim();if(!question)return;
+  supprimerWelcome();enCours=true;_modeStop(true);
   const date=champDate.value||null;champQuestion.value="";champQuestion.style.height="46px";
   ajouterMsgUser(question);const ts=new Date().toISOString();
   const body={question};if(date)body.date_contexte=date;
   const srcs=sourcesSelectionnees();if(srcs.length)body.filtres_sources=srcs;
+  _ctrlEnCours=new AbortController();const sig=_ctrlEnCours.signal;
   try{
-    const stream=await envoyerQuestionStream(body,question,date,ts);
-    if(!stream)await envoyerQuestionSimple(body,question,date,ts);
-  }finally{enCours=false;btnEnvoyer.disabled=false;champQuestion.focus();}
+    const stream=await envoyerQuestionStream(body,question,date,ts,sig);
+    if(!stream)await envoyerQuestionSimple(body,question,date,ts,sig);
+  }finally{enCours=false;_ctrlEnCours=null;_modeStop(false);champQuestion.focus();}
 }
 
 document.getElementById("btn-new-chat").addEventListener("click",()=>{chatMessages.innerHTML=`<div class="chat-welcome" id="chat-welcome"><div class="welcome-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div><h2>Que souhaitez-vous analyser ?</h2><p>Le système interroge le corpus réglementaire indexé,<br>identifie les versions applicables et cite chaque source précisément.</p><div class="chips"><button class="chip" data-q="Quelles sont les obligations de notification d'une violation de données selon le RGPD ?">Notification violation · RGPD art. 33</button><button class="chip" data-q="Quelles mesures de sécurité techniques sont requises par l'article 32 du RGPD ?">Mesures sécurité · art. 32</button><button class="chip" data-q="Y a-t-il une contradiction entre les délais de notification du RGPD et de NIS2 ?">Conflit RGPD / NIS2</button><button class="chip" data-q="Quelles sont les obligations des entités essentielles selon NIS2 ?">Entités essentielles · NIS2</button></div></div>`;activerChips();});

@@ -246,6 +246,10 @@ a.src-ref:hover{text-decoration:underline;}
 .btn-send svg{width:18px;height:18px;}
 .btn-send:hover{background:#3a7bc8;transform:translateY(-1px);}
 .btn-send:disabled{background:var(--border);cursor:not-allowed;transform:none;}
+.btn-send.stop{background:var(--red);}
+.btn-send.stop:hover{background:#e0413a;}
+.btn-send.stop svg{display:none;}
+.btn-send.stop::after{content:"";width:14px;height:14px;background:#fff;border-radius:3px;}
 
 .val-kpis{display:flex;gap:12px;margin-bottom:16px;}
 .val-kpi{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 20px;display:flex;flex-direction:column;gap:3px;min-width:90px;}
