@@ -51,6 +51,16 @@ class ReponseQuestion(BaseModel):
     reponse: str
     evidences: list[EvidenceRecuperee] = Field(default_factory=list)
     niveau_confiance: NiveauConfiance
+    score_correspondance: float | None = Field(
+        default=None,
+        ge=0.0,
+        le=1.0,
+        description=(
+            "Similarité cosinus moyenne des preuves citées (0-1). Indicateur "
+            "de qualité du rappel, distinct de `niveau_confiance` — pas une "
+            "garantie d'exactitude."
+        ),
+    )
     en_attente_validation: bool = Field(default=False)
     tache_validation_id: UUID | None = Field(default=None)
 

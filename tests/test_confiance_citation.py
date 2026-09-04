@@ -4,9 +4,28 @@ contient des affirmations non ancrées (verdict de l'agent Citation).
 
 from __future__ import annotations
 
+from datetime import date
+
 from src.agents.citation import ResultatCitation
-from src.models import NiveauConfiance
-from src.orchestrator import _confiance_apres_citation
+from src.models import EvidenceRecuperee, NiveauConfiance
+from src.orchestrator import _confiance_apres_citation, _score_correspondance
+
+
+def _ev(score: float | None) -> EvidenceRecuperee:
+    return EvidenceRecuperee(
+        chunk_id="c",
+        document_id="RGPD_2016_679",
+        article_id="art_33",
+        texte_extrait="…",
+        score_similarite=score,
+        valid_from=date(2018, 5, 25),
+    )
+
+
+def test_score_correspondance_moyenne() -> None:
+    assert _score_correspondance([_ev(0.4), _ev(0.6), _ev(None)]) == 0.5
+    assert _score_correspondance([_ev(None), _ev(None)]) is None
+    assert _score_correspondance([]) is None
 
 
 def _res(verifiees: int, douteuses: int) -> ResultatCitation:

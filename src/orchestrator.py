@@ -228,6 +228,12 @@ def _journaliser_audit_fallback(audit: EnregistrementAudit) -> None:
     )
 
 
+def _score_correspondance(evidences: list[EvidenceRecuperee]) -> float | None:
+    """Similarité cosinus moyenne des preuves (None si aucun score)."""
+    scores = [e.score_similarite for e in evidences if e.score_similarite is not None]
+    return round(sum(scores) / len(scores), 4) if scores else None
+
+
 def _construire_reponse_question(
     request_id: UUID,
     reponse_texte: str,
@@ -242,6 +248,7 @@ def _construire_reponse_question(
         reponse=reponse_texte,
         evidences=evidences,
         niveau_confiance=niveau_confiance,
+        score_correspondance=_score_correspondance(evidences),
         en_attente_validation=soumettre_validation,
         tache_validation_id=tache_validation_id,
     )

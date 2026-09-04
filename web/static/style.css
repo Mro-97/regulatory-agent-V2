@@ -193,6 +193,13 @@ svg{display:block;}
 .conf-bandeau.cb-faible{background:var(--red-bg);color:var(--red);}
 .conf-bandeau.cb-moyen{background:var(--amber-bg);color:var(--amber);}
 .conf-bandeau.cb-info{background:var(--bg-elevated);color:var(--txt-3);}
+.jauge{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--txt-3);cursor:help;}
+.jauge-bar{width:52px;height:5px;border-radius:3px;background:var(--bg-elevated);overflow:hidden;}
+.jauge-fill{display:block;height:100%;border-radius:3px;}
+.jauge-fill.j-forte{background:var(--green);}
+.jauge-fill.j-moyenne{background:var(--amber);}
+.jauge-fill.j-faible{background:var(--red);}
+.jauge-lbl{font-variant-numeric:tabular-nums;}
 .src-item.src-abroge{border-left-color:var(--red);}
 .src-valid.abroge{color:var(--red);font-weight:600;}
 .btn-signaler,.btn-suivi,.btn-export{font-size:11px;color:var(--txt-3);background:none;padding:2px 6px;border-radius:8px;transition:color var(--trans),background var(--trans);}

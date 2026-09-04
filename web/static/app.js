@@ -124,13 +124,17 @@ function heure(iso){return new Date(iso).toLocaleTimeString("fr-FR",{hour:"2-dig
 function cls_conf(n){return{élevé:"eleve",moyen:"moyen",faible:"faible"}[n]||"incertain";}
 function lbl_conf(n){return{élevé:"Confiance élevée",moyen:"Confiance moyenne",faible:"Confiance faible",incertain:"Incertain"}[n]||n;}
 function conf_bandeau(n,enAttente){
-  let msg="";
-  if(n==="moyen")msg="Fiabilité moyenne — recoupez avec les textes officiels avant tout usage.";
-  else if(n!=="élevé")msg="Réponse peu fiable — vérifiez chaque source citée, ne pas utiliser telle quelle.";
-  if(enAttente)msg=(msg?msg+" ":"")+"Cette réponse a été transmise pour validation humaine.";
+  let msg="",cls="cb-info",ic="";
+  if(n==="incertain"){msg="Réponse non étayée par le corpus — à considérer comme non fiable.";cls="cb-faible";ic="⚠️ ";}
+  if(enAttente)msg=(msg?msg+" ":"")+"En attente de validation humaine.";
   if(!msg)return"";
-  const cls=n==="élevé"?"cb-info":(n==="moyen"?"cb-moyen":"cb-faible");
-  return `<div class="conf-bandeau ${cls}">⚠️ ${esc(msg)}</div>`;
+  return `<div class="conf-bandeau ${cls}">${ic}${esc(msg)}</div>`;
+}
+function jauge_correspondance(s){
+  if(s==null)return"";
+  const pct=Math.round(Math.max(0,Math.min(1,(s-0.28)/0.34))*100);
+  const t=pct>=70?"forte":pct>=40?"moyenne":"faible";
+  return `<span class="jauge" title="Force de correspondance ${pct}/100 — similarité moyenne des sources retrouvées (${s.toFixed(2)}). Indicateur de rappel, pas une garantie d'exactitude."><span class="jauge-bar"><span class="jauge-fill j-${t}" style="width:${pct}%"></span></span><span class="jauge-lbl">corr. ${pct}</span></span>`;
 }
 function est_abroge(vt){if(!vt)return false;const d=new Date(vt);return !isNaN(d.getTime())&&d<new Date();}
 // Lien de recherche EUR-Lex pour un document_id qui encode année+numéro
@@ -284,7 +288,7 @@ function afficherReponse(data,question,dateCtx){
   const el=document.createElement("div");el.className="msg-sys";
   const signaler=data.request_id?`<button class="btn-signaler" data-rid="${esc(String(data.request_id))}">⚑ Signaler</button>`:"";
   const exporter=`<button class="btn-export">⬇ Exporter</button>`;
-  el.innerHTML=`<div class="msg-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div><div class="msg-sys-inner"><div class="msg-card">${bandeau}<div>${esc(data.reponse)}</div>${sources}</div><div class="msg-meta"><span class="badge badge-${nc}">${lbl_conf(data.niveau_confiance)}</span>${attente}${signaler}${exporter}</div></div>`;
+  el.innerHTML=`<div class="msg-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div><div class="msg-sys-inner"><div class="msg-card">${bandeau}<div>${esc(data.reponse)}</div>${sources}</div><div class="msg-meta">${jauge_correspondance(data.score_correspondance)}<span class="badge badge-${nc}">${lbl_conf(data.niveau_confiance)}</span>${attente}${signaler}${exporter}</div></div>`;
   const btn=el.querySelector(".sources-toggle");const body=el.querySelector(".sources-body");
   if(btn&&body){btn.addEventListener("click",()=>{const o=body.classList.toggle("visible");btn.classList.toggle("open",o);});}
   wireSignaler(el);wireSuivi(el);wireExport(el,()=>md_export(data,question,dateCtx));
