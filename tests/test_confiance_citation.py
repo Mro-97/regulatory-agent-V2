@@ -32,15 +32,22 @@ def test_toutes_douteuses_force_incertain() -> None:
     assert out is NiveauConfiance.INCERTAIN
 
 
-def test_quelques_douteuses_descend_un_cran() -> None:
-    assert _confiance_apres_citation(NiveauConfiance.ELEVE, _res(4, 1)) is (
+def test_minorite_de_douteuses_ne_change_rien() -> None:
+    # 1 paraphrase parmi 4 citations ancrées : réponse correcte, on garde.
+    assert _confiance_apres_citation(NiveauConfiance.MOYEN, _res(4, 1)) is (
         NiveauConfiance.MOYEN
     )
-    assert _confiance_apres_citation(NiveauConfiance.MOYEN, _res(4, 1)) is (
+
+
+def test_majorite_de_douteuses_descend_un_cran() -> None:
+    assert _confiance_apres_citation(NiveauConfiance.ELEVE, _res(1, 3)) is (
+        NiveauConfiance.MOYEN
+    )
+    assert _confiance_apres_citation(NiveauConfiance.MOYEN, _res(1, 3)) is (
         NiveauConfiance.FAIBLE
     )
 
 
 def test_plancher_incertain() -> None:
-    out = _confiance_apres_citation(NiveauConfiance.INCERTAIN, _res(2, 1))
+    out = _confiance_apres_citation(NiveauConfiance.INCERTAIN, _res(1, 3))
     assert out is NiveauConfiance.INCERTAIN

@@ -163,18 +163,22 @@ _MSG_ECHEC_SYNTHESE = "Erreur lors de la génération de la réponse."
 def _confiance_apres_citation(
     niveau: NiveauConfiance, resultat: ResultatCitation | None
 ) -> NiveauConfiance:
-    """Abaisse la confiance si la réponse contient des affirmations non ancrées.
+    """Abaisse la confiance si la réponse est majoritairement non ancrée.
 
-    L'agent Citation compare les passages cités dans la réponse aux
-    preuves : `citations_douteuses` = affirmations introuvables dans le
-    corpus récupéré. Aucune citation ancrée mais au moins une douteuse →
-    INCERTAIN ; sinon au moins une douteuse → un cran plus bas. `resultat`
-    absent (étape ignorée / échec) → confiance inchangée.
+    L'agent Citation compare les passages cités aux preuves :
+    `citations_douteuses` = citations non retrouvées mot pour mot (souvent
+    des paraphrases légitimes). Règles :
+    - aucune citation vérifiée mais au moins une douteuse → INCERTAIN ;
+    - plus de douteuses que de vérifiées → un cran plus bas ;
+    - sinon (quelques paraphrases parmi des citations ancrées) → inchangé.
+    `resultat` absent (étape ignorée / échec) → inchangé.
     """
     if resultat is None or not resultat.citations_douteuses:
         return niveau
     if not resultat.citations_verifiees:
         return NiveauConfiance.INCERTAIN
+    if len(resultat.citations_douteuses) <= len(resultat.citations_verifiees):
+        return niveau
     idx = min(_ORDRE_CONFIANCE.index(niveau) + 1, len(_ORDRE_CONFIANCE) - 1)
     return _ORDRE_CONFIANCE[idx]
 
