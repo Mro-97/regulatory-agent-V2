@@ -17,11 +17,21 @@ canal sûr (gestionnaire de mots de passe partagé, messagerie chiffrée).
 
 from __future__ import annotations
 
+import sys
+
+# Garde-fou : ce script doit tourner avec le Python du venv (3.11+), pas le
+# `python3` système (souvent 3.9 sur macOS). UP036 désactivé — la borne est
+# volontairement plus basse que target-version pour ce message d'aide.
+if sys.version_info < (3, 11):  # noqa: UP036
+    sys.exit(
+        "Python 3.11+ requis. Lancer avec le venv du projet :\n"
+        "    venv/bin/python scripts/gerer_cles.py ..."
+    )
+
 import argparse
 import json
 import os
 import secrets
-import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
