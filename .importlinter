@@ -35,6 +35,7 @@ source_modules =
     src.rate_limit_middleware
     src.rate_limit_redis
     src.access_log
+    src.auth
     src.net
     src.stockage_local
 forbidden_modules =
@@ -65,6 +66,7 @@ forbidden_modules =
     src.access_log
     src.http_safety
     src.ingest_sanitizer
+    src.auth
     src.net
     src.stockage_local
 
@@ -83,6 +85,7 @@ forbidden_modules =
     src.rate_limit_middleware
     src.rate_limit_redis
     src.access_log
+    src.auth
     src.net
     src.stockage_local
     src.watcher

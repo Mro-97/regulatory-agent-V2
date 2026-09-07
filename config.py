@@ -63,20 +63,36 @@ class Parametres(BaseSettings):
     # ------------------------------------------------------------------
     # Sécurité API
     # ------------------------------------------------------------------
+    # RBAC — clés API HACHÉES (SHA-256). Aucune clé en clair n'est stockée
+    # côté serveur : voir src/auth.py + scripts/gerer_cles.py.
+    api_keys_file: Path = Field(
+        default=Path("data/api_keys.json"),
+        alias="API_KEYS_FILE",
+        description=(
+            "Fichier JSON des clés API : [{hash, role, label, cree}]. `hash` = "
+            "SHA-256 hex de la clé (jamais la clé). Rôles : user < validateur "
+            "< admin. Géré par scripts/gerer_cles.py. Doit être en 0600."
+        ),
+    )
+    api_keys_hachees_str: str = Field(
+        default="",
+        alias="API_KEYS_HACHEES",
+        description=(
+            "Clés hachées via variable d'env plutôt que fichier, format "
+            "`sha256hex:role:label` séparés par des virgules. Cumulatif avec "
+            "api_keys_file."
+        ),
+    )
+    # --- Voie dépréciée : clés EN CLAIR dans l'environnement ---
+    # Tolérée en dev (rôle admin, avec warning), REFUSÉE si environnement=prod.
     api_key: str = Field(
         default="",
-        description="Clé API partagée (en-tête X-API-Key). Vide = accès refusé (fail-closed).",  # noqa: E501
+        description="[DÉPRÉCIÉ] Clé API en clair. Utiliser api_keys_file. Refusée en prod.",  # noqa: E501
     )
     api_keys_str: str = Field(
         default="",
         alias="API_KEYS",
-        description=(
-            "Clés API supplémentaires acceptées, séparées par des virgules. "
-            "Permet la rotation sans coupure (ajouter la nouvelle, retirer "
-            "l'ancienne au cycle suivant) et la révocation (retirer une clé). "
-            "Toutes sont comparées en temps constant. `api_key` reste "
-            "acceptée si définie."
-        ),
+        description="[DÉPRÉCIÉ] Clés API en clair (virgules). Refusées en prod.",
     )
     trusted_proxies_str: str = Field(
         default="",
@@ -426,8 +442,8 @@ class Parametres(BaseSettings):
         return [o.strip() for o in self.cors_origins_str.split(",") if o.strip()]
 
     @property
-    def cles_api_valides(self) -> list[str]:
-        """Toutes les clés API acceptées (api_key + api_keys), dédupliquées."""
+    def cles_api_clair(self) -> list[str]:
+        """Clés API en clair issues de l'env (voie dépréciée), dédupliquées."""
         brut = [self.api_key, *self.api_keys_str.split(",")]
         vues: list[str] = []
         for c in (x.strip() for x in brut):

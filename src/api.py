@@ -45,9 +45,14 @@ from starlette.middleware.base import RequestResponseEndpoint
 # nom d'origine pour compatibilité descendante — les tests monkey-patchent
 # `src.api._limiteur`, il doit rester atteignable comme attribut de module.
 from src.api_security import (
-    AuthDep,
+    AdminDep,
     OrigineDep,
+    UserDep,
+    ValidateurDep,
     installer_middlewares,
+)
+from src.api_security import (
+    AuthDep as AuthDep,  # ré-exporté pour compat descendante (import ext.)
 )
 from src.api_security import (
     DebitDep as DebitDep,  # ré-exporté pour compat descendante (import ext.)
@@ -367,8 +372,8 @@ async def health() -> dict[str, object]:
     "/health/details",
     tags=["Système"],
     summary="État détaillé (authentifié)",
-    description="Comme /health, plus l'état du backend d'audit. Exige X-API-Key.",
-    dependencies=[AuthDep],
+    description="Comme /health, plus l'état du backend d'audit. Rôle validateur+.",
+    dependencies=[ValidateurDep],
     include_in_schema=False,
 )
 async def health_details() -> dict[str, object]:
@@ -387,13 +392,28 @@ async def health_details() -> dict[str, object]:
     return reponse
 
 
+@app.get(
+    "/whoami",
+    tags=["Système"],
+    summary="Rôle de la clé API fournie",
+    description="Retourne le rôle et le libellé de la clé (user / validateur / admin).",
+    dependencies=[UserDep],
+    include_in_schema=False,
+)
+async def whoami(request: Request) -> dict[str, str]:
+    """Permet au frontend d'adapter l'UI au rôle (masquer ce qui donnerait 403)."""
+    role = getattr(request.state, "role", None)
+    label = getattr(request.state, "cle_label", "?")
+    return {"role": role.name.lower() if role else "?", "label": label}
+
+
 @app.post(
     "/ask",
     response_model=ReponseQuestion,
     tags=["Requêtes"],
     summary="Poser une question réglementaire",
     description="Pipeline RAG complet : retrieval vectoriel → filtrage temporel → explication LLM → citations.",  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
-    dependencies=[AuthDep, OrigineDep],  # rate limit géré par middleware
+    dependencies=[UserDep, OrigineDep],  # rôle user+ ; rate limit géré par middleware
 )
 async def poser_question(
     requete: RequeteQuestion,
@@ -445,7 +465,7 @@ async def _sse_ask(
     tags=["Requêtes"],
     summary="Poser une question — réponse diffusée (SSE)",
     description="Comme /ask, mais diffuse la synthèse token par token (text/event-stream) : événements `etape`, `token`, `fin`, `erreur`.",  # noqa: E501
-    dependencies=[AuthDep, OrigineDep],
+    dependencies=[UserDep, OrigineDep],  # rôle user+
 )
 async def poser_question_stream(
     requete: RequeteQuestion,
@@ -473,7 +493,7 @@ async def poser_question_stream(
     tags=["Ingestion"],
     summary="Ingérer un document",
     description="Ajoute un document JSON canonique (format DocumentReglementaire) au corpus Qdrant.",  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
-    dependencies=[AuthDep, OrigineDep],  # rate limit géré par middleware
+    dependencies=[AdminDep, OrigineDep],  # rôle admin ; rate limit géré par middleware
 )
 async def ingerer(
     requete: RequeteIngestion,
@@ -499,7 +519,7 @@ async def ingerer(
     tags=["Validation"],
     summary="Tâches en attente",
     description="Retourne toutes les tâches en attente de validation humaine.",
-    dependencies=[AuthDep],
+    dependencies=[ValidateurDep],
 )
 async def pending(orchestrateur: OrchestrateurDep) -> ReponseTachesPendantes:
     """Liste les tâches Redis en attente de validation humaine."""
@@ -523,7 +543,7 @@ async def pending(orchestrateur: OrchestrateurDep) -> ReponseTachesPendantes:
     tags=["Validation"],
     summary="Approuver une tâche",
     description="Approuve une tâche de validation identifiée par son tache_id.",
-    dependencies=[AuthDep, OrigineDep],
+    dependencies=[ValidateurDep, OrigineDep],
 )
 async def approuver(
     requete: RequeteDecisionValidation,
@@ -541,7 +561,7 @@ async def approuver(
     tags=["Validation"],
     summary="Rejeter une tâche",
     description="Rejette une tâche de validation identifiée par son tache_id.",
-    dependencies=[AuthDep, OrigineDep],
+    dependencies=[ValidateurDep, OrigineDep],
 )
 async def rejeter(
     requete: RequeteDecisionValidation,
@@ -559,7 +579,7 @@ async def rejeter(
     tags=["Validation"],
     summary="Suivi d'une tâche de validation",
     description="Statut courant d'une tâche (en attente / approuvée / rejetée) par son id.",  # noqa: E501
-    dependencies=[AuthDep],
+    dependencies=[ValidateurDep],
 )
 async def suivi_tache(
     tache_id: UUID,
@@ -612,7 +632,7 @@ def _enregistrer_signalement(requete: RequeteFeedback) -> ReponseFeedback:
     tags=["Qualité"],
     summary="Signaler une réponse",
     description="Enregistre un signalement utilisateur sur une réponse (revue qualité, calibration).",  # noqa: E501
-    dependencies=[AuthDep, OrigineDep],
+    dependencies=[UserDep, OrigineDep],  # rôle user+
 )
 async def signaler(requete: RequeteFeedback) -> ReponseFeedback:
     """Journalise un signalement (`request_id` + motif + commentaire) en JSONL."""

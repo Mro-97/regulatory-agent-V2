@@ -11,9 +11,9 @@ Le fichier `src/api.py` importe `installer_middlewares(app)` et les
 
 from __future__ import annotations
 
-import hmac
 import time
 from collections import defaultdict
+from collections.abc import Callable
 from threading import Lock
 from typing import TYPE_CHECKING
 
@@ -21,6 +21,8 @@ from config import cfg
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import RequestResponseEndpoint
+
+from src.auth import Role, identifier, magasin_configure
 
 if TYPE_CHECKING:
     from src.rate_limit_redis import RateLimiterRedis
@@ -120,40 +122,49 @@ def _controler_taille_et_encoding(request: Request) -> JSONResponse | None:
     return None
 
 
-def cle_api_valide(fournie: str | None) -> bool:
-    """True si `fournie` correspond à l'une des clés acceptées (temps constant).
+_MSG_AUTH_ABSENTE = "Authentification non configurée."
+_MSG_CLE_INVALIDE = "Clé API invalide."
+_MSG_ROLE_INSUFFISANT = "Rôle insuffisant pour cette opération."
 
-    Toutes les clés configurées sont comparées, sans court-circuit, pour ne
-    pas exposer par le temps de réponse combien de clés existent ni laquelle
-    a matché.
+
+def cle_api_valide(fournie: str | None) -> bool:
+    """True si `fournie` correspond à une clé du magasin (hachée, temps constant)."""
+    return identifier(fournie) is not None
+
+
+def role_courant(request: Request) -> Role:
+    """Résout le rôle porté par l'en-tête `X-API-Key`.
+
+    503 si aucune clé n'est configurée (fail-closed), 401 si la clé fournie
+    ne correspond à aucune entrée. Mémorise `(role, label)` sur
+    `request.state` pour le journal d'accès et `/whoami`.
     """
-    proposee = (fournie or "").strip()
-    valides = cfg.cles_api_valides
-    ok = False
-    for attendue in valides:
-        if hmac.compare_digest(proposee, attendue):
-            ok = True
-    return ok and bool(proposee)
+    if not magasin_configure():
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, _MSG_AUTH_ABSENTE)
+    resultat = identifier(request.headers.get("X-API-Key"))
+    if resultat is None:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, _MSG_CLE_INVALIDE)
+    role, label = resultat
+    request.state.role = role
+    request.state.cle_label = label
+    return role
+
+
+def exige_role(minimum: Role) -> Callable[[Request], Role]:
+    """Fabrique une dépendance FastAPI : clé valide ET rôle ≥ `minimum` (403 sinon)."""
+
+    def _dep(request: Request) -> Role:
+        role = role_courant(request)
+        if role < minimum:
+            raise HTTPException(status.HTTP_403_FORBIDDEN, _MSG_ROLE_INSUFFISANT)
+        return role
+
+    return _dep
 
 
 def verifier_auth(request: Request) -> None:
-    """Exige une clé API valide (fail-closed : aucune clé configurée = refus).
-
-    Un `.strip()` défensif est appliqué des deux côtés : sinon un copier-coller
-    de la clé qui embarque un espace ou un retour ligne (typique quand on
-    colle depuis un .env dans un prompt) tombe systématiquement en 401
-    (`hmac.compare_digest` étant strict au caractère près).
-    """
-    if not cfg.cles_api_valides:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Authentification non configurée.",
-        )
-    if not cle_api_valide(request.headers.get("X-API-Key")):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Clé API invalide.",
-        )
+    """Exige une clé API valide (n'importe quel rôle). Compat descendante."""
+    role_courant(request)
 
 
 def verifier_origine(request: Request) -> None:
@@ -256,3 +267,8 @@ def get_rate_limiter() -> RateLimiterRedis:
 AuthDep = Depends(verifier_auth)
 OrigineDep = Depends(verifier_origine)
 DebitDep = Depends(verifier_rate_limit)
+
+# Dépendances RBAC prêtes à l'emploi (cf. src/auth.Role).
+UserDep = Depends(exige_role(Role.USER))
+ValidateurDep = Depends(exige_role(Role.VALIDATEUR))
+AdminDep = Depends(exige_role(Role.ADMIN))

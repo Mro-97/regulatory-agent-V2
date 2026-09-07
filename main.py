@@ -126,6 +126,28 @@ def _erreurs_mode_production(erreurs: list[str]) -> None:
             "client vue serait celle du proxy (rate-limit et logs cassés). "
             "Déclarer l'IP du proxy dans TRUSTED_PROXIES."
         )
+    if cfg.cles_api_clair:
+        erreurs.append(
+            "ENVIRONNEMENT=prod avec API_KEY/API_KEYS en clair dans "
+            "l'environnement — interdit. Migrer vers data/api_keys.json "
+            "(scripts/gerer_cles.py)."
+        )
+    _erreur_permissions_fichier_cles(erreurs)
+
+
+def _erreur_permissions_fichier_cles(erreurs: list[str]) -> None:
+    """Refuse en prod un `api_keys_file` lisible par le groupe ou tout le monde."""
+    import stat
+
+    chemin = cfg.api_keys_file
+    if not chemin.exists():
+        return
+    mode = chemin.stat().st_mode
+    if mode & (stat.S_IRWXG | stat.S_IRWXO):
+        erreurs.append(
+            f"{chemin} accessible au groupe/autres (mode {oct(mode & 0o777)}) — "
+            "chmod 600 requis (contient des hashes de clés)."
+        )
 
 
 def _erreur_dimension_embedding_incoherente(erreurs: list[str]) -> None:
@@ -163,37 +185,44 @@ def _erreur_debug_et_docs_exposes(erreurs: list[str]) -> None:
 
 _API_KEY_PLACEHOLDER = "remplacez-par-une-cle-longue-et-aleatoire"
 _API_KEY_LONGUEUR_MIN = 32
-_COMMANDE_GEN_CLE = (
-    "python3 -c \"import secrets; print('API_KEY=' + secrets.token_urlsafe(32))\""
-)
+_COMMANDE_GEN_CLE = "python3 scripts/gerer_cles.py generer --role admin --label <nom>"
 
 
 def _erreur_api_key_manquante(erreurs: list[str]) -> None:
-    """Refuse le boot si aucune clé API valide n'est configurée.
+    """Refuse le boot si le magasin de clés API est vide ou sans admin.
 
-    Examine `API_KEY` et chaque entrée de `API_KEYS`. Cas fail-closed :
-    - aucune clé → aucun endpoint métier ne répondra (503 systématique) ;
-    - valeur placeholder de `.env.example` → déploiement non configuré ;
-    - clé < 32 caractères → bruteforce trop accessible.
+    Le magasin (`src.auth`) agrège : `data/api_keys.json`, `API_KEYS_HACHEES`,
+    et — voie dépréciée — les clés en clair `API_KEY`/`API_KEYS` (ignorées si
+    `environnement=prod`). Cas fail-closed :
+    - magasin vide → aucun endpoint métier ne répond (503) ;
+    - aucune clé `admin` → `/ingest` et la gestion deviennent inatteignables ;
+    - clé en clair < 32 caractères (voie dépréciée) → bruteforce trop accessible ;
+    - placeholder de `.env.example`.
     """
-    cles = cfg.cles_api_valides
-    if not cles:
+    from src.auth import Role, compte_par_role, magasin_configure
+
+    if not magasin_configure():
         erreurs.append(
-            "Aucune clé API — définir API_KEY (ou API_KEYS) dans .env avant "
-            f"démarrage. Générer une clé sûre : {_COMMANDE_GEN_CLE}"
+            "Magasin de clés API vide (ni data/api_keys.json, ni "
+            "API_KEYS_HACHEES, ni API_KEY) — générer une clé : " + _COMMANDE_GEN_CLE
         )
         return
-    if any(c == _API_KEY_PLACEHOLDER for c in cles):
+    if compte_par_role().get(Role.ADMIN, 0) == 0:
         erreurs.append(
-            "API_KEY = valeur placeholder de .env.example — remplacer par une clé "
-            f"réelle avant déploiement. Générer : {_COMMANDE_GEN_CLE}"
+            "Aucune clé de rôle 'admin' — /ingest et la gestion seraient "
+            "inatteignables. " + _COMMANDE_GEN_CLE
         )
-        return
-    courtes = [c for c in cles if len(c) < _API_KEY_LONGUEUR_MIN]
+    clair = cfg.cles_api_clair
+    if any(c == _API_KEY_PLACEHOLDER for c in clair):
+        erreurs.append(
+            "API_KEY = valeur placeholder de .env.example — remplacer. "
+            + _COMMANDE_GEN_CLE
+        )
+    courtes = [c for c in clair if len(c) < _API_KEY_LONGUEUR_MIN]
     if courtes:
         erreurs.append(
-            f"{len(courtes)} clé(s) API trop courte(s) (< {_API_KEY_LONGUEUR_MIN} "
-            f"caractères) — risque de bruteforce. Générer : {_COMMANDE_GEN_CLE}"
+            f"{len(courtes)} clé(s) API en clair trop courte(s) "
+            f"(< {_API_KEY_LONGUEUR_MIN} caractères) — risque de bruteforce."
         )
 
 

@@ -93,11 +93,13 @@ def journaliser_acces_requete(
     """
     from src.net import nettoyer_entete
 
+    role = getattr(request.state, "role", None)
     niveau = logger.warning if statut >= 400 else logger.info
     niveau(
-        "acces user=%s cle=%s ip=%s ip_client=%s methode=%s chemin=%s statut=%d "
-        "duree_ms=%d motif=%s question=%r origin=%s ua=%r ref=%s",
+        "acces user=%s role=%s cle=%s ip=%s ip_client=%s methode=%s chemin=%s "
+        "statut=%d duree_ms=%d motif=%s question=%r origin=%s ua=%r ref=%s",
         _identite(request),
+        role.name.lower() if role is not None else "-",
         _empreinte_cle(request.headers.get("X-API-Key")),
         request.client.host if request.client else "?",
         _ip_client_reelle(request),

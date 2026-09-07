@@ -1,5 +1,5 @@
 "use strict";
-const API={ask:"/ask",askStream:"/ask/stream",pending:"/pending",approve:"/approve",reject:"/reject",health:"/health",feedback:"/feedback"};
+const API={ask:"/ask",askStream:"/ask/stream",pending:"/pending",approve:"/approve",reject:"/reject",health:"/health",feedback:"/feedback",whoami:"/whoami"};
 // C1: la clé API n'est plus injectée dans le HTML. L'utilisateur la saisit
 // une fois par onglet, elle est conservée en sessionStorage (jamais persistée).
 // Sur 401, apiFetch purge la clé, re-prompte, et retente UNE seule fois.
@@ -498,10 +498,26 @@ btnEnvoyer.addEventListener("click",envoyerQuestion);
 champQuestion.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();envoyerQuestion();}});
 champQuestion.addEventListener("input",()=>{champQuestion.style.height="48px";champQuestion.style.height=Math.min(champQuestion.scrollHeight,130)+"px";});
 
+// RBAC : le rôle de la clé (user < validateur < admin) pilote ce que l'UI
+// montre. Un `user` n'a pas accès à la file de validation → on masque
+// l'onglet et on coupe son polling (sinon 403 en boucle).
+let ROLE="user";
+const RANG={user:1,validateur:2,admin:3};
+async function chargerRole(){
+  try{
+    const r=await apiFetch(API.whoami);
+    if(r.ok)ROLE=(await r.json()).role||"user";
+  }catch(_){}
+  const peutValider=(RANG[ROLE]||1)>=RANG.validateur;
+  document.querySelector('.nav-item[data-view="validation"]')?.toggleAttribute("hidden",!peutValider);
+  return peutValider;
+}
+
 // Validation de la clé AVANT tout polling, pour éviter l'illusion de
 // connexion quand /health (public) affiche "OPÉRATIONNEL" alors que la
 // clé saisie est en fait rejetée.
-validerCleAuDemarrage().finally(()=>{
-  majKPIs();chargerTaches();
-  setInterval(majKPIs,30000);setInterval(chargerTaches,30000);
+validerCleAuDemarrage().finally(async()=>{
+  majKPIs();setInterval(majKPIs,30000);
+  const peutValider=await chargerRole();
+  if(peutValider){chargerTaches();setInterval(chargerTaches,30000);}
 });

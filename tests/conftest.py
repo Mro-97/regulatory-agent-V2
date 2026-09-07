@@ -18,6 +18,13 @@ os.environ.setdefault("TAILLE_MAX_REQUETE_OCTETS", "2097152")
 # les fixtures d'ingestion utilisent des textes volontairement courts.
 # `test_ingest_min_chunk.py` réactive le seuil explicitement.
 os.environ.setdefault("INGEST_TAILLE_MIN_CHUNK", "0")
+# Magasin de clés hachées : chemin volontairement absent en test — les
+# tests RBAC le monkeypatchent vers un tmp_path. Sinon un vrai
+# data/api_keys.json local polluerait la suite.
+os.environ.setdefault(
+    "API_KEYS_FILE",
+    "/tmp/regulatory_agent_test_keys_absent.json",  # noqa: S108
+)
 
 
 # ---------------------------------------------------------------------------
@@ -26,6 +33,22 @@ os.environ.setdefault("INGEST_TAILLE_MIN_CHUNK", "0")
 
 
 import pytest
+
+
+@pytest.fixture(autouse=True)
+def _magasin_cles_frais():  # noqa: ANN202
+    """Vide le cache du magasin de clés API avant chaque test.
+
+    `src.auth._magasin` est mémoïsé (`lru_cache`) et lit `cfg.api_key` etc.
+    au premier appel. Sans ce reset, un test qui monkeypatche `cfg.api_key`
+    (validation de démarrage, 503 sans clé…) verrait le magasin figé d'un
+    test précédent.
+    """
+    from src.auth import recharger_magasin
+
+    recharger_magasin()
+    yield
+    recharger_magasin()
 
 
 @pytest.fixture
