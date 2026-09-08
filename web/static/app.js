@@ -1,20 +1,45 @@
 "use strict";
 const API={ask:"/ask",askStream:"/ask/stream",pending:"/pending",approve:"/approve",reject:"/reject",health:"/health",feedback:"/feedback",whoami:"/whoami"};
-// C1: la clé API n'est plus injectée dans le HTML. L'utilisateur la saisit
-// une fois par onglet, elle est conservée en sessionStorage (jamais persistée).
-// Sur 401, apiFetch purge la clé, re-prompte, et retente UNE seule fois.
-function _demanderCle(msg){
-  const t=msg||"Clé API (X-API-Key) — conservée uniquement pour cet onglet :";
-  const saisie=window.prompt(t,"");
-  const k=(saisie||"").trim();
-  if(k){try{sessionStorage.setItem("apiKey",k);}catch(_){}}
-  return k;
+
+// La clé API n'est jamais dans le HTML : saisie via la modale #login-overlay,
+// conservée en sessionStorage (par onglet, jamais sur disque). Sur 401,
+// apiFetch purge la clé, rouvre la modale, et retente UNE fois.
+let API_KEY="";
+try{API_KEY=(sessionStorage.getItem("apiKey")||"").trim();}catch(_){}
+
+let _resoudreCle=null;
+function demanderCle(message){
+  const ov=document.getElementById("login-overlay");
+  const err=document.getElementById("login-err");
+  const inp=document.getElementById("login-key");
+  if(message){err.textContent=message;err.hidden=false;}else{err.hidden=true;}
+  ov.hidden=false;inp.value="";inp.focus();
+  return new Promise(res=>{_resoudreCle=res;});
 }
-function _obtenirCle(){
-  let k="";try{k=(sessionStorage.getItem("apiKey")||"").trim();}catch(_){}
-  return k||_demanderCle();
-}
-let API_KEY=_obtenirCle();
+function fermerModaleCle(){document.getElementById("login-overlay").hidden=true;}
+(function wireLogin(){
+  const f=document.getElementById("login-form");
+  const inp=document.getElementById("login-key");
+  const eye=document.getElementById("login-eye");
+  eye.addEventListener("click",()=>{
+    inp.type=inp.type==="password"?"text":"password";
+    eye.classList.toggle("on",inp.type==="text");
+    inp.focus();
+  });
+  f.addEventListener("submit",e=>{
+    e.preventDefault();
+    const k=inp.value.trim();if(!k)return;
+    try{sessionStorage.setItem("apiKey",k);}catch(_){}
+    API_KEY=k;
+    const res=_resoudreCle;_resoudreCle=null;
+    if(res)res(k);
+  });
+})();
+// Déconnexion : efface la clé de l'onglet et rouvre la modale.
+document.getElementById("user-badge").addEventListener("click",()=>{
+  try{sessionStorage.removeItem("apiKey");}catch(_){}
+  API_KEY="";location.reload();
+});
 // Identifiant de navigateur stable (pas un secret) : permet de distinguer
 // les postes dans le journal d'accès serveur, même derrière un tunnel SSH
 // où toutes les requêtes arrivent en 127.0.0.1.
@@ -34,13 +59,13 @@ async function apiFetch(url,opts){
   if(r.status===401){
     try{sessionStorage.removeItem("apiKey");}catch(_){}
     _marquerAuth(false,"Clé API refusée");
-    const k=_demanderCle("Clé API invalide — veuillez la ressaisir :");
+    const k=await demanderCle("Clé API refusée. Ressaisissez-la.");
     if(!k)return r;
     API_KEY=k;
     const h2=Object.assign({},opts.headers||{},{"X-API-Key":API_KEY,"X-Client-Id":CLIENT_ID});
     if(opts.body&&!h2["Content-Type"])h2["Content-Type"]="application/json";
     const r2=await fetch(url,Object.assign({},opts,{headers:h2}));
-    if(r2.ok)_marquerAuth(true,"Clé API validée");
+    if(r2.ok){_marquerAuth(true,"Clé API validée");fermerModaleCle();}
     return r2;
   }
   return r;
@@ -62,39 +87,67 @@ function _marquerAuth(ok,sub){
   if(sub)sb.textContent=sub;
 }
 
-// Valider la clé au démarrage contre /pending — sans quoi n'importe quelle
-// saisie donnait l'illusion de connexion (l'interface `/` et `/health` sont
-// publics). Boucle jusqu'à validation ou annulation explicite.
+// Valide la clé contre /whoami (rôle user minimum → marche pour toutes les
+// clés valides, contrairement à /pending réservé aux validateurs). Boucle
+// via la modale jusqu'à succès. Renvoie l'objet {role,label} ou null.
 async function validerCleAuDemarrage(){
-  while(API_KEY){
-    let r;
-    try{
-      r=await fetch(API.pending,{headers:{"X-API-Key":API_KEY}});
-    }catch(_){
-      _marquerAuth(false,"API injoignable");
-      return false;
+  for(;;){
+    if(!API_KEY){
+      const k=await demanderCle();
+      if(!k){_marquerAuth(false,"Aucune clé");return null;}
+      API_KEY=k;
     }
+    let r;
+    try{r=await fetch(API.whoami,{headers:{"X-API-Key":API_KEY,"X-Client-Id":CLIENT_ID}});}
+    catch(_){_marquerAuth(false,"API injoignable");return null;}
     if(r.ok){
-      _marquerAuth(true,"Clé API validée");
-      return true;
+      _marquerAuth(true,"Clé API validée");fermerModaleCle();
+      try{return await r.json();}catch(_){return {role:"user",label:"?"};}
     }
     if(r.status===401){
       try{sessionStorage.removeItem("apiKey");}catch(_){}
-      _marquerAuth(false,"Clé refusée par le serveur");
-      const k=_demanderCle("Clé API refusée par le serveur — veuillez ressaisir :");
-      if(!k){_marquerAuth(false,"Saisie annulée");return false;}
-      API_KEY=k;
+      API_KEY="";
+      await demanderCle("Clé refusée par le serveur. Vérifiez-la.");
+      try{API_KEY=(sessionStorage.getItem("apiKey")||"").trim();}catch(_){}
       continue;
     }
-    // 5xx, 503 (API_KEY non configurée côté serveur), etc. — laisser passer.
-    _marquerAuth(false,"Serveur indisponible");
-    return false;
+    _marquerAuth(false,"Serveur indisponible ("+r.status+")");
+    fermerModaleCle();
+    return null;
   }
-  _marquerAuth(false,"Aucune clé saisie");
-  return false;
 }
 let enCours=false,sessionQueries=0,filtreActif="all",tachesData=[],activiteSession=[],historiqueSession=[];
 const chatMessages=document.getElementById("chat-messages"),champQuestion=document.getElementById("champ-question"),champDate=document.getElementById("champ-date"),btnEnvoyer=document.getElementById("btn-envoyer"),btnStop=document.getElementById("btn-stop"),toastZone=document.getElementById("toast-zone");
+
+// Historique persistant (localStorage, par navigateur). Survit au rechargement.
+const HISTO_MAX=60;
+function chargerHisto(){
+  try{const j=localStorage.getItem("histo:"+CLIENT_ID);const a=j&&JSON.parse(j);
+    if(Array.isArray(a))return a.slice(0,HISTO_MAX);}catch(_){}
+  return [];
+}
+function sauverHisto(){
+  try{localStorage.setItem("histo:"+CLIENT_ID,JSON.stringify(historiqueSession.slice(0,HISTO_MAX)));}catch(_){}
+}
+historiqueSession=chargerHisto();
+activiteSession=historiqueSession.slice(0,8).map(h=>({question:h.question,conf:h.conf,ts:h.ts}));
+
+// Menu latéral coulissant (mobile).
+const _sidebar=document.getElementById("sidebar");
+const _backdrop=document.getElementById("sidebar-backdrop");
+const _burger=document.getElementById("btn-burger");
+function toggleSidebar(open){
+  const o=open===undefined?!_sidebar.classList.contains("ouverte"):open;
+  _sidebar.classList.toggle("ouverte",o);
+  if(o)_backdrop.hidden=false;
+  requestAnimationFrame(()=>{
+    _backdrop.classList.toggle("on",o);
+    if(!o)setTimeout(()=>{_backdrop.hidden=true;},260);
+  });
+  _burger.setAttribute("aria-expanded",o?"true":"false");
+}
+_burger.addEventListener("click",()=>toggleSidebar());
+_backdrop.addEventListener("click",()=>toggleSidebar(false));
 
 // Barre de chargement globale (haut de page). Compteur : plusieurs
 // opérations simultanées la gardent visible tant qu'il en reste une.
@@ -109,7 +162,7 @@ function switchView(id){
   document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
   const v=document.getElementById("view-"+id);if(v)v.classList.add("active");
   const n=document.querySelector(`.nav-item[data-view="${id}"]`);if(n)n.classList.add("active");
-  const titres={accueil:["Bonjour,","Voici l'essentiel de votre veille réglementaire."],chat:["Chat / Analyse","Interrogez votre corpus réglementaire"],validation:["Validation humaine","Éléments en attente de décision"],historique:["Historique","Toutes les analyses de la session"],sources:["Sources","Corpus réglementaire indexé"],parametres:["Paramètres","Configuration du système"]};
+  const titres={accueil:["Bonjour,","Voici l'essentiel de votre veille réglementaire."],chat:["Chat / Analyse","Interrogez votre corpus réglementaire"],validation:["Validation humaine","Éléments en attente de décision"],historique:["Historique","Vos analyses (conservées sur ce navigateur)"],sources:["Sources","Corpus réglementaire indexé"],parametres:["Paramètres","Configuration du système"]};
   const t=titres[id]||["Regulatory Agent V2",""];
   document.querySelector(".topbar-left h1").textContent=t[0];
   document.querySelector(".topbar-left p").textContent=t[1];
@@ -121,7 +174,7 @@ function switchView(id){
 // (interdits par la CSP script-src 'self').
 document.addEventListener("click",e=>{
   const el=e.target.closest("[data-view]");
-  if(el){e.preventDefault();switchView(el.dataset.view);}
+  if(el){e.preventDefault();switchView(el.dataset.view);toggleSidebar(false);}
 });
 const THEMES=["t-sepia","t-dim","t-slate","dark"];
 const THEME_DEFAUT="t-sepia";
@@ -306,6 +359,22 @@ function wireExport(el,build){
     telecharger_texte(nom,build());toast("Export Markdown téléchargé","info");
   });
 }
+function _copier(txt){
+  if(navigator.clipboard&&navigator.clipboard.writeText)return navigator.clipboard.writeText(txt);
+  return new Promise((res,rej)=>{
+    const ta=document.createElement("textarea");ta.value=txt;ta.style.position="fixed";ta.style.opacity="0";
+    document.body.appendChild(ta);ta.select();
+    try{document.execCommand("copy");res();}catch(e){rej(e);}finally{ta.remove();}
+  });
+}
+function wireCopier(el,build){
+  const b=el.querySelector(".btn-copier");if(!b)return;
+  b.addEventListener("click",async()=>{
+    try{await _copier(build());b.textContent="✓ Copié";b.classList.add("ok");
+      setTimeout(()=>{b.textContent="⧉ Copier";b.classList.remove("ok");},1800);}
+    catch{toast("Copie impossible","error");}
+  });
+}
 function afficherReponse(data,question,dateCtx){
   const nc=cls_conf(data.niveau_confiance);
   let sources="";
@@ -313,16 +382,19 @@ function afficherReponse(data,question,dateCtx){
     const items=data.evidences.slice(0,8).map(ev=>{const abroge=est_abroge(ev.valid_to);const fin=ev.valid_to||"en vigueur";const vmark=abroge?" · n'est plus en vigueur":"";const ex=ev.texte_extrait?`<div class="src-excerpt">${esc(ev.texte_extrait.slice(0,160))}...</div>`:"";const url=lien_eurlex(ev.document_id);const ref=`${esc(ev.document_id)} / ${esc(ev.article_id)}`;const refHtml=url?`<a class="src-ref" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${ref} ↗</a>`:`<div class="src-ref">${ref}</div>`;return `<div class="src-item${abroge?" src-abroge":""}">${refHtml}<div class="src-valid${abroge?" abroge":""}">${esc(String(ev.valid_from))} → ${esc(String(fin))}${vmark}</div>${ex}</div>`;}).join("");
     sources=`<button class="sources-toggle"><span>📎 ${data.evidences.length} source${data.evidences.length>1?"s":""} citée${data.evidences.length>1?"s":""}</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button><div class="sources-body">${items}</div>`;
   }
-  const suivi=data.tache_validation_id?`<button class="btn-suivi" data-tid="${esc(String(data.tache_validation_id))}">Vérifier le statut</button>`:"";
+  // RBAC : un `user` ne peut pas suivre une tâche (/tache = validateur+).
+  const suivi=data.tache_validation_id?(peutValider()
+    ?`<button class="btn-suivi" data-tid="${esc(String(data.tache_validation_id))}">Vérifier le statut</button>`
+    :`<span class="suivi-note">Un valideur traitera votre demande.</span>`):"";
   const attente=data.en_attente_validation?`<span class="badge badge-attente">⏳ En attente de validation</span>${suivi}`:"";
   const bandeau=conf_bandeau(data.niveau_confiance,data.en_attente_validation);
   const el=document.createElement("div");el.className="msg-sys";
   const signaler=data.request_id?`<button class="btn-signaler" data-rid="${esc(String(data.request_id))}">⚑ Signaler</button>`:"";
-  const exporter=`<button class="btn-export">⬇ Exporter</button>`;
-  el.innerHTML=`<div class="msg-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div><div class="msg-sys-inner"><div class="msg-card">${bandeau}<div>${esc(data.reponse)}</div>${sources}</div><div class="msg-meta">${jauge_correspondance(data.score_correspondance)}<span class="badge badge-${nc}">${lbl_conf(data.niveau_confiance)}</span>${attente}${signaler}${exporter}</div></div>`;
+  const actions=`<button class="btn-copier">⧉ Copier</button><button class="btn-export">⬇ Exporter</button>`;
+  el.innerHTML=`<div class="msg-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div><div class="msg-sys-inner"><div class="msg-card">${bandeau}<div>${esc(data.reponse)}</div>${sources}</div><div class="msg-meta">${jauge_correspondance(data.score_correspondance)}<span class="badge badge-${nc}">${lbl_conf(data.niveau_confiance)}</span>${attente}${signaler}${actions}</div></div>`;
   const btn=el.querySelector(".sources-toggle");const body=el.querySelector(".sources-body");
   if(btn&&body){btn.addEventListener("click",()=>{const o=body.classList.toggle("visible");btn.classList.toggle("open",o);});}
-  wireSignaler(el);wireSuivi(el);wireExport(el,()=>md_export(data,question,dateCtx));
+  wireSignaler(el);wireSuivi(el);wireExport(el,()=>md_export(data,question,dateCtx));wireCopier(el,()=>md_export(data,question,dateCtx));
   chatMessages.appendChild(el);scrollBas();
 }
 
@@ -377,7 +449,7 @@ async function envoyerQuestionStream(body,question,date,ts,signal){
   if(fin){
     sessionQueries++;
     afficherReponse(fin,question,date);ajouterActivite(question,fin.niveau_confiance,ts);
-    historiqueSession.unshift({question,reponse:fin.reponse,conf:fin.niveau_confiance,ts});
+    historiqueSession.unshift({question,reponse:fin.reponse,conf:fin.niveau_confiance,ts});sauverHisto();
     majKPIs();if(fin.en_attente_validation)toast("Réponse soumise à validation humaine","warning");
   }else{
     afficherErreurChat(err||"Réponse incomplète.");toast(err||"Erreur serveur","error");
@@ -399,7 +471,7 @@ async function envoyerQuestionSimple(body,question,date,ts,signal){
     }
     const data=await r.json();sessionQueries++;
     afficherReponse(data,question,date);ajouterActivite(question,data.niveau_confiance,ts);
-    historiqueSession.unshift({question,reponse:data.reponse,conf:data.niveau_confiance,ts});
+    historiqueSession.unshift({question,reponse:data.reponse,conf:data.niveau_confiance,ts});sauverHisto();
     majKPIs();if(data.en_attente_validation)toast("Réponse soumise à validation humaine","warning");
   }catch(e){
     supprimerTyping();
@@ -492,6 +564,13 @@ function rendrHisto(){
   if(!historiqueSession.length){el.innerHTML=`<div class="activity-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg><p>Aucune analyse dans l'historique</p></div>`;return;}
   el.innerHTML=historiqueSession.map(h=>{const nc=cls_conf(h.conf);return `<div class="hist-item"><div class="hist-head"><div class="hist-q">${esc(h.question)}</div><div class="hist-time">${heure(h.ts)}</div></div><div class="hist-preview">${esc(h.reponse.slice(0,200))}...</div><div class="hist-meta"><span class="badge badge-${nc}">${lbl_conf(h.conf)}</span></div></div>`;}).join("");
 }
+document.getElementById("btn-vider-histo")?.addEventListener("click",()=>{
+  if(!historiqueSession.length)return;
+  if(!confirm("Effacer tout l'historique des analyses de ce navigateur ?"))return;
+  historiqueSession=[];activiteSession=[];sauverHisto();
+  rendrHisto();rendrActivite();majKPIs();
+  toast("Historique vidé","info");
+});
 
 function activerChips(){document.querySelectorAll(".chip[data-q]").forEach(c=>{c.addEventListener("click",()=>{champQuestion.value=c.dataset.q;champQuestion.dispatchEvent(new Event("input"));switchView("chat");champQuestion.focus();});});}
 activerChips();
@@ -499,26 +578,32 @@ btnEnvoyer.addEventListener("click",envoyerQuestion);
 champQuestion.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();envoyerQuestion();}});
 champQuestion.addEventListener("input",()=>{champQuestion.style.height="48px";champQuestion.style.height=Math.min(champQuestion.scrollHeight,130)+"px";});
 
-// RBAC : le rôle de la clé (user < validateur < admin) pilote ce que l'UI
-// montre. Un `user` n'a pas accès à la file de validation → on masque
-// l'onglet et on coupe son polling (sinon 403 en boucle).
+// RBAC : le rôle de la clé (user < validateur < admin) pilote l'UI.
+// Un `user` ne voit pas la file de validation → onglet masqué, polling coupé.
 let ROLE="user";
 const RANG={user:1,validateur:2,admin:3};
-async function chargerRole(){
-  try{
-    const r=await apiFetch(API.whoami);
-    if(r.ok)ROLE=(await r.json()).role||"user";
-  }catch(_){}
-  const peutValider=(RANG[ROLE]||1)>=RANG.validateur;
-  document.querySelector('.nav-item[data-view="validation"]')?.toggleAttribute("hidden",!peutValider);
-  return peutValider;
+function peutValider(){return (RANG[ROLE]||1)>=RANG.validateur;}
+const ROLE_LBL={user:"Utilisateur",validateur:"Validateur",admin:"Administrateur"};
+
+function appliquerIdentite(w){
+  ROLE=(w&&w.role)||"user";
+  const label=(w&&w.label)||"?";
+  document.body.dataset.role=ROLE;
+  const av=document.getElementById("user-avatar");
+  const lb=document.getElementById("user-label");
+  const rl=document.getElementById("user-role");
+  if(av)av.textContent=label.replace(/[^a-zA-Z0-9]/g,"").slice(0,2).toUpperCase()||"–";
+  if(lb)lb.textContent=label;
+  if(rl)rl.textContent=ROLE_LBL[ROLE]||ROLE;
+  document.querySelector('.nav-item[data-view="validation"]')?.toggleAttribute("hidden",!peutValider());
 }
 
-// Validation de la clé AVANT tout polling, pour éviter l'illusion de
-// connexion quand /health (public) affiche "OPÉRATIONNEL" alors que la
-// clé saisie est en fait rejetée.
-validerCleAuDemarrage().finally(async()=>{
+// Restitue l'historique persistant (avant même l'auth — c'est du local).
+rendrActivite();rendrHisto();
+
+// Validation de la clé AVANT tout polling.
+validerCleAuDemarrage().then(w=>{
+  if(w)appliquerIdentite(w);
   majKPIs();setInterval(majKPIs,30000);
-  const peutValider=await chargerRole();
-  if(peutValider){chargerTaches();setInterval(chargerTaches,30000);}
+  if(peutValider()){chargerTaches();setInterval(chargerTaches,30000);}
 });
