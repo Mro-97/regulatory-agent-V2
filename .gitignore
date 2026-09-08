@@ -48,3 +48,17 @@ dump.rdb
 CLAUDE.md
 docs/CONTEXTE_PROJET.md
 MEMORY.md
+
+# Artefacts de migration / audit (hors runtime prod)
+MIGRATION.md
+INVENTAIRE.md
+AUDITEUR_PROMPT.md
+RAPPORT_AUDIT.md
+docs/MISSION_migration.md
+
+# Outillage de dev (non déployé)
+.pre-commit-config.yaml
+
+# Scripts de démonstration / conversion ponctuelle (hors runtime)
+scripts/convertir_et_ingerer.sh
+scripts/demarrage_tests.sh
