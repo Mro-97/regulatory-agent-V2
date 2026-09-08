@@ -7,20 +7,25 @@
 # grep préalable — plusieurs libs sont importées à l'intérieur de fonctions
 # (lazy) et n'apparaissent pas dans un audit statique naïf.
 
-# --- Inférence locale (Apple Silicon) ---
-mlx>=0.16,<1.0                  # src/mlx_embedding.py — cœur MLX (mx.core)
-mlx-lm>=0.29,<1.0              # src/mlx_utils.py — génération LLM
-
-# --- Embedding : backend PAR DÉFAUT (config.modele_embedding =
-#     "sentence-transformers/BAAI/bge-m3") ---
-# src/mlx_embedding.py fait `from sentence_transformers import
-# SentenceTransformer` quand l'id commence par "sentence-transformers/".
-# transformers est déclaré EXPLICITEMENT : borné >=5.16 pour écarter
-# PYSEC-2025-217 / PYSEC-2026-2288..2290 / CVE-2026-9856 (corrigées en 5.x).
-# torch (CPU/MPS) est tiré transitivement ; déclaré pour verrouiller.
-sentence-transformers>=6.0,<7.0
-transformers>=5.16,<6.0
-torch>=2.2,<3.0
+# --- Pile ML (Apple Silicon) — FIGÉE AU == ---
+# transformers ⇄ huggingface-hub ⇄ tokenizers ⇄ safetensors ont des
+# contraintes croisées trop serrées pour des plages : la moindre borne
+# large casse la résolution (`pip-audit`). Versions installées ET validées
+# sur m4pro2 (313 tests verts, 2026-09-08).
+# - transformers 5.16.1 : au-dessus de PYSEC-2025-217 / PYSEC-2026-2288..2290
+#   / CVE-2026-9856 (toutes corrigées en 5.x).
+# - src/mlx_embedding.py : `from sentence_transformers import
+#   SentenceTransformer` (backend d'embedding par défaut).
+mlx==0.32.2
+mlx-metal==0.32.2
+mlx-lm==0.29.1
+sentence-transformers==6.0.1
+transformers==5.16.1
+tokenizers==0.23.2
+safetensors==0.8.0
+torch==2.13.0
+# huggingface-hub : tiré transitivement par transformers>=5 (exige >=1.0).
+# Ne PAS le re-déclarer avec une borne — c'était la cause du conflit.
 
 # NB : `mlx-embeddings` (voie MLX native "models/bge-m3-mlx") plantait
 # `Stream(gpu, N)` sur Apple Silicon. Voie abandonnée — import lazy dans
@@ -48,16 +53,6 @@ httpx>=0.27,<1.0                # src/watcher.py + tests (starlette TestClient)
 # Tiré transitivement par pydantic-settings ; version verrouillée ici
 # pour éviter une rétro-installation en 0.21.x.
 python-dotenv>=1.0,<2.0
-
-# --- Téléchargement des modèles Hugging Face ---
-# Utilisé par sentence-transformers / mlx-embeddings pour récupérer les
-# poids, et par scripts/launcher.py pour le pré-chauffage.
-# ⚠️ `pip-audit -r requirements.txt` échoue en ResolutionImpossible :
-#    mlx-lm et sentence-transformers imposent des bornes serrées sur
-#    huggingface-hub. Figer ici la version EXACTE installée et validée
-#    sur m4pro2 (`venv/bin/pip show huggingface-hub`) pour débloquer
-#    l'audit de vulnérabilités.
-huggingface-hub>=0.24,<1.0
 
 # --- Conversion PDF ---
 pdfplumber>=0.11,<1.0           # scripts/pdf_parsing.py — détection articles
