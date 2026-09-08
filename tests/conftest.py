@@ -7,6 +7,12 @@ from __future__ import annotations
 
 import os
 
+# Herméticité : la suite ne doit pas dépendre du `.env` local de la machine.
+# En particulier, si `.env` porte `ENVIRONNEMENT=prod`, la voie « clé en
+# clair » est refusée et les ~30 tests d'auth qui s'appuient sur `API_KEY`
+# ci-dessous tombent en 503. Le comportement `prod` est couvert
+# explicitement par `test_rbac.py::test_cle_en_clair_ignoree_en_prod`.
+os.environ.setdefault("ENVIRONNEMENT", "dev")
 os.environ.setdefault("API_KEY", "cle-de-test-0123456789abcdef")
 os.environ.setdefault("ORCHESTRATEUR_MODE", "mock")
 os.environ.setdefault("CORS_ORIGINS", "http://testserver")
