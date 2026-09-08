@@ -126,6 +126,19 @@ source venv/bin/activate
 uv pip install -r requirements.txt
 ```
 
+> **Pile ML figée au `==`.** `mlx`, `mlx-lm`, `mlx-metal`, `transformers`,
+> `sentence-transformers`, `torch`, `tokenizers` et `safetensors` sont
+> épinglés à une version exacte dans `requirements.txt` : leurs
+> compatibilités croisées sont fragiles et `pip-audit` doit rester vert.
+> Ne pas remonter ces versions sans repasser `pip-audit -r requirements.txt`
+> **et** la suite complète (`pytest -q`, `mypy --strict`).
+>
+> `mlx-lm ≥ 0.29` lie son `generation_stream` GPU au thread qui importe le
+> module ; l'inférence tournant dans un thread dédié (timeout borné),
+> `src/mlx_utils.py` recrée ce stream sur le thread courant avant chaque
+> appel. Toute génération MLX est sérialisée par
+> `Orchestrateur._verrou_agents`.
+
 ---
 
 ## 🔧 Configuration
