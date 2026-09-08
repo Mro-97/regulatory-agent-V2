@@ -26,8 +26,21 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 LOG_DIR = REPO_ROOT / "logs"
 QDRANT_PORT = 6333
 REDIS_PORT = 6379
-API_PORT = 8000
 DELAI_ATTENTE_SERVICE = 15  # secondes max pour qu'un service devienne prêt
+
+
+def _api_port() -> int:
+    """Port d'écoute de l'API, lu depuis la config (défaut 8000)."""
+    sys.path.insert(0, str(REPO_ROOT))
+    try:
+        from config import cfg
+
+        return int(cfg.api_port)
+    except Exception:  # noqa: BLE001 — repli si config illisible
+        return 8000
+
+
+API_PORT = _api_port()
 
 logging.basicConfig(
     level=logging.INFO,
@@ -122,21 +135,33 @@ def prechauffer_modeles_en_arriere_plan() -> subprocess.Popen[bytes]:
     return _lancer_arriere_plan([sys.executable, "-c", script], LOG_DIR / "preload.log")
 
 
-def _verifier_api_key() -> None:
-    """Refuse le démarrage si `API_KEY` n'est pas configurée dans `.env`."""
+def _verifier_configuration() -> None:
+    """Refuse le démarrage si la configuration est invalide.
+
+    Délègue à `main.valider_configuration_demarrage()` — exactement le
+    contrôle que rejoue le lifespan de l'API (magasin de clés RBAC vide /
+    sans admin, DEBUG+DOCS, ENVIRONNEMENT=prod incohérent, dimension
+    embedding…). Échoue tôt et lisiblement.
+    """
     env_file = REPO_ROOT / ".env"
     if not env_file.exists():
-        logger.error(".env introuvable — copier .env.example puis configurer API_KEY.")
+        logger.error(".env introuvable — copier .env.example puis configurer.")
         sys.exit(1)
-    contenu = env_file.read_text(encoding="utf-8")
-    if "API_KEY=" not in contenu or all(
-        not ligne.startswith("API_KEY=") or not ligne.split("=", 1)[1].strip()
-        for ligne in contenu.splitlines()
-    ):
+    sys.path.insert(0, str(REPO_ROOT))
+    try:
+        from main import valider_configuration_demarrage
+    except Exception:
+        logger.exception("Impossible de charger la configuration")
+        sys.exit(1)
+    erreurs = valider_configuration_demarrage()
+    for err in erreurs:
+        logger.error("Configuration invalide : %s", err)
+    if erreurs:
         logger.error(
-            "API_KEY vide ou absente de .env — voir main.py pour la génération."
+            "Générer une clé : venv/bin/python scripts/gerer_cles.py "
+            "generer --role admin --label operateur"
         )
-        sys.exit(1)
+        sys.exit(2)
 
 
 def lancer_api() -> None:
@@ -171,7 +196,7 @@ def _parser_arguments() -> argparse.Namespace:
 def main() -> None:
     """Point d'entrée : vérifs → services → warmup → API."""
     args = _parser_arguments()
-    _verifier_api_key()
+    _verifier_configuration()
     demarrer_qdrant_si_necessaire()
     demarrer_redis_si_necessaire()
     if not args.skip_warmup:

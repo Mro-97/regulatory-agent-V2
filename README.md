@@ -62,12 +62,39 @@ Il permet de :
 
 ## 🔐 Sécurité
 
-- **Authentification** : Clé API (`X-API-Key`) requise sur tous les endpoints métier.
-- **Rate limiting** : Limitation des requêtes par IP sur `/ask` et `/ingest`.
-- **Sanitisation** : Nettoyage des prompts pour éviter les injections.
-- **CORS** : Restreint à l’origine de l’interface web.
-- **Audit trail** : Chaînage SHA-256 pour chaque requête.
-- **Swagger désactivé** par défaut en production.
+- **Authentification + RBAC** : en-tête `X-API-Key` requis sur tous les endpoints
+  métier. Trois rôles hiérarchiques `user < validateur < admin` (401 clé
+  invalide, 403 rôle insuffisant). `/whoami` renvoie le rôle courant.
+- **Clés jamais en clair côté serveur** : seuls des SHA-256 sont stockés
+  (`data/api_keys.json`, mode 0600). Génération / rotation / révocation via
+  `scripts/gerer_cles.py` — la clé n'est affichée qu'une fois. La voie
+  `API_KEY` en clair est dépréciée (tolérée en dev = rôle admin, **refusée si
+  `ENVIRONNEMENT=prod`**).
+- **Rate limiting** par IP d'origine (60/min) sur `/ask`, `/ask/stream`,
+  `/ingest`, `/feedback`. Le seau est indexé sur l'empreinte de la clé si elle
+  est valide, sinon un seau commun `invalide` — impossible de le contourner en
+  faisant varier l'en-tête `X-API-Key`.
+- **Anti-CSRF** : en-tête `Origin` vérifié sur les mutations (403 si hors
+  `CORS_ORIGINS`).
+- **Sanitizer d'ingestion** : chaque chunk est inspecté avant indexation
+  (`INGEST_MODE_SANITIZER` : `annoter` par défaut, `bloquer` recommandé en
+  prod si le corpus est figé).
+- **SSRF** : tout fetch sortant du Watcher passe par une deny-list DNS
+  (RFC1918 / loopback / link-local / metadata cloud).
+- **En-têtes** : CSP `script-src 'self'`, `X-Frame-Options: DENY`,
+  `Permissions-Policy` restrictive, HSTS, `Server` masqué.
+- **Proxy** : `proxy_headers=False` — c'est `TRUSTED_PROXIES` (config) qui
+  décide de faire confiance à `X-Forwarded-For` / `-Proto`. `FORCER_HTTPS`
+  redirige http→https.
+- **Audit trail** : chaînage SHA-256 de chaque requête (`data/audit.jsonl`
+  0600 + PostgreSQL). Journal d'accès structuré (`role=`, empreinte de clé,
+  IP, motif, question tronquée).
+- **Swagger** (`/docs`, `/openapi.json`) désactivé par défaut.
+- **Boot fail-closed** : `main.py` ET le lifespan de l'API refusent de démarrer
+  si la config est invalide (magasin de clés vide / sans admin, `DEBUG=true` +
+  `EXPOSER_DOCS=true`, `ENVIRONNEMENT=prod` incohérent…).
+
+Kit de test d'intrusion : `security/pentest.sh` + `security/llm_abuse.py`.
 
 ---
 
@@ -109,20 +136,20 @@ uv pip install -r requirements.txt
 cp .env.example .env
 ```
 
-2. **Générer une clé API** :
-
-```bash
-openssl rand -hex 32
-```
-
-3. **Remplir le fichier `.env`** avec les valeurs suivantes :
+2. **Remplir le fichier `.env`** :
 
 ```ini
-API_KEY=<ta_clé_hex>
+# dev = tolérant ; prod = boot durci (refuse debug/docs/clé en clair/bind
+# public sans proxy).
+ENVIRONNEMENT=prod
+DEBUG=false
+EXPOSER_DOCS=false
 
-# Embedding — le backend sentence-transformers est le défaut retenu
-# (torch CPU/MPS, stable). EMBEDDING_DIMENSION doit égaler la taille des
-# vecteurs de la collection Qdrant, sinon le boot refuse de démarrer.
+# Fichier des clés API HACHÉES (créé par gerer_cles.py, mode 0600, hors git).
+API_KEYS_FILE=data/api_keys.json
+
+# Embedding — backend par défaut. EMBEDDING_DIMENSION doit égaler la taille
+# des vecteurs de la collection Qdrant, sinon le boot refuse de démarrer.
 MODELE_EMBEDDING=sentence-transformers/BAAI/bge-m3
 EMBEDDING_DIMENSION=1024
 
@@ -135,7 +162,24 @@ REDIS_PORT=6379
 POSTGRES_DSN=postgresql://user:motdepasse@127.0.0.1:5432/regulatory
 API_HOST=127.0.0.1
 API_PORT=8000
+
+# Derrière un proxy TLS uniquement :
+# TRUSTED_PROXIES=<ip_du_proxy>
+# FORCER_HTTPS=true
+# CORS_ORIGINS=https://ton-domaine
 ```
+
+3. **Générer au moins une clé API `admin`** (aucune clé en clair n'est
+   stockée — le hash seul est persisté) :
+
+```bash
+venv/bin/python scripts/gerer_cles.py generer --role admin --label operateur
+venv/bin/python scripts/gerer_cles.py generer --role user  --label testeur-1
+venv/bin/python scripts/gerer_cles.py lister
+```
+
+   Copier chaque clé `rak_…` **immédiatement** (elle ne se réaffiche jamais)
+   et la transmettre au destinataire par un canal sûr.
 
 ---
 
@@ -147,31 +191,43 @@ API_PORT=8000
 python3 scripts/launcher.py
 ```
 
-Le launcher vérifie `.env`/API_KEY, démarre Qdrant + Redis s’ils sont
-absents, pré-charge bge-m3 en tâche de fond puis lance l’API. Ajouter
-`--skip-warmup` pour sauter le pré-chargement du modèle d’embedding.
+Le launcher rejoue `valider_configuration_demarrage()` (mêmes contrôles que
+le lifespan de l'API), démarre Qdrant + Redis s'ils sont absents, pré-charge
+bge-m3 en tâche de fond puis lance l'API. `--skip-warmup` saute le
+pré-chargement. Le port est lu depuis `API_PORT`.
 
 ### Démarrage manuel (si besoin)
 
 ```bash
 ./qdrant --port 6333 > logs/qdrant.log 2>&1 &
 redis-server --port 6379 > logs/redis.log 2>&1 &
-python3 main.py
+venv/bin/python main.py
 ```
 
-L’API est accessible sur `http://127.0.0.1:8000`.
+L'API est accessible sur `http://127.0.0.1:$API_PORT`. Au boot, chercher la
+ligne `Magasin de clés API chargé : N clé(s) (… admin, … validateur, … user)`.
 
 ### Checklist déploiement production
 
-Avant tout déploiement, vérifier dans `.env` :
+Avant tout déploiement :
 
-- `API_KEY` définie, ≥ 32 caractères, ≠ placeholder de `.env.example`
-  (sinon `main.py` refuse le boot).
-- `DEBUG=false` (obligatoire — logs verbeux + tracebacks fuient sinon).
-- `EXPOSER_DOCS=false` (Swagger désactivé).
-- `CORS_ORIGINS` restreint au(x) vrai(s) domaine(s), avec port.
+- `ENVIRONNEMENT=prod` (le boot refuse alors `DEBUG=true`, `EXPOSER_DOCS=true`,
+  toute clé API en clair, et un bind `0.0.0.0` sans `TRUSTED_PROXIES`).
+- **Au moins une clé de rôle `admin`** dans `data/api_keys.json`
+  (`gerer_cles.py generer`) ; `data/api_keys.json` en `0600`.
+- **`API_KEY=` / `API_KEYS=` vides** dans `.env` (voie dépréciée) — les logs
+  ne doivent pas afficher `clé(s) API en clair`.
+- `DEBUG=false`, `EXPOSER_DOCS=false` (`curl $BASE/openapi.json` → 404).
+- Derrière un proxy TLS : `TRUSTED_PROXIES=<ip_proxy>`, `FORCER_HTTPS=true`,
+  uvicorn/gunicorn lancé avec `--proxy-headers --forwarded-allow-ips <ip_proxy>`.
+- `CORS_ORIGINS` = vrai(s) domaine(s), avec port.
 - `WATCHER_ACTIF=false` si un process séparé exécute la veille.
-- `ORCHESTRATEUR_MODE=real` (et non `mock`).
+- `ORCHESTRATEUR_MODE=real`.
+- `API_WORKERS=1` (rate-limiter mémoire non partagé) OU Redis obligatoire.
+- Permissions + rétention de `data/audit.jsonl`, `data/feedback.jsonl`,
+  `data/api_keys.json`, `logs/` (contiennent des questions en clair).
+- Dépôt GitHub : historique git audité si passage en public
+  (`git log --all -S 'postgresql://'`, etc.).
 
 ---
 
@@ -200,21 +256,26 @@ python3 scripts/ingest.py --json data/raw/mon_document.json
 
 ## 🧠 API Endpoints
 
-Tous les endpoints nécessitent un header `X-API-Key`.
+En-tête `X-API-Key` requis (sauf `/`, `/health`). Rôle minimum indiqué.
 
-| Méthode | Endpoint | Description |
-| :--- | :--- | :--- |
-| **POST** | `/ask` | Pose une question réglementaire |
-| **POST** | `/ingest` | Ingère un document JSON |
-| **GET** | `/pending` | Liste des tâches en attente de validation humaine |
-| **POST** | `/approve` | Approuve une tâche |
-| **POST** | `/reject` | Rejette une tâche |
+| Méthode | Endpoint | Rôle | Description |
+| :--- | :--- | :--- | :--- |
+| GET | `/health` | — | Statut + horodatage (public, minimal) |
+| GET | `/health/details` | validateur | + état du backend d'audit |
+| GET | `/whoami` | user | Rôle et libellé de la clé fournie |
+| POST | `/ask` | user | Question réglementaire (réponse complète) |
+| POST | `/ask/stream` | user | Idem, diffusée en SSE (token par token) |
+| POST | `/feedback` | user | Signaler une réponse |
+| GET | `/pending` | validateur | Tâches en attente de validation humaine |
+| GET | `/tache/{id}` | validateur | Suivi d'une tâche |
+| POST | `/approve` · `/reject` | validateur | Décision de validation |
+| POST | `/ingest` | admin | Ingère un document JSON canonique |
 
-**Exemple de requête** :
+**Exemple** :
 
 ```bash
 curl -X POST http://127.0.0.1:8000/ask \
-  -H "X-API-Key: ta_clé" \
+  -H "X-API-Key: rak_ta_clé" \
   -H "Content-Type: application/json" \
   -d '{"question": "Quelles sont les obligations de sécurité pour une machine neuve en 2026 ?"}'
 ```

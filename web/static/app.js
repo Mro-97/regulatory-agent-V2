@@ -458,8 +458,9 @@ function rendrVal(){
   filtrees.forEach(t=>{
     const dt=new Date(t.horodatage_creation);const ds=dt.toLocaleString("fr-FR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
     const q=t.contenu?.question||t.contenu?.description||"—";const tp=t.type_file||"pending_responses";
+    const tpc=/^[a-z_]+$/.test(tp)?tp:"inconnu";  // classe CSS depuis une liste blanche
     const el=document.createElement("div");el.className="val-card";
-    el.innerHTML=`<div class="val-card-head"><span class="val-type t-${tp}">${labels[tp]||tp}</span><span class="val-date">${ds}</span></div><div class="val-card-body"><div class="val-q">${esc(q)}</div><div class="val-actions"><button class="btn-approve"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Approuver</button><button class="btn-reject"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Rejeter</button></div></div>`;
+    el.innerHTML=`<div class="val-card-head"><span class="val-type t-${tpc}">${esc(labels[tp]||tp)}</span><span class="val-date">${esc(ds)}</span></div><div class="val-card-body"><div class="val-q">${esc(q)}</div><div class="val-actions"><button class="btn-approve"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Approuver</button><button class="btn-reject"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Rejeter</button></div></div>`;
     el.querySelector(".btn-approve").onclick=()=>decider(t.tache_id,"approve",el);
     el.querySelector(".btn-reject").onclick=()=>decider(t.tache_id,"reject",el);
     liste.appendChild(el);
