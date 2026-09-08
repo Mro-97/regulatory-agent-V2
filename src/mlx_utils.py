@@ -99,6 +99,38 @@ def _executer_avec_timeout(
         raise GenerationTimeoutError(timeout_seconds) from exc
 
 
+def _lier_stream_generation_au_thread_courant() -> None:
+    """Rattache `mlx_lm.generate.generation_stream` au thread courant.
+
+    Ce global (mlx-lm 0.29) est un stream GPU créé à l'import du module, donc
+    lié au thread importateur. Tous les chemins d'inférence font `mx.stream()`
+    et `mx.synchronize()` dessus, ce que MLX 0.32 refuse hors du thread
+    propriétaire (« There is no Stream(gpu, 0) in current thread »). La
+    génération étant sérialisée par `Orchestrateur._verrou_agents`, recréer le
+    stream sur le thread courant juste avant chaque appel est sûr.
+    """
+    try:
+        import mlx.core as mx
+        import mlx_lm.generate as _mlx_gen
+
+        # Frontière externe : rebind best-effort, on ne bloque jamais dessus.
+        _mlx_gen.generation_stream = mx.new_stream(mx.default_device())
+    except Exception:
+        logger.exception("rebind du stream de génération MLX échoué")
+
+
+def _mlx_generate_lie(*args: Any, **kwargs: Any) -> str:
+    """`mlx_lm.generate` précédé du rebind du stream sur le thread appelant.
+
+    Passé à `_executer_avec_timeout` pour que le rebind s'exécute sur le thread
+    (executor ou inline) qui portera réellement l'inférence.
+    """
+    from mlx_lm import generate as mlx_generate
+
+    _lier_stream_generation_au_thread_courant()
+    return str(mlx_generate(*args, **kwargs))
+
+
 def _compter_tokens(tokenizer: Any, texte: str) -> int:
     """Compte les tokens de `texte` via `tokenizer.encode` (fallback split blancs)."""
     try:
@@ -290,11 +322,10 @@ class MLXInference:
         timeout: float | None,
     ) -> str:
         """Appelle `mlx_lm.generate` sous timeout, avec sampler configuré."""
-        from mlx_lm import generate as mlx_generate
         from mlx_lm.sample_utils import make_sampler
 
         return _executer_avec_timeout(
-            mlx_generate,
+            _mlx_generate_lie,
             timeout,
             self._model,
             self._tokenizer,
@@ -351,6 +382,7 @@ class MLXInference:
         prompt = self._prompt_depuis_messages(messages)
         temp = temperature if temperature is not None else self.temperature
         sampler = make_sampler(temp=temp, top_p=self.top_p)
+        _lier_stream_generation_au_thread_courant()
         for reponse in stream_generate(
             self._model,
             self._tokenizer,

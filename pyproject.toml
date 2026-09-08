@@ -84,6 +84,8 @@ plugins = ["pydantic.mypy"]
 module = [
     "mlx",
     "mlx.*",
+    "mlx_lm",
+    "mlx_lm.*",
     "mlx_embeddings",
     "mlx_embeddings.*",
     "sentence_transformers",
