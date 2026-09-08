@@ -9,23 +9,23 @@
 
 # --- Inférence locale (Apple Silicon) ---
 mlx>=0.16,<1.0                  # src/mlx_embedding.py — cœur MLX (mx.core)
-mlx-lm>=0.16,<1.0               # src/mlx_utils.py — génération LLM
+mlx-lm>=0.29,<1.0              # src/mlx_utils.py — génération LLM
 
 # --- Embedding : backend PAR DÉFAUT (config.modele_embedding =
 #     "sentence-transformers/BAAI/bge-m3") ---
 # src/mlx_embedding.py fait `from sentence_transformers import
 # SentenceTransformer` quand l'id commence par "sentence-transformers/".
+# transformers est déclaré EXPLICITEMENT : borné >=5.16 pour écarter
+# PYSEC-2025-217 / PYSEC-2026-2288..2290 / CVE-2026-9856 (corrigées en 5.x).
 # torch (CPU/MPS) est tiré transitivement ; déclaré pour verrouiller.
-# ⚠️ figer ces bornes sur ce qui tourne réellement sur m4pro2
-#    (`venv/bin/pip show torch sentence-transformers transformers`).
-sentence-transformers>=3.0,<6.0
+sentence-transformers>=6.0,<7.0
+transformers>=5.16,<6.0
 torch>=2.2,<3.0
 
-# NB : `mlx-embeddings` (voie MLX native "models/bge-m3-mlx") est
-# INCOMPATIBLE avec sentence-transformers (exige transformers>=5, l'autre
-# transformers<5) ET plantait `Stream(gpu, N)`. Voie abandonnée — import
-# lazy dans src/mlx_embedding.py, ImportError explicite si quelqu'un
-# repointe MODELE_EMBEDDING dessus.
+# NB : `mlx-embeddings` (voie MLX native "models/bge-m3-mlx") plantait
+# `Stream(gpu, N)` sur Apple Silicon. Voie abandonnée — import lazy dans
+# src/mlx_embedding.py, ImportError explicite si MODELE_EMBEDDING y est
+# repointé.
 
 # --- API HTTP ---
 fastapi>=0.111,<1.0             # src/api.py — routing, DI, validation
