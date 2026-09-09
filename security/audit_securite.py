@@ -848,9 +848,8 @@ def sec_saturation() -> None:
     result(
         "saturation — /ask dégrade proprement (200/429/503, ni 5xx ni timeout)",
         degrade_propre,
-        "200={200} 429={429} 503={503} autre={autre} erreur(transport)={erreur}".format(
-            **stats
-        ),
+        f"200={stats['200']} 429={stats['429']} 503={stats['503']} "
+        f"autre={stats['autre']} erreur_transport={stats['erreur']}",
     )
     cooldown(RL_WINDOW + 5)
 
