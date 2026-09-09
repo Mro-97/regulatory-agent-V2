@@ -17,6 +17,7 @@ dev = [
   "pip-audit>=2.7.0",
   "interrogate>=1.7.0",
   "import-linter>=2.0",
+  "deptry>=0.20",
 ]
 
 # ---------------------------------------------------------------------------
@@ -122,3 +123,33 @@ exclude = ["tests", "venv"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+# ---------------------------------------------------------------------------
+# deptry — cohérence des dépendances
+# Source de vérité runtime = requirements.txt (cf. note sous [project]).
+# Lancer : deptry .
+# ---------------------------------------------------------------------------
+
+[tool.deptry]
+requirements_files = ["requirements.txt"]
+known_first_party = ["src", "config"]
+
+[tool.deptry.per_rule_ignores]
+# Outils CLI de la CI code-standards : déclarés dans l'extra `dev`, jamais
+# importés (usage en ligne de commande uniquement).
+DEP002 = [
+    "ruff",
+    "mypy",
+    "radon",
+    "vulture",
+    "pip-audit",
+    "interrogate",
+    "import-linter",
+    "deptry",
+]
+# starlette : toujours fourni transitivement par fastapi ; imports directs
+#   assumés (API stable, versions co-épinglées par fastapi).
+# mlx-embeddings : backend d'embedding alternatif, retiré de requirements.txt
+#   (conflit transformers) ; import protégé par try/except ImportError, actif
+#   seulement si MODELE_EMBEDDING ne commence pas par "sentence-transformers/".
+DEP003 = ["starlette", "mlx_embeddings"]
