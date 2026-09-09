@@ -233,6 +233,12 @@ Avant tout déploiement :
 - `DEBUG=false`, `EXPOSER_DOCS=false` (`curl $BASE/openapi.json` → 404).
 - Derrière un proxy TLS : `TRUSTED_PROXIES=<ip_proxy>`, `FORCER_HTTPS=true`,
   uvicorn/gunicorn lancé avec `--proxy-headers --forwarded-allow-ips <ip_proxy>`.
+- **`/health` sous charge** : le placer côté reverse-proxy (réponse statique
+  ou `proxy_cache`) et augmenter le backlog TCP + le nombre de workers ASGI.
+  Sous rafale de connexions non *keep-alive*, l'app seule finit par RST de
+  nouvelles connexions (cf. `security/audit_securite.py`, section saturation) —
+  le monitoring ne doit pas dépendre d'un `/health` servi directement par
+  l'app.
 - `CORS_ORIGINS` = vrai(s) domaine(s), avec port.
 - `WATCHER_ACTIF=false` si un process séparé exécute la veille.
 - `ORCHESTRATEUR_MODE=real`.
