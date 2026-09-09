@@ -306,23 +306,40 @@ class AgentExplainer:
         l'appelant sur le texte accumulé (`_evaluer_confiance`,
         `_construire_sources_citees`).
         """
-        from src.errors import ModelNotLoadedError
-
         if not evidences:
             yield _MSG_AUCUN_PASSAGE
             return
+        # Échec AVANT le 1er fragment (chargement modèle, MLX en mauvais
+        # état) → bascule propre sur l'assemblage. Un échec en cours de flux
+        # (fragments déjà émis) reste propagé : on ne peut pas le rattraper.
+        try:
+            modele = self._modele_charge()
+            messages = _preparer_messages_synthese(
+                question,
+                self._construire_contexte(evidences),
+                date_ref,
+                type_pipeline,
+            )
+            flux = modele.stream_generer_avec_messages(
+                messages=messages, max_tokens=cfg.mlx_max_tokens
+            )
+            premier = next(flux, None)
+        except Exception:
+            logger.exception("Explainer flux échoué avant le 1er fragment, assemblage")
+            yield self._assembler(question, evidences, date_ref, type_pipeline).reponse
+            return
+        if premier is not None:
+            yield premier
+        yield from flux
+
+    def _modele_charge(self) -> MLXInference:
+        """Charge le modèle Explainer et le renvoie ; lève ModelNotLoadedError sinon."""
+        from src.errors import ModelNotLoadedError
+
         self._charger_modele()
         if self._modele is None:
             raise ModelNotLoadedError("Explainer")
-        messages = _preparer_messages_synthese(
-            question,
-            self._construire_contexte(evidences),
-            date_ref,
-            type_pipeline,
-        )
-        yield from self._modele.stream_generer_avec_messages(
-            messages=messages, max_tokens=cfg.mlx_max_tokens
-        )
+        return self._modele
 
     def _synthetiser_avec_llm(
         self,
@@ -332,8 +349,6 @@ class AgentExplainer:
         type_pipeline: str,
     ) -> ResultatExplication:
         """Synthèse LLM (Qwen 2.5 7B) avec repli sur assemblage en cas d'échec."""
-        from src.errors import ModelNotLoadedError
-
         if not evidences:
             logger.warning(
                 "Explainer — aucune preuve : réponse INCERTAIN, pas d'appel LLM "
@@ -341,15 +356,17 @@ class AgentExplainer:
             )
             return _resultat_assemblage_vide()
 
-        self._charger_modele()
-        if self._modele is None:
-            raise ModelNotLoadedError("Explainer")
-        contexte = self._construire_contexte(evidences)
-        sources_citees = _construire_sources_citees(evidences)
-        messages = _preparer_messages_synthese(
-            question, contexte, date_ref, type_pipeline
-        )
+        # Toute la voie LLM (chargement du modèle inclus) est protégée : un
+        # échec de `_charger_modele` — MLX en mauvais état, mémoire saturée
+        # après une rafale de générations — doit dégrader vers l'assemblage
+        # des evidences, pas remonter une erreur nue jusqu'à l'orchestrateur.
         try:
+            self._modele_charge()
+            contexte = self._construire_contexte(evidences)
+            sources_citees = _construire_sources_citees(evidences)
+            messages = _preparer_messages_synthese(
+                question, contexte, date_ref, type_pipeline
+            )
             return self._generer_synthese(messages, sources_citees, evidences)
         except Exception:
             logger.exception("Synthèse LLM échouée, bascule sur assemblage")
