@@ -200,6 +200,16 @@ document.getElementById("theme-switch").addEventListener("click",e=>{
 });
 
 function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;").replace(/`/g,"&#96;");}
+// Rendu léger du texte de réponse : échappe D'ABORD (aucun HTML brut ne
+// peut donc jamais traverser), puis n'entoure que le texte déjà échappé de
+// balises fixes — sûr même si le texte vient du corpus documentaire.
+function formaterTexte(s){
+  let t=esc(s);
+  t=t.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");
+  t=t.replace(/^(\.\.\. et \d+ passage\(s\) supplémentaire\(s\) non affichés?\.)$/gm,'<span class="txt-note">$1</span>');
+  t=t.replace(/^(⚠️.*)$/gm,'<span class="txt-avertissement">$1</span>');
+  return t;
+}
 function heure(iso){return new Date(iso).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});}
 function cls_conf(n){return{élevé:"eleve",moyen:"moyen",faible:"faible"}[n]||"incertain";}
 function lbl_conf(n){return{élevé:"Confiance élevée",moyen:"Confiance moyenne",faible:"Confiance faible",incertain:"Incertain"}[n]||n;}
@@ -391,7 +401,7 @@ function afficherReponse(data,question,dateCtx){
   const el=document.createElement("div");el.className="msg-sys";
   const signaler=data.request_id?`<button class="btn-signaler" data-rid="${esc(String(data.request_id))}">⚑ Signaler</button>`:"";
   const actions=`<button class="btn-copier">⧉ Copier</button><button class="btn-export">⬇ Exporter</button>`;
-  el.innerHTML=`<div class="msg-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div><div class="msg-sys-inner"><div class="msg-card">${bandeau}<div>${esc(data.reponse)}</div>${sources}</div><div class="msg-meta">${jauge_correspondance(data.score_correspondance)}<span class="badge badge-${nc}">${lbl_conf(data.niveau_confiance)}</span>${attente}${signaler}${actions}</div></div>`;
+  el.innerHTML=`<div class="msg-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div><div class="msg-sys-inner"><div class="msg-card">${bandeau}<div>${formaterTexte(data.reponse)}</div>${sources}</div><div class="msg-meta">${jauge_correspondance(data.score_correspondance)}<span class="badge badge-${nc}">${lbl_conf(data.niveau_confiance)}</span>${attente}${signaler}${actions}</div></div>`;
   const btn=el.querySelector(".sources-toggle");const body=el.querySelector(".sources-body");
   if(btn&&body){btn.addEventListener("click",()=>{const o=body.classList.toggle("visible");btn.classList.toggle("open",o);});}
   wireSignaler(el);wireSuivi(el);wireExport(el,()=>md_export(data,question,dateCtx));wireCopier(el,()=>md_export(data,question,dateCtx));
@@ -562,7 +572,7 @@ document.getElementById("btn-refresh-val")?.addEventListener("click",e=>rafraich
 function rendrHisto(){
   const el=document.getElementById("hist-list");
   if(!historiqueSession.length){el.innerHTML=`<div class="activity-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg><p>Aucune analyse dans l'historique</p></div>`;return;}
-  el.innerHTML=historiqueSession.map(h=>{const nc=cls_conf(h.conf);return `<div class="hist-item"><div class="hist-head"><div class="hist-q">${esc(h.question)}</div><div class="hist-time">${heure(h.ts)}</div></div><div class="hist-preview">${esc(h.reponse.slice(0,200))}...</div><div class="hist-meta"><span class="badge badge-${nc}">${lbl_conf(h.conf)}</span></div></div>`;}).join("");
+  el.innerHTML=historiqueSession.map(h=>{const nc=cls_conf(h.conf);return `<div class="hist-item"><div class="hist-head"><div class="hist-q">${esc(h.question)}</div><div class="hist-time">${heure(h.ts)}</div></div><div class="hist-preview">${formaterTexte(h.reponse.slice(0,200))}...</div><div class="hist-meta"><span class="badge badge-${nc}">${lbl_conf(h.conf)}</span></div></div>`;}).join("");
 }
 document.getElementById("btn-vider-histo")?.addEventListener("click",()=>{
   if(!historiqueSession.length)return;
