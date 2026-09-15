@@ -190,14 +190,30 @@ async def _essayer_appliquer_a_cle(
     commentaire: str | None,
     horodatage: datetime,
 ) -> bool:
-    """Retire une clé du pending et la pousse dans `traite_*` si son id matche."""
+    """Retire une clé du pending et la pousse dans `traite_*` si son id matche.
+
+    Deux validateurs (ou un double-clic / retry réseau) peuvent traiter la
+    même tâche en même temps : les deux appels lisent la liste pending via
+    `_appliquer_decision_sur_files` AVANT qu'aucun des deux n'écrive, et
+    arrivent donc ici avec la même `cle` en main. `LREM` est atomique côté
+    Redis — un seul des deux retirera réellement l'élément — mais seule sa
+    valeur de retour permet de le savoir : sans la vérifier, l'appel perdant
+    poussait quand même SA décision dans `traite_*`, dupliquant la tâche
+    avec potentiellement deux statuts contradictoires (ex. approuvée ET
+    rejetée) et renvoyant un faux succès (200) à l'appelant qui a perdu la
+    course, au lieu d'un 404 « tâche introuvable / déjà traitée ».
+    """
     donnees = _charger_json_tache(cle)
     if donnees is None or str(donnees.get("tache_id")) != str(tache_id):
+        return False
+    retires = await cast("Awaitable[int]", client.lrem(nom_file, 1, cle))
+    if retires == 0:
+        # Course perdue : une autre requête a déjà retiré cette entrée entre
+        # notre lecture et notre LREM. Ne pas pousser de décision dupliquée.
         return False
     donnees["statut"] = decision.value
     donnees["horodatage_traitement"] = horodatage.isoformat()
     donnees["commentaire_validateur"] = commentaire
-    await cast("Awaitable[int]", client.lrem(nom_file, 1, cle))
     await cast(
         "Awaitable[int]",
         client.lpush(f"traite_{nom_file}", json.dumps(donnees, ensure_ascii=False)),
