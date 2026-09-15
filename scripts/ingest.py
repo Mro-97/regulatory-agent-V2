@@ -25,6 +25,12 @@ logger = logging.getLogger(__name__)
 CHUNK_SIZE = 600
 OVERLAP = 50
 
+# Fenêtre de recherche (en caractères, en arrière depuis la coupe brute) d'une
+# frontière propre — fin de phrase, sinon espace — pour ne jamais couper un
+# chunk en plein mot ni en plein milieu d'une phrase.
+_LARGEUR_FRONTIERE = 80
+_FINS_DE_PHRASE = (". ", "? ", "! ", ".\n", "?\n", "!\n", "\n\n")
+
 # Namespace pour dériver un id de point Qdrant stable depuis un chunk_id.
 _NS_CHUNK = uuid.uuid5(uuid.NAMESPACE_URL, "regulatory-agent/chunk")
 
@@ -95,16 +101,56 @@ class Ingester:  # noqa: D101
         # directement une liste. Accepter les deux sans conversion agressive.
         return vec.tolist() if hasattr(vec, "tolist") else list(vec)
 
+    def _frontiere_propre(self, text: str, position: int) -> int:
+        """Recule `position` jusqu'à la fin de phrase la plus proche.
+
+        Cherche dans `_LARGEUR_FRONTIERE` caractères en arrière une fin de
+        phrase (`. `, `? `, `! `, saut de paragraphe) ; à défaut le dernier
+        espace ; à défaut `position` inchangée (mot unique trop long, cas
+        pathologique). Sans ce calage, `chunk_text` coupait au caractère
+        près : un chunk pouvait commencer en plein mot ou en plein milieu
+        d'une phrase (ex. « ...du présent règlement... » tronqué en « du
+        présent règlement » comme premier mot d'un chunk), rendant les
+        extraits illisibles une fois assemblés dans la réponse.
+        """
+        limite = max(0, position - _LARGEUR_FRONTIERE)
+        fenetre = text[limite:position]
+        for motif in _FINS_DE_PHRASE:
+            idx = fenetre.rfind(motif)
+            if idx != -1:
+                return limite + idx + len(motif)
+        idx = fenetre.rfind(" ")
+        if idx != -1:
+            return limite + idx + 1
+        return position
+
     def chunk_text(self, text: str) -> list[str]:
-        """Découpe un texte en chunks de CHUNK_SIZE caractères avec chevauchement OVERLAP."""  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
+        """Découpe un texte en chunks de ~CHUNK_SIZE caractères, chevauchement OVERLAP.
+
+        Les bornes sont calées sur une frontière propre (`_frontiere_propre`)
+        pour qu'un chunk ne commence ni ne finisse en plein mot ou en plein
+        milieu d'une phrase.
+        """
         chunks = []
         start = 0
-        while start < len(text):
-            end = min(start + CHUNK_SIZE, len(text))
-            chunks.append(text[start:end])
-            if end >= len(text):
+        n = len(text)
+        while start < n:
+            end = min(start + CHUNK_SIZE, n)
+            if end < n:
+                propre = self._frontiere_propre(text, end)
+                if propre > start:
+                    end = propre
+            morceau = text[start:end].strip()
+            if morceau:
+                chunks.append(morceau)
+            if end >= n:
                 break
-            start += CHUNK_SIZE - OVERLAP
+            nouveau_start = max(start + 1, end - OVERLAP)
+            # Recale aussi le début du chunk suivant sur un mot entier.
+            espace = text.find(" ", nouveau_start)
+            if 0 <= espace - nouveau_start < _LARGEUR_FRONTIERE:
+                nouveau_start = espace + 1
+            start = nouveau_start
         return chunks
 
     def chunk_document(self, doc: DocumentReglementaire) -> list[MetadonneesChunk]:  # noqa: D102
