@@ -13,6 +13,7 @@ Deux régressions couvertes, toutes deux constatées en live sur l'API de
 from __future__ import annotations
 
 from fastapi import Request
+
 from src.api_security import _controler_taille_et_encoding
 from src.net import ip_client, schema_origine
 from src.rate_limit_middleware import _reponse_429

@@ -19,8 +19,9 @@ import json
 import uuid
 
 import pytest
-from config import cfg
 from fastapi.testclient import TestClient
+
+from config import cfg
 from src import api as api_module
 
 # Le limiteur et la classe LimiteurDebit vivent désormais dans

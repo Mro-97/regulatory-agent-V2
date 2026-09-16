@@ -15,6 +15,7 @@ from collections.abc import Iterator
 from datetime import date
 
 import pytest
+
 from src.agents.explainer import (
     AgentExplainer,
     _evaluer_confiance,

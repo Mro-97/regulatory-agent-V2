@@ -26,8 +26,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from config import cfg
 from qdrant_client import QdrantClient
+
+from config import cfg
 
 logging.basicConfig(
     level=logging.INFO,

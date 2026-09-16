@@ -208,6 +208,7 @@ class TestAuditTrail:
         fingerprinting d'infra pour un visiteur non authentifié.
         """
         from fastapi.testclient import TestClient
+
         from src import api as api_module
 
         client = TestClient(api_module.app)
@@ -220,6 +221,7 @@ class TestAuditTrail:
     def test_health_details_expose_statut_audit_avec_cle(self):  # noqa: ANN201
         """/health/details (clé API) expose le statut de synchronisation de l'audit."""
         from fastapi.testclient import TestClient
+
         from src import api as api_module
 
         client = TestClient(api_module.app)

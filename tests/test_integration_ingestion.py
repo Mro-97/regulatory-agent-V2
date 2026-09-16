@@ -14,6 +14,7 @@ import asyncio
 from datetime import date
 
 import pytest
+
 from src.models import DocumentReglementaire, SourceReglementaire
 
 # ---------------------------------------------------------------------------
@@ -166,6 +167,7 @@ class TestIngestionReelle:
     def _ingester_en_memoire(collection: str = "test_ingest"):  # noqa: ANN205
         from qdrant_client import QdrantClient
         from qdrant_client.http.models import Distance, VectorParams
+
         from scripts.ingest import Ingester
 
         client = QdrantClient(location=":memory:")
@@ -280,8 +282,9 @@ class TestIngestionReelle:
 
     def test_api_ingest_409_si_deja_indexe(self, doc_rgpd_json):  # noqa: ANN001, ANN201
         """L'API /ingest doit retourner 409 quand le document existe déjà sans forcer_reindexation."""  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
-        from config import cfg
         from fastapi.testclient import TestClient
+
+        from config import cfg
         from src import api as api_module
         from src.orchestrator import Orchestrateur
 
@@ -304,8 +307,9 @@ class TestIngestionReelle:
 
     def test_api_ingest_400_si_contenu_json_absent(self):  # noqa: ANN201
         """L'API /ingest doit retourner 400 (pas un faux succès) sans contenu_json."""
-        from config import cfg
         from fastapi.testclient import TestClient
+
+        from config import cfg
         from src import api as api_module
         from src.orchestrator import Orchestrateur
 

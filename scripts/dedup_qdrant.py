@@ -43,8 +43,9 @@ from pathlib import Path
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from config import cfg
 from qdrant_client import QdrantClient
+
+from config import cfg
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger("dedup_qdrant")

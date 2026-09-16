@@ -56,6 +56,14 @@ select = [
 ]
 ignore = ["ANN401"]  # Any explicitement justifié, voir § 3
 
+[tool.ruff.lint.isort]
+# Modules du dépôt importés à la racine (`config.py`) ou comme paquets
+# (`src`, `scripts`). Déclarés EXPLICITEMENT : la détection automatique de
+# ruff donnait des résultats différents d'une machine à l'autre pour le même
+# contenu (constaté le 2026-09-16 : `config` classé tantôt premier, tantôt
+# tiers, et 29 fichiers signalés I001 sur m4pro2 uniquement).
+known-first-party = ["config", "main", "src", "scripts"]
+
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 

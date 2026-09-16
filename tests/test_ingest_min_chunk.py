@@ -8,6 +8,7 @@ dans le retrieval et noyaient les vrais articles.
 from __future__ import annotations
 
 import pytest
+
 from config import cfg
 from scripts.ingest import Ingester
 from src.models import (

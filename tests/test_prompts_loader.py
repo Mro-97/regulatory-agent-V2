@@ -10,6 +10,7 @@ laisser sortir de `prompts/`.
 from __future__ import annotations
 
 import pytest
+
 from src.errors import PromptNotFoundError
 from src.prompts_loader import charger_prompt
 

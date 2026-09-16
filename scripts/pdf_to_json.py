@@ -38,6 +38,11 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 # Patterns et primitives de découpage extraits dans scripts/pdf_parsing.py
 # (§12 étape 6). Ré-exportés pour compatibilité descendante.
 # fmt: off
+from scripts.pdf_parsing import PATTERNS_ARTICLE as PATTERNS_ARTICLE
+from scripts.pdf_parsing import PATTERNS_CHAPITRE as PATTERNS_CHAPITRE
+from scripts.pdf_parsing import detecter_articles as detecter_articles
+from scripts.pdf_parsing import detecter_chapitres as detecter_chapitres
+from scripts.pdf_parsing import extraire_texte_pdf as extraire_texte_pdf
 from src.models import (
     Chapitre,
     DocumentReglementaire,
@@ -45,12 +50,6 @@ from src.models import (
     SourceReglementaire,
     VersionArticle,
 )
-
-from scripts.pdf_parsing import PATTERNS_ARTICLE as PATTERNS_ARTICLE
-from scripts.pdf_parsing import PATTERNS_CHAPITRE as PATTERNS_CHAPITRE
-from scripts.pdf_parsing import detecter_articles as detecter_articles
-from scripts.pdf_parsing import detecter_chapitres as detecter_chapitres
-from scripts.pdf_parsing import extraire_texte_pdf as extraire_texte_pdf
 
 # fmt: on
 

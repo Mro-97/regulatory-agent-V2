@@ -27,10 +27,9 @@ from pathlib import Path
 import httpx
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from src.errors import TelechargementTropVolumineuxError
-
 from scripts.corpus_converters import CONVERTISSEURS
 from scripts.corpus_sources import SOURCES, SourceReg
+from src.errors import TelechargementTropVolumineuxError
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger("corpus_fetch")

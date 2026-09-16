@@ -19,6 +19,7 @@ import uuid
 from datetime import UTC, datetime
 
 import pytest
+
 from src.models import StatutValidation, TacheValidation, TypeFilePendante
 from src.orchestrator_validation import _essayer_appliquer_a_cle, valider_tache
 

@@ -13,10 +13,10 @@ from __future__ import annotations
 import asyncio
 
 import httpx
-from src.models import SourceReglementaire
-from src.watcher import Watcher
 
 from config import cfg
+from src.models import SourceReglementaire
+from src.watcher import Watcher
 
 
 class _ClientMock:

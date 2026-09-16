@@ -17,6 +17,7 @@ from unittest.mock import (  # noqa: E402 — stubs MLX doivent précéder les i
 )
 
 import pytest  # noqa: E402 — stubs MLX doivent précéder les imports du projet (sinon ImportError)
+
 from src.agents.retriever import (  # noqa: E402 — stubs MLX doivent précéder les imports du projet (sinon ImportError)
     Retriever,
 )

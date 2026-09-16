@@ -22,6 +22,7 @@ for nom in ("mlx", "mlx.core", "mlx_lm", "mlx_lm.sample_utils", "mlx_embeddings"
 sys.modules["mlx.core"].eval = lambda *a, **k: None  # noqa: ARG005 — stub/signature
 
 import pytest  # noqa: E402 — stubs MLX avant imports projet
+
 from src.agents.retriever import (  # noqa: E402 — stubs MLX avant imports projet
     Retriever,
 )

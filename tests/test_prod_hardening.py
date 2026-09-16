@@ -110,6 +110,7 @@ class TestPendingRedisIndisponible:
         import asyncio
 
         import pytest
+
         from src.errors import QueueBackendError
         from src.orchestrator_validation import lister_taches_pendantes
 

@@ -299,6 +299,7 @@ class Ingester:  # noqa: D101
             VectorStoreError: Qdrant injoignable ou en erreur.
         """
         from qdrant_client.models import FieldCondition, Filter, MatchValue
+
         from src.errors import VectorStoreError
 
         filtre = Filter(

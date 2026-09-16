@@ -18,6 +18,7 @@ from unittest.mock import patch
 
 import httpx
 import pytest
+
 from src.http_client import (
     MAX_REDIRECTIONS,
     ClientSortant,

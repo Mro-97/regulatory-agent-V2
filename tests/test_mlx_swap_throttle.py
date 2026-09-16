@@ -9,6 +9,7 @@ unload/load ~1 GB à la chaîne.
 from __future__ import annotations
 
 import pytest
+
 from config import cfg
 from src.errors import ModelSwapThrottledError
 from src.mlx_utils import _CacheGeneration

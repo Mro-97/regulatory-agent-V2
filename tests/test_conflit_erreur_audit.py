@@ -11,6 +11,7 @@ import asyncio
 import uuid
 
 import pytest
+
 from src.agents.conflit import NiveauConflit, ResultatConflit
 from src.errors import QueueBackendError
 from src.orchestrator import Orchestrateur

@@ -8,6 +8,7 @@ positifs) et que du contenu réglementaire légitime ne l'est pas
 from __future__ import annotations
 
 import pytest
+
 from src.ingest_sanitizer import (
     ModeSanitizer,
     NiveauMenace,

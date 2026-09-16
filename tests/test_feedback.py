@@ -10,8 +10,9 @@ import json
 import uuid
 
 import pytest
-from config import cfg
 from fastapi.testclient import TestClient
+
+from config import cfg
 from src import api as api_module
 
 CLE = "cle-de-test-0123456789abcdef"

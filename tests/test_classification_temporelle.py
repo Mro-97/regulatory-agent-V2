@@ -9,6 +9,7 @@ Elle ne doit pas pour autant confondre une année avec un numéro de règlement
 from __future__ import annotations
 
 import pytest
+
 from src.classification import classifier_requete
 
 

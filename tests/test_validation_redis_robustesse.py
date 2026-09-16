@@ -13,6 +13,7 @@ import uuid
 from datetime import UTC, datetime
 
 import pytest
+
 from src.errors import QueueBackendError
 from src.models import (
     NiveauConfiance,

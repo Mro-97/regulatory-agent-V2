@@ -12,6 +12,7 @@ import json
 
 import pytest
 from fastapi.testclient import TestClient
+
 from src import api as api_module
 from src.auth import Role, hacher_cle, identifier, recharger_magasin
 

@@ -12,6 +12,7 @@ Couvre (sans LLM, sans Qdrant) :
 from datetime import date
 
 import pytest
+
 from src.models import EvidenceRecuperee, NiveauConfiance
 
 # ---------------------------------------------------------------------------

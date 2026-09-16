@@ -14,6 +14,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 import pytest
+
 from src.errors import DocumentAlreadyIndexedError, InvalidDocumentError
 from src.models import RequeteIngestion, SourceReglementaire
 from src.orchestrator_ingest import _resoudre_conflit_reindexation
