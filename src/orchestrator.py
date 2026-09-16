@@ -47,6 +47,7 @@ if TYPE_CHECKING:
     from src.agents.citation import ResultatCitation
     from src.agents.retriever import Retriever
 
+from src.errors import QueueBackendError
 from src.models import (
     EnregistrementAudit,
     EvidenceRecuperee,
@@ -242,7 +243,12 @@ def _construire_reponse_question(
     soumettre_validation: bool,
     tache_validation_id: UUID | None,
 ) -> ReponseQuestion:
-    """Assemble le ReponseQuestion final renvoyé à l'API."""
+    """Assemble le ReponseQuestion final renvoyé à l'API.
+
+    `soumettre_validation` doit être la soumission EFFECTIVE (H1) : elle vaut
+    False si la tâche Redis n'a pas pu être créée, pour que
+    `en_attente_validation` ne mente jamais à l'appelant.
+    """
     return ReponseQuestion(
         request_id=request_id,
         reponse=reponse_texte,
@@ -263,7 +269,12 @@ def _construire_audit_reel(
     niveau_confiance: NiveauConfiance,
     soumettre_validation: bool,
 ) -> EnregistrementAudit:
-    """Construit l'EnregistrementAudit final du pipeline réel (hash injecté)."""
+    """Construit l'EnregistrementAudit final du pipeline réel (hash injecté).
+
+    `soumettre_validation` reflète la soumission EFFECTIVE (H1) : False si la
+    tâche de validation Redis n'a pas pu être enregistrée (l'échec est
+    journalisé en ERROR par `_soumettre_validation_si_besoin`).
+    """
     audit = EnregistrementAudit(
         request_id=request_id,
         user_query=requete.question,
@@ -509,9 +520,14 @@ class Orchestrateur:
             yield "token", {"t": fragment}
         texte = "".join(morceaux).strip() or _MSG_ECHEC_SYNTHESE
         confiance = _evaluer_confiance(texte, evidences)
-        evidences = sources_referencees(texte, evidences)
+        # `sources_referencees` ne sert qu'à la VÉRIFICATION des citations :
+        # la réponse et l'audit conservent l'ensemble des preuves récupérées
+        # (cf. `_executer_etapes_pipeline`).
+        evidences_citees = sources_referencees(texte, evidences)
         yield "etape", {"phase": "citations"}
-        resultat_citation = await self._executer_citation(evidences, texte, agents)
+        resultat_citation = await self._executer_citation(
+            evidences_citees, texte, agents
+        )
         confiance = _confiance_apres_citation(confiance, resultat_citation)
         reponse = await self._finaliser_reponse(
             requete, request_id, evidences, agents, texte, confiance
@@ -622,9 +638,9 @@ class Orchestrateur:
             evidences,
             agents_executes,
         )
-        evidences = sources_referencees(reponse_texte, evidences)
+        evidences_citees = sources_referencees(reponse_texte, evidences)
         resultat_citation = await self._executer_citation(
-            evidences, reponse_texte, agents_executes
+            evidences_citees, reponse_texte, agents_executes
         )
         niveau_confiance = _confiance_apres_citation(
             niveau_confiance, resultat_citation
@@ -711,7 +727,11 @@ class Orchestrateur:
         agents_executes: list[SortieAgent],
         request_id: UUID,
     ) -> None:
-        """Étape 2b : détection de conflit (activée si `type_pipeline == 'conflit'`)."""
+        """Étape 2b : détection de conflit (activée si `type_pipeline == 'conflit'`).
+
+        `etape_conflit` renvoie toujours une SortieAgent (M9) : en cas
+        d'échec de l'agent, elle porte l'erreur et l'audit en garde la trace.
+        """
         if type_pipeline != "conflit" or len(evidences) < 2:
             return
         from src.orchestrator_pipeline import etape_conflit
@@ -723,8 +743,7 @@ class Orchestrateur:
             evidences=evidences,
             request_id=request_id,
         )
-        if sortie is not None:
-            agents_executes.append(sortie)
+        agents_executes.append(sortie)
 
     async def _executer_explainer_avec_repli(
         self,
@@ -780,13 +799,19 @@ class Orchestrateur:
     ) -> ReponseQuestion:
         """Soumet à validation si besoin, persiste l'audit, renvoie la réponse."""
         soumettre = _doit_soumettre_validation(requete, niveau_confiance)
-        tache_validation_id = await self._soumettre_validation_si_besoin(
+        (
+            soumettre_effectif,
+            tache_validation_id,
+        ) = await self._soumettre_validation_si_besoin(
             requete,
             request_id,
             reponse_texte,
             niveau_confiance,
             soumettre,
         )
+        # L'audit et la réponse reçoivent la soumission EFFECTIVE (H1) : une
+        # panne Redis ne doit ni faire échouer /ask, ni faire croire qu'une
+        # validation humaine est en attente alors qu'aucune tâche n'existe.
         await self._construire_et_persister_audit(
             requete,
             request_id,
@@ -794,14 +819,14 @@ class Orchestrateur:
             agents_executes,
             reponse_texte,
             niveau_confiance,
-            soumettre,
+            soumettre_effectif,
         )
         return _construire_reponse_question(
             request_id,
             reponse_texte,
             evidences,
             niveau_confiance,
-            soumettre,
+            soumettre_effectif,
             tache_validation_id,
         )
 
@@ -834,10 +859,20 @@ class Orchestrateur:
         reponse_texte: str,
         niveau_confiance: NiveauConfiance,
         soumettre: bool,
-    ) -> UUID | None:
-        """Enregistre une TacheValidation Redis quand `soumettre` est True."""
+    ) -> tuple[bool, UUID | None]:
+        """Enregistre une TacheValidation Redis quand `soumettre` est True.
+
+        H1 : Redis indisponible ne fait PAS échouer toute la réponse /ask —
+        l'échec est journalisé en ERROR et la soumission est rapportée comme
+        non effectuée.
+
+        Returns:
+            `(soumission_effective, tache_id)` : `(False, None)` si
+            `soumettre` est False ou si l'enregistrement a échoué ;
+            `(True, tache_id)` sinon.
+        """
         if not soumettre:
-            return None
+            return False, None
         tache = TacheValidation(
             type_file=TypeFilePendante.REPONSES,
             request_id=request_id,
@@ -847,8 +882,15 @@ class Orchestrateur:
                 "niveau_confiance": niveau_confiance.value,
             },
         )
-        await self._enregistrer_tache_redis(tache)
-        return tache.tache_id
+        try:
+            await self._enregistrer_tache_redis(tache)
+        except QueueBackendError:
+            logger.exception(
+                "Tâche de validation non enregistrée (Redis indisponible) — "
+                "réponse renvoyée sans validation en attente"
+            )
+            return False, None
+        return True, tache.tache_id
 
     # ------------------------------------------------------------------
     # Ingestion

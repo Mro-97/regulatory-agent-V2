@@ -500,12 +500,18 @@ async def ingerer(
     orchestrateur: OrchestrateurDep,
 ) -> ReponseIngestion:
     """Ingère un document JSON canonique (chunking + embedding + upsert Qdrant)."""
+    from src.errors import VectorStoreError
     from src.orchestrator import DocumentDejaIndexeError
 
     try:
         return await orchestrateur.ingerer(requete)
     except DocumentDejaIndexeError as exc:
         raise HTTPException(status.HTTP_409_CONFLICT, str(exc)) from exc
+    except VectorStoreError as exc:
+        # Qdrant injoignable : 503 (backend externe), cohérent avec /pending
+        # et /tache — et non un 500 générique qui laisse croire à un bug.
+        logger.exception("Qdrant indisponible pour /ingest")
+        raise _erreur_503(_MSG_QUEUE_INDISPONIBLE) from exc
     except ValueError as exc:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, str(exc)) from exc
     except Exception:

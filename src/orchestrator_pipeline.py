@@ -186,9 +186,15 @@ async def etape_conflit(
     question: str,
     date_contexte: date | None,
     evidences: list[EvidenceRecuperee],
-    request_id: object,
-) -> SortieAgent | None:
-    """Étape 2b : détection de conflit (activée quand `type_pipeline == 'conflit'`)."""
+    request_id: UUID,
+) -> SortieAgent:
+    """Étape 2b : détection de conflit (activée quand `type_pipeline == 'conflit'`).
+
+    M9 : le `try` ne couvre QUE l'analyse LLM. Un échec de l'agent renvoie
+    une SortieAgent portant l'erreur (`contenu={"erreur": …}`) au lieu de
+    `None` : l'audit (`agents_executes`) garde la trace de la tentative au
+    lieu de faire disparaître le conflit sans laisser de trace.
+    """
     try:
         resultat_conflit = await _executer_agent_conflit(
             orchestrator,
@@ -196,18 +202,31 @@ async def etape_conflit(
             date_contexte,
             evidences,
         )
-        sortie = _sortie_agent_conflit(orchestrator, resultat_conflit)
-        if resultat_conflit.necessite_validation_humaine:
-            await _soumettre_tache_conflit(
-                orchestrator,
-                question,
-                resultat_conflit,
-                request_id,
-            )
-    except Exception as exc:  # noqa: BLE001 — frontière externe, cf. skill §8
-        logger.warning("Agent Conflict échoué, ignoré : %s", exc)
-        return None
+    except Exception as exc:
+        # Frontière externe (skill §8) : tracé complet via logger.exception,
+        # l'échec est reporté dans la SortieAgent (M9) et non avalé.
+        logger.exception("Agent Conflict échoué")
+        return _sortie_agent_conflit_erreur(orchestrator, exc)
+    sortie = _sortie_agent_conflit(orchestrator, resultat_conflit)
+    if resultat_conflit.necessite_validation_humaine:
+        await _soumettre_tache_conflit(
+            orchestrator,
+            question,
+            resultat_conflit,
+            request_id,
+        )
     return sortie
+
+
+def _sortie_agent_conflit_erreur(
+    orchestrator: Orchestrateur, exc: Exception
+) -> SortieAgent:
+    """SortieAgent d'échec de l'agent Conflit (trace l'erreur dans l'audit)."""
+    return SortieAgent(
+        nom_agent="Conflict",
+        machine=orchestrator._machine_pour_agent("Conflict"),
+        contenu={"erreur": f"{type(exc).__name__}: {exc}"},
+    )
 
 
 async def _executer_agent_conflit(
@@ -248,31 +267,36 @@ async def _soumettre_tache_conflit(
     orchestrator: Orchestrateur,
     question: str,
     resultat: Any,
-    request_id: object,
+    request_id: UUID,
 ) -> None:
-    """Pousse une TacheValidation LIENS dans Redis et log l'événement."""
+    """Pousse une TacheValidation LIENS dans Redis et log l'événement.
+
+    Une panne Redis est journalisée en ERROR mais ne fait pas échouer la
+    réponse /ask (H1) : l'analyse de conflit reste valide et tracée dans
+    l'audit, seule la revue humaine n'a pas pu être mise en file.
+    """
+    from src.errors import QueueBackendError
     from src.models import TacheValidation, TypeFilePendante
 
     tache = TacheValidation(
         type_file=TypeFilePendante.LIENS,
-        request_id=_forcer_uuid(request_id),
+        request_id=request_id,
         contenu={
             "question": question,
             "conflits": [_dict_conflit(c) for c in resultat.conflits],
         },
     )
-    await orchestrator._enregistrer_tache_redis(tache)
+    try:
+        await orchestrator._enregistrer_tache_redis(tache)
+    except QueueBackendError:
+        logger.exception(
+            "Conflit non soumis à validation humaine (Redis indisponible)."
+        )
+        return
     logger.warning(
         "Conflit %s soumis à validation humaine.",
         resultat.niveau_global.value,
     )
-
-
-def _forcer_uuid(valeur: object) -> UUID:
-    """Retourne `valeur` si UUID, sinon construit depuis `str(valeur)`."""
-    if isinstance(valeur, UUID):
-        return valeur
-    return UUID(str(valeur))
 
 
 def _dict_conflit(conflit: Any) -> dict[str, str]:
