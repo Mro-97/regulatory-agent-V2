@@ -13,13 +13,14 @@ from __future__ import annotations
 import asyncio
 
 import httpx
-from config import cfg
 from src.models import SourceReglementaire
 from src.watcher import Watcher
 
+from config import cfg
+
 
 class _ClientMock:
-    """Client HTTP simulé qui fait échouer les N premières requêtes."""
+    """Client sortant simulé qui fait échouer les N premières requêtes."""
 
     def __init__(self, sequence: list):  # noqa: ANN204
         # sequence : liste d'items — soit une exception à lever, soit un
@@ -28,7 +29,10 @@ class _ClientMock:
         self.appels: list[str] = []
         self.is_closed = False
 
-    async def get(self, url: str):  # noqa: ANN202
+    async def recuperer(self, url: str):  # noqa: ANN202
+        """Équivalent de `ClientSortant.recuperer` (valide, rend le corps final)."""
+        from src.http_client import ReponseSortante
+
         self.appels.append(url)
         if not self.sequence:
             raise RuntimeError("Séquence mock épuisée")  # noqa: TRY003
@@ -36,8 +40,11 @@ class _ClientMock:
         if isinstance(prochain, Exception):
             raise prochain
         statut, corps = prochain
-        request = httpx.Request("GET", url)
-        return httpx.Response(status_code=statut, text=corps, request=request)
+        if statut >= 400:
+            request = httpx.Request("GET", url)
+            reponse = httpx.Response(status_code=statut, text=corps, request=request)
+            reponse.raise_for_status()
+        return ReponseSortante(contenu=corps, url_finale=url, statut=statut)
 
 
 def _watcher_avec_client(monkeypatch, tmp_path, sequence):  # noqa: ANN001, ANN202
@@ -46,13 +53,10 @@ def _watcher_avec_client(monkeypatch, tmp_path, sequence):  # noqa: ANN001, ANN2
 
     monkeypatch.setattr(watcher_module, "CHEMIN_HASHES", tmp_path / "hashes.json")
     monkeypatch.setattr(cfg, "watcher_backoff_secondes", 0.0)
-    # Ces tests portent sur le retry HTTP, pas sur la deny-list SSRF.
-    # `_tenter_fetch` résout le DNS avant tout appel client ; sur des
-    # hostnames fictifs (`https://ex/1`) ça lèverait avant le mock. On
-    # neutralise donc la vérification d'URL publique ici.
-    monkeypatch.setattr(
-        http_safety, "resoudre_url_publique_ou_lever", lambda _url: None
-    )
+    # Ces tests portent sur le retry HTTP, pas sur la deny-list SSRF : le
+    # client simulé court-circuite toute connexion, on neutralise donc la
+    # validation d'URL (les hostnames `https://ex/1` ne résolvent pas).
+    monkeypatch.setattr(http_safety, "valider_url", lambda _url: ["93.184.216.34"])
     w = Watcher()
     client = _ClientMock(sequence)
 
