@@ -192,14 +192,15 @@ class Parametres(BaseSettings):
     )
 
     modele_embedding: str = Field(
-        default="sentence-transformers/BAAI/bge-m3",
+        default="models/bge-m3-mlx",
         description=(
             "Modèle d'embedding (requêtes + chunks). Deux backends dans "
-            "MLXEmbedding : 'sentence-transformers/<id>' (torch, CPU/MPS, "
-            "stable — défaut) ou un identifiant natif mlx-embeddings "
-            "('models/bge-m3-mlx' local). La voie MLX crashe 'Stream(gpu, N)' "
-            "sur certaines versions de mlx ; le repo HF nu 'BAAI/bge-m3' n'a "
-            "pas de safetensors. DOIT produire `embedding_dimension`."
+            "Seule la voie MLX native subsiste (mlx-embeddings) : "
+            "'models/bge-m3-mlx' (copie locale de BAAI/bge-m3) par défaut. La "
+            "voie sentence-transformers a été retirée le 2026-09-16 — elle "
+            "imposait torch/transformers/scipy/sklearn/opencv (~1 Go) pour des "
+            "vecteurs non interchangeables avec MLX (~0,80 de similarité "
+            "cosinus). DOIT produire `embedding_dimension`."
         ),
     )
     embedding_dimension: int = Field(
@@ -339,7 +340,7 @@ class Parametres(BaseSettings):
 
     # Seuils de confiance de l'Explainer, sur la similarité cosinus moyenne
     # des preuves. Calibrés pour le backend d'embedding courant
-    # (sentence-transformers/BAAI/bge-m3) — à re-mesurer si `modele_embedding`
+    # (bge-m3, voie MLX) — à re-mesurer si `modele_embedding`
     # change (les distributions de score varient d'un modèle à l'autre).
     explainer_confiance_moyenne_elevee: float = Field(
         default=0.50,

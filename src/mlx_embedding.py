@@ -18,7 +18,7 @@ from typing import Any, cast
 import mlx.core as mx
 
 from config import cfg
-from src.mlx_utils import _executer_avec_timeout, _tronquer_pour_embedding
+from src.mlx_utils import _tronquer_pour_embedding
 
 
 def _emb_generate_direct(*args: Any, **kwargs: Any) -> Any:
@@ -52,29 +52,28 @@ class MLXEmbedding:
     Le modèle retourne text_embeds déjà normalisés (mean pooling + L2 norm).
 
     bge-m3 : multilingue, dimension 1024, excellent pour le français.
-    Identifiant HuggingFace : 'BAAI/bge-m3'
+    Identifiant : 'models/bge-m3-mlx' (copie locale de BAAI/bge-m3)
     """  # noqa: D205
 
-    def __init__(self, model_name: str = "BAAI/bge-m3") -> None:
+    def __init__(self, model_name: str = "models/bge-m3-mlx") -> None:
         """Args:
         model_name: Identifiant HuggingFace du modèle d'embedding.
-                    - "sentence-transformers/<id>" : bascule sur le backend
-                      sentence-transformers (repli utilisé quand
-                      `mlx_embeddings.generate` déclenche
-                      "There is no Stream(gpu, 2)").
-                    - autrement : `mlx_embeddings` (voie native MLX).
-                    Défaut : 'BAAI/bge-m3'.
+                    Chemin local du modèle MLX (défaut
+                      'models/bge-m3-mlx') ou identifiant HF supporté par
+                      `mlx_embeddings`. Seule la voie MLX native subsiste.
         """  # noqa: D205
         self.model_name = model_name
-        self._st_mode = model_name.startswith("sentence-transformers/")
-        # mêmes contraintes que MLXInference : `sentence_transformers` et
-        # `mlx_embeddings` n'exposent pas de types publics — attributs opaques.
+        # `mlx_embeddings` n'expose pas de types publics : attributs opaques.
+        # La voie sentence-transformers a été retirée (2026-09-16) : elle
+        # imposait torch/transformers/scipy/sklearn/opencv (~1 Go) pour un
+        # résultat NON interchangeable avec MLX (~0,80 de similarité cosinus
+        # sur le même texte), donc sans bénéfice une fois l'index reconstruit.
         self._model: Any = None
         self._processor: Any = None
         self._loaded = False
 
     def load(self) -> None:
-        """Charge le modèle sous timeout (sentence-transformers ou mlx-embeddings)."""
+        """Charge le modèle MLX sous timeout."""
         if self._loaded:
             return
         logger.info("Chargement du modèle d'embedding : %s", self.model_name)
@@ -85,7 +84,7 @@ class MLXEmbedding:
                 "Modèle d'embedding chargé en %.1f s : %s (%s)",
                 time.time() - debut,
                 self.model_name,
-                "sentence-transformers" if self._st_mode else "mlx-embeddings",
+                "mlx-embeddings",
             )
         except Exception as exc:
             from src.errors import ModelLoadError
@@ -100,8 +99,7 @@ class MLXEmbedding:
         stream GPU de son thread de création, donc le charger ici le
         condamnerait à être utilisé sur ce même thread. Le chargement des
         modèles MLX est donc déclenché depuis le thread d'encodage
-        (`_charger_si_necessaire`), et `load()` ne sert plus qu'aux cas où
-        l'appelant encode sur son propre thread (sentence-transformers).
+        (`_charger_si_necessaire`), qui l'exécute sur le thread d'encodage.
         """
         self._model, self._processor = self._instancier_backend()
         self._loaded = True
@@ -146,11 +144,6 @@ class MLXEmbedding:
 
     def _instancier_backend(self) -> tuple[Any, Any]:
         """Charge le backend actif (sentence-transformers ou mlx-embeddings)."""
-        if self._st_mode:
-            from sentence_transformers import SentenceTransformer
-
-            nom_court = self.model_name.split("/", 1)[1]
-            return SentenceTransformer(nom_court), None
         from mlx_embeddings import load as emb_load
 
         modele, processor = emb_load(self.model_name)
@@ -172,23 +165,12 @@ class MLXEmbedding:
         return self._loaded
 
     def encode(self, texte: str, timeout_seconds: float | None = None) -> list[float]:
-        """Retourne le vecteur d'embedding normalisé de `texte`."""
-        if not self._st_mode:
-            # Voie MLX : chargement ET encodage sur le même thread (celui de
-            # l'executor borné), sinon MLX refuse le stream GPU.
-            return self._encoder_mlx_avec_chargement(texte, timeout_seconds)
-        if not self._loaded:
-            self.load()
-        texte = _tronquer_pour_embedding(texte)
-        timeout = (
-            timeout_seconds if timeout_seconds is not None else cfg.mlx_timeout_seconds
-        )
-        try:
-            return self._encoder_texte_unique(texte, timeout)
-        except Exception as exc:
-            from src.errors import EmbeddingFailedError
+        """Retourne le vecteur d'embedding normalisé de `texte`.
 
-            raise EmbeddingFailedError(self.model_name, cause=str(exc)) from exc
+        Chargement et encodage se font sur le même thread : c'est la condition
+        pour que MLX accepte le stream GPU (cf. `_charger_et_encoder`).
+        """
+        return self._encoder_mlx_avec_chargement(texte, timeout_seconds)
 
     def _encoder_mlx_avec_chargement(
         self, texte: str, timeout_seconds: float | None
@@ -206,13 +188,19 @@ class MLXEmbedding:
             raise EmbeddingFailedError(self.model_name, cause=str(exc)) from exc
 
     def _encoder_mlx_thread(self, texte: str, timeout: float) -> list[float]:
-        """Soumet chargement + encodage en UNE soumission (donc un seul thread).
+        """Charge puis encode — sur le thread appelant, SANS executor borné.
 
-        Le chargement et l'encodage doivent être exécutés par le MÊME thread :
-        soumettre deux appels successifs à l'executor ne garantit pas le même
-        worker, et MLX refuse alors le stream GPU (« Stream(gpu, 2) »).
+        L'encodage MLX ne passe volontairement pas par `_executer_avec_timeout` :
+        sur dépassement, ce helper recycle l'executor et laisse le thread
+        orphelin en pleine évaluation GPU, ce qui fige ensuite
+        `mlx::core::eval` du nouveau thread (constaté sur un document de
+        1 692 chunks : process bloqué à 9 % de CPU, thread principal en
+        `_pthread_cond_wait`). MLX n'a pas d'interruption coopérative : borner
+        le temps n'apporte rien ici et introduit un interblocage. Le paramètre
+        `timeout` reste dans la signature pour la compatibilité de l'interface.
         """
-        return _executer_avec_timeout(self._charger_et_encoder, timeout, texte)
+        del timeout  # sans objet : voir docstring
+        return self._charger_et_encoder(texte)
 
     def _charger_et_encoder(self, texte: str) -> list[float]:
         """Charge (si besoin) puis encode — exécuté sur le thread de l'executor."""
@@ -220,25 +208,6 @@ class MLXEmbedding:
         from mlx_embeddings import generate as emb_generate
 
         sortie = emb_generate(
-            self._model,
-            self._processor,
-            texts=texte,
-            max_length=512,
-            padding=True,
-            truncation=True,
-        )
-        vecteur = sortie.text_embeds[0]
-        mx.eval(vecteur)
-        return cast("list[float]", vecteur.tolist())
-
-    def _encoder_texte_unique(self, texte: str, timeout: float) -> list[float]:
-        """Encodage bas-niveau : soit `sentence-transformers`, soit `mlx_embeddings`."""
-        if self._st_mode:
-            vecteur = _executer_avec_timeout(self._model.encode, timeout, texte)
-            return cast("list[float]", vecteur.tolist())
-        sortie = _executer_avec_timeout(
-            _emb_generate_direct,
-            timeout,
             self._model,
             self._processor,
             texts=texte,

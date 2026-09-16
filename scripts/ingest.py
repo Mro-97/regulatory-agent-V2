@@ -34,6 +34,12 @@ _FINS_DE_PHRASE = (". ", "? ", "! ", ".\n", "?\n", "!\n", "\n\n")
 # Namespace pour dériver un id de point Qdrant stable depuis un chunk_id.
 _NS_CHUNK = uuid.uuid5(uuid.NAMESPACE_URL, "regulatory-agent/chunk")
 
+# Taille maximale d'un lot d'upsert Qdrant. Un lot de 500 points pèse ~1,3 Mo
+# (payloads de 600 caractères) : largement sous la limite de 32 Mo, tout en
+# gardant un nombre d'appels réseau raisonnable sur un document de 13 000
+# chunks.
+TAILLE_LOT_UPSERT = 500
+
 
 def _filtre_selector_document(document_id: str) -> Any:
     """Sélecteur Qdrant ciblant tous les points d'un `document_id` donné."""
@@ -219,13 +225,33 @@ class Ingester:  # noqa: D101
         chunks = self.chunk_document(doc)
         logger.info("%d chunks générés pour %s", len(chunks), doc.id)
         chunks_traites = self._appliquer_sanitizer(chunks)
-        points = [self._chunk_vers_point(c) for c in chunks_traites]
-        if not points:
+        if not chunks_traites:
             logger.warning("Aucun point à indexer pour %s", doc.id)
             return 0
-        self.client.upsert(collection_name=self.collection_name, points=points)
-        logger.info("%d points indexés dans Qdrant", len(points))
-        return len(points)
+        total = self._indexer_par_lots(chunks_traites, doc.id)
+        logger.info("%d points indexés dans Qdrant", total)
+        return total
+
+    def _indexer_par_lots(
+        self, chunks: list[MetadonneesChunk], document_id: str
+    ) -> int:
+        """Embedde et indexe PAR LOTS, en libérant chaque lot avant le suivant.
+
+        Un document volumineux (REACH : ~13 000 chunks) était traité d'un seul
+        bloc : ~13 000 points, leurs vecteurs et le JSON d'upsert restaient en
+        mémoire simultanément, et le process se faisait tuer sans trace (limite
+        mémoire atteinte). Le traitement par lots borne l'empreinte mémoire ET
+        le payload d'upsert, sans changer le résultat (les `id` de points sont
+        déterministes).
+        """
+        total = 0
+        for debut in range(0, len(chunks), TAILLE_LOT_UPSERT):
+            lot = chunks[debut : debut + TAILLE_LOT_UPSERT]
+            points = [self._chunk_vers_point(c) for c in lot]
+            self.client.upsert(collection_name=self.collection_name, points=points)
+            total += len(points)
+            logger.debug("%s : %d/%d chunks indexés", document_id, total, len(chunks))
+        return total
 
     def _appliquer_sanitizer(
         self, chunks: list[MetadonneesChunk]
