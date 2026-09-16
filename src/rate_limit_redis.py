@@ -86,7 +86,15 @@ class RateLimiterRedis:
         return compteur <= self._max_requests
 
     def _autoriser_via_fallback(self, cle: str) -> bool:
-        """Délègue au limiteur mémoire (celui de `src.api_security` si non injecté)."""
+        """Délègue au limiteur mémoire (celui de `src.api_security` si non injecté).
+
+        `cle` est la clé composite `{empreinte_cle}:{ip}` déjà composée par
+        `is_allowed` : le repli mémoire applique donc EXACTEMENT le même
+        découpage que Redis. Auparavant le middleware ne transmettait que
+        l'empreinte de clé, si bien qu'une panne Redis changeait
+        silencieusement la sémantique du quota (tous les clients d'une même
+        clé partageaient un seau, quelle que soit leur IP).
+        """
         limiteur = self._fallback
         if limiteur is None:
             from src.api_security import _limiteur

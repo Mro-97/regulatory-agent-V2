@@ -67,8 +67,18 @@ def _est_rate_limite(chemin: str) -> bool:
 
 
 def _reponse_429() -> JSONResponse:
-    """Fabrique la réponse 429 avec message clair (utilisée par le middleware)."""
-    return JSONResponse(status_code=429, content={"detail": _MSG_TROP_DE_REQUETES})
+    """Fabrique la réponse 429 avec message clair (utilisée par le middleware).
+
+    Les en-têtes de sécurité sont posés ici : ce middleware est le plus
+    externe de la pile, donc sa réponse ne traverse jamais le middleware
+    `en_tetes_securite` (plus interne) et sortait sans CSP, sans
+    `X-Frame-Options` ni masquage du `Server`.
+    """
+    from src.security_headers import appliquer_entetes_securite
+
+    return appliquer_entetes_securite(
+        JSONResponse(status_code=429, content={"detail": _MSG_TROP_DE_REQUETES})
+    )
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
@@ -93,11 +103,13 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
 
 def installer_rate_limit(app: FastAPI) -> None:
-    """Attache `RateLimitMiddleware` à `app` — à appeler avant tout autre middleware.
+    """Attache `RateLimitMiddleware` à `app` — à appeler en DERNIER.
 
-    En Starlette, le dernier `add_middleware` s'exécute en premier ; ce
-    middleware doit donc être ajouté après les autres pour être atteint
-    avant eux (comptage effectué avant les checks de taille, d'en-têtes
-    de sécurité et de parsing du body).
+    En Starlette, les middlewares s'exécutent dans l'ordre inverse de leur
+    ajout : le dernier ajouté est le plus EXTERNE. Ce middleware doit donc
+    être enregistré après les autres pour être atteint en premier — c'est ce
+    qui fait compter le quota avant les contrôles de taille, d'en-têtes et le
+    parsing du body. Ses refus (429) portent leurs propres en-têtes de
+    sécurité, puisqu'ils ne traversent pas le middleware d'en-têtes.
     """
     app.add_middleware(RateLimitMiddleware)

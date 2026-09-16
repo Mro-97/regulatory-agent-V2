@@ -28,12 +28,23 @@ _UA_MAX = 120
 
 
 def _empreinte_cle(fournie: str | None) -> str:
-    """`absente` / `invalide` / hash court — jamais la clé en clair."""
-    attendue = (cfg.api_key or "").strip()
+    """`absente` / `invalide` / hash court — jamais la clé en clair.
+
+    La validité est jugée contre le MAGASIN de clés (`src.auth` : fichier de
+    hashes, `API_KEYS_HACHEES`, voie clair dépréciée), jamais contre
+    `cfg.api_key`. En production `API_KEY` est vide (c'est la configuration
+    exigée par le boot) : comparer à cette valeur vide faisait journaliser
+    toute clé valide du magasin comme `invalide`, et toute clé inconnue comme
+    valide — l'inverse exact de ce que ce journal doit montrer. Le hash n'est
+    calculé qu'après validation, pour ne jamais écrire l'empreinte d'une clé
+    inconnue (bruit et surface d'énumération).
+    """
     proposee = (fournie or "").strip()
     if not proposee:
         return "absente"
-    if attendue and proposee != attendue:
+    from src.auth import identifier
+
+    if identifier(proposee) is None:
         return "invalide"
     return hashlib.sha256(proposee.encode("utf-8")).hexdigest()[:8]
 
