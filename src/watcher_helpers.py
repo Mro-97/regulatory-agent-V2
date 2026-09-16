@@ -115,12 +115,22 @@ def charger_hashes_connus() -> dict[str, str]:
 
 
 def sauvegarder_hashes(hashes: dict[str, str]) -> None:
-    """Sauvegarde les hashes dans le fichier local."""
+    """Sauvegarde les hashes dans le fichier local (écriture ATOMIQUE).
+
+    `write_text` tronquait le fichier avant d'écrire : une coupure au mauvais
+    moment laissait un JSON invalide, que `charger_hashes_connus` rejette
+    ensuite en bloc — toutes les empreintes étaient perdues et le cycle
+    suivant re-basait silencieusement chaque URL. On écrit donc un fichier
+    temporaire puis on le renomme (`Path.replace`), opération atomique.
+    """
     CHEMIN_HASHES.parent.mkdir(parents=True, exist_ok=True)
+    temporaire = CHEMIN_HASHES.with_suffix(CHEMIN_HASHES.suffix + ".tmp")
     try:
-        CHEMIN_HASHES.write_text(
+        temporaire.write_text(
             json.dumps(hashes, ensure_ascii=False, indent=2),
             encoding="utf-8",
         )
+        temporaire.replace(CHEMIN_HASHES)
     except Exception as exc:
         logger.exception("Sauvegarde hashes Watcher échouée : %s", exc)  # noqa: TRY401
+        temporaire.unlink(missing_ok=True)

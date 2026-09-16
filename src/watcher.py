@@ -30,8 +30,9 @@ if TYPE_CHECKING:
     import redis.asyncio as aioredis
 
 import httpx
-from config import cfg
 
+from config import cfg
+from src.http_client import ClientSortant
 from src.models import (
     AlerteWatcher,
     SourceReglementaire,
@@ -171,22 +172,16 @@ class Watcher:
 
     def __init__(self) -> None:  # noqa: D107
         self._hashes = charger_hashes_connus()
-        self._client_http: httpx.AsyncClient | None = None
+        self._client_http: ClientSortant | None = None
         self._en_cours = False
         logger.info("Watcher initialisé — %d hashes connus.", len(self._hashes))
 
-    async def _http(self) -> httpx.AsyncClient:
-        """Client HTTP partagé avec retry et timeout adaptés aux sources réglementaires."""  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
-        if self._client_http is None or self._client_http.is_closed:
-            self._client_http = httpx.AsyncClient(
+    async def _http(self) -> ClientSortant:
+        """Client sortant durci (IP validée épinglée, redirections revalidées)."""
+        if self._client_http is None:
+            self._client_http = ClientSortant(
                 timeout=30.0,
-                follow_redirects=cfg.watcher_follow_redirects,
-                headers={
-                    "User-Agent": (
-                        "RegulatoryAgentV2/0.1 (veille reglementaire locale; "
-                        "contact: admin@regulatory-agent.local)"
-                    )
-                },
+                max_redirections=max(1, int(cfg.watcher_max_redirections)),
             )
         return self._client_http
 
@@ -217,18 +212,16 @@ class Watcher:
     async def _tenter_fetch(
         self, url: str, source: SourceReglementaire
     ) -> _ResultatTentativeFetch:
-        """Une tentative HTTP : succès, arrêt (4xx ou URL interne), ou à réessayer."""
-        from src.http_safety import (
-            UrlInterneRefuseeError,
-            resoudre_url_publique_ou_lever,
-        )
+        """Une tentative HTTP : succès, arrêt (4xx ou refus SSRF), ou à réessayer."""
+        from src.http_client import RedirectionsExcessivesError
+        from src.http_safety import UrlInterneRefuseeError
 
         try:
-            resoudre_url_publique_ou_lever(url)
             client = await self._http()
-            rep = await client.get(url)
-            rep.raise_for_status()
-        except UrlInterneRefuseeError as exc:
+            reponse = await client.recuperer(url)
+        except (UrlInterneRefuseeError, RedirectionsExcessivesError) as exc:
+            # Refus définitif : ni l'URL initiale ni une cible de redirection
+            # n'est autorisée — inutile de réessayer.
             logger.warning(
                 "Watcher — URL refusée (SSRF prévention) : %s — %s", url, exc
             )
@@ -246,7 +239,9 @@ class Watcher:
             return _ResultatTentativeFetch(contenu=None, arreter=False, erreur=exc)
         except Exception as exc:  # noqa: BLE001 — frontière externe : dégradation gracieuse, cf. skill §8
             return _ResultatTentativeFetch(contenu=None, arreter=False, erreur=exc)
-        return _ResultatTentativeFetch(contenu=rep.text, arreter=False, erreur=None)
+        return _ResultatTentativeFetch(
+            contenu=reponse.contenu, arreter=False, erreur=None
+        )
 
     async def verifier_url(
         self,
@@ -278,8 +273,17 @@ class Watcher:
         logger.info("Watcher — première indexation : %s", url)
 
     async def _memoriser_hash(self, url: str, hash_nouveau: str) -> None:
-        """Met à jour la table des hashes en mémoire et la persiste (thread)."""
+        """Met à jour la table des hashes EN MÉMOIRE (persistance en fin de cycle).
+
+        La persistance était faite ici, donc une réécriture complète du fichier
+        par URL — et une écriture tronquée pouvait perdre la totalité des
+        empreintes connues. `cycle_verification` enregistre désormais une seule
+        fois, atomiquement.
+        """
         self._hashes[url] = hash_nouveau
+
+    async def _persister_hashes(self) -> None:
+        """Persiste la table des hashes (écriture atomique, hors event loop)."""
         await asyncio.to_thread(sauvegarder_hashes, self._hashes)
 
     async def cycle_verification(self) -> list[AlerteWatcher]:
@@ -297,6 +301,9 @@ class Watcher:
             for config in SOURCES_CONFIG:
                 await self._verifier_source(config, alertes)
         finally:
+            # Persistance unique en fin de cycle (même en cas d'erreur) : les
+            # hashes mis à jour en mémoire ne doivent pas être perdus.
+            await self._persister_hashes()
             self._en_cours = False
         logger.info("Watcher — cycle terminé. %d alerte(s) générée(s).", len(alertes))
         return alertes
@@ -338,5 +345,6 @@ class Watcher:
 
     async def fermer(self) -> None:
         """Ferme le client HTTP proprement."""
-        if self._client_http and not self._client_http.is_closed:
-            await self._client_http.aclose()
+        if self._client_http is not None:
+            await self._client_http.fermer()
+            self._client_http = None

@@ -1,51 +1,86 @@
-"""src/http_safety.py — Garde-fous SSRF pour les clients HTTP sortants.
+"""src/http_safety.py — garde-fous SSRF pour les clients HTTP sortants.
 
-Préventif contre le vecteur d'attaque #4 identifié à l'audit sécurité :
-si un jour une URL de source devient contrôlable par l'utilisateur
-(paramètre d'API, entrée admin), sans deny-list elle peut pointer vers :
+Préventif : une URL de source peut viser l'intérieur du réseau ou la
+métadonnée cloud (169.254.169.254). Trois protections, dans cet ordre :
 
-- 127.0.0.0/8       (localhost, services internes)
-- 10.0.0.0/8        (RFC1918 privé)
-- 172.16.0.0/12     (RFC1918 privé)
-- 192.168.0.0/16    (RFC1918 privé)
-- 169.254.0.0/16    (link-local, incl. metadata cloud 169.254.169.254)
-- ::1, fc00::/7, fe80::/10 (IPv6 équivalents)
+1. **schéma et port** — seuls `http`/`https` sur les ports 80/443 (ou
+   explicitement autorisés) sont acceptés : sans ce contrôle, `file://` ou
+   `gopher://` passeraient dès lors qu'ils portent un hostname ;
+2. **résolution validée** — le hostname est résolu UNE fois et chaque IP
+   retournée doit être globale. Une seule IP interne dans la liste fait
+   refuser l'URL (round-robin et dual-stack hostiles) ;
+3. **connexion sur l'IP validée** — `src/http_client.py` se connecte à l'IP
+   que ce module a validée, en conservant le `Host` et le SNI d'origine.
+   Sans cela `httpx` résolvait le nom une SECONDE fois : un domaine dont la
+   réponse DNS change entre les deux requêtes (« DNS rebinding ») passait le
+   contrôle puis était contacté sur une adresse interne.
 
-Ce module résout le hostname et rejette l'URL si l'IP tombe dans ces
-plages. Aucune I/O réseau sortante ne doit se faire sans passer par
-`resoudre_url_publique_ou_lever()`.
+Les redirections ne sont jamais suivies automatiquement : chaque saut
+repasse par `valider_url` (cf. `src/http_client.py`).
 """
 
 from __future__ import annotations
 
 import ipaddress
 import socket
-from urllib.parse import urlparse
+from urllib.parse import urlsplit
+
+# Ports sortants autorisés. Le corpus réglementaire est servi en 80/443 ; un
+# port supplémentaire doit être ajouté ici en connaissance de cause.
+PORTS_AUTORISES: frozenset[int] = frozenset({80, 443})
+_SCHEMAS_AUTORISES: frozenset[str] = frozenset({"http", "https"})
 
 
-class UrlInterneRefuseeError(ValueError):
-    """L'URL résout vers une IP interne (RFC1918 / loopback / link-local)."""
+class UrlRefuseeError(ValueError):
+    """L'URL sortante est refusée (schéma, port ou adresse non publique)."""
 
-    def __init__(self, url: str, ip: str) -> None:  # noqa: D107
-        super().__init__(f"URL refusée (IP interne {ip}) : {url}")
+    def __init__(self, url: str, *, raison: str, ip: str | None = None) -> None:  # noqa: D107 — documenté par la classe
+        detail = f"{raison} (IP {ip})" if ip else raison
+        super().__init__(f"URL refusée — {detail} : {url}")
         self.url = url
+        self.raison = raison
         self.ip = ip
 
 
+# Nom historique conservé : le code et les tests existants l'importent.
+UrlInterneRefuseeError = UrlRefuseeError
+
+
 def _est_ip_interne(ip_str: str) -> bool:
-    """True si `ip_str` (IPv4 ou IPv6) est dans une plage privée/loopback/link-local."""
-    ip = ipaddress.ip_address(ip_str)
-    return ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_multicast
+    """True si `ip_str` n'est PAS une adresse publique routable.
+
+    Le critère est négatif (`not is_global`) plutôt qu'une liste de plages :
+    `is_private`/`is_loopback`/`is_link_local` laissent passer des cas réels —
+    `0.0.0.0` et `0.1.2.3` (« this host »), `100.64.0.0/10` (CGNAT),
+    `192.0.0.0/24`, `198.18.0.0/15`, les adresses IPv4-mappées et les plages
+    réservées IETF. `is_global` les couvre toutes.
+    """
+    try:
+        return not ipaddress.ip_address(ip_str).is_global
+    except ValueError:
+        # Valeur non parsable : elle ne doit jamais servir d'adresse cible.
+        return True
 
 
 def _extraire_hostname(url: str) -> str:
-    """Extrait le hostname d'une URL, lève UrlSansHostnameError si vide."""
-    from src.errors import UrlSansHostnameError
-
-    hostname = urlparse(url).hostname
+    """Extrait le hostname d'une URL, lève UrlRefuseeError si vide."""
+    hostname = urlsplit(url).hostname
     if not hostname:
-        raise UrlSansHostnameError(url)
+        raise UrlRefuseeError(url, raison="URL sans hostname")
     return hostname
+
+
+def _verifier_schema_et_port(url: str) -> None:
+    """Refuse tout schéma autre que http/https et tout port hors liste."""
+    parties = urlsplit(url)
+    if parties.scheme.lower() not in _SCHEMAS_AUTORISES:
+        raise UrlRefuseeError(url, raison=f"schéma non autorisé ({parties.scheme})")
+    try:
+        port = parties.port
+    except ValueError as exc:  # port non numérique ou hors bornes
+        raise UrlRefuseeError(url, raison="port invalide") from exc
+    if port is not None and port not in PORTS_AUTORISES:
+        raise UrlRefuseeError(url, raison=f"port non autorisé ({port})")
 
 
 def _resoudre_toutes_les_ips(hostname: str) -> list[str]:
@@ -54,22 +89,71 @@ def _resoudre_toutes_les_ips(hostname: str) -> list[str]:
     return list({str(info[4][0]) for info in infos})
 
 
-def resoudre_url_publique_ou_lever(url: str) -> None:
-    """Résout `url` et lève UrlInterneRefuseeError si l'IP est interne.
+def _est_ip_litterale(valeur: str) -> bool:
+    """True si `valeur` est déjà une adresse IP (et non un nom à résoudre)."""
+    try:
+        ipaddress.ip_address(valeur)
+    except ValueError:
+        return False
+    return True
 
-    Vérifie **toutes** les IPs retournées par le DNS (dual-stack v4/v6,
-    round-robin) — une seule IP privée dans la liste et l'URL est refusée
-    (protection contre DNS rebinding partiel).
+
+def _resoudre_et_valider(hostname: str, url: str) -> list[str]:
+    """Résout `hostname` et refuse l'URL si UNE des IP n'est pas publique.
+
+    Une IP écrite en dur est validée directement, SANS résolution DNS (un
+    `getaddrinfo("127.0.0.1")` renverrait l'adresse telle quelle, mais surtout
+    un nom de domaine doit être résolu — et `ip_address("example.com")` lève,
+    ce qui ne doit pas être confondu avec « adresse interne »).
     """
-    hostname = _extraire_hostname(url)
+    if _est_ip_litterale(hostname):
+        if _est_ip_interne(hostname):
+            raise UrlRefuseeError(url, raison="adresse non publique", ip=hostname)
+        return [hostname]
     try:
         ips = _resoudre_toutes_les_ips(hostname)
     except socket.gaierror as exc:
-        # Hostname non résoluble = pas de risque SSRF immédiat, on laisse
-        # httpx échouer normalement avec un message clair.
+        # Hostname non résoluble : on laisse remonter une erreur claire plutôt
+        # qu'un échec de connexion opaque.
         from src.errors import DnsIrresoluError
 
         raise DnsIrresoluError(hostname, str(exc)) from exc
+    if not ips:
+        from src.errors import DnsIrresoluError
+
+        raise DnsIrresoluError(hostname, "aucune adresse retournée")
     for ip in ips:
         if _est_ip_interne(ip):
-            raise UrlInterneRefuseeError(url, ip)
+            raise UrlRefuseeError(url, raison="adresse non publique", ip=ip)
+    return ips
+
+
+def valider_url(url: str) -> list[str]:
+    """Valide `url` et retourne les IPs publiques auxquelles se connecter.
+
+    Args:
+        url: URL sortante à valider.
+
+    Returns:
+        Les adresses validées (toutes publiques), dans l'ordre du résolveur.
+
+    Raises:
+        UrlRefuseeError: schéma, port ou adresse non publique.
+        DnsIrresoluError: hostname non résoluble.
+    """
+    _verifier_schema_et_port(url)
+    return _resoudre_et_valider(_extraire_hostname(url), url)
+
+
+def resoudre_url_publique_ou_lever(url: str) -> list[str]:
+    """Valide `url` et retourne les IPs sûres (nom historique conservé).
+
+    Ne fait AUCUNE I/O de connexion : `src/http_client.ClientSortant` utilise
+    la valeur retournée pour ouvrir la connexion, ce qui supprime la fenêtre
+    de résolution double.
+
+    Raises:
+        UrlRefuseeError: schéma, port ou adresse non publique.
+        DnsIrresoluError: hostname non résoluble.
+    """
+    return valider_url(url)

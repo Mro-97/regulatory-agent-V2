@@ -32,19 +32,23 @@ logger = logging.getLogger(__name__)
 def get_redis_client() -> Redis:
     """Construit un client Redis asynchrone paramétré depuis `cfg`.
 
-    Les timeouts sont volontairement courts : un Redis lent ne doit pas
-    figer l'API, le fallback mémoire prend alors le relais.
+    Les timeouts restent courts — un Redis lent ne doit pas figer l'API, le
+    repli mémoire prend le relais — mais pas trop : à 0,5 s, un Redis
+    momentanément chargé (fork de sauvegarde, disque lent) déclenchait des
+    bascules alors qu'il allait répondre. Le délai est configurable
+    (`REDIS_TIMEOUT_SECONDES`) sans changer la borne de disponibilité.
     """
     import redis.asyncio as aioredis
 
+    delai = float(cfg.redis_timeout_secondes)
     return aioredis.Redis(
         host=cfg.redis_host,
         port=cfg.redis_port,
         password=cfg.redis_password or None,
         db=cfg.redis_db,
         decode_responses=True,
-        socket_timeout=0.5,
-        socket_connect_timeout=0.5,
+        socket_timeout=delai,
+        socket_connect_timeout=delai,
     )
 
 
@@ -68,6 +72,10 @@ class RateLimiterRedis:
         self._max_requests = max_requests
         self._window_seconds = window_seconds
         self._fallback = fallback
+        # Bascule sur le repli mémoire : invisible dans la réponse HTTP, et
+        # donc uniquement dans les logs. Ce compteur la rend mesurable
+        # (`statut()`), une panne Redis lente changeant la portée du quota.
+        self.bascule_memoire = 0
 
     async def is_allowed(self, api_key: str, client_ip: str) -> bool:
         """`True` si le couple `{api_key}:{ip}` est sous quota.
@@ -81,9 +89,23 @@ class RateLimiterRedis:
             if compteur == 1:
                 await self._redis.expire(cle, self._window_seconds)
         except Exception as exc:  # noqa: BLE001 — frontière externe : dégradation gracieuse
-            logger.warning("Redis rate limit KO, bascule mémoire : %s", exc)
+            self.bascule_memoire += 1
+            logger.warning(
+                "Redis rate limit KO (bascule mémoire n°%d) : %s",
+                self.bascule_memoire,
+                exc,
+            )
             return self._autoriser_via_fallback(cle)
         return compteur <= self._max_requests
+
+    def statut(self) -> dict[str, int]:
+        """Diagnostic : nombre de bascules mémoire depuis le démarrage.
+
+        `bascule_memoire` > 0 signifie que Redis n'a pas servi au moins une
+        requête : le quota a alors été appliqué par le compteur local, dont la
+        portée est le processus (et non le couple clé/IP partagé par Redis).
+        """
+        return {"bascule_memoire": self.bascule_memoire}
 
     def _autoriser_via_fallback(self, cle: str) -> bool:
         """Délègue au limiteur mémoire (celui de `src.api_security` si non injecté).

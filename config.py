@@ -307,6 +307,17 @@ class Parametres(BaseSettings):
     redis_password: str = Field(default="")
     redis_db: int = Field(default=0)
     redis_ttl_cache: int = Field(default=3600)
+    redis_timeout_secondes: float = Field(
+        default=1.0,
+        description=(
+            "Délai (s) des lectures/écritures Redis du rate-limiter. Un Redis "
+            "plus lent fait basculer le comptage sur le repli mémoire (dont "
+            "la portée est le processus, pas le couple clé/IP) : trop court, "
+            "le quota change de sémantique au moindre à-coup de Redis ; trop "
+            "long, une panne Redis ralentit chaque requête. `statut()` du "
+            "limiteur expose le nombre de bascules."
+        ),
+    )
 
     # ------------------------------------------------------------------
     # PostgreSQL — local sur m4pro2 (§3.1 CONTEXTE_PROJET). DSN via .env
@@ -370,7 +381,22 @@ class Parametres(BaseSettings):
     )
     watcher_follow_redirects: bool = Field(
         default=False,
-        description="Suivre les redirections HTTP (réduit la surface SSRF).",
+        description=(
+            "[OBSOLÈTE — n'a plus d'effet] Les redirections ne sont plus "
+            "suivies par le transport HTTP : `src/http_client.py` les suit "
+            "manuellement, un saut à la fois, en revalidant chaque cible "
+            "contre le garde-fou SSRF (une redirection vers une adresse "
+            "interne est refusée, ce que `follow_redirects=True` ne faisait "
+            "pas). Conservé pour ne pas casser les `.env` existants."
+        ),
+    )
+    watcher_max_redirections: int = Field(
+        default=5,
+        description=(
+            "Nombre maximal de redirections suivies par requête du Watcher. "
+            "Chaque saut est validé (schéma, port, IP publique) avant d'être "
+            "suivi ; au-delà, la chaîne est abandonnée."
+        ),
     )
     watcher_max_essais: int = Field(
         default=3,

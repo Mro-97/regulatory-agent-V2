@@ -32,13 +32,14 @@ from pathlib import Path
 from typing import Annotated
 from uuid import UUID
 
-from config import cfg
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.base import RequestResponseEndpoint
+
+from config import cfg
 
 # `LimiteurDebit` et `_limiteur` ont été déplacés vers src/api_security.py
 # (§12 étape 6). Les alias `X as X` ci-dessous les ré-exportent sous leur
@@ -62,6 +63,9 @@ from src.api_security import (
 )
 from src.api_security import (
     _limiteur as _limiteur,
+)
+from src.api_security import (
+    get_rate_limiter as get_rate_limiter,  # exposé par /health/details
 )
 from src.models import (
     ReponseDecisionValidation,
@@ -372,12 +376,14 @@ async def health() -> dict[str, object]:
     "/health/details",
     tags=["Système"],
     summary="État détaillé (authentifié)",
-    description="Comme /health, plus l'état du backend d'audit. Rôle validateur+.",
+    description=(
+        "Comme /health, plus l'état de l'audit et du rate-limiter. Rôle validateur+."
+    ),
     dependencies=[ValidateurDep],
     include_in_schema=False,
 )
 async def health_details() -> dict[str, object]:
-    """Santé + état du backend d'audit — réservé aux appelants authentifiés."""
+    """Santé + état de l'audit et du rate-limiter — appelants authentifiés."""
     reponse: dict[str, object] = {
         "statut": "ok",
         "horodatage": datetime.now(UTC).isoformat(),
@@ -389,6 +395,13 @@ async def health_details() -> dict[str, object]:
         reponse["audit"] = gestionnaire.statut()
     except Exception:
         logger.exception("Statut audit indisponible pour /health/details")
+    # Une bascule mémoire du rate-limiter est invisible côté client : elle
+    # change pourtant la portée du quota (processus au lieu de clé+IP). Ce
+    # compteur est le seul moyen de la détecter sans lire les logs.
+    try:
+        reponse["rate_limit"] = get_rate_limiter().statut()
+    except Exception:
+        logger.exception("Statut rate-limiter indisponible pour /health/details")
     return reponse
 
 
