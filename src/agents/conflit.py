@@ -42,6 +42,10 @@ from datetime import date
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
+from src.agents.conflit_helpers import (  # noqa: F401 — ré-export compat descendante
+    normaliser_verdict as _normaliser_verdict,
+)
+from src.agents.retriever_helpers import article_de_base
 from src.models import EvidenceRecuperee
 
 if TYPE_CHECKING:
@@ -123,12 +127,10 @@ def _detecter_tension_lexicale(texte_a: str, texte_b: str) -> str | None:
     return None
 
 
-# `_normaliser_verdict` a été déplacé vers src/agents/conflit_llm.py
-# (§12 étape 6). Ré-exporté sous son nom d'origine pour compatibilité
-# descendante (tests inclus).
-# fmt: off
-from src.agents.conflit_llm import _normaliser_verdict as _normaliser_verdict  # noqa: E402, I001
-# fmt: on
+# `_normaliser_verdict` vit désormais dans le module neutre
+# src/agents/conflit_helpers.py (L9) : le ré-export depuis `conflit_llm`
+# créait un import circulaire qui cassait `import src.agents.conflit_llm`.
+# Ré-exporté sous son nom d'origine pour compatibilité descendante (tests).
 
 
 def _paires(
@@ -212,7 +214,15 @@ def _resultat_conflit_vide() -> ResultatConflit:
 
 
 def _calculer_niveau_global(conflits: list[ConflitDetecte]) -> NiveauConflit:
-    """Retourne le niveau max (CRITIQUE > PROBABLE > POTENTIEL)."""
+    """Retourne le niveau max (CRITIQUE > PROBABLE > POTENTIEL).
+
+    M5 : une liste vide n'est pas un conflit POTENTIEL — sans ce garde-fou,
+    `_calculer_niveau_global([])` renvoyait POTENTIEL, ce qui contredisait
+    `_resultat_conflit_vide()` (AUCUN) et pouvait faire croire à un conflit
+    détecté sans aucune preuve.
+    """
+    if not conflits:
+        return NiveauConflit.AUCUN
     niveaux = [c.niveau for c in conflits]
     if NiveauConflit.CRITIQUE in niveaux:
         return NiveauConflit.CRITIQUE
@@ -288,13 +298,23 @@ class AgentConflit:
     def _detecter_incoherences_internes(
         self,
         evidences: list[EvidenceRecuperee],
+        date_ref: date | None = None,
     ) -> list[ConflitDetecte]:
-        """Détecte les tensions entre articles distincts d'un même document."""
+        """Détecte les tensions entre articles distincts d'un même document.
+
+        M4 : les `article_id` sont normalisés (`art_32_2026` ≡ `art_32`, cf.
+        `article_de_base`) et la validité à `date_ref` est vérifiée avec la
+        même règle que la passe inter-documents (`_paire_active_a_date`) :
+        deux versions successives d'un même article ne sont pas une
+        incohérence, et une version abrogée ne doit pas en produire.
+        """
         conflits: list[ConflitDetecte] = []
         for ev_a, ev_b in _paires(evidences):
             if ev_a.document_id != ev_b.document_id:
                 continue
-            if ev_a.article_id == ev_b.article_id:
+            if article_de_base(ev_a.article_id) == article_de_base(ev_b.article_id):
+                continue
+            if not _paire_active_a_date(ev_a, ev_b, date_ref):
                 continue
             tension = _detecter_tension_lexicale(ev_a.texte_extrait, ev_b.texte_extrait)
             if tension:
@@ -350,7 +370,7 @@ class AgentConflit:
             return _resultat_conflit_vide()
         tous_conflits = self._detecter_chevauchements(
             evidences, date_ref
-        ) + self._detecter_incoherences_internes(evidences)
+        ) + self._detecter_incoherences_internes(evidences, date_ref)
         if not tous_conflits:
             return _resultat_conflit_vide()
         tous_conflits, analyse_llm, mode = self._raffiner_via_llm(

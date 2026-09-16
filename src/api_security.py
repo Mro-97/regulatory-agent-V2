@@ -1,9 +1,13 @@
 """src/api_security.py — Middlewares, dépendances et rate limiting FastAPI.
 
-Extraits de src/api.py (§12 étape 6). Regroupe la politique CSP,
-les deux middlewares HTTP (en-têtes de sécurité, limite de taille), les
-dépendances FastAPI (`verifier_auth`, `verifier_origine`,
-`verifier_rate_limit`) et le limiteur de débit en mémoire.
+Extraits de src/api.py (§12 étape 6). Regroupe les deux middlewares HTTP
+(en-têtes de sécurité, limite de taille), les dépendances FastAPI
+(`verifier_auth`, `verifier_origine`, `verifier_rate_limit`) et le limiteur
+de débit en mémoire.
+
+Les en-têtes de sécurité eux-mêmes vivent dans `src/security_headers.py`,
+un module feuille : le middleware de rate-limit, plus externe que cette
+pile, doit pouvoir les poser sur ses 429 sans importer ce module.
 
 Le fichier `src/api.py` importe `installer_middlewares(app)` et les
 `Depends()` exposés ici — la logique métier reste dans api.py.
@@ -23,27 +27,10 @@ from fastapi.responses import JSONResponse
 from starlette.middleware.base import RequestResponseEndpoint
 
 from src.auth import Role, identifier, magasin_configure
+from src.security_headers import appliquer_entetes_securite
 
 if TYPE_CHECKING:
     from src.rate_limit_redis import RateLimiterRedis
-
-_CSP_POLITIQUE = (
-    # M3 : défense en profondeur — restreint les origines de scripts,
-    # styles, images et connexions du frontend. Autorise fonts Google
-    # (utilisées par le template index.html). `'unsafe-inline'` sur les
-    # styles reste toléré pour les SVG/style inline du template ; on
-    # évite `unsafe-inline` sur les scripts.
-    "default-src 'self'; "
-    "script-src 'self'; "
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-    "font-src 'self' https://fonts.gstatic.com; "
-    "img-src 'self' data:; "
-    "connect-src 'self'; "
-    "frame-ancestors 'none'; "
-    "base-uri 'none'; "
-    "form-action 'self'"
-)
-
 
 _METHODES_AVEC_BODY = {"POST", "PUT", "PATCH", "DELETE"}
 _MSG_TRANSFER_ENCODING_REFUSE = (
@@ -62,7 +49,7 @@ def installer_middlewares(app: FastAPI) -> None:
     ) -> Response:
         """Ajoute les en-têtes de sécurité à toutes les réponses."""
         reponse = await call_next(request)
-        _appliquer_entetes_securite(reponse)
+        appliquer_entetes_securite(reponse)
         return reponse
 
     @app.middleware("http")
@@ -77,47 +64,32 @@ def installer_middlewares(app: FastAPI) -> None:
         return await call_next(request)
 
 
-_PERMISSIONS_POLICY = (
-    "accelerometer=(), autoplay=(), camera=(), display-capture=(), "
-    "encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), "
-    "magnetometer=(), microphone=(), midi=(), payment=(), usb=(), "
-    "xr-spatial-tracking=()"
-)
-
-
-def _appliquer_entetes_securite(reponse: Response) -> None:
-    """Pose les en-têtes de sécurité par défaut (idempotent via setdefault)."""
-    reponse.headers.setdefault("X-Content-Type-Options", "nosniff")
-    reponse.headers.setdefault("X-Frame-Options", "DENY")
-    reponse.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
-    reponse.headers.setdefault(
-        "Strict-Transport-Security", "max-age=31536000; includeSubDomains"
-    )
-    reponse.headers.setdefault("Content-Security-Policy", _CSP_POLITIQUE)
-    reponse.headers.setdefault("Cross-Origin-Opener-Policy", "same-origin")
-    reponse.headers.setdefault("Cross-Origin-Resource-Policy", "same-site")
-    reponse.headers.setdefault("Permissions-Policy", _PERMISSIONS_POLICY)
-    # Fingerprint : ne pas annoncer le serveur d'application.
-    reponse.headers["Server"] = "regulatory-agent"
-
-
 def _controler_taille_et_encoding(request: Request) -> JSONResponse | None:
-    """Retourne un JSONResponse d'erreur si taille ou Transfer-Encoding invalide."""
+    """Retourne un JSONResponse d'erreur si taille ou Transfer-Encoding invalide.
+
+    Les réponses de refus sont complétées par les en-têtes de sécurité :
+    produites avant le middleware `en_tetes_securite`, elles sortaient
+    auparavant sans CSP ni `X-Frame-Options` (cf. `src/security_headers.py`).
+    """
     longueur = request.headers.get("Content-Length")
     if (
         longueur
         and longueur.isdigit()
         and int(longueur) > cfg.taille_max_requete_octets
     ):
-        return JSONResponse(
-            status_code=413, content={"detail": _MSG_REQUETE_TROP_VOLUMINEUSE}
+        return appliquer_entetes_securite(
+            JSONResponse(
+                status_code=413, content={"detail": _MSG_REQUETE_TROP_VOLUMINEUSE}
+            )
         )
     if request.method in _METHODES_AVEC_BODY:
         te = (request.headers.get("Transfer-Encoding") or "").strip().lower()
         if te and te != "identity":
-            return JSONResponse(
-                status_code=411,
-                content={"detail": _MSG_TRANSFER_ENCODING_REFUSE},
+            return appliquer_entetes_securite(
+                JSONResponse(
+                    status_code=411,
+                    content={"detail": _MSG_TRANSFER_ENCODING_REFUSE},
+                )
             )
     return None
 
@@ -185,12 +157,21 @@ def verifier_origine(request: Request) -> None:
 # injoignable. Le comptage nominal, partagé entre workers, se fait côté
 # Redis avec la clé composite `{api_key}:{ip}`.
 class LimiteurDebit:
-    """Limiteur de débit en mémoire (fenêtre glissante), clé = adresse IP.
+    """Limiteur de débit en mémoire (fenêtre glissante).
 
-    Le suivi est plafonné à `max_cles` entrées distinctes ; les entrées
-    dont tous les horodatages sont hors fenêtre sont purgées à chaque
-    appel. Sans ce plafond, un port-scan ou un flood d'IP sources faisait
-    croître `_horodatages` indéfiniment (fuite mémoire).
+    Deux appelants, deux découpages — c'est volontaire et documenté :
+
+    - `RateLimiterRedis` (chemin nominal, `src/rate_limit_redis.py`) lui
+      passe la clé composite `{empreinte_cle}:{ip}` : le repli mémoire
+      applique alors EXACTEMENT le même découpage que Redis, y compris
+      pendant une panne ;
+    - `verifier_rate_limit` (dépendance héritée, non montée sur les routes)
+      lui passe l'IP seule.
+
+    Le suivi est plafonné à `max_cles` entrées distinctes ; les entrées dont
+    tous les horodatages sont hors fenêtre sont purgées à chaque appel. Sans
+    ce plafond, un port-scan ou un flood d'IP sources faisait croître
+    `_horodatages` indéfiniment (fuite mémoire).
 
     Le limiteur est un objet mono-process : en multi-worker (gunicorn -w N),
     la limite effective est × N. `main.valider_configuration_demarrage()`

@@ -27,6 +27,8 @@ from pathlib import Path
 import httpx
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
+from src.errors import TelechargementTropVolumineuxError
+
 from scripts.corpus_converters import CONVERTISSEURS
 from scripts.corpus_sources import SOURCES, SourceReg
 
@@ -40,6 +42,11 @@ MANIFEST = RACINE / "corpus" / "MANIFEST.json"
 INDEX = RACINE / "corpus" / "INDEX.md"
 
 _UA = "regulatory-agent-corpus-fetch/1.0 (+usage interne, textes publics)"
+
+# Plafond de téléchargement (flux) : 64 Mo couvrent largement les PDF
+# réglementaires du corpus et bornent le risque de saturation disque/mémoire.
+TAILLE_MAX_OCTETS = 64 * 1024 * 1024
+
 _EXT = {
     "application/pdf": ".pdf",
     "text/html": ".html",
@@ -49,7 +56,18 @@ _EXT = {
 }
 
 
+def _verifier_plafond(source_id: str, octets: int) -> None:
+    """Lève si le téléchargement dépasse `TAILLE_MAX_OCTETS`.
+
+    Raises:
+        TelechargementTropVolumineuxError: plafond dépassé.
+    """
+    if octets > TAILLE_MAX_OCTETS:
+        raise TelechargementTropVolumineuxError(source_id, octets, TAILLE_MAX_OCTETS)
+
+
 def _extension(url: str, content_type: str) -> str:
+    """Extension déduite du Content-Type, sinon du suffixe d'URL."""
     for mime, ext in _EXT.items():
         if mime in content_type:
             return ext
@@ -58,29 +76,46 @@ def _extension(url: str, content_type: str) -> str:
 
 
 def _telecharger(src: SourceReg) -> tuple[Path, dict[str, object]] | None:
-    """Télécharge `src.url` dans corpus/raw/. Retourne (chemin, entrée manifest)."""
+    """Télécharge `src.url` dans corpus/raw/. Retourne (chemin, entrée manifest).
+
+    Le corps est écrit en FLUX avec un plafond de taille : `client.get()`
+    chargeait la réponse entière en mémoire avant de l'écrire, si bien qu'un
+    fichier de plusieurs Go (ou une bombe de décompression, les redirections
+    étant suivies) faisait tomber le processus en OOM. Au-delà de
+    `TAILLE_MAX_OCTETS` le téléchargement est abandonné proprement.
+    """
+    chemin_partiel = DIR_RAW / f".{src.id}.part"
     try:
-        with httpx.Client(follow_redirects=True, timeout=60.0) as client:
-            rep = client.get(src.url, headers={"User-Agent": _UA})
-        rep.raise_for_status()
+        with (
+            httpx.Client(follow_redirects=True, timeout=60.0) as client,
+            client.stream("GET", src.url, headers={"User-Agent": _UA}) as rep,
+        ):
+            rep.raise_for_status()
+            content_type = rep.headers.get("content-type", "")
+            chemin = DIR_RAW / f"{src.id}{_extension(src.url, content_type)}"
+            digest = hashlib.sha256()
+            octets = 0
+            with chemin_partiel.open("wb") as fichier:
+                for morceau in rep.iter_bytes():
+                    octets += len(morceau)
+                    _verifier_plafond(src.id, octets)
+                    digest.update(morceau)
+                    fichier.write(morceau)
     except Exception as exc:  # noqa: BLE001 — frontière réseau, on continue
         logger.warning("  KO téléchargement %s : %s", src.id, exc)
+        chemin_partiel.unlink(missing_ok=True)
         return None
-    contenu = rep.content
-    chemin = (
-        DIR_RAW / f"{src.id}{_extension(src.url, rep.headers.get('content-type', ''))}"
-    )
-    chemin.write_bytes(contenu)
+    chemin_partiel.replace(chemin)
     entree = {
         "id": src.id,
         "url": src.url,
-        "sha256": hashlib.sha256(contenu).hexdigest(),
-        "octets": len(contenu),
-        "content_type": rep.headers.get("content-type", ""),
+        "sha256": digest.hexdigest(),
+        "octets": octets,
+        "content_type": content_type,
         "recupere_le": datetime.now(UTC).isoformat(),
         "fichier": chemin.name,
     }
-    logger.info("  OK %s — %d Ko (%s)", src.id, len(contenu) // 1024, chemin.name)
+    logger.info("  OK %s — %d Ko (%s)", src.id, octets // 1024, chemin.name)
     return chemin, entree
 
 
@@ -107,6 +142,7 @@ def _convertir(src: SourceReg, chemin_raw: Path) -> bool:
 
 
 def _charger_manifest() -> dict[str, dict[str, object]]:
+    """Charge `corpus/MANIFEST.json`, ou un manifeste vide s'il n'existe pas."""
     if MANIFEST.exists():
         charge: dict[str, dict[str, object]] = json.loads(MANIFEST.read_text())
         return charge
@@ -114,6 +150,7 @@ def _charger_manifest() -> dict[str, dict[str, object]]:
 
 
 def _ecrire_index() -> None:
+    """Régénère `corpus/INDEX.md` (inventaire lisible des sources)."""
     lignes = [
         "# corpus/INDEX.md — inventaire des sources\n",
         "| id | source | convertisseur | à vérifier | JSON | URL |",
@@ -130,8 +167,7 @@ def _ecrire_index() -> None:
     INDEX.write_text("\n".join(lignes) + "\n", encoding="utf-8")
 
 
-def main() -> None:
-    """Point d'entrée CLI."""
+def main() -> None:  # noqa: D103
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--only", nargs="+", metavar="ID", help="restreindre à ces ids")
     ap.add_argument(

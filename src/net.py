@@ -53,32 +53,56 @@ def _premier_xff(valeur: str) -> str:
     return valeur.split(",")[0].strip()
 
 
+def _ip_valide(valeur: str | None) -> str | None:
+    """`valeur` si c'est une IP littérale exploitable, sinon `None`.
+
+    `X-Forwarded-For` / `X-Real-IP` alimentent la clé de rate-limit et le
+    journal d'accès : une valeur non validée y laisse passer n'importe
+    quelle chaîne (rotation de la clé de comptage, fausses lignes de log).
+    Une entrée illisible est donc ignorée au profit du pair TCP réel plutôt
+    que reprise telle quelle. Les valeurs préfixées (`for=`, `"…"`), les
+    ports (`1.2.3.4:5678`) et les inconnues (`unknown`) sont écartés.
+    """
+    if not valeur:
+        return None
+    candidat = nettoyer_entete(valeur, taille_max=64).strip().strip('"')
+    if not candidat or candidat.lower() in {"unknown", "inconnu", "-"}:
+        return None
+    try:
+        return str(ipaddress.ip_address(candidat))
+    except ValueError:
+        return None
+
+
 def ip_client(request: Request) -> str:
     """IP du client d'origine.
 
-    Derrière un `trusted_proxy` : `X-Forwarded-For` (1er maillon) puis
-    `X-Real-IP`. Sinon : le pair TCP direct (les en-têtes sont ignorés,
-    car un client arbitraire peut les forger).
+    Derrière un `trusted_proxy` : `X-Forwarded-For` (1er maillon valide)
+    puis `X-Real-IP`. Sinon : le pair TCP direct (les en-têtes sont
+    ignorés, car un client arbitraire peut les forger).
     """
     if _pair_est_de_confiance(request):
-        xff = request.headers.get("X-Forwarded-For")
-        if xff and _premier_xff(xff):
-            return _premier_xff(xff)
-        reel = request.headers.get("X-Real-IP")
+        xff = _ip_valide(_premier_xff(request.headers.get("X-Forwarded-For") or ""))
+        if xff:
+            return xff
+        reel = _ip_valide(request.headers.get("X-Real-IP"))
         if reel:
-            return reel.strip()
+            return reel
     return request.client.host if request.client else "inconnu"
 
 
 def schema_origine(request: Request) -> str:
     """Schéma vu par le client d'origine (`http`/`https`).
 
-    `X-Forwarded-Proto` n'est lu que derrière un `trusted_proxy`.
+    `X-Forwarded-Proto` n'est lu que derrière un `trusted_proxy`, et
+    seulement s'il vaut `http` ou `https` — une valeur arbitraire ne doit
+    pas pouvoir décider d'une redirection.
     """
     if _pair_est_de_confiance(request):
-        proto = request.headers.get("X-Forwarded-Proto")
-        if proto:
-            return proto.split(",")[0].strip().lower()
+        proto = request.headers.get("X-Forwarded-Proto") or ""
+        premier = proto.split(",")[0].strip().lower()
+        if premier in {"http", "https"}:
+            return premier
     return request.url.scheme
 
 

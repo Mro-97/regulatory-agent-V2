@@ -128,6 +128,25 @@ class PayloadTooLargeError(IngestionError, ValueError):
         self.limit = limit
 
 
+class TelechargementTropVolumineuxError(IngestionError):
+    """Un téléchargement de corpus dépasse le plafond configuré.
+
+    Le corps est écrit en flux (`scripts/corpus_fetch.py`) : le dépassement
+    interrompt la lecture au lieu de charger en mémoire un fichier
+    arbitrairement grand (bombe de décompression, réponse énorme derrière une
+    redirection).
+    """
+
+    def __init__(self, source_id: str, size: int, limit: int) -> None:  # noqa: D107 — constructeur documenté par la classe (§0.2)
+        super().__init__(
+            f"téléchargement '{source_id}' trop volumineux "
+            f"({size} octets > {limit}) — interrompu."
+        )
+        self.source_id = source_id
+        self.size = size
+        self.limit = limit
+
+
 # ---------------------------------------------------------------------------
 # Temporal (validation des dates de contexte, applicabilité)
 # ---------------------------------------------------------------------------

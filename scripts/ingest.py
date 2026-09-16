@@ -53,6 +53,27 @@ def _filtre_selector_document(document_id: str) -> Any:
     )
 
 
+def _collection_absente(exc: Exception) -> bool:
+    """True si `exc` signifie « la collection n'existe pas encore ».
+
+    Distingue le seul cas où « 0 chunk » est une réponse honnête (première
+    ingestion) de toute autre panne Qdrant, qui doit remonter : cf.
+    `Ingester.compter_chunks_existants`. Le motif reste étroit : un simple
+    « 404 » trouvé dans un message d'erreur quelconque réintroduirait le 0
+    silencieux que ce contrôle existe pour empêcher.
+    """
+    message = str(exc).lower()
+    return any(
+        indice in message
+        for indice in (
+            "not found",
+            "doesn't exist",
+            "does not exist",
+            "collection not found",
+        )
+    )
+
+
 class Ingester:  # noqa: D101
     def __init__(  # noqa: D107
         self,
@@ -239,20 +260,46 @@ class Ingester:  # noqa: D101
         """
         return PointStruct(
             id=str(uuid.uuid5(_NS_CHUNK, chunk.chunk_id)),
-            vector=self.embed_chunk(chunk.texte_chunk),
+            vector=self._encoder_chunk(chunk),
             payload={
                 **chunk.model_dump(mode="json"),
                 "original_id": chunk.chunk_id,
             },
         )
 
+    def _encoder_chunk(self, chunk: Any) -> list[float]:
+        """Embedding d'un chunk via le chemin batch si le backend le propose.
+
+        `MLXEmbedding.encode_batch` encode par lots et évite un appel
+        unitaire par chunk ; le repli sur `encode` couvre les backends de
+        test qui n'exposent que la méthode unitaire.
+        """
+        encoder_lot = getattr(self.embedding_model, "encode_batch", None)
+        if callable(encoder_lot):
+            vecteurs = encoder_lot([chunk.texte_chunk])
+            if vecteurs:
+                return list(vecteurs[0])
+        return self.embed_chunk(chunk.texte_chunk)
+
     def compter_chunks_existants(self, document_id: str) -> int:
         """Compte le nombre de chunks déjà présents pour un document_id donné.
 
         Utilisé par l'orchestrateur pour décider si une nouvelle ingestion
         doit renvoyer 409 (déjà indexé) ou remplacer les points existants.
+
+        Une ERREUR de comptage n'est PAS « zéro chunk » : `supprimer_chunks_document`
+        se sert de ce nombre pour décider s'il doit purger, et un 0 mensonger
+        faisait sauter la purge — les chunks de la version précédente
+        survivaient alors à une ré-ingestion (le retrieval filtre par dates de
+        validité, donc ils restaient répondables). Seule l'absence de
+        collection est interprétée comme « 0 chunk » ; toute autre erreur
+        remonte à l'appelant.
+
+        Raises:
+            VectorStoreError: Qdrant injoignable ou en erreur.
         """
         from qdrant_client.models import FieldCondition, Filter, MatchValue
+        from src.errors import VectorStoreError
 
         filtre = Filter(
             must=[
@@ -266,10 +313,14 @@ class Ingester:  # noqa: D101
                 exact=True,
             )
             return int(resultat.count)
-        except Exception as exc:  # noqa: BLE001 — frontière externe : journalisation + dégradation gracieuse, cf. skill §8
-            # Collection inexistante = 0 chunks. On journalise pour tout autre cas.
-            logger.debug("compter_chunks_existants(%s) : %s", document_id, exc)
-            return 0
+        except Exception as exc:
+            if _collection_absente(exc):
+                logger.debug(
+                    "compter_chunks_existants(%s) : collection absente → 0.",
+                    document_id,
+                )
+                return 0
+            raise VectorStoreError(self.collection_name, cause=str(exc)) from exc
 
     def supprimer_chunks_document(self, document_id: str) -> int:
         """Supprime tous les points Qdrant d'un `document_id` (retourne le nb)."""

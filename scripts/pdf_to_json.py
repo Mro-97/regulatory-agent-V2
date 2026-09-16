@@ -314,9 +314,7 @@ def _journaliser_sortie(chemin_sortie: Path, doc: DocumentReglementaire) -> None
         len(doc.chapitres),
         total_articles,
     )
-    logger.info(
-        "Prochaine étape : python3 scripts/ingest.py --fichier %s", chemin_sortie
-    )
+    logger.info("Prochaine étape : python3 scripts/ingest.py --json %s", chemin_sortie)
 
 
 if __name__ == "__main__":

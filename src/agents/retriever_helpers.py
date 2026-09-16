@@ -187,6 +187,24 @@ def _prendre_point(
 
 _RE_ARTICLE = re.compile(r"\bart(?:icle|\.)?\s*(\d{1,4})\b", re.IGNORECASE)
 
+# Suffixe de version d'un `article_id` du corpus : `art_32_v1` ou
+# `art_32_2026` (cf. `filtre_articles`). Sert à comparer les versions d'un
+# MÊME article sans confondre des articles voisins. L'année est bornée à
+# `19xx`/`20xx` : un suffixe numérique quelconque ferait collision entre deux
+# articles distincts dont l'identifiant finit par quatre chiffres.
+_RE_SUFFIXE_VERSION = re.compile(r"(_v\d+|_(?:19|20)\d{2})$")
+
+
+def article_de_base(article_id: str) -> str:
+    """`article_id` privé de son éventuel suffixe de version.
+
+    `art_32_2026` → `art_32`, `art_3` → `art_3`. Ne retirer QUE ce suffixe :
+    un `split("_")[0]` réduirait `art_3` et `art_10` au même « art », faisant
+    passer tous les articles d'un document pour des versions d'un seul.
+    """
+    return _RE_SUFFIXE_VERSION.sub("", article_id or "")
+
+
 # Mots-clés de règlement → document_id exact du corpus. Clés triées du plus
 # long au plus court à l'usage (« eidas 2 » avant « eidas », etc.).
 _REGLEMENTS: dict[str, str] = {
@@ -297,6 +315,12 @@ _CHAMPS_REQUIS_PAYLOAD = [
     "texte_chunk",
     "valid_from",
 ]
+# `valid_to` est volontairement facultatif : une clé absente est traitée
+# comme `valid_to = None` (« en vigueur indéfiniment »), ce qui est la
+# convention d'ingestion. L'exiger écarterait des payloads historiques
+# valides ; noter en revanche que le filtre temporel Qdrant de la passe B
+# (`is_null`) ne matche pas une clé ABSENTE — ces chunks ne remontent donc
+# que par la passe « articles cités », sans filtre temporel.
 
 
 def _payload_a_champs_requis(payload: dict[str, Any], point_id: Any) -> bool:
@@ -319,12 +343,25 @@ def _construire_evidence_depuis_payload(
     """Assemble une EvidenceRecuperee depuis un payload Qdrant validé."""
     valid_from = parser_date(payload["valid_from"])
     valid_to = parser_date(payload["valid_to"]) if payload.get("valid_to") else None
+    # `EvidenceRecuperee.score_similarite` est borné [0, 1] ; une collection
+    # non normalisée (ou une autre distance que le cosinus) peut renvoyer
+    # > 1.0. Sans ce bornage, la ValidationError faisait jeter le chunk par
+    # `point_vers_evidence` — la meilleure preuve disparaissait.
+    score_brut = float(point.score)
+    score = min(1.0, max(0.0, score_brut))
+    if score != score_brut:
+        logger.warning(
+            "Score hors [0, 1] borné (%s → %s) pour point.id=%s",
+            score_brut,
+            score,
+            point.id,
+        )
     return EvidenceRecuperee(
         chunk_id=str(payload["chunk_id"]),
         document_id=str(payload["document_id"]),
         article_id=str(payload["article_id"]),
         texte_extrait=str(payload["texte_chunk"]),
-        score_similarite=round(float(point.score), 4),
+        score_similarite=round(score, 4),
         valid_from=valid_from,
         valid_to=valid_to,
     )

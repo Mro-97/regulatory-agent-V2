@@ -9,26 +9,17 @@ from __future__ import annotations
 
 import json
 import logging
-import re
 from typing import TYPE_CHECKING, Any
 
 from config import cfg
 
 from src.agents.conflit import ConflitDetecte, NiveauConflit
+from src.agents.conflit_helpers import VERDICTS_VALIDES, normaliser_verdict
 
 if TYPE_CHECKING:
     from src.mlx_utils import MLXInference
 
 logger = logging.getLogger(__name__)
-
-
-def _normaliser_verdict(verdict: str) -> str:
-    """Normalise un verdict LLM : majuscules, sans accents ni ponctuation."""
-    valeur = verdict.strip().upper()
-    remplacements = {"É": "E", "È": "E", "Ê": "E", "Ë": "E", "À": "A", "Â": "A"}
-    for ancien, nouveau in remplacements.items():
-        valeur = valeur.replace(ancien, nouveau)
-    return valeur.strip(" .,:;!?\"'")
 
 
 def charger_modele_conflit(modele: MLXInference | None) -> MLXInference:
@@ -51,14 +42,59 @@ def charger_modele_conflit(modele: MLXInference | None) -> MLXInference:
 
 
 def extraire_verdicts(analyse: str) -> dict[int, str] | None:
-    """Retourne {conflit: verdict_normalisé} extrait de la sortie LLM (None si KO)."""
-    match = re.search(r"\{[^{}]*\"verdicts\".*?\}\s*\]?\s*\}", analyse, re.DOTALL)
-    candidats = [analyse] if match is None else [match.group(0), analyse]
-    for candidat in candidats:
+    """Retourne {conflit: verdict_normalisé} extrait de la sortie LLM (None si KO).
+
+    M12 : DeepSeek-R1 recopie souvent l'exemple du prompt (avec son
+    `{"verdicts": …}`) dans son raisonnement avant de produire la vraie
+    réponse. On ne parse donc que le DERNIER objet JSON équilibré contenant
+    `verdicts` — jamais le premier écho — et on ignore les libellés hors
+    {CONFIRME, APPARENT, INEXISTANT}.
+    """
+    for candidat in reversed(_objets_json_equilibres(analyse)):
+        if '"verdicts"' not in candidat:
+            continue
         mapping = _extraire_mapping_verdicts(candidat)
         if mapping:
             return mapping
+        # Dernier objet `verdicts` illisible ou sans verdict valide : ne pas
+        # remonter à un écho antérieur de l'exemple du prompt (faux verdict).
+        return None
     return None
+
+
+def _objets_json_equilibres(texte: str) -> list[str]:
+    r"""Objets JSON équilibrés de premier niveau présents dans `texte`.
+
+    Scan caractère par caractère en ignorant les accolades situées dans une
+    chaîne JSON (et les échappements `\"`) — c'est ce qui permet d'extraire
+    un objet noyé dans du texte libre ou dans un bloc ```json.
+    """
+    objets: list[str] = []
+    debut: int | None = None
+    profondeur = 0
+    dans_chaine = False
+    echappe = False
+    for i, caractere in enumerate(texte):
+        if dans_chaine:
+            if echappe:
+                echappe = False
+            elif caractere == "\\":
+                echappe = True
+            elif caractere == '"':
+                dans_chaine = False
+            continue
+        if caractere == '"':
+            dans_chaine = True
+        elif caractere == "{":
+            if profondeur == 0:
+                debut = i
+            profondeur += 1
+        elif caractere == "}" and profondeur > 0:
+            profondeur -= 1
+            if profondeur == 0 and debut is not None:
+                objets.append(texte[debut : i + 1])
+                debut = None
+    return objets
 
 
 def _extraire_mapping_verdicts(candidat: str) -> dict[int, str] | None:
@@ -82,8 +118,17 @@ def _peupler_mapping_verdict(entree: Any, mapping: dict[int, str]) -> None:
         return
     num = entree.get("conflit")
     verdict = entree.get("verdict")
-    if isinstance(num, int) and isinstance(verdict, str):
-        mapping[num] = _normaliser_verdict(verdict)
+    if not isinstance(num, int) or not isinstance(verdict, str):
+        return
+    verdict_normalise = normaliser_verdict(verdict)
+    if verdict_normalise not in VERDICTS_VALIDES:
+        logger.warning(
+            "Verdict Conflit hors vocabulaire ignoré : %r (conflit %d)",
+            verdict,
+            num,
+        )
+        return
+    mapping[num] = verdict_normalise
 
 
 def verdict_vers_niveau(
@@ -111,7 +156,7 @@ def analyser_avec_llm(
     """DeepSeek-R1 14B annote 5 conflits max et renvoie un JSON structuré."""
     conflits_analyses = conflits[:5]
     messages = _preparer_messages_conflit(question, conflits_analyses)
-    analyse = _appeler_llm_conflit(modele, messages, len(conflits))
+    analyse = _appeler_llm_conflit(modele, messages)
     if analyse is None:
         return conflits, (
             f"Analyse automatique indisponible. "
@@ -149,7 +194,7 @@ def _preparer_messages_conflit(
 
 
 def _appeler_llm_conflit(
-    modele: MLXInference, messages: list[dict[str, str]], nb_conflits_total: int
+    modele: MLXInference, messages: list[dict[str, str]]
 ) -> str | None:
     """Appelle le LLM ; retourne le texte stripped, ou None si l'appel a échoué."""
     try:
@@ -157,7 +202,6 @@ def _appeler_llm_conflit(
     except Exception:
         logger.exception("Analyse LLM échouée")
         return None
-    _ = nb_conflits_total  # réservé pour un usage futur (metrics)
     return resultat.texte.strip()
 
 

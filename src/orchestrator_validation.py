@@ -14,6 +14,8 @@ from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any, cast
 
+from pydantic import ValidationError
+
 from src.errors import QueueBackendError, TaskNotFoundError
 from src.models import (
     ReponseDecisionValidation,
@@ -44,16 +46,43 @@ async def lister_taches_pendantes(
     """
     try:
         client = await client_factory()
-        taches, par_file = await _lister_toutes_les_files(client)
-        await client.aclose()
+        try:
+            taches, par_file = await _lister_toutes_les_files(client)
+        finally:
+            # L1 : fermer le client même si la lecture a levé, sinon fuite
+            # d'une connexion Redis à chaque /pending en erreur.
+            await client.aclose()
     except Exception as exc:
         logger.exception("Redis inaccessible pour /pending")
         raise QueueBackendError(str(exc)) from exc
     return ReponseTachesPendantes(
-        total=sum(par_file.values()),
+        # L2 : `total` compte les tâches réellement renvoyées dans `taches`
+        # (les entrées non parsables en sont exclues) ; `par_file` conserve
+        # la taille brute de chaque liste Redis, utile au diagnostic.
+        total=len(taches),
         par_file=par_file,
-        taches=taches,
+        taches=_trier_du_plus_recent(taches),
     )
+
+
+def _trier_du_plus_recent(
+    taches: list[TacheValidation],
+) -> list[TacheValidation]:
+    """Trie les tâches de la plus récente à la plus ancienne (ordre d'affichage).
+
+    Les files sont alimentées par `LPUSH` (élément neuf en tête) mais lues
+    par `LRANGE 0 -1` : l'ordre Redis va donc du plus récent au plus ancien,
+    et la concaténation des quatre files n'a aucune raison d'être
+    chronologique. L'UI (`rendrPendingPreview`) n'affiche que
+    `taches.slice(0, 3)` : sans tri explicite l'opérateur voyait un mélange
+    de tâches anciennes et récentes et pouvait manquer une alerte neuve.
+
+    Le tri passe par `timestamp()` : comparer directement les `datetime`
+    lèverait `TypeError` si une entrée ancienne (ou insérée à la main) était
+    naïve alors que les autres sont en UTC, ce qui transformerait `/pending`
+    en 500.
+    """
+    return sorted(taches, key=lambda t: t.horodatage_creation.timestamp(), reverse=True)
 
 
 async def _lister_toutes_les_files(
@@ -105,7 +134,16 @@ async def _chercher_tache_par_id(
             for cle in cles:
                 donnees = _charger_json_tache(cle)
                 if donnees and str(donnees.get("tache_id")) == cible:
-                    return TacheValidation(**donnees)
+                    try:
+                        return TacheValidation(**donnees)
+                    except (ValidationError, TypeError, ValueError) as exc:
+                        # M1bis : une entrée partielle ne doit pas faire
+                        # remonter une 503 sur le suivi — on l'ignore et on
+                        # continue le parcours des files.
+                        logger.warning(
+                            "Tâche %s illisible/partielle ignorée : %s", cible, exc
+                        )
+                        continue
     return None
 
 
@@ -140,14 +178,17 @@ async def _appliquer_et_repondre(
 ) -> ReponseDecisionValidation:
     """Applique la décision Redis puis retourne la ReponseDecisionValidation."""
     client = await client_factory()
-    trouvee = await _appliquer_decision_sur_files(
-        client,
-        tache_id,
-        decision,
-        commentaire,
-        horodatage,
-    )
-    await client.aclose()
+    try:
+        trouvee = await _appliquer_decision_sur_files(
+            client,
+            tache_id,
+            decision,
+            commentaire,
+            horodatage,
+        )
+    finally:
+        # L1 : fermer le client même si l'application de la décision a levé.
+        await client.aclose()
     if not trouvee:
         raise TaskNotFoundError(tache_id)
     return ReponseDecisionValidation(
@@ -202,11 +243,15 @@ async def _essayer_appliquer_a_cle(
     avec potentiellement deux statuts contradictoires (ex. approuvée ET
     rejetée) et renvoyant un faux succès (200) à l'appelant qui a perdu la
     course, au lieu d'un 404 « tâche introuvable / déjà traitée ».
+
+    Le compte `0` de `LREM` (L3) retire TOUTES les occurrences de la clé :
+    avec une entrée dupliquée dans la liste pending, un `count=1` laissait
+    deux coureurs retirer chacun une copie et pousser chacun leur décision.
     """
     donnees = _charger_json_tache(cle)
     if donnees is None or str(donnees.get("tache_id")) != str(tache_id):
         return False
-    retires = await cast("Awaitable[int]", client.lrem(nom_file, 1, cle))
+    retires = await cast("Awaitable[int]", client.lrem(nom_file, 0, cle))
     if retires == 0:
         # Course perdue : une autre requête a déjà retiré cette entrée entre
         # notre lecture et notre LREM. Ne pas pousser de décision dupliquée.
@@ -214,6 +259,12 @@ async def _essayer_appliquer_a_cle(
     donnees["statut"] = decision.value
     donnees["horodatage_traitement"] = horodatage.isoformat()
     donnees["commentaire_validateur"] = commentaire
+    # L4 : `LREM` puis `LPUSH` ne sont pas atomiques. Fenêtre de crash
+    # résiduelle assumée : si le process meurt entre les deux, la tâche est
+    # absente des deux files. On la réduit au minimum (aucun autre await
+    # entre les deux) sans pouvoir la fermer ici : ni script Lua ni pipeline
+    # transactionnel (`pipeline(transaction=True)`) ne sont exposés par les
+    # doubles Redis des tests de course existants.
     await cast(
         "Awaitable[int]",
         client.lpush(f"traite_{nom_file}", json.dumps(donnees, ensure_ascii=False)),
@@ -222,28 +273,46 @@ async def _essayer_appliquer_a_cle(
 
 
 def _charger_json_tache(cle: str) -> dict[str, Any] | None:
-    """Parse une clé JSON de tâche ; retourne None (et log) si illisible."""
+    """Parse une clé JSON de tâche ; retourne None (et log) si illisible.
+
+    M1 : `json.loads` peut produire une liste, un nombre ou une chaîne ;
+    seule une entrée objet (`dict`) est exploitable comme tâche.
+    """
     try:
-        return cast("dict[str, Any]", json.loads(cle))
+        donnees = json.loads(cle)
     except Exception as exc:  # noqa: BLE001 — cf. skill §8
         logger.warning("Erreur parsing tâche : %s", exc)
         return None
+    if not isinstance(donnees, dict):
+        logger.warning("Tâche JSON non-objet ignorée (%s)", type(donnees).__name__)
+        return None
+    return donnees
 
 
 async def enregistrer_tache_redis(
     client_factory: ClientFactory,
     tache: TacheValidation,
 ) -> None:
-    """Enregistre une tâche dans la file Redis appropriée."""
+    """Enregistre une tâche dans la file Redis appropriée.
+
+    Raises:
+        QueueBackendError: Redis injoignable ou écriture refusée. H1 : un
+            échec silencieux faisait annoncer `en_attente_validation=true`
+            sans qu'aucune tâche n'existe (fail-open).
+    """
     try:
         client = await client_factory()
-        await cast(
-            "Awaitable[int]",
-            client.lpush(
-                tache.type_file.value,
-                tache.model_dump_json(),
-            ),
-        )
-        await client.aclose()
-    except Exception:
+        try:
+            await cast(
+                "Awaitable[int]",
+                client.lpush(
+                    tache.type_file.value,
+                    tache.model_dump_json(),
+                ),
+            )
+        finally:
+            # L1 : fermer le client même si l'écriture a levé.
+            await client.aclose()
+    except Exception as exc:
         logger.exception("Redis inaccessible, tâche non enregistrée")
+        raise QueueBackendError(str(exc)) from exc

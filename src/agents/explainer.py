@@ -93,18 +93,29 @@ def _resultat_assemblage_vide() -> ResultatExplication:
     )
 
 
-# Fragments produits de façon déterministe par le prompt v2 quand le LLM
-# refuse ou ne trouve pas d'information : une réponse qui les contient
-# n'est pas une réponse fondée, quel que soit le score de retrieval.
+# Phrases de repli prescrites par `prompts/explainer/synthetiser.v2.md` :
+# règle 3 (« Les sources disponibles ne contiennent pas d'information… »),
+# règle 6 (« Cette question ne relève pas du droit réglementaire… ») et refus
+# sécurité (« Je ne peux pas répondre à cette question… »). Ce sont ces
+# phrases complètes qui font foi — la sous-chaîne générique « ne contient pas
+# d'information » est écartée (M6) : le prompt v2 demande explicitement au
+# modèle de s'en servir pour signaler une couverture PARTIELLE (règle C et
+# commentaire de la règle 3), donc une réponse fondée pouvait la contenir et
+# était à tort estampillée INCERTAIN.
 _MARQUEURS_REPONSE_NON_FONDEE = (
-    "je ne peux pas répondre",
-    "ne contiennent pas d'information",
-    "ne contient pas d'information",
+    "les sources disponibles ne contiennent pas d'information",
+    "cette question ne relève pas du droit réglementaire",
+    "je ne peux pas répondre à cette question",
 )
 
 
 def reponse_est_non_fondee(reponse: str) -> bool:
-    """True si la réponse LLM est un refus explicite ou un « aucune info »."""
+    """True si la réponse LLM contient une phrase de repli prescrite (v2).
+
+    La détection porte sur les phrases de repli complètes, pas sur un
+    fragment générique : une réponse qui mentionne une lacune partielle
+    (« … ne contient pas d'information sur X, mais … ») reste fondée.
+    """
     minuscule = reponse.lower()
     return any(marqueur in minuscule for marqueur in _MARQUEURS_REPONSE_NON_FONDEE)
 
@@ -302,9 +313,10 @@ class AgentExplainer:
         """Génère la synthèse en flux (fragments de texte).
 
         Sans preuve → yield le message « aucun passage » et s'arrête (pas
-        d'appel LLM). La confiance / les sources sont recalculées par
-        l'appelant sur le texte accumulé (`_evaluer_confiance`,
-        `_construire_sources_citees`).
+        d'appel LLM). Un flux vide (0 fragment, ou uniquement des blancs) est
+        dégradé comme le chemin non-stream : `_assembler` (M8). La confiance /
+        les sources sont recalculées par l'appelant sur le texte accumulé
+        (`_evaluer_confiance`, `_construire_sources_citees`).
         """
         if not evidences:
             yield _MSG_AUCUN_PASSAGE
@@ -328,9 +340,19 @@ class AgentExplainer:
             logger.exception("Explainer flux échoué avant le 1er fragment, assemblage")
             yield self._assembler(question, evidences, date_ref, type_pipeline).reponse
             return
+        fragments: list[str] = []
         if premier is not None:
+            fragments.append(premier)
             yield premier
-        yield from flux
+        for fragment in flux:
+            fragments.append(fragment)
+            yield fragment
+        if not any(fragment.strip() for fragment in fragments):
+            # Flux vide : l'appelant court-circuiterait sur un message
+            # d'erreur. On applique la même dégradation que
+            # `_synthetiser_avec_llm` — repli sur l'assemblage des preuves.
+            logger.warning("Flux Explainer vide — bascule sur l'assemblage")
+            yield self._assembler(question, evidences, date_ref, type_pipeline).reponse
 
     def _modele_charge(self) -> MLXInference:
         """Charge le modèle Explainer et le renvoie ; lève ModelNotLoadedError sinon."""
