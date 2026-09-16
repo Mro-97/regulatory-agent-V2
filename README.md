@@ -73,16 +73,23 @@ Il permet de :
 - **Rate limiting** par IP d'origine (60/min) sur `/ask`, `/ask/stream`,
   `/ingest`, `/feedback`. Le seau est indexé sur l'empreinte de la clé si elle
   est valide, sinon un seau commun `invalide` — impossible de le contourner en
-  faisant varier l'en-tête `X-API-Key`.
+  faisant varier l'en-tête `X-API-Key` **ni** `X-Forwarded-For`. Le comptage
+  est partagé entre workers via Redis (`rl:{empreinte}:{ip}`) ; si Redis est
+  injoignable, le repli mémoire applique le MÊME découpage de clé.
 - **Anti-CSRF** : en-tête `Origin` vérifié sur les mutations (403 si hors
   `CORS_ORIGINS`).
 - **Sanitizer d'ingestion** : chaque chunk est inspecté avant indexation
   (`INGEST_MODE_SANITIZER` : `annoter` par défaut, `bloquer` recommandé en
-  prod si le corpus est figé).
+  prod si le corpus est figé). Les identifiants structurels (`id`,
+  `article_id` des modèles) sont par ailleurs bornés par un motif strict :
+  ils sont interpolés dans les prompts, alors que le sanitizer ne voit que
+  le texte des chunks.
 - **SSRF** : tout fetch sortant du Watcher passe par une deny-list DNS
   (RFC1918 / loopback / link-local / metadata cloud).
 - **En-têtes** : CSP `script-src 'self'`, `X-Frame-Options: DENY`,
-  `Permissions-Policy` restrictive, HSTS, `Server` masqué.
+  `Permissions-Policy` restrictive, HSTS, `Server` masqué — y compris sur les
+  refus produits par un middleware externe (429, 413, 411), qui sortaient
+  auparavant sans aucun de ces en-têtes.
 - **Proxy** : `proxy_headers=False` — c'est `TRUSTED_PROXIES` (config) qui
   décide de faire confiance à `X-Forwarded-For` / `-Proto`. `FORCER_HTTPS`
   redirige http→https.

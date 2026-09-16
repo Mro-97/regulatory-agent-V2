@@ -39,6 +39,38 @@ def test_empreinte_cle_valeurs() -> None:
     assert len(fp) == 8 and fp not in ("absente", "invalide")
 
 
+def test_empreinte_cle_juge_sur_le_magasin_pas_sur_config(monkeypatch):  # noqa: ANN001, ANN201
+    """Régression : la validité se juge sur le MAGASIN, pas sur `cfg.api_key`.
+
+    En production `API_KEY` est vide (configuration exigée par le boot) et les
+    clés vivent hashées (`API_KEYS_HACHEES` / `data/api_keys.json`). L'ancienne
+    comparaison à `cfg.api_key` journalisait toute clé valide du magasin comme
+    `invalide` — et attribuait une empreinte à n'importe quelle chaîne
+    inconnue : l'inverse de ce qu'un journal de sécurité doit montrer.
+    """
+    import hashlib
+
+    from config import cfg
+    from src.auth import recharger_magasin
+
+    cle_hashee = "rak_cle_du_magasin_hashe_0123456789"
+    empreinte_attendue = hashlib.sha256(cle_hashee.encode()).hexdigest()
+    monkeypatch.setattr(cfg, "api_key", "", raising=False)
+    monkeypatch.setattr(cfg, "api_keys_str", "", raising=False)
+    monkeypatch.setattr(
+        cfg,
+        "api_keys_hachees_str",
+        f"{empreinte_attendue}:admin:test",
+        raising=False,
+    )
+    recharger_magasin()
+    try:
+        assert _empreinte_cle(cle_hashee) == empreinte_attendue[:8]
+        assert _empreinte_cle("rak_cle_inconnue") == "invalide"
+    finally:
+        recharger_magasin()
+
+
 def test_acces_200_ligne_structuree(client, logs_acces) -> None:  # noqa: ANN001
     client.get("/health")
     ligne = _lignes(logs_acces)[-1]
