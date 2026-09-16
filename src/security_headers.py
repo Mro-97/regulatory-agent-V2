@@ -13,7 +13,14 @@ en-têtes, appelée par chaque producteur de réponse.
 
 from __future__ import annotations
 
+from typing import TypeVar
+
 from starlette.responses import Response
+
+# Le type CONCRET de la réponse est préservé (`JSONResponse` reste un
+# `JSONResponse`) : les appelants qui fabriquent un refus typé
+# `JSONResponse | None` ne cassent pas sous mypy --strict.
+_TReponse = TypeVar("_TReponse", bound=Response)
 
 # CSP : défense en profondeur — restreint les origines de scripts, styles,
 # images et connexions du frontend. Autorise fonts Google (utilisées par le
@@ -42,11 +49,11 @@ PERMISSIONS_POLICY = (
 NOM_SERVEUR = "regulatory-agent"
 
 
-def appliquer_entetes_securite(reponse: Response) -> Response:
+def appliquer_entetes_securite(reponse: _TReponse) -> _TReponse:
     """Pose les en-têtes de sécurité (idempotent via `setdefault`).
 
-    Retourne `reponse` pour permettre l'usage en expression
-    (`return appliquer_entetes_securite(JSONResponse(...))`).
+    Retourne `reponse` — même type concret — pour permettre l'usage en
+    expression (`return appliquer_entetes_securite(JSONResponse(...))`).
     """
     reponse.headers.setdefault("X-Content-Type-Options", "nosniff")
     reponse.headers.setdefault("X-Frame-Options", "DENY")
