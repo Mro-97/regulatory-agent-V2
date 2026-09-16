@@ -43,11 +43,24 @@ def setup_collection(
     dimension: int,
     reset: bool = False,
 ) -> None:
-    """Idempotent : crée/recrée `collection` (VectorParams Cosine) + indexes payload."""
+    """Idempotent : crée/recrée `collection` (VectorParams Cosine) + indexes payload.
+
+    Raises:
+        SystemExit: si un ou plusieurs index de payload n'ont pas pu être
+            créés — mieux vaut échouer bruyamment que laisser ingérer un
+            corpus sans filtrage indexé.
+    """
     _reinitialiser_si_demande(client, collection, reset)
     _creer_collection_si_absente(client, collection, dimension)
-    _creer_indexes_payload(client, collection)
+    echecs = _creer_indexes_payload(client, collection)
     _journaliser_etat_collection(client, collection)
+    if echecs:
+        message = (
+            f"{echecs} index de payload non créé(s) — filtrage temporel/"
+            "thématique non indexé. Corriger Qdrant puis relancer."
+        )
+        logger.error(message)
+        raise SystemExit(1)
 
 
 def _reinitialiser_si_demande(
@@ -84,8 +97,15 @@ def _creer_collection_si_absente(
     logger.info("Collection créée.")
 
 
-def _creer_indexes_payload(client: QdrantClient, collection: str) -> None:
-    """Crée les 6 indexes de payload nécessaires au filtrage temporel/thématique."""
+def _creer_indexes_payload(client: QdrantClient, collection: str) -> int:
+    """Crée les 6 indexes de payload nécessaires au filtrage temporel/thématique.
+
+    Retourne le nombre d'index qui n'ont PAS pu être créés. Un échec n'était
+    auparavant tracé qu'en DEBUG, si bien qu'un Qdrant en erreur (droits,
+    volume, indisponibilité) laissait le script annoncer « Collection prête »
+    et l'opérateur ingérer un corpus dont le filtrage temporel se dégradait
+    en balayage complet — silencieusement.
+    """
     from qdrant_client.http.models import PayloadSchemaType
 
     index_a_creer = [
@@ -96,6 +116,7 @@ def _creer_indexes_payload(client: QdrantClient, collection: str) -> None:
         ("valid_from", PayloadSchemaType.DATETIME),
         ("valid_to", PayloadSchemaType.DATETIME),
     ]
+    echecs = 0
     for champ, schema in index_a_creer:
         try:
             client.create_payload_index(
@@ -104,8 +125,21 @@ def _creer_indexes_payload(client: QdrantClient, collection: str) -> None:
                 field_schema=schema,
             )
             logger.info("Index créé : %s (%s)", champ, schema.value)
-        except Exception as exc:  # noqa: BLE001 — index déjà présent, tolérable, cf. skill §8
-            logger.debug("Index '%s' déjà présent : %s", champ, exc)
+        except Exception as exc:
+            # « Already exists » est bénin (script idempotent) ; le reste ne
+            # doit pas passer pour un succès.
+            if _index_deja_present(exc):
+                logger.debug("Index '%s' déjà présent : %s", champ, exc)
+                continue
+            echecs += 1
+            logger.exception("Index '%s' NON créé", champ)
+    return echecs
+
+
+def _index_deja_present(exc: Exception) -> bool:
+    """True si l'erreur Qdrant signifie « cet index existe déjà »."""
+    message = str(exc).lower()
+    return "already exist" in message
 
 
 def _journaliser_etat_collection(client: QdrantClient, collection: str) -> None:
@@ -131,7 +165,7 @@ def main() -> None:
     )
     if not args.memory:
         logger.info(
-            "Prochaine étape : python3 scripts/ingest.py --fichier data/raw/<doc>.json"
+            "Prochaine étape : python3 scripts/ingest.py --json data/raw/<doc>.json"
         )
 
 

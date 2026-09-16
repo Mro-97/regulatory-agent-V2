@@ -36,8 +36,16 @@ def _chmod_best_effort(chemin: Path, mode: int) -> None:
 def ecrire_ligne_protegee(chemin: Path, ligne: str) -> None:
     """Ajoute `ligne` à `chemin` en garantissant des permissions restreintes.
 
-    Le `chmod` du dossier parent n'est appliqué que si c'est nous qui
-    venons de le créer — on ne touche jamais aux permissions d'un dossier
+    Le fichier est créé directement en 0600 via `os.open(..., O_CREAT, 0o600)`
+    puis écrit par son descripteur : `Path.open("a")` le créait en
+    `0666 & ~umask` (typiquement 0644) et le `chmod` n'arrivait qu'après —
+    fenêtre pendant laquelle `data/audit.jsonl` et `data/feedback.jsonl`
+    (questions utilisateur en clair) étaient lisibles par le groupe et les
+    autres. Le `umask` ne s'applique pas au mode passé à `os.open` lors de la
+    création : 0600 est donc effectif dès la première écriture.
+
+    Le `chmod` du dossier parent n'est appliqué que si c'est nous qui venons
+    de le créer — on ne touche jamais aux permissions d'un dossier
     préexistant (ex. `/tmp` en test).
     """
     parent = chemin.parent
@@ -45,8 +53,6 @@ def ecrire_ligne_protegee(chemin: Path, ligne: str) -> None:
     parent.mkdir(parents=True, exist_ok=True)
     if parent_cree:
         _chmod_best_effort(parent, _MODE_DOSSIER)
-    fichier_cree = not chemin.exists()
-    with chemin.open("a", encoding="utf-8") as f:
-        f.write(ligne)
-    if fichier_cree:
-        _chmod_best_effort(chemin, _MODE_FICHIER)
+    descripteur = os.open(chemin, os.O_APPEND | os.O_CREAT | os.O_WRONLY, _MODE_FICHIER)
+    with os.fdopen(descripteur, "a", encoding="utf-8") as fichier:
+        fichier.write(ligne)

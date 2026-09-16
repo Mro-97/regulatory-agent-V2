@@ -120,10 +120,25 @@ let enCours=false,sessionQueries=0,filtreActif="all",tachesData=[],activiteSessi
 const chatMessages=document.getElementById("chat-messages"),champQuestion=document.getElementById("champ-question"),champDate=document.getElementById("champ-date"),btnEnvoyer=document.getElementById("btn-envoyer"),btnStop=document.getElementById("btn-stop"),toastZone=document.getElementById("toast-zone");
 
 // Historique persistant (localStorage, par navigateur). Survit au rechargement.
+// Le contenu de localStorage est éditable par l'utilisateur et peut dater d'un
+// schéma antérieur : chaque entrée est normalisée ici. Sans ce filtre, une
+// seule entrée sans `question`/`reponse` faisait lever les fonctions de rendu
+// au chargement de la page — avant l'ouverture de la modale de clé — laissant
+// l'UI morte jusqu'au vidage manuel du stockage.
 const HISTO_MAX=60;
+const CONF_VALIDES=["élevé","moyen","faible","incertain"];
+function _entreeHistoValide(h){
+  if(!h||typeof h!=="object")return null;
+  const question=typeof h.question==="string"?h.question:"";
+  const reponse=typeof h.reponse==="string"?h.reponse:"";
+  if(!question&&!reponse)return null;
+  const ts=typeof h.ts==="string"&&!Number.isNaN(Date.parse(h.ts))?h.ts:new Date().toISOString();
+  const conf=CONF_VALIDES.includes(h.conf)?h.conf:"incertain";
+  return {...h,question,reponse,ts,conf};
+}
 function chargerHisto(){
   try{const j=localStorage.getItem("histo:"+CLIENT_ID);const a=j&&JSON.parse(j);
-    if(Array.isArray(a))return a.slice(0,HISTO_MAX);}catch(_){}
+    if(Array.isArray(a))return a.slice(0,HISTO_MAX).map(_entreeHistoValide).filter(Boolean);}catch(_){}
   return [];
 }
 function sauverHisto(){
@@ -210,9 +225,13 @@ function formaterTexte(s){
   t=t.replace(/^(⚠️.*)$/gm,'<span class="txt-avertissement">$1</span>');
   return t;
 }
-function heure(iso){return new Date(iso).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});}
+function heure(iso){const d=new Date(iso);return Number.isNaN(d.getTime())?"—":d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});}
+// Tronque une valeur d'origine non fiable (localStorage éditable, réponse
+// serveur) sans jamais lever : `String(undefined)` vaut "undefined" mais ne
+// casse pas le rendu, contrairement à un `.slice` sur `undefined`.
+function txt(v){return typeof v==="string"?v:String(v??"");}
 function cls_conf(n){return{élevé:"eleve",moyen:"moyen",faible:"faible"}[n]||"incertain";}
-function lbl_conf(n){return{élevé:"Confiance élevée",moyen:"Confiance moyenne",faible:"Confiance faible",incertain:"Incertain"}[n]||n;}
+function lbl_conf(n){const m={élevé:"Confiance élevée",moyen:"Confiance moyenne",faible:"Confiance faible",incertain:"Incertain"};return m[n]||txt(n)||"Incertain";}
 function conf_bandeau(n,enAttente){
   let msg="",cls="cb-info",ic="";
   if(n==="incertain"){msg="Réponse non étayée par le corpus — à considérer comme non fiable.";cls="cb-faible";ic="⚠️ ";}
@@ -299,7 +318,8 @@ function rendrActivite(){
   el.innerHTML=activiteSession.map(a=>{
     const cls={élevé:"green",moyen:"amber",faible:"red",incertain:"amber"}[a.conf]||"blue";
     const ico=cls==="green"?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>';
-    return `<div class="activity-item"><span class="act-time">${heure(a.ts)}</span><div class="act-icon ${cls}">${ico}</div><div class="act-content"><div class="act-title">Analyse complétée</div><div class="act-sub">${esc(a.question.slice(0,60))}${a.question.length>60?"…":""}</div></div></div>`;
+    const q=txt(a?.question);
+    return `<div class="activity-item"><span class="act-time">${heure(a?.ts)}</span><div class="act-icon ${cls}">${ico}</div><div class="act-content"><div class="act-title">Analyse complétée</div><div class="act-sub">${esc(q.slice(0,60))}${q.length>60?"…":""}</div></div></div>`;
   }).join("");
 }
 
@@ -308,14 +328,24 @@ function rendrPendingPreview(taches){
   if(!taches.length){el.innerHTML=`<div class="activity-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Aucun élément en attente</div>`;return;}
   const niveaux={pending_responses:"eleve",pending_alerts:"critique",pending_links:"moyen"};
   const labels={pending_responses:"ÉLEVÉ",pending_alerts:"CRITIQUE",pending_links:"MOYEN"};
+  // Poids du badge de niveau (pas une confiance) : sert uniquement à colorer
+  // l'anneau. La confiance réelle d'une réponse validée est dans
+  // `contenu.niveau_confiance` et n'existe que pour `pending_responses` ;
+  // afficher un pourcentage inventé ferait décider un validateur sur un
+  // chiffre sans rapport avec le pipeline.
+  const poids={critique:95,eleve:70,moyen:45};
+  const etatConf={élevé:100,moyen:70,faible:40,incertain:20};
   el.innerHTML=taches.slice(0,3).map(t=>{
     const q=t.contenu?.question||t.contenu?.description||"—";
     const niv=niveaux[t.type_file]||"moyen";
     const lbl=labels[t.type_file]||"ÉLEVÉ";
-    const conf=Math.floor(Math.random()*30+60);
+    const confReelle=t.contenu?.niveau_confiance;
+    const aConf=Object.prototype.hasOwnProperty.call(etatConf,confReelle);
+    const valeur=aConf?etatConf[confReelle]:poids[niv]||45;
     const col=niv==="critique"?"#f85149":niv==="eleve"?"#f0883e":"#45b8ac";
-    const circ=2*Math.PI*16;const dash=circ*(1-conf/100);
-    return `<div class="pending-item"><div class="pending-head"><span class="pending-level ${niv}">${lbl}</span></div><div class="pending-body"><div><div class="pending-title">${esc(q.slice(0,50))}${q.length>50?"…":""}</div></div><div class="pending-conf"><div class="pending-conf-label">Confiance</div><svg class="conf-ring" viewBox="0 0 36 36"><circle cx="18" cy="18" r="16" fill="none" stroke="var(--border)" stroke-width="3"/><circle cx="18" cy="18" r="16" fill="none" stroke="${col}" stroke-width="3" stroke-dasharray="${circ}" stroke-dashoffset="${dash}" transform="rotate(-90 18 18)" stroke-linecap="round"/></svg><div class="pending-conf-val">${conf}%</div></div><button class="btn-examiner" data-view="validation">Examiner</button></div></div>`;
+    const circ=2*Math.PI*16;const dash=circ*(1-valeur/100);
+    const libelleConf=aConf?esc(lbl_conf(confReelle)):niv==="critique"?"Priorité haute":"À examiner";
+    return `<div class="pending-item"><div class="pending-head"><span class="pending-level ${niv}">${lbl}</span></div><div class="pending-body"><div><div class="pending-title">${esc(q.slice(0,50))}${q.length>50?"…":""}</div></div><div class="pending-conf"><div class="pending-conf-label">${libelleConf}</div><svg class="conf-ring" viewBox="0 0 36 36"><circle cx="18" cy="18" r="16" fill="none" stroke="var(--border)" stroke-width="3"/><circle cx="18" cy="18" r="16" fill="none" stroke="${col}" stroke-width="3" stroke-dasharray="${circ}" stroke-dashoffset="${dash}" transform="rotate(-90 18 18)" stroke-linecap="round"/></svg></div><button class="btn-examiner" data-view="validation">Examiner</button></div></div>`;
   }).join("");
 }
 
@@ -401,7 +431,7 @@ function afficherReponse(data,question,dateCtx){
   const el=document.createElement("div");el.className="msg-sys";
   const signaler=data.request_id?`<button class="btn-signaler" data-rid="${esc(String(data.request_id))}">⚑ Signaler</button>`:"";
   const actions=`<button class="btn-copier">⧉ Copier</button><button class="btn-export">⬇ Exporter</button>`;
-  el.innerHTML=`<div class="msg-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div><div class="msg-sys-inner"><div class="msg-card">${bandeau}<div>${formaterTexte(data.reponse)}</div>${sources}</div><div class="msg-meta">${jauge_correspondance(data.score_correspondance)}<span class="badge badge-${nc}">${lbl_conf(data.niveau_confiance)}</span>${attente}${signaler}${actions}</div></div>`;
+  el.innerHTML=`<div class="msg-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div><div class="msg-sys-inner"><div class="msg-card">${bandeau}<div>${formaterTexte(data.reponse)}</div>${sources}</div><div class="msg-meta">${jauge_correspondance(data.score_correspondance)}<span class="badge badge-${esc(nc)}">${esc(lbl_conf(data.niveau_confiance))}</span>${attente}${signaler}${actions}</div></div>`;
   const btn=el.querySelector(".sources-toggle");const body=el.querySelector(".sources-body");
   if(btn&&body){btn.addEventListener("click",()=>{const o=body.classList.toggle("visible");btn.classList.toggle("open",o);});}
   wireSignaler(el);wireSuivi(el);wireExport(el,()=>md_export(data,question,dateCtx));wireCopier(el,()=>md_export(data,question,dateCtx));
@@ -572,7 +602,7 @@ document.getElementById("btn-refresh-val")?.addEventListener("click",e=>rafraich
 function rendrHisto(){
   const el=document.getElementById("hist-list");
   if(!historiqueSession.length){el.innerHTML=`<div class="activity-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg><p>Aucune analyse dans l'historique</p></div>`;return;}
-  el.innerHTML=historiqueSession.map(h=>{const nc=cls_conf(h.conf);return `<div class="hist-item"><div class="hist-head"><div class="hist-q">${esc(h.question)}</div><div class="hist-time">${heure(h.ts)}</div></div><div class="hist-preview">${formaterTexte(h.reponse.slice(0,200))}...</div><div class="hist-meta"><span class="badge badge-${nc}">${lbl_conf(h.conf)}</span></div></div>`;}).join("");
+  el.innerHTML=historiqueSession.map(h=>{const nc=cls_conf(h.conf);return `<div class="hist-item"><div class="hist-head"><div class="hist-q">${esc(h.question)}</div><div class="hist-time">${heure(h.ts)}</div></div><div class="hist-preview">${formaterTexte(h.reponse.slice(0,200))}...</div><div class="hist-meta"><span class="badge badge-${esc(nc)}">${esc(lbl_conf(h.conf))}</span></div></div>`;}).join("");
 }
 document.getElementById("btn-vider-histo")?.addEventListener("click",()=>{
   if(!historiqueSession.length)return;

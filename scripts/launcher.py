@@ -24,23 +24,27 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 LOG_DIR = REPO_ROOT / "logs"
-QDRANT_PORT = 6333
-REDIS_PORT = 6379
 DELAI_ATTENTE_SERVICE = 15  # secondes max pour qu'un service devienne prêt
 
 
-def _api_port() -> int:
-    """Port d'écoute de l'API, lu depuis la config (défaut 8000)."""
+def _parametres() -> tuple[int, int, int]:
+    """`(port_api, port_qdrant, port_redis)` lus depuis la config.
+
+    Les ports des services étaient codés en dur (6333/6379) alors que celui
+    de l'API venait de `cfg.api_port` : avec `QDRANT_PORT=6444` dans `.env`,
+    le launcher sondait 6333, ne trouvait rien et démarrait un SECOND Qdrant
+    sur le port par défaut pendant que l'API se connectait à 6444.
+    """
     sys.path.insert(0, str(REPO_ROOT))
     try:
         from config import cfg
 
-        return int(cfg.api_port)
+        return int(cfg.api_port), int(cfg.qdrant_port), int(cfg.redis_port)
     except Exception:  # noqa: BLE001 — repli si config illisible
-        return 8000
+        return 8000, 6333, 6379
 
 
-API_PORT = _api_port()
+API_PORT, QDRANT_PORT, REDIS_PORT = _parametres()
 
 logging.basicConfig(
     level=logging.INFO,
@@ -74,16 +78,22 @@ def _attendre_port(port: int, timeout: int = DELAI_ATTENTE_SERVICE) -> bool:
 def _lancer_arriere_plan(
     commande: list[str], log_file: Path
 ) -> subprocess.Popen[bytes]:
-    """Démarre `commande` détaché, redirige stdout/stderr vers `log_file`."""
+    """Démarre `commande` détaché, redirige stdout/stderr vers `log_file`.
+
+    Le descripteur du fichier de log est fermé côté PARENT juste après le
+    `Popen` : l'enfant garde sa propre copie (dup) et écrit normalement,
+    mais le launcher ne fuit plus un descripteur par service démarré — ni
+    ne le transmet au processus API qu'il lance ensuite.
+    """
     LOG_DIR.mkdir(exist_ok=True)
-    log_handle = log_file.open("ab")
-    return subprocess.Popen(  # noqa: S603 - commandes internes maîtrisées
-        commande, stdout=log_handle, stderr=subprocess.STDOUT, cwd=REPO_ROOT
-    )
+    with log_file.open("ab") as log_handle:
+        return subprocess.Popen(  # noqa: S603 - commandes internes maîtrisées
+            commande, stdout=log_handle, stderr=subprocess.STDOUT, cwd=REPO_ROOT
+        )
 
 
 def demarrer_qdrant_si_necessaire() -> None:
-    """Lance le binaire `./qdrant` si le port 6333 est libre, sinon skip."""
+    """Lance le binaire `./qdrant` si `QDRANT_PORT` est libre, sinon skip."""
     if _port_ouvert("127.0.0.1", QDRANT_PORT):
         logger.info("Qdrant déjà actif sur %d — skip.", QDRANT_PORT)
         return
@@ -94,21 +104,25 @@ def demarrer_qdrant_si_necessaire() -> None:
     logger.info("Démarrage Qdrant en arrière-plan…")
     _lancer_arriere_plan([str(binaire)], LOG_DIR / "qdrant.log")
     if not _attendre_port(QDRANT_PORT):
-        logger.error("Qdrant n'a pas répondu sur %d en %ds.", QDRANT_PORT, 15)
+        logger.error(
+            "Qdrant n'a pas répondu sur %d en %ds.", QDRANT_PORT, DELAI_ATTENTE_SERVICE
+        )
         sys.exit(1)
     logger.info("Qdrant prêt.")
 
 
 def demarrer_redis_si_necessaire() -> None:
-    """Lance `redis-server` si le port 6379 est libre, sinon skip."""
+    """Lance `redis-server` si `REDIS_PORT` est libre, sinon skip."""
     if _port_ouvert("127.0.0.1", REDIS_PORT):
         logger.info("Redis déjà actif sur %d — skip.", REDIS_PORT)
         return
     redis_bin = (
         shutil.which("redis-server") or "/opt/homebrew/opt/redis/bin/redis-server"
     )
-    if not Path(redis_bin).exists():
-        logger.error("redis-server introuvable — brew install redis ?")
+    if not os.access(redis_bin, os.X_OK):
+        logger.error(
+            "redis-server introuvable ou non exécutable — brew install redis ?"
+        )
         sys.exit(1)
     logger.info("Démarrage Redis en arrière-plan…")
     _lancer_arriere_plan(
@@ -116,23 +130,37 @@ def demarrer_redis_si_necessaire() -> None:
         LOG_DIR / "redis.log",
     )
     if not _attendre_port(REDIS_PORT):
-        logger.error("Redis n'a pas répondu sur %d en %ds.", REDIS_PORT, 15)
+        logger.error(
+            "Redis n'a pas répondu sur %d en %ds.", REDIS_PORT, DELAI_ATTENTE_SERVICE
+        )
         sys.exit(1)
     logger.info("Redis prêt.")
 
 
-def prechauffer_modeles_en_arriere_plan() -> subprocess.Popen[bytes]:
+def prechauffer_modeles_en_arriere_plan() -> None:
     """Charge bge-m3 en tâche de fond pour raccourcir le premier /ask.
 
-    Retourne le Popen — le launcher ne l'attend pas ; le premier /ask
-    profitera du cache OS déjà chaud même si l'import Python n'a pas fini.
+    Le `Popen` est conservé puis surveillé sans être attendu : le premier
+    /ask profite du cache OS déjà chaud même si l'import Python n'est pas
+    terminé. Un échec immédiat du pré-chauffage (import cassé, modèle
+    absent) est signalé au lieu de disparaître — il n'était auparavant
+    rattaché à aucune référence.
     """
     logger.info("Pré-chauffage modèle d'embedding en arrière-plan…")
     script = (
         "from src.mlx_embedding import get_embedding; "
         "get_embedding().load(); print('preload OK', flush=True)"
     )
-    return _lancer_arriere_plan([sys.executable, "-c", script], LOG_DIR / "preload.log")
+    processus = _lancer_arriere_plan(
+        [sys.executable, "-c", script], LOG_DIR / "preload.log"
+    )
+    time.sleep(1.0)
+    if processus.poll() not in (None, 0):
+        logger.warning(
+            "Pré-chauffage terminé en erreur (code %s) — voir %s.",
+            processus.returncode,
+            LOG_DIR / "preload.log",
+        )
 
 
 def _verifier_configuration() -> None:
@@ -199,6 +227,12 @@ def main() -> None:
     _verifier_configuration()
     demarrer_qdrant_si_necessaire()
     demarrer_redis_si_necessaire()
+    # Le port de l'API est contrôlé AVANT le pré-chauffage : sinon un
+    # lancement sur un port déjà occupé payait le chargement du modèle
+    # (plusieurs centaines de Mo) pour échouer juste après.
+    if _port_ouvert("127.0.0.1", API_PORT):
+        logger.error("Port %d déjà occupé — arrêter l'instance existante.", API_PORT)
+        sys.exit(1)
     if not args.skip_warmup:
         prechauffer_modeles_en_arriere_plan()
     lancer_api()
