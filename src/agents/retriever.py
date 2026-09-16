@@ -38,7 +38,7 @@ from src.agents.retriever_helpers import (
     fusionner_passes,
     point_vers_evidence,
 )
-from src.mlx_utils import get_embedding
+from src.mlx_embedding import get_embedding
 from src.models import EvidenceRecuperee, SourceReglementaire
 
 logger = logging.getLogger(__name__)

@@ -101,7 +101,7 @@ class Ingester:  # noqa: D101
         différent de la recherche produisait des vecteurs incompatibles
         avec la collection.
         """
-        from src.mlx_utils import get_embedding
+        from src.mlx_embedding import get_embedding
 
         return get_embedding(cfg.modele_embedding)
 

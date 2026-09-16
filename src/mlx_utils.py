@@ -495,10 +495,9 @@ def get_model(
     )
 
 
-# Embedding (classe, cache, getter) extrait dans src/mlx_embedding.py
-# (§12 étape 6). Ré-exporté ici pour compatibilité descendante.
-# fmt: off
-from src.mlx_embedding import MLXEmbedding as MLXEmbedding  # noqa: E402
-from src.mlx_embedding import embedding_cache as embedding_cache  # noqa: E402
-from src.mlx_embedding import get_embedding as get_embedding  # noqa: E402
-# fmt: on
+# L'embedding (classe, cache, getter) vit dans `src.mlx_embedding`. Il n'est
+# PLUS ré-exporté ici : ce ré-export créait un cycle d'import
+# (`mlx_embedding` → `mlx_utils` pour le timeout et la troncature, et
+# `mlx_utils` → `mlx_embedding` pour le ré-export), qui cassait tout import
+# direct de `src.mlx_embedding` (« partially initialized module »).
+# Les appelants importent désormais la classe là où elle vit.

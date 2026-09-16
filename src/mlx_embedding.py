@@ -21,6 +21,13 @@ from config import cfg
 from src.mlx_utils import _executer_avec_timeout, _tronquer_pour_embedding
 
 
+def _emb_generate_direct(*args: Any, **kwargs: Any) -> Any:
+    """`mlx_embeddings.generate` (import paresseux, sans rebind)."""
+    from mlx_embeddings import generate as emb_generate
+
+    return emb_generate(*args, **kwargs)
+
+
 def _importer_emb_generate() -> Any:
     """Importe `mlx_embeddings.generate` ; lève ModelLoadError si l'import échoue."""
     try:
@@ -87,18 +94,55 @@ class MLXEmbedding:
             raise ModelLoadError(self.model_name, cause=str(exc)) from exc
 
     def _charger_backend(self) -> None:
-        """Charge le backend sous timeout et marque le modèle comme chargé."""
-        self._model, self._processor = _executer_avec_timeout(
-            self._instancier_backend,
-            cfg.mlx_load_timeout_seconds,
-        )
+        """Charge le backend et marque le modèle comme chargé.
+
+        L'appel se fait SUR le thread appelant : un modèle MLX est lié au
+        stream GPU de son thread de création, donc le charger ici le
+        condamnerait à être utilisé sur ce même thread. Le chargement des
+        modèles MLX est donc déclenché depuis le thread d'encodage
+        (`_charger_si_necessaire`), et `load()` ne sert plus qu'aux cas où
+        l'appelant encode sur son propre thread (sentence-transformers).
+        """
+        self._model, self._processor = self._instancier_backend()
         self._loaded = True
+
+    def _charger_si_necessaire(self) -> None:
+        """Charge le modèle MLX sur le thread courant s'il ne l'est pas encore.
+
+        Point clé de la voie MLX native : `mlx_embeddings.load()` puis
+        `generate()` doivent s'exécuter sur le MÊME thread, sinon MLX lève
+        « There is no Stream(gpu, 1) in current thread » — la raison historique
+        de l'abandon de cette voie au profit de sentence-transformers (et de
+        ses ~1,2 Go de dépendances torch/transformers/scipy).
+        """
+        if not self._loaded:
+            self._charger_backend()
+            logger.info(
+                "Modèle d'embedding chargé (voie MLX native) : %s",
+                self.model_name,
+            )
 
     def _vider_references(self) -> None:
         """Vide les références au backend après un échec de chargement."""
         self._model = None
         self._processor = None
         self._loaded = False
+
+    def _instancier_et_memoriser(self) -> tuple[Any, Any]:
+        """Instancie le backend ET mémorise le résultat depuis CE thread.
+
+        Un modèle MLX est lié au stream GPU de son thread de création. Comme
+        l'encodage s'exécute sur le thread de l'executor (pour être borné dans
+        le temps), c'est ICI qu'il faut construire le modèle : le construire
+        sur un autre thread puis l'utiliser dans celui-ci donne
+        « There is no Stream(gpu, 1) in current thread » — la raison pour
+        laquelle la voie MLX native avait été abandonnée au profit de
+        sentence-transformers et de ses ~1,2 Go de dépendances torch.
+        """
+        modele, processeur = self._instancier_backend()
+        self._model = modele
+        self._processor = processeur
+        return modele, processeur
 
     def _instancier_backend(self) -> tuple[Any, Any]:
         """Charge le backend actif (sentence-transformers ou mlx-embeddings)."""
@@ -129,6 +173,10 @@ class MLXEmbedding:
 
     def encode(self, texte: str, timeout_seconds: float | None = None) -> list[float]:
         """Retourne le vecteur d'embedding normalisé de `texte`."""
+        if not self._st_mode:
+            # Voie MLX : chargement ET encodage sur le même thread (celui de
+            # l'executor borné), sinon MLX refuse le stream GPU.
+            return self._encoder_mlx_avec_chargement(texte, timeout_seconds)
         if not self._loaded:
             self.load()
         texte = _tronquer_pour_embedding(texte)
@@ -142,15 +190,54 @@ class MLXEmbedding:
 
             raise EmbeddingFailedError(self.model_name, cause=str(exc)) from exc
 
+    def _encoder_mlx_avec_chargement(
+        self, texte: str, timeout_seconds: float | None
+    ) -> list[float]:
+        """Charge (si besoin) puis encode la voie MLX, sur UN SEUL thread."""
+        tronque = _tronquer_pour_embedding(texte)
+        timeout = (
+            timeout_seconds if timeout_seconds is not None else cfg.mlx_timeout_seconds
+        )
+        try:
+            return self._encoder_mlx_thread(tronque, timeout)
+        except Exception as exc:
+            from src.errors import EmbeddingFailedError
+
+            raise EmbeddingFailedError(self.model_name, cause=str(exc)) from exc
+
+    def _encoder_mlx_thread(self, texte: str, timeout: float) -> list[float]:
+        """Soumet chargement + encodage en UNE soumission (donc un seul thread).
+
+        Le chargement et l'encodage doivent être exécutés par le MÊME thread :
+        soumettre deux appels successifs à l'executor ne garantit pas le même
+        worker, et MLX refuse alors le stream GPU (« Stream(gpu, 2) »).
+        """
+        return _executer_avec_timeout(self._charger_et_encoder, timeout, texte)
+
+    def _charger_et_encoder(self, texte: str) -> list[float]:
+        """Charge (si besoin) puis encode — exécuté sur le thread de l'executor."""
+        self._charger_si_necessaire()
+        from mlx_embeddings import generate as emb_generate
+
+        sortie = emb_generate(
+            self._model,
+            self._processor,
+            texts=texte,
+            max_length=512,
+            padding=True,
+            truncation=True,
+        )
+        vecteur = sortie.text_embeds[0]
+        mx.eval(vecteur)
+        return cast("list[float]", vecteur.tolist())
+
     def _encoder_texte_unique(self, texte: str, timeout: float) -> list[float]:
         """Encodage bas-niveau : soit `sentence-transformers`, soit `mlx_embeddings`."""
         if self._st_mode:
             vecteur = _executer_avec_timeout(self._model.encode, timeout, texte)
             return cast("list[float]", vecteur.tolist())
-        from mlx_embeddings import generate as emb_generate
-
         sortie = _executer_avec_timeout(
-            emb_generate,
+            _emb_generate_direct,
             timeout,
             self._model,
             self._processor,
