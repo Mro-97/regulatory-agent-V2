@@ -343,10 +343,25 @@ def _construire_evidence_depuis_payload(
     """Assemble une EvidenceRecuperee depuis un payload Qdrant validé."""
     valid_from = parser_date(payload["valid_from"])
     valid_to = parser_date(payload["valid_to"]) if payload.get("valid_to") else None
-    # `EvidenceRecuperee.score_similarite` est borné [0, 1] ; une collection
-    # non normalisée (ou une autre distance que le cosinus) peut renvoyer
-    # > 1.0. Sans ce bornage, la ValidationError faisait jeter le chunk par
-    # `point_vers_evidence` — la meilleure preuve disparaissait.
+    return EvidenceRecuperee(
+        chunk_id=str(payload["chunk_id"]),
+        document_id=str(payload["document_id"]),
+        article_id=str(payload["article_id"]),
+        texte_extrait=str(payload["texte_chunk"]),
+        score_similarite=round(_borner_score(point), 4),
+        valid_from=valid_from,
+        valid_to=valid_to,
+    )
+
+
+def _borner_score(point: ScoredPoint) -> float:
+    """Score de similarité borné à [0, 1] (log WARNING si le brut en sortait).
+
+    `EvidenceRecuperee.score_similarite` est borné [0, 1] ; une collection
+    non normalisée (ou une autre distance que le cosinus) peut renvoyer
+    > 1.0. Sans ce bornage, la ValidationError faisait jeter le chunk par
+    `point_vers_evidence` — la meilleure preuve disparaissait.
+    """
     score_brut = float(point.score)
     score = min(1.0, max(0.0, score_brut))
     if score != score_brut:
@@ -356,12 +371,4 @@ def _construire_evidence_depuis_payload(
             score,
             point.id,
         )
-    return EvidenceRecuperee(
-        chunk_id=str(payload["chunk_id"]),
-        document_id=str(payload["document_id"]),
-        article_id=str(payload["article_id"]),
-        texte_extrait=str(payload["texte_chunk"]),
-        score_similarite=round(score, 4),
-        valid_from=valid_from,
-        valid_to=valid_to,
-    )
+    return score

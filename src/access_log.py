@@ -14,13 +14,15 @@ from __future__ import annotations
 import hashlib
 import logging
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from config import cfg
 
 if TYPE_CHECKING:
     from fastapi import FastAPI, Request, Response
     from starlette.middleware.base import RequestResponseEndpoint
+
+    from src.auth import Role as _Role
 
 logger = logging.getLogger("acces")
 
@@ -93,22 +95,18 @@ def _motif(request: Request, statut: int) -> str:
 CHEMINS_LOGUES_PAR_LA_ROUTE = frozenset({"/ask", "/ask/stream"})
 
 
-def journaliser_acces_requete(
-    request: Request, statut: int, duree_ms: int, question: str | None = None
-) -> None:
-    """Émet la ligne d'accès (WARNING si statut >= 400, INFO sinon).
+def _parametres_acces(
+    request: Request, statut: int, duree_ms: int, question: str | None
+) -> tuple[Any, ...]:
+    """Valeurs des 14 champs de la ligne `acces`, dans leur ordre d'émission.
 
-    Appelée par le middleware pour tout endpoint, et directement par les
-    routes `/ask*` (qui passent `question` — non récupérable côté
-    middleware à travers `BaseHTTPMiddleware`).
+    L'ordre est celui des `%s`/`%d` du gabarit de `journaliser_acces_requete` :
+    les deux étant construits dans le même appel, la ligne reste inchangée.
     """
     from src.net import nettoyer_entete
 
-    role = getattr(request.state, "role", None)
-    niveau = logger.warning if statut >= 400 else logger.info
-    niveau(
-        "acces user=%s role=%s cle=%s ip=%s ip_client=%s methode=%s chemin=%s "
-        "statut=%d duree_ms=%d motif=%s question=%r origin=%s ua=%r ref=%s",
+    role: _Role | None = getattr(request.state, "role", None)
+    return (
         _identite(request),
         role.name.lower() if role is not None else "-",
         _empreinte_cle(request.headers.get("X-API-Key")),
@@ -119,10 +117,29 @@ def journaliser_acces_requete(
         statut,
         duree_ms,
         _motif(request, statut) if statut >= 400 else "-",
-        (question[:200] if question else "-"),
+        question[:200] if question else "-",
         nettoyer_entete(request.headers.get("Origin")),
         nettoyer_entete(request.headers.get("User-Agent"), taille_max=_UA_MAX),
         nettoyer_entete(request.headers.get("Referer")),
+    )
+
+
+def journaliser_acces_requete(
+    request: Request, statut: int, duree_ms: int, question: str | None = None
+) -> None:
+    """Émet la ligne d'accès (WARNING si statut >= 400, INFO sinon).
+
+    Appelée par le middleware pour tout endpoint, et directement par les
+    routes `/ask*` (qui passent `question` — non récupérable côté
+    middleware à travers `BaseHTTPMiddleware`).
+    """
+    niveau = logger.warning if statut >= 400 else logger.info
+    # `statut`/`duree_ms`/`question` restent ici (et non dans
+    # `_parametres_acces`) pour que ce dernier tienne sous 20 lignes.
+    niveau(
+        "acces user=%s role=%s cle=%s ip=%s ip_client=%s methode=%s chemin=%s "
+        "statut=%d duree_ms=%d motif=%s question=%r origin=%s ua=%r ref=%s",
+        *_parametres_acces(request, statut, duree_ms, question),
     )
 
 

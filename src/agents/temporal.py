@@ -31,6 +31,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime
+from itertools import pairwise
 from typing import TYPE_CHECKING, NoReturn
 
 from src.agents.retriever_helpers import article_de_base
@@ -127,31 +128,68 @@ def _detecter_anomalies_groupe(
     lacunes: list[str],
 ) -> None:
     """Détecte chevauchements/lacunes entre paires successives d'un article trié."""
+    for a, b in pairwise(trie):
+        chevauchement, lacune = _anomalies_paire(cle, a, b)
+        if chevauchement is not None:
+            chevauchements.append(chevauchement)
+        if lacune is not None:
+            lacunes.append(lacune)
+
+
+def _anomalies_paire(
+    cle: str,
+    a: EvidenceRecuperee,
+    b: EvidenceRecuperee,
+) -> tuple[str | None, str | None]:
+    """Chevauchement et lacune éventuels entre deux versions successives."""
     from datetime import timedelta
 
-    for i in range(len(trie) - 1):
-        a, b = trie[i], trie[i + 1]
-        if a.valid_to is None:
-            # M3 : une version OUVERTE (valid_to=None) supplantée par une
-            # version plus récente est un chevauchement réel — la traiter
-            # comme « pas de borne, donc rien à signaler » masquait le cas
-            # le plus fréquent (version consolidée jamais close).
-            if b.valid_from >= a.valid_from:
-                chevauchements.append(
-                    f"{cle} : version ouverte non close — "
-                    f"[{a.valid_from}→en vigueur] et "
-                    f"[{b.valid_from}→{b.valid_to or 'en vigueur'}] "
-                    f"se chevauchent"
-                )
-            continue
-        if a.valid_to >= b.valid_from:
-            chevauchements.append(
-                f"{cle} : chevauchement entre [{a.valid_from}→{a.valid_to}] "
-                f"et [{b.valid_from}→{b.valid_to}]"
-            )
-        lendemain = a.valid_to + timedelta(days=1)
-        if lendemain < b.valid_from:
-            lacunes.append(f"{cle} : lacune du {lendemain} au {b.valid_from}")
+    fin = a.valid_to
+    if fin is None:
+        return _chevauchement_version_ouverte(cle, a, b), None
+    chevauchement = _chevauchement_borne(cle, a, b, fin)
+    lendemain = fin + timedelta(days=1)
+    lacune = None
+    if lendemain < b.valid_from:
+        lacune = f"{cle} : lacune du {lendemain} au {b.valid_from}"
+    return chevauchement, lacune
+
+
+def _chevauchement_version_ouverte(
+    cle: str,
+    a: EvidenceRecuperee,
+    b: EvidenceRecuperee,
+) -> str | None:
+    """Chevauchement d'une version ouverte supplantée, sinon None.
+
+    M3 : une version OUVERTE (`valid_to=None`) supplantée par une version
+    plus récente est un chevauchement réel — la traiter comme « pas de
+    borne, donc rien à signaler » masquait le cas le plus fréquent
+    (version consolidée jamais close).
+    """
+    if b.valid_from < a.valid_from:
+        return None
+    return (
+        f"{cle} : version ouverte non close — "
+        f"[{a.valid_from}→en vigueur] et "
+        f"[{b.valid_from}→{b.valid_to or 'en vigueur'}] "
+        f"se chevauchent"
+    )
+
+
+def _chevauchement_borne(
+    cle: str,
+    a: EvidenceRecuperee,
+    b: EvidenceRecuperee,
+    fin: date,
+) -> str | None:
+    """Chevauchement entre deux versions closes, sinon None."""
+    if fin < b.valid_from:
+        return None
+    return (
+        f"{cle} : chevauchement entre [{a.valid_from}→{fin}] "
+        f"et [{b.valid_from}→{b.valid_to}]"
+    )
 
 
 def _journaliser_anomalies(chevauchements: list[str], lacunes: list[str]) -> None:
@@ -372,6 +410,15 @@ class AgentTemporel:
         if not evidences:
             logger.warning("Aucune preuve à analyser.")
             return _resultat_temporel_vide(date_ref)
+        return self._construire_resultat(question, date_ref, evidences)
+
+    def _construire_resultat(
+        self,
+        question: str,
+        date_ref: date,
+        evidences: list[EvidenceRecuperee],
+    ) -> ResultatTemporel:
+        """Filtre, détecte les anomalies, annote puis assemble le résultat."""
         applicables, exclues = self.filtrer(evidences, date_ref)
         chevauchements, lacunes = self.detecter_anomalies(applicables)
         explication_llm = self._annoter_si_use_llm(

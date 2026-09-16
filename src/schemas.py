@@ -14,7 +14,6 @@ from datetime import date, datetime
 from typing import Annotated, Any
 from uuid import UUID
 
-from config import cfg
 from pydantic import (
     BaseModel,
     Field,
@@ -23,6 +22,7 @@ from pydantic import (
     model_validator,
 )
 
+from config import cfg
 from src.models import (
     EvidenceRecuperee,
     MotifFeedback,

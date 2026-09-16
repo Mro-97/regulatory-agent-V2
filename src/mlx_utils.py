@@ -36,7 +36,6 @@ from threading import Lock
 from typing import Any, TypeVar
 
 from config import cfg
-
 from src.errors import GenerationTimeoutError
 
 logger = logging.getLogger(__name__)
@@ -237,12 +236,7 @@ class MLXInference:
         logger.info("Chargement du modèle MLX : %s", self.model_name)
         debut = time.time()
         try:
-            from mlx_lm import load as mlx_load
-
-            # `mlx_lm.load` déclare renvoyer un 3-tuple mais utilise en
-            # pratique 2 valeurs — ce n'est pas maîtrisable côté typage.
-            self._model, self._tokenizer = mlx_load(self.model_name)  # type: ignore[misc]
-            self._loaded = True
+            self._charger_backend()
             logger.info(
                 "Modèle chargé en %.1f s : %s", time.time() - debut, self.model_name
             )
@@ -253,6 +247,15 @@ class MLXInference:
             self._tokenizer = None
             self._loaded = False
             raise ModelLoadError(self.model_name, cause=str(exc)) from exc
+
+    def _charger_backend(self) -> None:
+        """Charge le couple (modèle, tokenizer) mlx_lm et marque l'état chargé."""
+        from mlx_lm import load as mlx_load
+
+        # `mlx_lm.load` déclare renvoyer un 3-tuple mais utilise en
+        # pratique 2 valeurs — ce n'est pas maîtrisable côté typage.
+        self._model, self._tokenizer = mlx_load(self.model_name)  # type: ignore[misc]
+        self._loaded = True
 
     def unload(self) -> None:
         """Libère le modèle. Idempotent."""

@@ -22,13 +22,13 @@ from __future__ import annotations
 import logging
 from datetime import UTC, date, datetime
 
-from config import cfg
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import (
     Filter,
     ScoredPoint,
 )
 
+from config import cfg
 from src.agents.retriever_helpers import (
     construire_filtres_passes,
     dedupliquer_evidences,
@@ -70,6 +70,19 @@ def _journaliser_debut_retrieval(
         filtres_themes or [],
         [s.value for s in (filtres_sources or [])],
     )
+
+
+def _verifier_echecs_passes(
+    echec_a: Exception | None,
+    echec_b: Exception | None,
+    repli_disponible: bool,
+) -> None:
+    """Lève si les deux passes ont échoué sans repli, sinon signale le partiel."""
+    if echec_a is not None and echec_b is not None and not repli_disponible:
+        logger.error("Les deux passes Qdrant ont échoué — backend indisponible.")
+        raise echec_b
+    if echec_a is not None or echec_b is not None:
+        logger.warning("Une passe Qdrant sur deux a échoué — résultat partiel.")
 
 
 def _prioriser_articles_cites(
@@ -209,6 +222,19 @@ class Retriever:
             logger.warning("Embedding vide — retrieval annulé pour : %r", question[:80])
             return []
         date_ref = date_contexte or datetime.now(UTC).date()
+        return self._fusionner_passes(
+            question, vecteur, date_ref, filtres_themes, filtres_sources
+        )
+
+    def _fusionner_passes(
+        self,
+        question: str,
+        vecteur: list[float],
+        date_ref: date,
+        filtres_themes: list[str] | None,
+        filtres_sources: list[SourceReglementaire] | None,
+    ) -> list[EvidenceRecuperee]:
+        """Passe ciblée + 2 passes temporelles, fusion priorisée et conversion."""
         points_articles = self._passe_articles_cites(question, vecteur)
         points_bruts = self._executer_deux_passes(
             vecteur,
@@ -268,31 +294,30 @@ class Retriever:
         (`repli_disponible`), l'erreur est propagée — sans quoi l'API
         afficherait « aucun passage pertinent » alors que Qdrant est HS.
         """
-        from src.errors import VectorStoreError
-
         filtre_a, filtre_b = construire_filtres_passes(
             date_ref,
             filtres_themes or [],
             filtres_sources or [],
         )
-        res_a: list[ScoredPoint] = []
-        res_b: list[ScoredPoint] = []
-        echec_a: VectorStoreError | None = None
-        echec_b: VectorStoreError | None = None
-        try:
-            res_a = self._rechercher_passe("valid_to_present", vecteur, filtre_a)
-        except VectorStoreError as exc:
-            echec_a = exc
-        try:
-            res_b = self._rechercher_passe("valid_to_null", vecteur, filtre_b)
-        except VectorStoreError as exc:
-            echec_b = exc
-        if echec_a is not None and echec_b is not None and not repli_disponible:
-            logger.error("Les deux passes Qdrant ont échoué — backend indisponible.")
-            raise echec_b
-        if echec_a is not None or echec_b is not None:
-            logger.warning("Une passe Qdrant sur deux a échoué — résultat partiel.")
+        res_a, echec_a = self._passe_toleree("valid_to_present", vecteur, filtre_a)
+        res_b, echec_b = self._passe_toleree("valid_to_null", vecteur, filtre_b)
+        _verifier_echecs_passes(echec_a, echec_b, repli_disponible)
         return fusionner_passes(res_a, res_b, self._top_k)
+
+    def _passe_toleree(
+        self,
+        label: str,
+        vecteur: list[float],
+        filtre: Filter,
+    ) -> tuple[list[ScoredPoint], Exception | None]:
+        """Exécute une passe en capturant l'échec Qdrant (résultat vide alors)."""
+        from src.errors import VectorStoreError
+
+        try:
+            resultats = self._rechercher_passe(label, vecteur, filtre)
+        except VectorStoreError as exc:
+            return [], exc
+        return resultats, None
 
     def _rechercher_passe(
         self,

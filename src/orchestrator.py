@@ -42,8 +42,8 @@ from config import cfg
 
 if TYPE_CHECKING:
     import redis.asyncio as aioredis
-    from scripts.ingest import Ingester
 
+    from scripts.ingest import Ingester
     from src.agents.citation import ResultatCitation
     from src.agents.retriever import Retriever
 
@@ -489,25 +489,47 @@ class Orchestrateur:
     async def _stream_pipeline_reel(
         self, requete: RequeteQuestion, request_id: UUID, type_pipeline: str
     ) -> AsyncIterator[tuple[str, dict[str, Any]]]:
-        """Retrieval + temporel (await), puis synthèse diffusée, puis citation."""
-        from src.agents.citation import sources_referencees
-        from src.agents.explainer import AgentExplainer, _evaluer_confiance
+        """Retrieval, synthèse diffusée token par token, puis citations.
 
+        L'émission des tokens reste ici : c'est ce générateur qui décide ce qui
+        part vers le client SSE (un helper ne peut pas rendre de valeur).
+        """
         agents: list[SortieAgent] = []
-        yield "etape", {"phase": "recherche"}
-        evidences_ou_none = await self._executer_retrieval_avec_repli(requete, agents)
-        if evidences_ou_none is None:
-            reponse = _reponse_retrieval_indisponible(request_id)
-            yield "token", {"t": reponse.reponse}
-            yield "fin", reponse.model_dump(mode="json")
-            return
-        yield "etape", {"phase": "temporel"}
-        evidences = await self._executer_etapes_intermediaires(
-            requete, type_pipeline, evidences_ou_none, agents, request_id
-        )
-        yield "etape", {"phase": "synthese"}
-        agent = AgentExplainer(use_llm=True)
         morceaux: list[str] = []
+        yield "etape", {"phase": "recherche"}
+        evidences = await self._executer_retrieval_et_etapes(
+            requete, request_id, type_pipeline, agents
+        )
+        if evidences is None:
+            async for evenement in self._flux_retrieval_indisponible(request_id):
+                yield evenement
+            return
+        async for evenement in self._flux_phases_synthese():
+            yield evenement
+        async for fragment in self._diffuser_synthese(
+            requete, type_pipeline, evidences, morceaux
+        ):
+            yield "token", {"t": fragment}
+        yield "etape", {"phase": "citations"}
+        reponse = await self._finaliser_flux(
+            requete, request_id, evidences, agents, morceaux
+        )
+        yield "fin", reponse.model_dump(mode="json")
+
+    async def _diffuser_synthese(
+        self,
+        requete: RequeteQuestion,
+        type_pipeline: str,
+        evidences: list[EvidenceRecuperee],
+        morceaux: list[str],
+    ) -> AsyncIterator[str]:
+        """Produit la synthèse en flux et accumule les fragments dans `morceaux`.
+
+        Les fragments sont collectés par l'appelant (le générateur ne peut pas
+        rendre de valeur) : la reconstruction du texte final et l'évaluation de
+        confiance restent ainsi dans `_stream_pipeline_reel`.
+        """
+        agent = self._agent_explainer()
         async for fragment in self._stream_sous_verrou(
             lambda: agent.expliquer_stream(
                 question=requete.question,
@@ -517,41 +539,131 @@ class Orchestrateur:
             )
         ):
             morceaux.append(fragment)
-            yield "token", {"t": fragment}
+            yield fragment
+
+    @staticmethod
+    def _agent_explainer() -> Any:
+        """Instancie l'Explainer LLM (import local : évite le cycle au boot)."""
+        from src.agents.explainer import AgentExplainer
+
+        return AgentExplainer(use_llm=True)
+
+    async def _finaliser_flux(
+        self,
+        requete: RequeteQuestion,
+        request_id: UUID,
+        evidences: list[EvidenceRecuperee],
+        agents: list[SortieAgent],
+        morceaux: list[str],
+    ) -> ReponseQuestion:
+        """Clôt le flux : confiance, trace d'audit, citations, HITL et audit."""
+        from src.agents.explainer import _evaluer_confiance
+
         texte = "".join(morceaux).strip() or _MSG_ECHEC_SYNTHESE
         confiance = _evaluer_confiance(texte, evidences)
-        # `sources_referencees` ne sert qu'à la VÉRIFICATION des citations :
-        # la réponse et l'audit conservent l'ensemble des preuves récupérées
-        # (cf. `_executer_etapes_pipeline`).
-        evidences_citees = sources_referencees(texte, evidences)
-        yield "etape", {"phase": "citations"}
-        resultat_citation = await self._executer_citation(
-            evidences_citees, texte, agents
+        agents.append(
+            SortieAgent(
+                nom_agent="Explainer",
+                machine=_MACHINE,
+                contenu={
+                    "mode": "stream",
+                    "evidences_utilisees": len(evidences),
+                    "fragments": len(morceaux),
+                    "niveau_confiance": confiance.value,
+                },
+            )
         )
-        confiance = _confiance_apres_citation(confiance, resultat_citation)
-        reponse = await self._finaliser_reponse(
+        return await self._finaliser_avec_citations(
             requete, request_id, evidences, agents, texte, confiance
         )
+
+    @staticmethod
+    async def _flux_phases_synthese() -> AsyncIterator[tuple[str, dict[str, Any]]]:
+        """Événements de progression avant la synthèse (temporel, synthèse)."""
+        yield "etape", {"phase": "temporel"}
+        yield "etape", {"phase": "synthese"}
+
+    @staticmethod
+    async def _flux_retrieval_indisponible(
+        request_id: UUID,
+    ) -> AsyncIterator[tuple[str, dict[str, Any]]]:
+        """Événements SSE d'une recherche indisponible (token + fin)."""
+        reponse = _reponse_retrieval_indisponible(request_id)
+        yield "token", {"t": reponse.reponse}
         yield "fin", reponse.model_dump(mode="json")
+
+    async def _executer_retrieval_et_etapes(
+        self,
+        requete: RequeteQuestion,
+        request_id: UUID,
+        type_pipeline: str,
+        agents: list[SortieAgent],
+    ) -> list[EvidenceRecuperee] | None:
+        """Retrieval puis étapes intermédiaires ; None si le retrieval a échoué."""
+        evidences_ou_none = await self._executer_retrieval_avec_repli(requete, agents)
+        if evidences_ou_none is None:
+            return None
+        return await self._executer_etapes_intermediaires(
+            requete, type_pipeline, evidences_ou_none, agents, request_id
+        )
+
+    async def _finaliser_avec_citations(
+        self,
+        requete: RequeteQuestion,
+        request_id: UUID,
+        evidences: list[EvidenceRecuperee],
+        agents: list[SortieAgent],
+        texte: str,
+        confiance: NiveauConfiance,
+    ) -> ReponseQuestion:
+        """Vérifie les citations puis persiste (HITL + audit) et rend la réponse."""
+        confiance = await self._appliquer_citation(texte, evidences, agents, confiance)
+        return await self._finaliser_reponse(
+            requete, request_id, evidences, agents, texte, confiance
+        )
+
+    async def _appliquer_citation(
+        self,
+        texte: str,
+        evidences: list[EvidenceRecuperee],
+        agents: list[SortieAgent],
+        confiance: NiveauConfiance,
+    ) -> NiveauConfiance:
+        """Vérifie les citations et ajuste la confiance en conséquence."""
+        from src.agents.citation import sources_referencees
+
+        evidences_citees = sources_referencees(texte, evidences)
+        resultat = await self._executer_citation(evidences_citees, texte, agents)
+        return _confiance_apres_citation(confiance, resultat)
+
+    @staticmethod
+    def _pomper_generateur(
+        generateur_factory: Callable[[], Iterator[str]],
+        file: queue.Queue[tuple[str, Any]],
+    ) -> None:
+        """Exécute le générateur synchrone (MLX) et alimente la file.
+
+        Appelé dans un thread : toute exception est transmise par la file
+        plutôt que perdue dans le thread.
+        """
+        try:
+            for fragment in generateur_factory():
+                file.put(("f", fragment))
+        except Exception as exc:  # noqa: BLE001 — remonté côté async
+            file.put(("e", exc))
+        finally:
+            file.put(("fin", None))
 
     async def _stream_sous_verrou(
         self, generateur_factory: Callable[[], Iterator[str]]
     ) -> AsyncIterator[str]:
         """Pompe un générateur synchrone (MLX) dans un thread, sous `_verrou_agents`."""
         file: queue.Queue[tuple[str, Any]] = queue.Queue(maxsize=128)
-
-        def _travailleur() -> None:
-            try:
-                for fragment in generateur_factory():
-                    file.put(("f", fragment))
-            except Exception as exc:  # noqa: BLE001 — remonté côté async
-                file.put(("e", exc))
-            finally:
-                file.put(("fin", None))
-
         loop = asyncio.get_running_loop()
         async with self._verrou_agents:
-            futur = loop.run_in_executor(None, _travailleur)
+            futur = loop.run_in_executor(
+                None, self._pomper_generateur, generateur_factory, file
+            )
             while True:
                 genre, charge = await loop.run_in_executor(None, file.get)
                 if genre == "f":
@@ -617,35 +729,21 @@ class Orchestrateur:
         agents_executes: list[SortieAgent],
     ) -> tuple[list[EvidenceRecuperee], str, NiveauConfiance] | None:
         """Exécute retrieval → étapes intermédiaires → explainer → citation."""
-        from src.agents.citation import sources_referencees
-
         evidences_ou_none = await self._executer_retrieval_avec_repli(
-            requete,
-            agents_executes,
+            requete, agents_executes
         )
         if evidences_ou_none is None:
             return None
         evidences = await self._executer_etapes_intermediaires(
-            requete,
-            type_pipeline,
-            evidences_ou_none,
-            agents_executes,
-            request_id,
+            requete, type_pipeline, evidences_ou_none, agents_executes, request_id
         )
-        reponse_texte, niveau_confiance = await self._executer_explainer_avec_repli(
-            requete,
-            type_pipeline,
-            evidences,
-            agents_executes,
+        reponse_texte, confiance = await self._executer_explainer_avec_repli(
+            requete, type_pipeline, evidences, agents_executes
         )
-        evidences_citees = sources_referencees(reponse_texte, evidences)
-        resultat_citation = await self._executer_citation(
-            evidences_citees, reponse_texte, agents_executes
+        confiance = await self._appliquer_citation(
+            reponse_texte, evidences, agents_executes, confiance
         )
-        niveau_confiance = _confiance_apres_citation(
-            niveau_confiance, resultat_citation
-        )
-        return evidences, reponse_texte, niveau_confiance
+        return evidences, reponse_texte, confiance
 
     async def _executer_retrieval_avec_repli(
         self,
@@ -798,20 +896,45 @@ class Orchestrateur:
         niveau_confiance: NiveauConfiance,
     ) -> ReponseQuestion:
         """Soumet à validation si besoin, persiste l'audit, renvoie la réponse."""
-        soumettre = _doit_soumettre_validation(requete, niveau_confiance)
-        (
-            soumettre_effectif,
-            tache_validation_id,
-        ) = await self._soumettre_validation_si_besoin(
+        soumettre, tache_id = await self._soumettre_et_tracer(
+            requete,
+            request_id,
+            evidences,
+            agents_executes,
+            reponse_texte,
+            niveau_confiance,
+        )
+        return _construire_reponse_question(
+            request_id,
+            reponse_texte,
+            evidences,
+            niveau_confiance,
+            soumettre,
+            tache_id,
+        )
+
+    async def _soumettre_et_tracer(
+        self,
+        requete: RequeteQuestion,
+        request_id: UUID,
+        evidences: list[EvidenceRecuperee],
+        agents_executes: list[SortieAgent],
+        reponse_texte: str,
+        niveau_confiance: NiveauConfiance,
+    ) -> tuple[bool, UUID | None]:
+        """Soumet à validation humaine puis persiste l'audit ; rend la soumission.
+
+        H1 : l'audit et la réponse reçoivent la soumission EFFECTIVE — une
+        panne Redis ne doit ni faire échouer /ask, ni faire croire qu'une
+        validation humaine est en attente alors qu'aucune tâche n'existe.
+        """
+        soumettre, tache_id = await self._soumettre_validation_si_besoin(
             requete,
             request_id,
             reponse_texte,
             niveau_confiance,
-            soumettre,
+            _doit_soumettre_validation(requete, niveau_confiance),
         )
-        # L'audit et la réponse reçoivent la soumission EFFECTIVE (H1) : une
-        # panne Redis ne doit ni faire échouer /ask, ni faire croire qu'une
-        # validation humaine est en attente alors qu'aucune tâche n'existe.
         await self._construire_et_persister_audit(
             requete,
             request_id,
@@ -819,16 +942,9 @@ class Orchestrateur:
             agents_executes,
             reponse_texte,
             niveau_confiance,
-            soumettre_effectif,
+            soumettre,
         )
-        return _construire_reponse_question(
-            request_id,
-            reponse_texte,
-            evidences,
-            niveau_confiance,
-            soumettre_effectif,
-            tache_validation_id,
-        )
+        return soumettre, tache_id
 
     async def _construire_et_persister_audit(
         self,

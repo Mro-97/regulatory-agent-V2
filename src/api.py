@@ -296,6 +296,23 @@ def _erreur_503(detail: str) -> HTTPException:
     return HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=detail)
 
 
+def _tracer_decision_validation(
+    endpoint: str, reponse: ReponseDecisionValidation
+) -> None:
+    """Trace l'audit applicatif d'une décision de validation aboutie.
+
+    Redis conserve le détail complet (commentaire, contenu) ; on ne
+    journalise ici que l'identifiant et le statut pour rester traçable
+    même si Redis est purgé.
+    """
+    logger.info(
+        "Décision validation — endpoint=%s tache_id=%s statut=%s",
+        endpoint,
+        reponse.tache_id,
+        reponse.nouveau_statut.value,
+    )
+
+
 async def _appliquer_decision_validation(
     orchestrateur: Orchestrateur,
     requete: RequeteDecisionValidation,
@@ -319,15 +336,7 @@ async def _appliquer_decision_validation(
     except Exception:
         logger.exception("Erreur %s", endpoint)
         raise _erreur_500(_MSG_ERREUR_VALIDATION) from None
-    # Trace d'audit applicative — Redis conserve le détail complet
-    # (commentaire, contenu), on ne journalise ici que l'identifiant
-    # et le statut pour rester traçable même si Redis est purgé.
-    logger.info(
-        "Décision validation — endpoint=%s tache_id=%s statut=%s",
-        endpoint,
-        reponse.tache_id,
-        reponse.nouveau_statut.value,
-    )
+    _tracer_decision_validation(endpoint, reponse)
     return reponse
 
 

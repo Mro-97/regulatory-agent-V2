@@ -87,13 +87,21 @@ def _est_citation_verifiee(
             cit.chunk_id,
         )
         return False
+    return _extrait_ancre_dans_chunk(cit, chunk)
+
+
+def _extrait_ancre_dans_chunk(
+    cit: CitationReglementaire,
+    chunk: EvidenceRecuperee,
+) -> bool:
+    """True si l'extrait normalisé est non vide et présent dans le chunk."""
     extrait_norm = _normaliser_pour_comparaison(cit.extrait)
-    chunk_norm = _normaliser_pour_comparaison(chunk.texte_extrait)
     if not extrait_norm:
         # Un extrait vide est contenu dans n'importe quelle chaîne : sans ce
         # garde-fou, une citation sans texte cité serait déclarée VERIFIEE.
         logger.warning("Citation DOUTEUSE — extrait vide (chunk '%s').", cit.chunk_id)
         return False
+    chunk_norm = _normaliser_pour_comparaison(chunk.texte_extrait)
     if extrait_norm not in chunk_norm:
         logger.warning(
             "Citation DOUTEUSE — extrait non retrouvé dans chunk '%s'.",

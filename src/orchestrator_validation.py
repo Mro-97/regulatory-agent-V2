@@ -222,6 +222,19 @@ async def _appliquer_decision_sur_files(
     return False
 
 
+def _serialiser_decision(
+    donnees: dict[str, Any],
+    decision: StatutValidation,
+    commentaire: str | None,
+    horodatage: datetime,
+) -> str:
+    """Écrit la décision dans `donnees` et la sérialise en JSON (synchrone)."""
+    donnees["statut"] = decision.value
+    donnees["horodatage_traitement"] = horodatage.isoformat()
+    donnees["commentaire_validateur"] = commentaire
+    return json.dumps(donnees, ensure_ascii=False)
+
+
 async def _essayer_appliquer_a_cle(
     client: aioredis.Redis,
     nom_file: str,
@@ -256,20 +269,35 @@ async def _essayer_appliquer_a_cle(
         # Course perdue : une autre requête a déjà retiré cette entrée entre
         # notre lecture et notre LREM. Ne pas pousser de décision dupliquée.
         return False
-    donnees["statut"] = decision.value
-    donnees["horodatage_traitement"] = horodatage.isoformat()
-    donnees["commentaire_validateur"] = commentaire
-    # L4 : `LREM` puis `LPUSH` ne sont pas atomiques. Fenêtre de crash
-    # résiduelle assumée : si le process meurt entre les deux, la tâche est
-    # absente des deux files. On la réduit au minimum (aucun autre await
-    # entre les deux) sans pouvoir la fermer ici : ni script Lua ni pipeline
-    # transactionnel (`pipeline(transaction=True)`) ne sont exposés par les
-    # doubles Redis des tests de course existants.
-    await cast(
-        "Awaitable[int]",
-        client.lpush(f"traite_{nom_file}", json.dumps(donnees, ensure_ascii=False)),
+    await _pousser_decision(
+        client, nom_file, donnees, decision, commentaire, horodatage
     )
     return True
+
+
+async def _pousser_decision(
+    client: aioredis.Redis,
+    nom_file: str,
+    donnees: dict[str, Any],
+    decision: StatutValidation,
+    commentaire: str | None,
+    horodatage: datetime,
+) -> None:
+    """Pousse la décision dans `traite_*` (L4 : appelé juste après le LREM).
+
+    `LREM` puis `LPUSH` ne sont pas atomiques : fenêtre de crash résiduelle
+    assumée (ni script Lua ni pipeline transactionnel ne sont exposés par les
+    doubles Redis des tests de course). On la réduit au minimum — aucun autre
+    `await` entre les deux — et `_serialiser_decision` reste synchrone, donc
+    n'ouvre aucun point de suspension supplémentaire.
+    """
+    await cast(
+        "Awaitable[int]",
+        client.lpush(
+            f"traite_{nom_file}",
+            _serialiser_decision(donnees, decision, commentaire, horodatage),
+        ),
+    )
 
 
 def _charger_json_tache(cle: str) -> dict[str, Any] | None:

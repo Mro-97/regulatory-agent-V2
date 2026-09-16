@@ -24,7 +24,6 @@ from pathlib import Path
 from typing import Any, cast
 
 from config import cfg
-
 from src.models import EnregistrementAudit
 
 logger = logging.getLogger(__name__)
@@ -245,7 +244,16 @@ class GestionnaireAudit:
 
     async def _initialiser_postgres(self) -> None:
         """Ouvre le pool asyncpg, applique le DDL, récupère le dernier hash."""
-        global _hash_precedent
+        await self._ouvrir_pool()
+        await self._creer_table_et_reprendre_hash()
+        self._postgres_ok = True
+        logger.info(
+            "Audit PostgreSQL initialisé. Dernier hash : %s",
+            (_hash_precedent or "aucun")[:16],
+        )
+
+    async def _ouvrir_pool(self) -> None:
+        """Crée le pool asyncpg à partir des réglages de `cfg`."""
         import asyncpg
 
         self._pool = await asyncpg.create_pool(
@@ -254,6 +262,11 @@ class GestionnaireAudit:
             max_size=cfg.postgres_pool_max_size,
             command_timeout=cfg.postgres_command_timeout,
         )
+
+    async def _creer_table_et_reprendre_hash(self) -> None:
+        """Applique le DDL et reprend `_hash_precedent` depuis PostgreSQL."""
+        global _hash_precedent
+
         async with self._pool.acquire() as conn:
             await conn.execute(SQL_CREATE_TABLE)
             row = await conn.fetchrow(
@@ -261,11 +274,6 @@ class GestionnaireAudit:
             )
             if row:
                 _hash_precedent = row["hash_courant"]
-        self._postgres_ok = True
-        logger.info(
-            "Audit PostgreSQL initialisé. Dernier hash : %s",
-            (_hash_precedent or "aucun")[:16],
-        )
 
     def _charger_dernier_hash_local(self) -> str | None:
         """Retourne le dernier hash_courant du fichier JSONL local, ou None."""

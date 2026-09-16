@@ -21,11 +21,11 @@ from collections.abc import Callable
 from threading import Lock
 from typing import TYPE_CHECKING
 
-from config import cfg
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import RequestResponseEndpoint
 
+from config import cfg
 from src.auth import Role, identifier, magasin_configure
 from src.security_headers import appliquer_entetes_securite
 
@@ -64,6 +64,33 @@ def installer_middlewares(app: FastAPI) -> None:
         return await call_next(request)
 
 
+def _refus_avec_entetes(statut: int, detail: str) -> JSONResponse:
+    """Fabrique la réponse de refus en la complétant des en-têtes de sécurité."""
+    return appliquer_entetes_securite(
+        JSONResponse(status_code=statut, content={"detail": detail})
+    )
+
+
+def _refus_taille(request: Request) -> JSONResponse | None:
+    """413 si `Content-Length` dépasse le plafond configuré, sinon None."""
+    longueur = request.headers.get("Content-Length")
+    if not longueur or not longueur.isdigit():
+        return None
+    if int(longueur) <= cfg.taille_max_requete_octets:
+        return None
+    return _refus_avec_entetes(413, _MSG_REQUETE_TROP_VOLUMINEUSE)
+
+
+def _refus_encoding(request: Request) -> JSONResponse | None:
+    """411 si une méthode à corps porte un `Transfer-Encoding` non-identity."""
+    if request.method not in _METHODES_AVEC_BODY:
+        return None
+    te = (request.headers.get("Transfer-Encoding") or "").strip().lower()
+    if not te or te == "identity":
+        return None
+    return _refus_avec_entetes(411, _MSG_TRANSFER_ENCODING_REFUSE)
+
+
 def _controler_taille_et_encoding(request: Request) -> JSONResponse | None:
     """Retourne un JSONResponse d'erreur si taille ou Transfer-Encoding invalide.
 
@@ -71,27 +98,7 @@ def _controler_taille_et_encoding(request: Request) -> JSONResponse | None:
     produites avant le middleware `en_tetes_securite`, elles sortaient
     auparavant sans CSP ni `X-Frame-Options` (cf. `src/security_headers.py`).
     """
-    longueur = request.headers.get("Content-Length")
-    if (
-        longueur
-        and longueur.isdigit()
-        and int(longueur) > cfg.taille_max_requete_octets
-    ):
-        return appliquer_entetes_securite(
-            JSONResponse(
-                status_code=413, content={"detail": _MSG_REQUETE_TROP_VOLUMINEUSE}
-            )
-        )
-    if request.method in _METHODES_AVEC_BODY:
-        te = (request.headers.get("Transfer-Encoding") or "").strip().lower()
-        if te and te != "identity":
-            return appliquer_entetes_securite(
-                JSONResponse(
-                    status_code=411,
-                    content={"detail": _MSG_TRANSFER_ENCODING_REFUSE},
-                )
-            )
-    return None
+    return _refus_taille(request) or _refus_encoding(request)
 
 
 _MSG_AUTH_ABSENTE = "Authentification non configurée."

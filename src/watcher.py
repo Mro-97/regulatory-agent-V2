@@ -213,35 +213,44 @@ class Watcher:
         self, url: str, source: SourceReglementaire
     ) -> _ResultatTentativeFetch:
         """Une tentative HTTP : succès, arrêt (4xx ou refus SSRF), ou à réessayer."""
-        from src.http_client import RedirectionsExcessivesError
-        from src.http_safety import UrlInterneRefuseeError
-
         try:
             client = await self._http()
             reponse = await client.recuperer(url)
-        except (UrlInterneRefuseeError, RedirectionsExcessivesError) as exc:
-            # Refus définitif : ni l'URL initiale ni une cible de redirection
-            # n'est autorisée — inutile de réessayer.
+        except Exception as exc:  # noqa: BLE001 — frontière externe, cf. skill §8
+            return self._echec_tentative(url, source, exc)
+        return _ResultatTentativeFetch(
+            contenu=reponse.contenu, arreter=False, erreur=None
+        )
+
+    def _echec_tentative(
+        self, url: str, source: SourceReglementaire, exc: Exception
+    ) -> _ResultatTentativeFetch:
+        """Qualifie un échec : refus définitif, 4xx définitif, ou à réessayer.
+
+        Un refus SSRF (URL ou cible de redirection) et un 4xx sont permanents :
+        réessayer ne changerait rien et ne ferait qu'ajouter du bruit. Le reste
+        (réseau, 5xx) est transitoire et mérite une reprise.
+        """
+        from src.http_client import RedirectionsExcessivesError
+        from src.http_safety import UrlInterneRefuseeError
+
+        if isinstance(exc, (UrlInterneRefuseeError, RedirectionsExcessivesError)):
             logger.warning(
                 "Watcher — URL refusée (SSRF prévention) : %s — %s", url, exc
             )
             return _ResultatTentativeFetch(contenu=None, arreter=True, erreur=exc)
-        except httpx.HTTPStatusError as exc:
-            statut = exc.response.status_code
-            if 400 <= statut < 500:
-                logger.warning(
-                    "Source indisponible (%s) : %s — %s (pas de retry)",
-                    source.value,
-                    url,
-                    exc,
-                )
-                return _ResultatTentativeFetch(contenu=None, arreter=True, erreur=exc)
-            return _ResultatTentativeFetch(contenu=None, arreter=False, erreur=exc)
-        except Exception as exc:  # noqa: BLE001 — frontière externe : dégradation gracieuse, cf. skill §8
-            return _ResultatTentativeFetch(contenu=None, arreter=False, erreur=exc)
-        return _ResultatTentativeFetch(
-            contenu=reponse.contenu, arreter=False, erreur=None
-        )
+        if (
+            isinstance(exc, httpx.HTTPStatusError)
+            and 400 <= exc.response.status_code < 500
+        ):
+            logger.warning(
+                "Source indisponible (%s) : %s — %s (pas de retry)",
+                source.value,
+                url,
+                exc,
+            )
+            return _ResultatTentativeFetch(contenu=None, arreter=True, erreur=exc)
+        return _ResultatTentativeFetch(contenu=None, arreter=False, erreur=exc)
 
     async def verifier_url(
         self,

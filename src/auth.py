@@ -26,6 +26,7 @@ import logging
 from dataclasses import dataclass
 from enum import IntEnum
 from functools import lru_cache
+from typing import Any
 
 from config import cfg
 
@@ -95,6 +96,18 @@ def _charger_env_hachees() -> list[EntreeCle]:
     return [e for t in brut.split(",") if (e := _entree_depuis_triplet(t))]
 
 
+def _entree_depuis_objet(ligne: Any) -> EntreeCle | None:
+    """Parse une entrée `{"hash": …, "role": …, "label": …}` de `api_keys.json`."""
+    h = str(ligne.get("hash", "")).strip().lower()
+    if len(h) != 64:
+        return None
+    try:
+        role = Role.depuis_texte(str(ligne.get("role", "user")))
+    except ValueError:
+        return None
+    return EntreeCle(hash=h, role=role, label=str(ligne.get("label", "sans-label")))
+
+
 def _charger_fichier() -> list[EntreeCle]:
     """Entrées issues de `cfg.api_keys_file` (JSON : liste d'objets)."""
     chemin = cfg.api_keys_file
@@ -108,16 +121,9 @@ def _charger_fichier() -> list[EntreeCle]:
     lignes = donnees.get("keys", donnees) if isinstance(donnees, dict) else donnees
     entrees: list[EntreeCle] = []
     for ligne in lignes or []:
-        h = str(ligne.get("hash", "")).strip().lower()
-        if len(h) != 64:
-            continue
-        try:
-            role = Role.depuis_texte(str(ligne.get("role", "user")))
-        except ValueError:
-            continue
-        entrees.append(
-            EntreeCle(hash=h, role=role, label=str(ligne.get("label", "sans-label")))
-        )
+        entree = _entree_depuis_objet(ligne)
+        if entree is not None:
+            entrees.append(entree)
     return entrees
 
 

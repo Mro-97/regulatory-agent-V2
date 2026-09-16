@@ -14,7 +14,13 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
-from src.models import EvidenceRecuperee, NiveauConfiance, SortieAgent
+from src.models import (
+    EvidenceRecuperee,
+    NiveauConfiance,
+    SortieAgent,
+    TacheValidation,
+    TypeFilePendante,
+)
 
 if TYPE_CHECKING:
     from datetime import date
@@ -263,6 +269,18 @@ def _sortie_agent_conflit(
     )
 
 
+def _tache_conflit(question: str, resultat: Any, request_id: UUID) -> TacheValidation:
+    """Construit la TacheValidation LIENS soumise à la revue humaine."""
+    return TacheValidation(
+        type_file=TypeFilePendante.LIENS,
+        request_id=request_id,
+        contenu={
+            "question": question,
+            "conflits": [_dict_conflit(c) for c in resultat.conflits],
+        },
+    )
+
+
 async def _soumettre_tache_conflit(
     orchestrator: Orchestrateur,
     question: str,
@@ -276,18 +294,11 @@ async def _soumettre_tache_conflit(
     l'audit, seule la revue humaine n'a pas pu être mise en file.
     """
     from src.errors import QueueBackendError
-    from src.models import TacheValidation, TypeFilePendante
 
-    tache = TacheValidation(
-        type_file=TypeFilePendante.LIENS,
-        request_id=request_id,
-        contenu={
-            "question": question,
-            "conflits": [_dict_conflit(c) for c in resultat.conflits],
-        },
-    )
     try:
-        await orchestrator._enregistrer_tache_redis(tache)
+        await orchestrator._enregistrer_tache_redis(
+            _tache_conflit(question, resultat, request_id)
+        )
     except QueueBackendError:
         logger.exception(
             "Conflit non soumis à validation humaine (Redis indisponible)."

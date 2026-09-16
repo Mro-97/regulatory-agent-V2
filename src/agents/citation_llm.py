@@ -13,7 +13,6 @@ import re
 from typing import TYPE_CHECKING
 
 from config import cfg
-
 from src.agents.citation import CitationReglementaire
 
 if TYPE_CHECKING:
@@ -112,6 +111,21 @@ def _parser_citations_llm(
         logger.info("LLM : aucun chunk identifié comme cité.")
         return []
     index_chunks = {ev.chunk_id: ev for ev in evidences}
+    retenues = _retenir_chunks_cites(texte, index_chunks)
+    if not retenues:
+        logger.warning(
+            "Sortie Citation LLM sans chunk_id reconnu (ni AUCUN) : %r — "
+            "repli déterministe.",
+            texte[:120],
+        )
+        return None
+    return retenues
+
+
+def _retenir_chunks_cites(
+    texte: str, index_chunks: dict[str, EvidenceRecuperee]
+) -> list[EvidenceRecuperee]:
+    """Preuves des `chunk_id` reconnus, sans doublon et dans l'ordre du texte."""
     retenues: list[EvidenceRecuperee] = []
     vus: set[str] = set()
     for token in (c.strip() for c in re.split(r"[,\n;]+", texte)):
@@ -126,13 +140,6 @@ def _parser_citations_llm(
             continue
         vus.add(token)
         retenues.append(ev)
-    if not retenues:
-        logger.warning(
-            "Sortie Citation LLM sans chunk_id reconnu (ni AUCUN) : %r — "
-            "repli déterministe.",
-            texte[:120],
-        )
-        return None
     return retenues
 
 

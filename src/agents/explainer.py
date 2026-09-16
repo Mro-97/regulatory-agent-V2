@@ -40,7 +40,6 @@ from datetime import date
 from typing import TYPE_CHECKING
 
 from config import cfg
-
 from src.models import EvidenceRecuperee, NiveauConfiance
 
 if TYPE_CHECKING:
@@ -227,6 +226,20 @@ def _preparer_messages_synthese(
     )
 
 
+def _diffuser_fragments(
+    premier: str | None,
+    flux: Iterator[str],
+    fragments: list[str],
+) -> Iterator[str]:
+    """Yield les fragments du flux en les accumulant dans `fragments`."""
+    if premier is not None:
+        fragments.append(premier)
+        yield premier
+    for fragment in flux:
+        fragments.append(fragment)
+        yield fragment
+
+
 # ---------------------------------------------------------------------------
 # Agent Explainer
 # ---------------------------------------------------------------------------
@@ -321,9 +334,36 @@ class AgentExplainer:
         if not evidences:
             yield _MSG_AUCUN_PASSAGE
             return
-        # Échec AVANT le 1er fragment (chargement modèle, MLX en mauvais
-        # état) → bascule propre sur l'assemblage. Un échec en cours de flux
-        # (fragments déjà émis) reste propagé : on ne peut pas le rattraper.
+        demarrage = self._demarrer_flux_synthese(
+            question, evidences, date_ref, type_pipeline
+        )
+        if demarrage is None:
+            yield self._assembler(question, evidences, date_ref, type_pipeline).reponse
+            return
+        premier, flux = demarrage
+        fragments: list[str] = []
+        yield from _diffuser_fragments(premier, flux, fragments)
+        if not any(fragment.strip() for fragment in fragments):
+            # Flux vide : l'appelant court-circuiterait sur un message
+            # d'erreur. On applique la même dégradation que
+            # `_synthetiser_avec_llm` — repli sur l'assemblage des preuves.
+            logger.warning("Flux Explainer vide — bascule sur l'assemblage")
+            yield self._assembler(question, evidences, date_ref, type_pipeline).reponse
+
+    def _demarrer_flux_synthese(
+        self,
+        question: str,
+        evidences: list[EvidenceRecuperee],
+        date_ref: date | None,
+        type_pipeline: str,
+    ) -> tuple[str | None, Iterator[str]] | None:
+        """Ouvre le flux LLM : (1er fragment, flux) ou None si échec avant émission.
+
+        Échec AVANT le 1er fragment (chargement modèle, MLX en mauvais état)
+        → retourne None pour bascule propre sur l'assemblage. Un échec en
+        cours de flux (fragments déjà émis) reste propagé : on ne peut pas
+        le rattraper.
+        """
         try:
             modele = self._modele_charge()
             messages = _preparer_messages_synthese(
@@ -335,24 +375,10 @@ class AgentExplainer:
             flux = modele.stream_generer_avec_messages(
                 messages=messages, max_tokens=cfg.mlx_max_tokens
             )
-            premier = next(flux, None)
+            return next(flux, None), flux
         except Exception:
             logger.exception("Explainer flux échoué avant le 1er fragment, assemblage")
-            yield self._assembler(question, evidences, date_ref, type_pipeline).reponse
-            return
-        fragments: list[str] = []
-        if premier is not None:
-            fragments.append(premier)
-            yield premier
-        for fragment in flux:
-            fragments.append(fragment)
-            yield fragment
-        if not any(fragment.strip() for fragment in fragments):
-            # Flux vide : l'appelant court-circuiterait sur un message
-            # d'erreur. On applique la même dégradation que
-            # `_synthetiser_avec_llm` — repli sur l'assemblage des preuves.
-            logger.warning("Flux Explainer vide — bascule sur l'assemblage")
-            yield self._assembler(question, evidences, date_ref, type_pipeline).reponse
+            return None
 
     def _modele_charge(self) -> MLXInference:
         """Charge le modèle Explainer et le renvoie ; lève ModelNotLoadedError sinon."""
@@ -383,16 +409,26 @@ class AgentExplainer:
         # après une rafale de générations — doit dégrader vers l'assemblage
         # des evidences, pas remonter une erreur nue jusqu'à l'orchestrateur.
         try:
-            self._modele_charge()
-            contexte = self._construire_contexte(evidences)
-            sources_citees = _construire_sources_citees(evidences)
-            messages = _preparer_messages_synthese(
-                question, contexte, date_ref, type_pipeline
-            )
-            return self._generer_synthese(messages, sources_citees, evidences)
+            return self._tenter_synthese(question, evidences, date_ref, type_pipeline)
         except Exception:
             logger.exception("Synthèse LLM échouée, bascule sur assemblage")
             return self._assembler(question, evidences, date_ref, type_pipeline)
+
+    def _tenter_synthese(
+        self,
+        question: str,
+        evidences: list[EvidenceRecuperee],
+        date_ref: date | None,
+        type_pipeline: str,
+    ) -> ResultatExplication:
+        """Charge le modèle, rend le prompt et génère la synthèse (lève si échec)."""
+        self._modele_charge()
+        contexte = self._construire_contexte(evidences)
+        sources_citees = _construire_sources_citees(evidences)
+        messages = _preparer_messages_synthese(
+            question, contexte, date_ref, type_pipeline
+        )
+        return self._generer_synthese(messages, sources_citees, evidences)
 
     def _generer_synthese(
         self,

@@ -16,8 +16,8 @@ import time
 from typing import Any, cast
 
 import mlx.core as mx
-from config import cfg
 
+from config import cfg
 from src.mlx_utils import _executer_avec_timeout, _tronquer_pour_embedding
 
 
@@ -73,11 +73,7 @@ class MLXEmbedding:
         logger.info("Chargement du modèle d'embedding : %s", self.model_name)
         debut = time.time()
         try:
-            self._model, self._processor = _executer_avec_timeout(
-                self._instancier_backend,
-                cfg.mlx_load_timeout_seconds,
-            )
-            self._loaded = True
+            self._charger_backend()
             logger.info(
                 "Modèle d'embedding chargé en %.1f s : %s (%s)",
                 time.time() - debut,
@@ -87,10 +83,22 @@ class MLXEmbedding:
         except Exception as exc:
             from src.errors import ModelLoadError
 
-            self._model = None
-            self._processor = None
-            self._loaded = False
+            self._vider_references()
             raise ModelLoadError(self.model_name, cause=str(exc)) from exc
+
+    def _charger_backend(self) -> None:
+        """Charge le backend sous timeout et marque le modèle comme chargé."""
+        self._model, self._processor = _executer_avec_timeout(
+            self._instancier_backend,
+            cfg.mlx_load_timeout_seconds,
+        )
+        self._loaded = True
+
+    def _vider_references(self) -> None:
+        """Vide les références au backend après un échec de chargement."""
+        self._model = None
+        self._processor = None
+        self._loaded = False
 
     def _instancier_backend(self) -> tuple[Any, Any]:
         """Charge le backend actif (sentence-transformers ou mlx-embeddings)."""

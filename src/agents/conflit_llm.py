@@ -12,7 +12,6 @@ import logging
 from typing import TYPE_CHECKING, Any
 
 from config import cfg
-
 from src.agents.conflit import ConflitDetecte, NiveauConflit
 from src.agents.conflit_helpers import VERDICTS_VALIDES, normaliser_verdict
 
@@ -76,25 +75,47 @@ def _objets_json_equilibres(texte: str) -> list[str]:
     echappe = False
     for i, caractere in enumerate(texte):
         if dans_chaine:
-            if echappe:
-                echappe = False
-            elif caractere == "\\":
-                echappe = True
-            elif caractere == '"':
-                dans_chaine = False
+            dans_chaine, echappe = _etat_dans_chaine(caractere, echappe)
             continue
         if caractere == '"':
             dans_chaine = True
-        elif caractere == "{":
-            if profondeur == 0:
-                debut = i
-            profondeur += 1
-        elif caractere == "}" and profondeur > 0:
-            profondeur -= 1
-            if profondeur == 0 and debut is not None:
-                objets.append(texte[debut : i + 1])
-                debut = None
+        else:
+            debut, profondeur, objet = _scanner_accolade(texte, i, debut, profondeur)
+            if objet is not None:
+                objets.append(objet)
     return objets
+
+
+def _etat_dans_chaine(caractere: str, echappe: bool) -> tuple[bool, bool]:
+    """État (dans_chaine, echappe) après lecture d'un caractère de chaîne JSON."""
+    if echappe:
+        return True, False
+    if caractere == "\\":
+        return True, True
+    if caractere == '"':
+        return False, False
+    return True, False
+
+
+def _scanner_accolade(
+    texte: str,
+    index: int,
+    debut: int | None,
+    profondeur: int,
+) -> tuple[int | None, int, str | None]:
+    """État des accolades après `index` et objet fermé le cas échéant.
+
+    Retourne `(debut, profondeur, objet)` : `objet` n'est non-None que si
+    l'accolade fermante de `index` ramène la profondeur à zéro.
+    """
+    caractere = texte[index]
+    if caractere == "{":
+        return (index if profondeur == 0 else debut), profondeur + 1, None
+    if caractere == "}" and profondeur > 0:
+        profondeur -= 1
+        if profondeur == 0 and debut is not None:
+            return None, profondeur, texte[debut : index + 1]
+    return debut, profondeur, None
 
 
 def _extraire_mapping_verdicts(candidat: str) -> dict[int, str] | None:
