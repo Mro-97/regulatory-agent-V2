@@ -33,6 +33,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, date, datetime
 from typing import TYPE_CHECKING, NoReturn
 
+from src.agents.retriever_helpers import article_de_base
 from src.models import EvidenceRecuperee, NiveauConfiance
 
 if TYPE_CHECKING:
@@ -105,10 +106,16 @@ def _journaliser_filtre(
 def _grouper_versions_par_article(
     evidences: list[EvidenceRecuperee],
 ) -> dict[str, list[EvidenceRecuperee]]:
-    """Regroupe les evidences par (document_id, base article_id)."""
+    """Regroupe les evidences par (document_id, article de base).
+
+    L'id est normalisé via `article_de_base` (suffixe `_vM` / `_AAAA` retiré,
+    cf. `retriever_helpers.filtre_articles`) : un `split("_")[0]` ramenait
+    `art_3` et `art_10` au même « art » et faisait comparer tous les articles
+    d'un document comme les versions d'un seul (faux chevauchements).
+    """
     groupes: dict[str, list[EvidenceRecuperee]] = {}
     for ev in evidences:
-        cle = f"{ev.document_id}:{ev.article_id.split('_')[0]}"
+        cle = f"{ev.document_id}:{article_de_base(ev.article_id)}"
         groupes.setdefault(cle, []).append(ev)
     return groupes
 
@@ -125,6 +132,17 @@ def _detecter_anomalies_groupe(
     for i in range(len(trie) - 1):
         a, b = trie[i], trie[i + 1]
         if a.valid_to is None:
+            # M3 : une version OUVERTE (valid_to=None) supplantée par une
+            # version plus récente est un chevauchement réel — la traiter
+            # comme « pas de borne, donc rien à signaler » masquait le cas
+            # le plus fréquent (version consolidée jamais close).
+            if b.valid_from >= a.valid_from:
+                chevauchements.append(
+                    f"{cle} : version ouverte non close — "
+                    f"[{a.valid_from}→en vigueur] et "
+                    f"[{b.valid_from}→{b.valid_to or 'en vigueur'}] "
+                    f"se chevauchent"
+                )
             continue
         if a.valid_to >= b.valid_from:
             chevauchements.append(

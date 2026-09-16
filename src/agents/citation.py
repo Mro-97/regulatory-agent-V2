@@ -89,6 +89,11 @@ def _est_citation_verifiee(
         return False
     extrait_norm = _normaliser_pour_comparaison(cit.extrait)
     chunk_norm = _normaliser_pour_comparaison(chunk.texte_extrait)
+    if not extrait_norm:
+        # Un extrait vide est contenu dans n'importe quelle chaîne : sans ce
+        # garde-fou, une citation sans texte cité serait déclarée VERIFIEE.
+        logger.warning("Citation DOUTEUSE — extrait vide (chunk '%s').", cit.chunk_id)
+        return False
     if extrait_norm not in chunk_norm:
         logger.warning(
             "Citation DOUTEUSE — extrait non retrouvé dans chunk '%s'.",
@@ -128,8 +133,12 @@ def sources_referencees(
     une fois n'implique pas les 15 articles).
 
     Deux cas particuliers : une réponse de refus / « aucune information »
-    ne cite RIEN → liste vide. Une vraie réponse sans citation
-    reconnaissable → on renvoie tout (fail-safe, on ne masque jamais).
+    ne cite RIEN → liste vide, et une réponse sans citation reconnaissable
+    renvoie AUSSI une liste vide (M10) : attribuer toutes les preuves à une
+    réponse qui n'en nomme aucune gonflait artificiellement les sources et
+    la traçabilité d'audit. Les appelants
+    (`orchestrator._executer_etapes_pipeline`, `_stream_pipeline_reel`)
+    traitent déjà la liste vide.
     """
     from src.agents.explainer import reponse_est_non_fondee
 
@@ -148,7 +157,7 @@ def sources_referencees(
                 cite = re.search(rf"\bart(?:icle|\.)?\s*{numero}\b", texte) is not None
         if cite:
             gardees.append(ev)
-    return gardees or list(evidences)
+    return gardees
 
 
 def _resultat_citation_vide() -> ResultatCitation:

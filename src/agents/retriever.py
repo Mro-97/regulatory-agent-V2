@@ -188,17 +188,34 @@ class Retriever:
         filtres_themes: list[str] | None = None,
         filtres_sources: list[SourceReglementaire] | None = None,
     ) -> list[EvidenceRecuperee]:
-        """Retrieval en 2 passes temporelles fusionnées ; ≤ `top_k` evidences."""
+        """Retrieval en 2 passes temporelles fusionnées ; ≤ `top_k` evidences.
+
+        H5 : l'échec d'embedding (`InferenceError`) et la panne Qdrant
+        (`VectorStoreError`, si AUCUNE passe n'a répondu) sont propagés.
+        Auparavant, ces deux erreurs étaient converties en `[]` : l'appelant
+        affichait « Aucun passage réglementaire pertinent » alors que le
+        backend était HS, et le repli `_reponse_retrieval_indisponible`
+        de l'orchestrateur devenait inatteignable.
+
+        Raises:
+            InferenceError: embedding de la question impossible.
+            VectorStoreError: backend vectoriel indisponible.
+        """
         _journaliser_debut_retrieval(
             question, date_contexte, self._top_k, filtres_themes, filtres_sources
         )
-        vecteur = self._encoder_question_ou_vide(question)
+        vecteur = self.embed_question(question)
         if not vecteur:
+            logger.warning("Embedding vide — retrieval annulé pour : %r", question[:80])
             return []
         date_ref = date_contexte or datetime.now(UTC).date()
         points_articles = self._passe_articles_cites(question, vecteur)
         points_bruts = self._executer_deux_passes(
-            vecteur, date_ref, filtres_themes, filtres_sources
+            vecteur,
+            date_ref,
+            filtres_themes,
+            filtres_sources,
+            repli_disponible=bool(points_articles),
         )
         fusionnes = _prioriser_articles_cites(
             points_articles, points_bruts, self._top_k
@@ -211,7 +228,14 @@ class Retriever:
     def _passe_articles_cites(
         self, question: str, vecteur: list[float]
     ) -> list[ScoredPoint]:
-        """Passe ciblée `article_id` si la question cite un ou des numéros."""
+        """Passe ciblée `article_id` si la question cite un ou des numéros.
+
+        Passe d'appoint : une panne Qdrant y est tolérée (log WARNING) tant
+        que les passes temporelles répondent ; c'est `_executer_deux_passes`
+        qui décide si le backend est globalement HS.
+        """
+        from src.errors import VectorStoreError
+
         numeros = extraire_numeros_articles(question)
         reglement = extraire_reglement(question)
         filtre = filtre_articles(numeros, reglement)
@@ -222,16 +246,10 @@ class Retriever:
             numeros,
             f" ({reglement})" if reglement else "",
         )
-        return self._rechercher_passe("articles_cites", vecteur, filtre)
-
-    def _encoder_question_ou_vide(self, question: str) -> list[float]:
-        """Retourne l'embedding, ou une liste vide si l'inférence échoue."""
-        from src.errors import InferenceError
-
         try:
-            return self.embed_question(question)
-        except InferenceError:
-            logger.exception("Embedding impossible, retrieval annulé")
+            return self._rechercher_passe("articles_cites", vecteur, filtre)
+        except VectorStoreError as exc:
+            logger.warning("Passe articles cités échouée (passe d'appoint) : %s", exc)
             return []
 
     def _executer_deux_passes(
@@ -240,15 +258,40 @@ class Retriever:
         date_ref: date,
         filtres_themes: list[str] | None,
         filtres_sources: list[SourceReglementaire] | None,
+        repli_disponible: bool = False,
     ) -> list[ScoredPoint]:
-        """Construit les filtres, exécute les 2 passes, retourne la fusion triée."""
+        """Construit les filtres, exécute les 2 passes, retourne la fusion triée.
+
+        Une passe sur deux peut échouer sans interrompre le retrieval : la
+        fusion se poursuit avec celle qui a répondu. Si les DEUX passes
+        échouent et qu'aucune autre passe n'a ramené de candidat
+        (`repli_disponible`), l'erreur est propagée — sans quoi l'API
+        afficherait « aucun passage pertinent » alors que Qdrant est HS.
+        """
+        from src.errors import VectorStoreError
+
         filtre_a, filtre_b = construire_filtres_passes(
             date_ref,
             filtres_themes or [],
             filtres_sources or [],
         )
-        res_a = self._rechercher_passe("valid_to_present", vecteur, filtre_a)
-        res_b = self._rechercher_passe("valid_to_null", vecteur, filtre_b)
+        res_a: list[ScoredPoint] = []
+        res_b: list[ScoredPoint] = []
+        echec_a: VectorStoreError | None = None
+        echec_b: VectorStoreError | None = None
+        try:
+            res_a = self._rechercher_passe("valid_to_present", vecteur, filtre_a)
+        except VectorStoreError as exc:
+            echec_a = exc
+        try:
+            res_b = self._rechercher_passe("valid_to_null", vecteur, filtre_b)
+        except VectorStoreError as exc:
+            echec_b = exc
+        if echec_a is not None and echec_b is not None and not repli_disponible:
+            logger.error("Les deux passes Qdrant ont échoué — backend indisponible.")
+            raise echec_b
+        if echec_a is not None or echec_b is not None:
+            logger.warning("Une passe Qdrant sur deux a échoué — résultat partiel.")
         return fusionner_passes(res_a, res_b, self._top_k)
 
     def _rechercher_passe(
@@ -257,16 +300,16 @@ class Retriever:
         vecteur: list[float],
         filtre: Filter,
     ) -> list[ScoredPoint]:
-        """Exécute une passe Qdrant (sur-échantillonnée à top_k) ; [] sur échec."""
-        from src.errors import VectorStoreError
+        """Exécute une passe Qdrant (sur-échantillonnée à top_k).
 
-        try:
-            resultats = self._rechercher(vecteur, limite=self._top_k, filtre=filtre)
-            logger.debug("Passe %s — %d résultats", label, len(resultats))
-            return resultats  # noqa: TRY300 — sortie normale du try
-        except VectorStoreError as exc:
-            logger.warning("Passe %s échouée : %s", label, exc)
-            return []
+        Raises:
+            VectorStoreError: Qdrant injoignable — propagée pour que
+                l'appelant distingue « aucun passage pertinent » d'une panne
+                de backend (H5).
+        """
+        resultats = self._rechercher(vecteur, limite=self._top_k, filtre=filtre)
+        logger.debug("Passe %s — %d résultats", label, len(resultats))
+        return resultats
 
 
 # _parser_date, _point_vers_evidence et les 5 filtres Qdrant ont été

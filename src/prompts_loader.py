@@ -12,6 +12,7 @@ qu'une fois par (identifiant, version).
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
@@ -22,6 +23,14 @@ _PROMPTS_DIR = Path(__file__).parent.parent / "prompts"
 # Marqueurs de section reconnus dans un fichier .md — un par ligne, en début.
 _MARQUEUR_SYSTEM = "# system"
 _MARQUEUR_USER = "# user"
+
+# Identifiant de gabarit autorisé : segments `<agent>/<tache>` en minuscules,
+# chiffres et `_` — la convention réelle du dépôt est `explainer/synthetiser`,
+# `citation/extraire`, `conflit/analyser`, `temporal/annoter` (le séparateur
+# `/` est donc OBLIGATOIRE dans les identifiants existants). Chaque segment
+# est strictement validé : ni `.`, ni `..`, ni segment vide, ni chemin
+# absolu — un identifiant non maîtrisé ne peut pas sortir de `prompts/`.
+_RE_IDENTIFIANT = re.compile(r"[a-z0-9_]{1,64}(?:/[a-z0-9_]{1,64})*")
 
 
 @dataclass(frozen=True)
@@ -101,9 +110,17 @@ def _extraire_sections(contenu: str) -> dict[str, list[str]]:
 
 @lru_cache(maxsize=32)
 def charger_prompt(identifiant: str, version: int) -> PromptTemplate:
-    """Charge un gabarit `<identifiant>.v<version>.md` depuis `prompts/`."""
+    """Charge un gabarit `<identifiant>.v<version>.md` depuis `prompts/`.
+
+    `identifiant` est validé contre `_RE_IDENTIFIANT` avant toute
+    construction de chemin : sans ce garde-fou, un appelant qui relaierait
+    une valeur non maîtrisée (`../.env`, chemin absolu) lirait un fichier
+    arbitraire — le loader est une frontière publique du paquet.
+    """
     from src.errors import PromptNotFoundError
 
+    if not _RE_IDENTIFIANT.fullmatch(identifiant):
+        raise PromptNotFoundError(identifiant)
     chemin = _PROMPTS_DIR / f"{identifiant}.v{version}.md"
     if not chemin.exists():
         raise PromptNotFoundError(chemin)
