@@ -1,8 +1,12 @@
 """tests/test_https_redirection.py — redirection http → https.
 
 Le middleware est inactif par défaut (`FORCER_HTTPS=false`), donc la suite
-générale ne l'exerce pas. Ces tests couvrent les deux branches et la
-validation de l'hôte, qui protège d'une redirection ouverte.
+générale ne l'exerce pas. Deux niveaux de test :
+
+- le câblage ASGI via `TestClient` (redirection effective, `/health` exclu) ;
+- la construction de la cible via `_cible_https`, testée directement : le
+  `TestClient` écrase l'en-tête `Host` par sa propre base URL, ce qui rend le
+  cas « port non standard » intestable à travers lui.
 """
 
 from __future__ import annotations
@@ -12,7 +16,12 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from config import cfg
-from src.https_redirection import _doit_rediriger, installer_redirection_https
+from src.https_redirection import (
+    _cible_https,
+    _doit_rediriger,
+    _hote_demande,
+    installer_redirection_https,
+)
 
 
 def _application() -> FastAPI:
@@ -34,6 +43,18 @@ def _application() -> FastAPI:
 def _client() -> TestClient:
     """Client en clair — le cas que le middleware doit intercepter."""
     return TestClient(_application(), base_url="http://testserver")
+
+
+def _scope(hote: bytes | None = None, port_scope: int = 80) -> dict[str, object]:
+    """Scope ASGI minimal tel que le reçoit le middleware."""
+    entetes = [(b"host", hote)] if hote is not None else []
+    return {
+        "type": "http",
+        "path": "/une-route",
+        "scheme": "http",
+        "headers": entetes,
+        "server": ("testserver", port_scope),
+    }
 
 
 class TestRedirectionHttps:
@@ -74,52 +95,57 @@ class TestRedirectionHttps:
         assert reponse.status_code == 200
         assert "location" not in reponse.headers
 
-    def test_port_443_omis_dans_la_cible(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """Un 443 explicite ne doit pas apparaître dans la cible."""
-        monkeypatch.setattr(cfg, "forcer_https", True)
-        reponse = _client().get(
-            "/une-route", headers={"Host": "exemple.test:443"}, follow_redirects=False
-        )
-        assert reponse.status_code == 308
-        assert reponse.headers["location"] == "https://exemple.test/une-route"
 
-    def test_port_non_standard_conserve(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """Un port non standard doit être conservé, sinon la cible est injoignable."""
-        monkeypatch.setattr(cfg, "forcer_https", True)
-        reponse = _client().get(
-            "/une-route", headers={"Host": "exemple.test:8443"}, follow_redirects=False
-        )
-        assert reponse.status_code == 308
-        assert reponse.headers["location"] == "https://exemple.test:8443/une-route"
+class TestConstructionDeLaCible:
+    """`_cible_https` : port du `Host` prioritaire, jamais de 443 explicite."""
+
+    @pytest.mark.parametrize(
+        ("hote", "port_scope", "attendu"),
+        [
+            (b"testserver", 80, "https://testserver/une-route"),
+            (b"exemple.test:443", 80, "https://exemple.test/une-route"),
+            (b"exemple.test:8443", 80, "https://exemple.test:8443/une-route"),
+            # Port de test non standard : sans port dans le Host, on le reprend.
+            (b"testserver", 8080, "https://testserver:8080/une-route"),
+        ],
+    )
+    def test_cibles(self, hote: bytes, port_scope: int, attendu: str) -> None:
+        scope = _scope(hote, port_scope)
+        assert _cible_https(scope, str(port_scope)) == attendu
+
+    def test_hote_invalide_refuse(self) -> None:
+        """Un hôte non conforme ne doit produire aucune cible."""
+        assert _cible_https(_scope(b"evil.test/chemin"), "80") is None
+
+    def test_absence_d_hote_refusee(self) -> None:
+        """Sans en-tête `Host`, on ne peut pas construire de cible fiable."""
+        assert _cible_https(_scope(None), "80") is None
+        assert _hote_demande(_scope(None)) is None
 
 
 class TestPredicatDeSchema:
     """Le schéma décide seul.
 
-     n'est pas cru sans proxy de confiance.
+    `X-Forwarded-Proto` n'est pas cru sans `trusted_proxies`.
     """
-
-    def _scope(self, schema: str) -> dict[str, object]:
-        """Scope ASGI minimal tel que le reçoit le middleware."""
-        return {
-            "type": "http",
-            "path": "/une-route",
-            "scheme": schema,
-            "headers": [],
-            "server": ("testserver", 80),
-        }
 
     def test_http_redirige(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(cfg, "forcer_https", True)
-        assert _doit_rediriger(self._scope("http")) is True
+        assert _doit_rediriger(_scope(b"testserver")) is True
 
     def test_https_ne_redirige_pas(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Déjà en https : rediriger ferait boucler le client."""
         monkeypatch.setattr(cfg, "forcer_https", True)
-        assert _doit_rediriger(self._scope("https")) is False
+        scope = _scope(b"testserver") | {"scheme": "https"}
+        assert _doit_rediriger(scope) is False
 
     def test_websocket_ignore(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Seul le trafic http est concerné."""
         monkeypatch.setattr(cfg, "forcer_https", True)
-        scope = self._scope("http") | {"type": "websocket"}
+        scope = _scope(b"testserver") | {"type": "websocket"}
+        assert _doit_rediriger(scope) is False
+
+    def test_health_exclu(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr(cfg, "forcer_https", True)
+        scope = _scope(b"testserver") | {"path": "/health"}
         assert _doit_rediriger(scope) is False
