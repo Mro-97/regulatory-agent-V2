@@ -55,8 +55,10 @@ pydantic-settings>=2.3,<3.0
 # --- Bases de données ---
 # qdrant-client : recherche vectorielle (src/agents/retriever.py, scripts/ingest.py).
 qdrant-client>=1.9,<2.0
-# redis : files de validation humaine, rate-limit partagé (redis.asyncio).
-redis>=5.0,<6.0
+# NB : la bibliothèque `redis` n'est plus déclarée. Le client RESP est écrit à
+# la main dans src/redis_client.py (sockets + asyncio.to_thread) ; la
+# réintroduire donnerait deux clients concurrents pour les mêmes files HITL et
+# le même compteur de rate-limit.
 # asyncpg : pool PostgreSQL de l'audit chaîné (src/audit.py).
 asyncpg>=0.29,<1.0
 
