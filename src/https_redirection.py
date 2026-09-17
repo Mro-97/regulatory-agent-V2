@@ -50,20 +50,19 @@ def _hote_demande(scope: PorteeASGI) -> str | None:
     return None
 
 
-def _cible_https(scope: PorteeASGI, port: str | None) -> str | None:
+def _cible_https(scope: PorteeASGI, port_scope: str | None) -> str | None:
     """URL https équivalente au chemin demandé, ou None si l'hôte est invalide.
 
-    Le port vient d'abord de l'en-tête  quand il en porte un : c'est le
-    port que le client a réellement appelé. Le port du scope ne sert que de
-    repli, et n'est jamais réinjecté à la place d'un port absent du 
-    (un port 80 de scope transformait  en ).
+    Le port est celui de l'en-tête `Host` quand il en porte un — c'est le port
+    que le client a réellement appelé. Un `Host` sans port désigne 443 pour une
+    URL https : le port du scope ne doit donc PAS servir de repli, sinon un
+    port 80 en clair produisait `https://hote:80/` (constaté par les tests).
     """
-    hote = _hote_demande(scope)
-    if hote is None:
+    hote_brut = _hote_demande(scope)
+    if hote_brut is None:
         return None
-    if ":" in hote:
-        hote, _, port_entete = hote.partition(":")
-        port = port_entete or None
+    hote, _, port_entete = hote_brut.partition(":")
+    port = port_entete or (port_scope if port_scope != _PORTS_PAR_DEFAUT["http"] else None)
     suffixe = f":{port}" if port and port != _PORTS_PAR_DEFAUT["https"] else ""
     return f"https://{hote}{suffixe}{scope.get('path', '')}"
 
