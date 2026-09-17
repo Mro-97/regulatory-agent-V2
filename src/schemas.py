@@ -1,10 +1,13 @@
 """src/schemas.py — Schémas d'API (requêtes / réponses HTTP).
 
-Extraits de src/models.py (§12 étape 6). Ces modèles vivent séparément
-des entités de domaine parce qu'ils servent uniquement le contrat HTTP :
-un changement d'API ne doit pas provoquer de migration côté persistance.
+Ces modèles vivent séparément des entités de domaine (src/models.py) parce
+qu'ils servent uniquement le contrat HTTP : un changement d'API ne doit pas
+provoquer de migration côté persistance.
 
-Ré-exportés depuis `src.models` pour compatibilité descendante.
+La dépendance est à sens unique — `src.schemas` importe `src.models`, jamais
+l'inverse : les schémas réutilisent les enums et entités du domaine, pas le
+contraire. Aucun ré-export depuis `src.models` (il créait un cycle d'import
+`models -> schemas -> models`).
 """
 
 from __future__ import annotations

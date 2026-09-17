@@ -67,7 +67,9 @@ from src.api_security import (
     get_rate_limiter as get_rate_limiter,  # exposé par /health/details
 )
 from src.http_types import SuiteRequete
-from src.models import (
+from src.models import StatutValidation
+from src.orchestrator import Orchestrateur
+from src.schemas import (
     ReponseDecisionValidation,
     ReponseFeedback,
     ReponseIngestion,
@@ -78,9 +80,7 @@ from src.models import (
     RequeteFeedback,
     RequeteIngestion,
     RequeteQuestion,
-    StatutValidation,
 )
-from src.orchestrator import Orchestrateur
 
 logger = logging.getLogger(__name__)
 

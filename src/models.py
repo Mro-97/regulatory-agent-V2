@@ -396,20 +396,3 @@ class AlerteWatcher(BaseModel):
     description_modification: str | None = Field(default=None, max_length=2000)
     tache_validation_id: UUID | None = Field(default=None)
 
-
-# Schémas d'API extraits dans src/schemas.py (§12 étape 6). Ré-exportés
-# depuis ce module pour compatibilité descendante (api.py, orchestrator.py
-# et les tests continuent d'importer depuis src.models). L'idiome
-# `X as X` rend le symbole explicitement exporté (mypy --strict).
-# fmt: off
-from src.schemas import ReponseDecisionValidation as ReponseDecisionValidation  # noqa: E402, I001
-from src.schemas import ReponseFeedback as ReponseFeedback  # noqa: E402
-from src.schemas import ReponseIngestion as ReponseIngestion  # noqa: E402
-from src.schemas import ReponseSuiviTache as ReponseSuiviTache  # noqa: E402
-from src.schemas import ReponseQuestion as ReponseQuestion  # noqa: E402
-from src.schemas import ReponseTachesPendantes as ReponseTachesPendantes  # noqa: E402
-from src.schemas import RequeteDecisionValidation as RequeteDecisionValidation  # noqa: E402
-from src.schemas import RequeteFeedback as RequeteFeedback  # noqa: E402
-from src.schemas import RequeteIngestion as RequeteIngestion  # noqa: E402
-from src.schemas import RequeteQuestion as RequeteQuestion  # noqa: E402
-# fmt: on

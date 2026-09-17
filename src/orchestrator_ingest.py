@@ -17,7 +17,7 @@ from src.errors import (
     InvalidDocumentError,
     MissingMetadataError,
 )
-from src.models import ReponseIngestion, RequeteIngestion
+from src.schemas import ReponseIngestion, RequeteIngestion
 
 if TYPE_CHECKING:
     from scripts.ingest import Ingester

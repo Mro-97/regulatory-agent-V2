@@ -258,7 +258,7 @@ class TestEnregistrementAudit:
 
 class TestSchemasAPI:
     def test_requete_question_validation(self):  # noqa: ANN201
-        from src.models import RequeteQuestion
+        from src.schemas import RequeteQuestion
 
         rq = RequeteQuestion(question="Quelles sont les obligations RGPD ?")
         assert rq.question.startswith("Quelles")
@@ -266,7 +266,7 @@ class TestSchemasAPI:
         assert rq.demander_validation_humaine is False
 
     def test_requete_question_trop_courte(self):  # noqa: ANN201
-        from src.models import RequeteQuestion
+        from src.schemas import RequeteQuestion
 
         with pytest.raises(Exception):  # noqa: B017 - TODO 12 etape 4/6 : revue ciblee au moment du typage / de l extraction
             RequeteQuestion(question="AB")

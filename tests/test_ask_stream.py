@@ -17,8 +17,9 @@ import pytest
 from fastapi.testclient import TestClient
 
 from src import api as api_module
-from src.models import RequeteQuestion, SortieAgent
+from src.models import SortieAgent
 from src.orchestrator import Orchestrateur
+from src.schemas import RequeteQuestion
 
 CLE = "cle-de-test-0123456789abcdef"
 

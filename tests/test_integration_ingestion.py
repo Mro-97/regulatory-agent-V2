@@ -187,8 +187,8 @@ class TestIngestionReelle:
         return ingester
 
     def test_ingestion_reelle_nouveau_document(self, doc_rgpd_json):  # noqa: ANN001, ANN201
-        from src.models import RequeteIngestion
         from src.orchestrator import Orchestrateur
+        from src.schemas import RequeteIngestion
 
         orchestrateur = Orchestrateur(mode="real")
         ingester = self._ingester_en_memoire()
@@ -209,8 +209,8 @@ class TestIngestionReelle:
         assert (info.points_count or 0) == reponse.chunks_indexes
 
     def test_ingestion_sans_contenu_json_leve_valueerror(self):  # noqa: ANN201
-        from src.models import RequeteIngestion
         from src.orchestrator import Orchestrateur
+        from src.schemas import RequeteIngestion
 
         orchestrateur = Orchestrateur(mode="real")
         requete = RequeteIngestion(
@@ -221,8 +221,8 @@ class TestIngestionReelle:
             asyncio.run(orchestrateur.ingerer(requete))
 
     def test_ingestion_contenu_invalide_leve_valueerror(self):  # noqa: ANN201
-        from src.models import RequeteIngestion
         from src.orchestrator import Orchestrateur
+        from src.schemas import RequeteIngestion
 
         orchestrateur = Orchestrateur(mode="real")
         orchestrateur._obtenir_ingester = lambda: self._ingester_en_memoire()
@@ -235,8 +235,8 @@ class TestIngestionReelle:
             asyncio.run(orchestrateur.ingerer(requete))
 
     def test_ingestion_document_deja_indexe_sans_force(self, doc_rgpd_json):  # noqa: ANN001, ANN201
-        from src.models import RequeteIngestion
         from src.orchestrator import DocumentDejaIndexeError, Orchestrateur
+        from src.schemas import RequeteIngestion
 
         orchestrateur = Orchestrateur(mode="real")
         ingester = self._ingester_en_memoire()
@@ -253,8 +253,8 @@ class TestIngestionReelle:
             asyncio.run(_run())
 
     def test_ingestion_document_deja_indexe_avec_force_remplace(self, doc_rgpd_json):  # noqa: ANN001, ANN201
-        from src.models import RequeteIngestion
         from src.orchestrator import Orchestrateur
+        from src.schemas import RequeteIngestion
 
         orchestrateur = Orchestrateur(mode="real")
         ingester = self._ingester_en_memoire()

@@ -16,8 +16,9 @@ from types import SimpleNamespace
 import pytest
 
 from src.errors import DocumentAlreadyIndexedError, InvalidDocumentError
-from src.models import RequeteIngestion, SourceReglementaire
+from src.models import SourceReglementaire
 from src.orchestrator_ingest import _resoudre_conflit_reindexation
+from src.schemas import RequeteIngestion
 
 
 class FauxIngester:

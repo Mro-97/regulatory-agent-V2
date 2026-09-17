@@ -1,7 +1,7 @@
 """
 Test dédié Bug #8 — dédoublement de question_max_length.
 
-Avant le fix, RequeteQuestion.question (src/models.py) codait en dur
+Avant le fix, RequeteQuestion.question (src/schemas.py) codait en dur
 max_length=4000, indépendamment de cfg.question_max_length (config.py).
 Modifier QUESTION_MAX_LENGTH dans .env n'avait donc aucun effet sur la
 validation réelle de l'API.
@@ -23,7 +23,7 @@ class TestBug8QuestionMaxLength:
         """La contrainte Pydantic doit être identique à cfg.question_max_length,
         et non une constante indépendante qui coïncide par hasard."""
         from config import cfg
-        from src.models import RequeteQuestion
+        from src.schemas import RequeteQuestion
 
         champ = RequeteQuestion.model_fields["question"]
         max_len = next(m.max_length for m in champ.metadata if hasattr(m, "max_length"))
@@ -41,7 +41,7 @@ class TestBug8QuestionMaxLength:
         SortieAgent), ce qui fait échouer des tests sans rapport.
         """
         script = (
-            "from src.models import RequeteQuestion\n"
+            "from src.schemas import RequeteQuestion\n"
             "champ = RequeteQuestion.model_fields['question']\n"
             "max_len = next(m.max_length for m in champ.metadata if hasattr(m, 'max_length'))\n"  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
             "assert max_len == 10, f'attendu 10, obtenu {max_len}'\n"
@@ -62,7 +62,7 @@ class TestBug8QuestionMaxLength:
             text=True,
             # 240 s : sur un poste saturé en I/O (Spotlight en réindexation
             # après installation/téléchargement, disque quasi plein),
-            # le seul `from src.models import RequeteQuestion` d'un
+            # le seul `from src.schemas import RequeteQuestion` d'un
             # sous-process frais peut dépasser 3 min. Le vrai bug qu'on
             # teste (dérivation de max_length depuis cfg) est instantané ;
             # on veut isoler cette assertion des latences d'I/O système.
