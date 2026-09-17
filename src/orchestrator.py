@@ -31,7 +31,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import platform
 import queue
 from collections.abc import AsyncIterator, Callable, Iterator
 from datetime import date
@@ -57,6 +56,64 @@ from src.models import (
     TacheValidation,
     TypeFilePendante,
 )
+
+# Alias des helpers extraits : ils conservent leur nom prive historique pour
+# ne casser aucun appelant.  n est pas utilise dans ce
+# module — il est re-exporte pour les tests — d ou le noqa.
+# fmt: off
+from src.orchestrator_audit import (
+    MACHINE as _MACHINE,
+)
+from src.orchestrator_audit import (
+    MACHINE_INCONNUE as _MACHINE_INCONNUE,  # noqa: F401
+)
+from src.orchestrator_audit import (
+    construire_audit_mock as _construire_audit_mock,
+)
+from src.orchestrator_audit import (
+    construire_audit_reel as _construire_audit_reel,
+)
+from src.orchestrator_audit import (
+    journaliser_audit_fallback as _journaliser_audit_fallback,
+)
+from src.orchestrator_audit import (
+    journaliser_audit_succes as _journaliser_audit_succes,
+)
+from src.orchestrator_audit import (
+    journaliser_debut_traitement as _journaliser_debut_traitement,
+)
+from src.orchestrator_audit import (
+    reponse_ingestion_mock as _reponse_ingestion_mock,
+)
+from src.orchestrator_audit import (
+    resoudre_mode as _resoudre_mode,
+)
+
+# fmt: on
+from src.orchestrator_confidence import (
+    CONFIANCES_A_VALIDER as CONFIANCES_A_VALIDER,
+)
+from src.orchestrator_confidence import (
+    ORDRE_CONFIANCE as ORDRE_CONFIANCE,
+)
+from src.orchestrator_confidence import (
+    confiance_apres_citation as _confiance_apres_citation,
+)
+from src.orchestrator_confidence import (
+    construire_reponse_question as _construire_reponse_question,
+)
+from src.orchestrator_confidence import (
+    doit_soumettre_validation as _doit_soumettre_validation,
+)
+from src.orchestrator_confidence import (
+    reponse_retrieval_indisponible as _reponse_retrieval_indisponible,
+)
+
+# Ré-export de compatibilité descendante (§12 étape 6) : api.py et les
+# tests importent encore `DocumentDejaIndexeError` depuis ce module.
+from src.orchestrator_ingest import (
+    DocumentDejaIndexeError as DocumentDejaIndexeError,
+)
 from src.schemas import (
     ReponseDecisionValidation,
     ReponseIngestion,
@@ -76,220 +133,8 @@ from src.classification import classifier_requete as _classifier_requete  # noqa
 # ---------------------------------------------------------------------------
 # Orchestrateur
 # ---------------------------------------------------------------------------
-
-# Architecture unique m4pro2 : un seul hôte exécute tous les agents.
-# `SortieAgent.machine` reste utile pour l'audit (traçabilité multi-hôte
-# éventuelle en cas d'évolution) mais retourne désormais le nom réel de
-# la machine d'exécution, plus une étiquette « Mac_A/B/C » figée qui
-# renvoyait à l'ancienne architecture 3-machines abandonnée.
-_MACHINE = platform.node() or "inconnue"
-_MACHINE_INCONNUE = "inconnue"
-
-
-# `DocumentDejaIndexeError` déplacé vers src/orchestrator_ingest.py
-# (§12 étape 6). Ré-exporté ici pour compatibilité descendante (api.py et
-# tests continuent à l'importer depuis src.orchestrator).
-# fmt: off
-from src.orchestrator_ingest import DocumentDejaIndexeError as DocumentDejaIndexeError  # noqa: E402, I001
-# fmt: on
-
-
-def _resoudre_mode(mode: str | None) -> str:
-    """Retourne le mode effectif en repliant les valeurs inconnues sur 'real'."""
-    effectif = mode or cfg.orchestrateur_mode
-    if effectif not in ("real", "mock"):
-        logger.warning("Mode inconnu '%s', bascule sur 'real'.", effectif)
-        return "real"
-    return effectif
-
-
-def _journaliser_debut_traitement(
-    request_id: UUID,
-    mode: str,
-    type_pipeline: str,
-    requete: RequeteQuestion,
-) -> None:
-    """Trace le début d'un `traiter()` avec identifiants et question tronquée."""
-    logger.info(
-        "Traitement request_id=%s mode=%s type=%s question=%r",
-        request_id,
-        mode,
-        type_pipeline,
-        requete.question[:80],
-    )
-
-
-def _construire_audit_mock(
-    requete: RequeteQuestion,
-    request_id: UUID,
-    reponse: str,
-) -> EnregistrementAudit:
-    """Construit un EnregistrementAudit pour le mode mock (hash SHA-256 injecté)."""
-    audit = EnregistrementAudit(
-        request_id=request_id,
-        user_query=requete.question,
-        date_contexte=requete.date_contexte,
-        reponse_finale=reponse,
-        niveau_confiance=NiveauConfiance.INCERTAIN,
-    )
-    audit.hash_courant = audit.calculer_hash()
-    return audit
-
-
-def _reponse_retrieval_indisponible(request_id: UUID) -> ReponseQuestion:
-    """Réponse-fallback lorsque le Retriever a échoué complètement."""
-    return ReponseQuestion(
-        request_id=request_id,
-        reponse="Le service de recherche est temporairement indisponible.",
-        niveau_confiance=NiveauConfiance.INCERTAIN,
-    )
-
-
-_CONFIANCES_A_VALIDER = (
-    NiveauConfiance.MOYEN,
-    NiveauConfiance.FAIBLE,
-    NiveauConfiance.INCERTAIN,
-)
-
-_ORDRE_CONFIANCE = (
-    NiveauConfiance.ELEVE,
-    NiveauConfiance.MOYEN,
-    NiveauConfiance.FAIBLE,
-    NiveauConfiance.INCERTAIN,
-)
-
 _MSG_ERREUR_STREAM = "Erreur interne lors du traitement de la question."
 _MSG_ECHEC_SYNTHESE = "Erreur lors de la génération de la réponse."
-
-
-def _confiance_apres_citation(
-    niveau: NiveauConfiance, resultat: ResultatCitation | None
-) -> NiveauConfiance:
-    """Abaisse la confiance si la réponse est majoritairement non ancrée.
-
-    L'agent Citation compare les passages cités aux preuves :
-    `citations_douteuses` = citations non retrouvées mot pour mot (souvent
-    des paraphrases légitimes). Règles :
-    - aucune citation vérifiée mais au moins une douteuse → INCERTAIN ;
-    - plus de douteuses que de vérifiées → un cran plus bas ;
-    - sinon (quelques paraphrases parmi des citations ancrées) → inchangé.
-    `resultat` absent (étape ignorée / échec) → inchangé.
-    """
-    if resultat is None or not resultat.citations_douteuses:
-        return niveau
-    if not resultat.citations_verifiees:
-        return NiveauConfiance.INCERTAIN
-    if len(resultat.citations_douteuses) <= len(resultat.citations_verifiees):
-        return niveau
-    idx = min(_ORDRE_CONFIANCE.index(niveau) + 1, len(_ORDRE_CONFIANCE) - 1)
-    return _ORDRE_CONFIANCE[idx]
-
-
-def _doit_soumettre_validation(
-    requete: RequeteQuestion, niveau_confiance: NiveauConfiance
-) -> bool:
-    """True si l'utilisateur l'a demandé ou si la confiance n'est pas `ELEVE`.
-
-    Seule une réponse `ELEVE` (preuves fortement pertinentes, pas de refus
-    LLM) sort sans revue humaine ; `MOYEN` et en dessous sont escaladés.
-    """
-    return (
-        requete.demander_validation_humaine or niveau_confiance in _CONFIANCES_A_VALIDER
-    )
-
-
-def _reponse_ingestion_mock(requete: RequeteIngestion) -> ReponseIngestion:
-    """Réponse-fake retournée en mode mock (aucune action Qdrant)."""
-    document_id = (requete.contenu_json or {}).get("id", "mock")
-    return ReponseIngestion(
-        document_id=str(document_id),
-        chunks_indexes=0,
-        hash_document="",
-        nouvelle_version=False,
-    )
-
-
-def _journaliser_audit_succes(audit: EnregistrementAudit, hash_courant: str) -> None:
-    """Trace un audit persisté avec succès (hash tronqué, agents, confiance)."""
-    logger.info(
-        "AUDIT request_id=%s hash=%s agents=%s confiance=%s",
-        audit.request_id,
-        hash_courant[:16],
-        [a.nom_agent for a in audit.agents_executes],
-        audit.niveau_confiance.value,
-    )
-
-
-def _journaliser_audit_fallback(audit: EnregistrementAudit) -> None:
-    """Trace un audit qui n'a pas pu être persisté (log only, non bloquant)."""
-    logger.info(
-        "AUDIT (log only) request_id=%s agents=%s confiance=%s",
-        audit.request_id,
-        [a.nom_agent for a in audit.agents_executes],
-        audit.niveau_confiance.value,
-    )
-
-
-def _score_correspondance(evidences: list[EvidenceRecuperee]) -> float | None:
-    """Similarité cosinus moyenne des preuves (None si aucun score)."""
-    scores = [e.score_similarite for e in evidences if e.score_similarite is not None]
-    return round(sum(scores) / len(scores), 4) if scores else None
-
-
-def _construire_reponse_question(
-    request_id: UUID,
-    reponse_texte: str,
-    evidences: list[EvidenceRecuperee],
-    niveau_confiance: NiveauConfiance,
-    soumettre_validation: bool,
-    tache_validation_id: UUID | None,
-) -> ReponseQuestion:
-    """Assemble le ReponseQuestion final renvoyé à l'API.
-
-    `soumettre_validation` doit être la soumission EFFECTIVE (H1) : elle vaut
-    False si la tâche Redis n'a pas pu être créée, pour que
-    `en_attente_validation` ne mente jamais à l'appelant.
-    """
-    return ReponseQuestion(
-        request_id=request_id,
-        reponse=reponse_texte,
-        evidences=evidences,
-        niveau_confiance=niveau_confiance,
-        score_correspondance=_score_correspondance(evidences),
-        en_attente_validation=soumettre_validation,
-        tache_validation_id=tache_validation_id,
-    )
-
-
-def _construire_audit_reel(
-    requete: RequeteQuestion,
-    request_id: UUID,
-    evidences: list[EvidenceRecuperee],
-    agents_executes: list[SortieAgent],
-    reponse_texte: str,
-    niveau_confiance: NiveauConfiance,
-    soumettre_validation: bool,
-) -> EnregistrementAudit:
-    """Construit l'EnregistrementAudit final du pipeline réel (hash injecté).
-
-    `soumettre_validation` reflète la soumission EFFECTIVE (H1) : False si la
-    tâche de validation Redis n'a pas pu être enregistrée (l'échec est
-    journalisé en ERROR par `_soumettre_validation_si_besoin`).
-    """
-    audit = EnregistrementAudit(
-        request_id=request_id,
-        user_query=requete.question,
-        date_contexte=requete.date_contexte,
-        documents_recuperes=list({e.document_id for e in evidences}),
-        evidences=evidences,
-        agents_executes=agents_executes,
-        reponse_finale=reponse_texte,
-        niveau_confiance=niveau_confiance,
-        necessite_validation_humaine=soumettre_validation,
-    )
-    audit.hash_courant = audit.calculer_hash()
-    return audit
-
 
 class Orchestrateur:
     """Orchestrateur central de Regulatory Agent V2.
