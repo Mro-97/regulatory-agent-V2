@@ -18,11 +18,13 @@ from pydantic import ValidationError
 
 from src.errors import QueueBackendError, TaskNotFoundError
 from src.models import (
-    ReponseDecisionValidation,
-    ReponseTachesPendantes,
     StatutValidation,
     TacheValidation,
     TypeFilePendante,
+)
+from src.schemas import (
+    ReponseDecisionValidation,
+    ReponseTachesPendantes,
 )
 
 if TYPE_CHECKING:

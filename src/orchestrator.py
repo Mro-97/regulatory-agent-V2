@@ -51,17 +51,19 @@ from src.models import (
     EnregistrementAudit,
     EvidenceRecuperee,
     NiveauConfiance,
+    SortieAgent,
+    SourceReglementaire,
+    StatutValidation,
+    TacheValidation,
+    TypeFilePendante,
+)
+from src.schemas import (
     ReponseDecisionValidation,
     ReponseIngestion,
     ReponseQuestion,
     ReponseTachesPendantes,
     RequeteIngestion,
     RequeteQuestion,
-    SortieAgent,
-    SourceReglementaire,
-    StatutValidation,
-    TacheValidation,
-    TypeFilePendante,
 )
 
 logger = logging.getLogger(__name__)

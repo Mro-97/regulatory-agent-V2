@@ -18,8 +18,8 @@ from src.models import (
     DocumentReglementaire,
     EvidenceRecuperee,
     NiveauConfiance,
-    RequeteQuestion,
 )
+from src.schemas import RequeteQuestion
 
 # ---------------------------------------------------------------------------
 # Fixtures partagées `doc_rgpd_json` et `client_qdrant_memoire`
