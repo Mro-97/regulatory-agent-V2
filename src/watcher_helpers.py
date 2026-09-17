@@ -53,8 +53,8 @@ SOURCES_CONFIG: list[_SourceConfig] = [
     _SourceConfig(
         source=SourceReglementaire.ANSSI,
         urls=[
-            # Portail ANSSI/DINUM dédié au suivi NIS2 — répond 200 direct
-            # (compatible watcher_follow_redirects=false).
+            # Portail ANSSI/DINUM dédié au suivi NIS2 — répond 200 direct,
+            # aucune redirection à suivre par src/http_client.py.
             "https://messervices.cyber.gouv.fr/nis2",
         ],
     ),

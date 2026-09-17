@@ -185,12 +185,14 @@ class Parametres(BaseSettings):
     # Modèles MLX — chargement local sur m4pro2, un seul actif à la fois
     # (§2.6 + §5 CONTEXTE_PROJET). Les *_host restent à 127.0.0.1 pour
     # rétrocompat des tests qui liraient encore ces champs.
+    #
+    # Un modèle par ROLE, jamais de modèle d'aiguillage : le routage
+    # (`src/classification.py`) est déterministe (deux regex + date de
+    # contexte). Aucun LLM ne décide donc de la route suivie — un petit
+    # modèle décisionnel serait à la fois une surface d'injection
+    # (prompt injection orientant le routage) et une source de
+    # non-déterminisme sur un chemin de sécurité.
     # ------------------------------------------------------------------
-    modele_orchestrateur: str = Field(
-        default="mlx-community/Llama-3.2-3B-Instruct-4bit",
-        description="Modèle MLX de génération pour le routage.",
-    )
-
     modele_embedding: str = Field(
         default="models/bge-m3-mlx",
         description=(
@@ -212,7 +214,6 @@ class Parametres(BaseSettings):
         ),
     )
 
-    modele_retriever: str = Field(default="mlx-community/Mistral-7B-Instruct-v0.3-4bit")
     modele_temporal: str = Field(default="mlx-community/Qwen2.5-7B-Instruct-4bit")
     modele_explainer: str = Field(default="mlx-community/Qwen2.5-7B-Instruct-4bit")
     modele_citation: str = Field(default="mlx-community/Mistral-7B-Instruct-v0.3-4bit")
@@ -224,25 +225,24 @@ class Parametres(BaseSettings):
     # Génération MLX — paramètres par défaut
     # ------------------------------------------------------------------
     mlx_max_tokens: int = Field(default=1024)
-    mlx_temperature: float = Field(default=0.1)
-    mlx_top_p: float = Field(default=0.9)
+    # Pas de `mlx_temperature` : la température est un choix par RÔLE, posé
+    # explicitement par chaque agent à son `get_model()` — 0.0 pour les agents
+    # de raisonnement (conflit, citation, temporel), 0.1 pour la rédaction
+    # Explainer. Un réglage global imposerait la même valeur aux deux, ce qui
+    # est sémantiquement faux. `mlx_top_p` est commun à tous, donc configurable.
+    mlx_top_p: float = Field(
+        default=0.9,
+        description=(
+            "Seuil de nucleus sampling commun à tous les agents. Appliqué par "
+            "`src/mlx_utils.py` quand l'appelant ne fixe pas de valeur."
+        ),
+    )
     mlx_timeout_seconds: float = Field(
         default=60.0,
         description=(
             "Délai maximum (secondes) accordé à un appel MLX (generate / encode). "
             "0 ou négatif = pas de timeout. Empêche un modèle bloqué ou un "
             "prompt pathologique de figer l'API indéfiniment."
-        ),
-    )
-    mlx_load_timeout_seconds: float = Field(
-        default=180.0,
-        description=(
-            "Délai maximum (secondes) accordé au chargement d'un modèle MLX. "
-            "Distinct de `mlx_timeout_seconds` (borne l'inférence) car un "
-            "premier chargement légitime — mmap sur ~1 GB de poids, "
-            "initialisation du tokenizer — peut dépasser la minute. "
-            "0 ou négatif = pas de timeout. Empêche un fichier de poids "
-            "corrompu (ex. safetensors sparse) de figer l'API au démarrage."
         ),
     )
     ingest_taille_min_chunk: int = Field(
@@ -307,7 +307,6 @@ class Parametres(BaseSettings):
     redis_port: int = Field(default=6379)
     redis_password: str = Field(default="")
     redis_db: int = Field(default=0)
-    redis_ttl_cache: int = Field(default=3600)
     redis_timeout_secondes: float = Field(
         default=1.0,
         description=(
@@ -331,12 +330,6 @@ class Parametres(BaseSettings):
     postgres_pool_min_size: int = Field(default=1)
     postgres_pool_max_size: int = Field(default=5)
     postgres_command_timeout: float = Field(default=10.0)
-
-    # ------------------------------------------------------------------
-    # Human-in-the-loop
-    # ------------------------------------------------------------------
-    hitl_delai_escalade_heures: int = Field(default=72)
-    hitl_seuil_confiance_validation: float = Field(default=0.6)
 
     # Seuils de confiance de l'Explainer, sur la similarité cosinus moyenne
     # des preuves. Calibrés pour le backend d'embedding courant
@@ -378,17 +371,6 @@ class Parametres(BaseSettings):
             "loi ne changent pas quotidiennement — une fréquence trop haute "
             "génère des alertes bruyantes (contenu HTML dynamique) sans "
             "bénéfice."
-        ),
-    )
-    watcher_follow_redirects: bool = Field(
-        default=False,
-        description=(
-            "[OBSOLÈTE — n'a plus d'effet] Les redirections ne sont plus "
-            "suivies par le transport HTTP : `src/http_client.py` les suit "
-            "manuellement, un saut à la fois, en revalidant chaque cible "
-            "contre le garde-fou SSRF (une redirection vers une adresse "
-            "interne est refusée, ce que `follow_redirects=True` ne faisait "
-            "pas). Conservé pour ne pas casser les `.env` existants."
         ),
     )
     watcher_max_redirections: int = Field(

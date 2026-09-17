@@ -40,6 +40,13 @@ from src.errors import GenerationTimeoutError
 
 logger = logging.getLogger(__name__)
 
+# Repli de `MLXInference.generate()` quand aucun appelant ne fixe la valeur.
+# La température n'a volontairement pas de champ de configuration : c'est un
+# choix par RÔLE (0.0 pour le raisonnement, 0.1 pour la rédaction), posé
+# explicitement par chaque agent. Le top-p, lui, est commun à tous et vit
+# dans `cfg.mlx_top_p` — source unique, sans constante cachée.
+TEMPERATURE_PAR_DEFAUT = 0.1
+
 # Alias descendant : le nom historique reste importable pour ne pas
 # casser les callers extérieurs (tests, monkey-patch). La classe unique
 # vit désormais dans src.errors (§12 étape 8).
@@ -214,14 +221,19 @@ class MLXInference:
         self,
         model_name: str,
         quantized: bool = True,
-        temperature: float = 0.1,
-        top_p: float = 0.9,
+        temperature: float | None = None,
+        top_p: float | None = None,
     ) -> None:
-        """Configure l'inférence — le modèle est chargé à la demande via `load()`."""
+        """Configure l'inférence — le modèle est chargé à la demande via `load()`.
+
+        `temperature` et `top_p` valent `cfg` par défaut, résolus au moment de
+        l'appel et non ici : changer le `.env` n'exige donc pas de reconstructeur
+        l'instance, déjà mémoïsée par le cache de modèles.
+        """
         self.model_name = model_name
         self.quantized = quantized
-        self.temperature = temperature
-        self.top_p = top_p
+        self._temperature_explicite = temperature
+        self._top_p_explicite = top_p
         # `mlx_lm` n'expose pas de types publics — `_model` et `_tokenizer`
         # restent opaques en `Any` côté mypy. Ce sont des ressources natives
         # dont la seule discipline est le cycle load/unload local à ce module.
@@ -272,6 +284,26 @@ class MLXInference:
         """True si le modèle d'inférence est déjà chargé en mémoire."""
         return self._loaded
 
+    @property
+    def temperature(self) -> float:
+        """Température effective (explicite, sinon repli de module)."""
+        return self._temperature(self._temperature_explicite)
+
+    @property
+    def top_p(self) -> float:
+        """Top-p effectif (explicite, sinon `cfg.mlx_top_p`)."""
+        return self._top_p(self._top_p_explicite)
+
+    @staticmethod
+    def _temperature(valeur: float | None) -> float:
+        """Température explicite, sinon repli de module (pas de champ `cfg`)."""
+        return TEMPERATURE_PAR_DEFAUT if valeur is None else valeur
+
+    @staticmethod
+    def _top_p(valeur: float | None) -> float:
+        """Top-p explicite, sinon `cfg.mlx_top_p` (seule source de vérité)."""
+        return cfg.mlx_top_p if valeur is None else valeur
+
     def generate(
         self,
         prompt: str,
@@ -305,8 +337,8 @@ class MLXInference:
         timeout_seconds: float | None,
     ) -> ResultatGeneration:
         """Appelle `mlx_lm.generate` sous timeout et compose le ResultatGeneration."""
-        temp = temperature if temperature is not None else self.temperature
-        tp = top_p if top_p is not None else self.top_p
+        temp = self._temperature(temperature)
+        tp = self._top_p(top_p)
         timeout = (
             timeout_seconds if timeout_seconds is not None else cfg.mlx_timeout_seconds
         )
@@ -383,8 +415,8 @@ class MLXInference:
         from mlx_lm.sample_utils import make_sampler
 
         prompt = self._prompt_depuis_messages(messages)
-        temp = temperature if temperature is not None else self.temperature
-        sampler = make_sampler(temp=temp, top_p=self.top_p)
+        temp = self._temperature(temperature)
+        sampler = make_sampler(temp=temp, top_p=self._top_p(top_p))
         _lier_stream_generation_au_thread_courant()
         for reponse in stream_generate(
             self._model,
@@ -425,8 +457,8 @@ class _CacheGeneration:
         self,
         model_name: str,
         quantized: bool = True,
-        temperature: float = 0.1,
-        top_p: float = 0.9,
+        temperature: float | None = None,
+        top_p: float | None = None,
     ) -> MLXInference:
         """Retourne l'instance ; décharge l'actif si un autre modèle est demandé."""
         self._decharger_si_swap(model_name)
@@ -483,8 +515,8 @@ model_cache = _CacheGeneration()
 def get_model(
     model_name: str,
     quantized: bool = True,
-    temperature: float = 0.1,
-    top_p: float = 0.9,
+    temperature: float | None = None,
+    top_p: float | None = None,
 ) -> MLXInference:
     """Retourne un modèle de génération depuis le cache global."""
     return model_cache.get(
