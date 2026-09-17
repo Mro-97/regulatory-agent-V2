@@ -15,6 +15,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from config import cfg
+from src.prompts_loader import charger_prompt
 
 if TYPE_CHECKING:
     from datetime import date
@@ -82,8 +83,6 @@ def _preparer_messages_temporal(
     lacunes: list[str],
 ) -> list[dict[str, str]]:
     """Formatte les 3 contextes (applicables/exclues/anomalies) puis rend le gabarit."""
-    from src.prompts_loader import charger_prompt
-
     ctx_applicables = _formatter_applicables(applicables)
     ctx_exclues = _formatter_exclues(exclues)
     ctx_anomalies = _formatter_anomalies(chevauchements, lacunes)

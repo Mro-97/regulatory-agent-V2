@@ -18,6 +18,9 @@ from typing import TYPE_CHECKING
 from fastapi import Request
 from fastapi.responses import RedirectResponse
 
+from config import cfg
+from src.net import schema_origine
+
 if TYPE_CHECKING:
     from fastapi import FastAPI
 
@@ -90,9 +93,6 @@ def middleware_redirection_https(application: ASGIApp) -> ASGIApp:
 
 def _doit_rediriger(scope: PorteeASGI) -> bool:
     """True si la requête doit être renvoyée en https."""
-    from config import cfg
-    from src.net import schema_origine
-
     if scope.get("type") != "http" or not cfg.forcer_https:
         return False
     if scope.get("path") == "/health":

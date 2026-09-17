@@ -14,6 +14,11 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
+from src.agents.citation import AgentCitation
+from src.agents.conflit import AgentConflit
+from src.agents.explainer import AgentExplainer
+from src.agents.temporal import AgentTemporel
+from src.errors import QueueBackendError
 from src.models import (
     EvidenceRecuperee,
     NiveauConfiance,
@@ -108,8 +113,6 @@ async def etape_temporal(
     evidences: list[EvidenceRecuperee],
 ) -> tuple[list[EvidenceRecuperee], SortieAgent]:
     """Étape 2 : analyse temporelle via AgentTemporel."""
-    from src.agents.temporal import AgentTemporel
-
     agent = AgentTemporel(use_llm=True)
     resultat = await orchestrator._executer_bloquant(
         agent.analyser,
@@ -155,8 +158,6 @@ async def etape_explainer(
     date_ref: date | None = None,
 ) -> tuple[str, NiveauConfiance, SortieAgent]:
     """Étape 3 : synthèse via AgentExplainer."""
-    from src.agents.explainer import AgentExplainer
-
     agent = AgentExplainer(use_llm=True)
     resultat = await orchestrator._executer_bloquant(
         agent.expliquer,
@@ -242,8 +243,6 @@ async def _executer_agent_conflit(
     evidences: list[EvidenceRecuperee],
 ) -> ResultatConflit:
     """Instancie AgentConflit (use_llm=True) et lance l'analyse sous verrou MLX."""
-    from src.agents.conflit import AgentConflit
-
     agent = AgentConflit(use_llm=True)
     return await orchestrator._executer_bloquant(
         agent.analyser,
@@ -293,8 +292,6 @@ async def _soumettre_tache_conflit(
     réponse /ask (H1) : l'analyse de conflit reste valide et tracée dans
     l'audit, seule la revue humaine n'a pas pu être mise en file.
     """
-    from src.errors import QueueBackendError
-
     try:
         await orchestrator._enregistrer_tache_redis(
             _tache_conflit(question, resultat, request_id)
@@ -333,8 +330,6 @@ async def etape_citation(
     affirmations de la réponse sont ancrées dans les preuves ; sans, la
     vérification reste déterministe (citations = métadonnées des preuves).
     """
-    from src.agents.citation import AgentCitation
-
     try:
         agent = AgentCitation(use_llm=True)
         resultat = await orchestrator._executer_bloquant(

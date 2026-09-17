@@ -37,6 +37,7 @@ from datetime import date
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
+from src.agents.explainer import reponse_est_non_fondee
 from src.models import EvidenceRecuperee
 
 if TYPE_CHECKING:
@@ -148,8 +149,6 @@ def sources_referencees(
     (`orchestrator._executer_etapes_pipeline`, `_stream_pipeline_reel`)
     traitent déjà la liste vide.
     """
-    from src.agents.explainer import reponse_est_non_fondee
-
     if reponse_est_non_fondee(reponse_texte or ""):
         return []
     texte = (reponse_texte or "").lower()

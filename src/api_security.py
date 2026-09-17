@@ -28,10 +28,14 @@ from config import cfg
 from src.auth import Role, identifier, magasin_configure
 from src.auth_session import cle_depuis_requete, verifier_csrf_si_mutation
 from src.http_types import SuiteRequete
+from src.net import ip_client
+from src.rate_limit_redis import (  # ré-export : /health/details et l API
+    get_rate_limiter as get_rate_limiter,
+)
 from src.security_headers import appliquer_entetes_securite
 
 if TYPE_CHECKING:
-    from src.rate_limit_redis import RateLimiterRedis
+    pass
 
 _METHODES_AVEC_BODY = {"POST", "PUT", "PATCH", "DELETE"}
 _MSG_TRANSFER_ENCODING_REFUSE = (
@@ -243,21 +247,12 @@ _limiteur = LimiteurDebit(
 
 def verifier_rate_limit(request: Request) -> None:
     """Limite le débit par IP sur les endpoints coûteux."""
-    from src.net import ip_client
-
     cle = ip_client(request)
     if not _limiteur.autoriser(cle):
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail="Trop de requêtes, réessayez plus tard.",
         )
-
-
-def get_rate_limiter() -> RateLimiterRedis:
-    """Retourne le rate limiter nominal (Redis, fallback mémoire intégré)."""
-    from src.rate_limit_redis import get_rate_limiter as _get_rate_limiter
-
-    return _get_rate_limiter()
 
 
 AuthDep = Depends(verifier_auth)

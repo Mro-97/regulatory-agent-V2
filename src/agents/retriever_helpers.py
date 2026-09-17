@@ -24,6 +24,7 @@ from qdrant_client.http.models import (
     PayloadField,
 )
 
+from src.errors import PayloadDateParseError
 from src.models import EvidenceRecuperee
 
 if TYPE_CHECKING:
@@ -87,7 +88,6 @@ def parser_date(valeur: object) -> date:
         return valeur
     if isinstance(valeur, str):
         return date.fromisoformat(valeur[:10])
-    from src.errors import PayloadDateParseError
 
     raise PayloadDateParseError(valeur)
 

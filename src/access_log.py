@@ -17,6 +17,8 @@ import time
 from typing import TYPE_CHECKING, Any
 
 from config import cfg
+from src.auth import identifier
+from src.net import ip_client, nettoyer_entete
 
 if TYPE_CHECKING:
     from fastapi import FastAPI, Request, Response
@@ -44,7 +46,6 @@ def _empreinte_cle(fournie: str | None) -> str:
     proposee = (fournie or "").strip()
     if not proposee:
         return "absente"
-    from src.auth import identifier
 
     if identifier(proposee) is None:
         return "invalide"
@@ -58,8 +59,6 @@ def _identite(request: Request) -> str:
     d'entrer dans la ligne de log — sinon un client peut y injecter de
     fausses lignes `acces ...`.
     """
-    from src.net import nettoyer_entete
-
     entete = request.headers.get("X-User") or request.headers.get("X-Client-Id")
     if entete:
         return nettoyer_entete(entete, taille_max=40)
@@ -73,8 +72,6 @@ def _ip_client_reelle(request: Request) -> str:
     `trusted_proxy` (cf. `src.net.ip_client`). Sinon l'en-tête est ignoré
     (falsifiable) et on renvoie le pair TCP direct.
     """
-    from src.net import ip_client
-
     return ip_client(request)
 
 
@@ -103,8 +100,6 @@ def _parametres_acces(
     L'ordre est celui des `%s`/`%d` du gabarit de `journaliser_acces_requete` :
     les deux étant construits dans le même appel, la ligne reste inchangée.
     """
-    from src.net import nettoyer_entete
-
     role: _Role | None = getattr(request.state, "role", None)
     return (
         _identite(request),

@@ -39,6 +39,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from config import cfg
+from main import valider_configuration_demarrage
+from src.access_log import journaliser_acces_requete
 
 # `LimiteurDebit` et `_limiteur` ont été déplacés vers src/api_security.py
 # (§12 étape 6). Les alias `X as X` ci-dessous les ré-exportent sous leur
@@ -71,8 +73,9 @@ from src.auth_session import (
     ouvrir_session,
     poser_cookies,
 )
+from src.errors import QueueBackendError, VectorStoreError
 from src.models import StatutValidation
-from src.orchestrator import Orchestrateur
+from src.orchestrator import DocumentDejaIndexeError, Orchestrateur
 from src.schemas import (
     ReponseDecisionValidation,
     ReponseFeedback,
@@ -86,6 +89,7 @@ from src.schemas import (
     RequeteQuestion,
     RequeteSession,
 )
+from src.stockage_local import ecrire_ligne_protegee
 
 logger = logging.getLogger(__name__)
 
@@ -109,8 +113,6 @@ async def _cycle_de_vie(_app: FastAPI) -> AsyncIterator[None]:
     (clé placeholder, DEBUG+DOCS, ENVIRONNEMENT=prod incohérent…) ne
     démarre pas.
     """
-    from main import valider_configuration_demarrage
-
     erreurs = valider_configuration_demarrage()
     if erreurs:
         for err in erreurs:
@@ -477,8 +479,6 @@ async def poser_question(
     request: Request,
 ) -> ReponseQuestion:
     """Traite une question réglementaire via le pipeline multi-agent."""
-    from src.access_log import journaliser_acces_requete
-
     debut = time.perf_counter()
     statut = 200
     if not _ask_garde.entrer():
@@ -529,8 +529,6 @@ async def poser_question_stream(
     request: Request,
 ) -> StreamingResponse:
     """Diffuse la réponse en Server-Sent Events."""
-    from src.access_log import journaliser_acces_requete
-
     if not _ask_garde.entrer():
         journaliser_acces_requete(request, 503, 0, requete.question)
         raise _erreur_503(_MSG_ASK_SATURE)
@@ -556,9 +554,6 @@ async def ingerer(
     orchestrateur: OrchestrateurDep,
 ) -> ReponseIngestion:
     """Ingère un document JSON canonique (chunking + embedding + upsert Qdrant)."""
-    from src.errors import VectorStoreError
-    from src.orchestrator import DocumentDejaIndexeError
-
     try:
         return await orchestrateur.ingerer(requete)
     except DocumentDejaIndexeError as exc:
@@ -585,8 +580,6 @@ async def ingerer(
 )
 async def pending(orchestrateur: OrchestrateurDep) -> ReponseTachesPendantes:
     """Liste les tâches Redis en attente de validation humaine."""
-    from src.errors import QueueBackendError
-
     try:
         return await orchestrateur.lister_taches_pendantes()
     except QueueBackendError as exc:
@@ -648,8 +641,6 @@ async def suivi_tache(
     orchestrateur: OrchestrateurDep,
 ) -> ReponseSuiviTache:
     """Retourne le statut courant d'une tâche pour le demandeur qui la suit."""
-    from src.errors import QueueBackendError
-
     try:
         tache = await orchestrateur.obtenir_tache(tache_id)
     except QueueBackendError as exc:
@@ -669,8 +660,6 @@ async def suivi_tache(
 
 def _enregistrer_signalement(requete: RequeteFeedback) -> ReponseFeedback:
     """Ajoute une ligne JSONL au fichier de signalements (append atomique)."""
-    from src.stockage_local import ecrire_ligne_protegee
-
     horodatage = datetime.now(UTC)
     ligne = {
         "horodatage": horodatage.isoformat(),

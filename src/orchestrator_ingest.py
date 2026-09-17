@@ -17,6 +17,7 @@ from src.errors import (
     InvalidDocumentError,
     MissingMetadataError,
 )
+from src.models import DocumentReglementaire
 from src.schemas import ReponseIngestion, RequeteIngestion
 
 if TYPE_CHECKING:
@@ -32,8 +33,6 @@ DocumentDejaIndexeError = DocumentAlreadyIndexedError
 
 def _valider_et_construire_document(requete: RequeteIngestion) -> Any:
     """Valide `contenu_json` puis construit un DocumentReglementaire (hash injecté)."""
-    from src.models import DocumentReglementaire
-
     if not requete.contenu_json:
         raise MissingMetadataError(
             field="contenu_json",

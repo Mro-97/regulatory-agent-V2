@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING, Any
 from config import cfg
 from src.agents.conflit import ConflitDetecte, NiveauConflit
 from src.agents.conflit_helpers import VERDICTS_VALIDES, normaliser_verdict
+from src.prompts_loader import charger_prompt
 
 if TYPE_CHECKING:
     from src.mlx_utils import MLXInference
@@ -196,8 +197,6 @@ def _preparer_messages_conflit(
     question: str, conflits_analyses: list[ConflitDetecte]
 ) -> list[dict[str, str]]:
     """Construit le contexte formatté puis rend le gabarit `conflit/analyser` v1."""
-    from src.prompts_loader import charger_prompt
-
     contexte = "\n\n".join(
         f"CONFLIT {i + 1} :\n"
         f"Source A : {c.evidence_a.document_id}/{c.evidence_a.article_id}\n"

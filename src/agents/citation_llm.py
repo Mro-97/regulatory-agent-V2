@@ -13,7 +13,8 @@ import re
 from typing import TYPE_CHECKING
 
 from config import cfg
-from src.agents.citation import CitationReglementaire
+from src.agents.citation import CitationReglementaire, _normaliser_pour_comparaison
+from src.prompts_loader import charger_prompt
 
 if TYPE_CHECKING:
     from src.mlx_utils import MLXInference
@@ -75,8 +76,6 @@ def _preparer_messages_citation(
     reponse_explainer: str, evidences: list[EvidenceRecuperee]
 ) -> list[dict[str, str]]:
     """Formate le contexte des 10 premiers chunks puis rend le gabarit LLM."""
-    from src.prompts_loader import charger_prompt
-
     contexte_preuves = "\n\n".join(
         f"CHUNK_ID: {ev.chunk_id}\n"
         f"SOURCE: {ev.document_id}/{ev.article_id}\n"
@@ -176,8 +175,6 @@ def _extraire_phrase_ancre(reponse_explainer: str, chunk: str) -> str | None:
     retrouvée. La comparaison réutilise `_normaliser_pour_comparaison` —
     exactement ce que vérifiera `AgentCitation.verify()`.
     """
-    from src.agents.citation import _normaliser_pour_comparaison
-
     chunk_norm = _normaliser_pour_comparaison(chunk)
     meilleure: str | None = None
     longueur_meilleure = 0

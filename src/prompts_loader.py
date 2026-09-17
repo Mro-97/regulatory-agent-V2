@@ -18,6 +18,8 @@ from functools import lru_cache
 from pathlib import Path
 from string import Template
 
+from src.errors import MalformedPromptError, PromptNotFoundError
+
 _PROMPTS_DIR = Path(__file__).parent.parent / "prompts"
 
 # Marqueurs de section reconnus dans un fichier .md — un par ligne, en début.
@@ -82,8 +84,6 @@ def _decouper_sections(contenu: str) -> tuple[str, str]:
     ligne (ordre libre, une seule occurrence chacune). Le préambule hors
     section est ignoré.
     """
-    from src.errors import MalformedPromptError
-
     sections = _extraire_sections(contenu)
     if not sections["system"] or not sections["user"]:
         raise MalformedPromptError([k for k, v in sections.items() if not v])
@@ -117,8 +117,6 @@ def charger_prompt(identifiant: str, version: int) -> PromptTemplate:
     une valeur non maîtrisée (`../.env`, chemin absolu) lirait un fichier
     arbitraire — le loader est une frontière publique du paquet.
     """
-    from src.errors import PromptNotFoundError
-
     if not _RE_IDENTIFIANT.fullmatch(identifiant):
         raise PromptNotFoundError(identifiant)
     chemin = _PROMPTS_DIR / f"{identifiant}.v{version}.md"

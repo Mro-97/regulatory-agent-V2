@@ -35,6 +35,7 @@ from itertools import pairwise
 from typing import TYPE_CHECKING, NoReturn
 
 from src.agents.retriever_helpers import article_de_base
+from src.errors import InvalidContextDateError
 from src.models import EvidenceRecuperee, NiveauConfiance
 
 if TYPE_CHECKING:
@@ -75,8 +76,6 @@ def _valider_date_contexte(valeur: object) -> date | None:
 
 def _rejeter_date_contexte(raison: str, valeur: object) -> NoReturn:
     """Lève InvalidContextDateError (import local pour éviter un cycle)."""
-    from src.errors import InvalidContextDateError
-
     raise InvalidContextDateError(reason=raison, value=valeur)
 
 

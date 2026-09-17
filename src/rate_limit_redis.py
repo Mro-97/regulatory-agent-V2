@@ -20,6 +20,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from config import cfg
+from src.redis_client import nouveau_client
 
 if TYPE_CHECKING:
     from src.api_security import LimiteurDebit
@@ -36,8 +37,6 @@ def get_redis_client() -> ClientRedis:
     chargé déclenchait des bascules alors qu'il allait répondre. Le délai est
     configurable (`REDIS_TIMEOUT_SECONDES`).
     """
-    from src.redis_client import nouveau_client
-
     return nouveau_client(
         host=cfg.redis_host,
         port=cfg.redis_port,

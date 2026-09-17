@@ -20,6 +20,10 @@ from typing import TYPE_CHECKING
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
+from src.api_security import cle_api_valide
+from src.net import ip_client
+from src.security_headers import appliquer_entetes_securite
+
 if TYPE_CHECKING:
     from fastapi import FastAPI
 
@@ -44,8 +48,6 @@ _MSG_TROP_DE_REQUETES = "Trop de requêtes, réessayez plus tard."
 
 def _cle_client(request: Request) -> str:
     """IP du client d'origine (via proxy de confiance si configuré)."""
-    from src.net import ip_client
-
     return ip_client(request)
 
 
@@ -59,7 +61,6 @@ def _scope_cle(request: Request) -> str:
     """
     import hashlib
 
-    from src.api_security import cle_api_valide
 
     fournie = (request.headers.get("X-API-Key") or "").strip()
     if fournie and cle_api_valide(fournie):
@@ -80,8 +81,6 @@ def _reponse_429() -> JSONResponse:
     `en_tetes_securite` (plus interne) et sortait sans CSP, sans
     `X-Frame-Options` ni masquage du `Server`.
     """
-    from src.security_headers import appliquer_entetes_securite
-
     return appliquer_entetes_securite(
         JSONResponse(status_code=429, content={"detail": _MSG_TROP_DE_REQUETES})
     )

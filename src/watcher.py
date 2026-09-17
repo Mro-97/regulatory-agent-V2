@@ -36,7 +36,7 @@ from src.models import (
     TacheValidation,
     TypeFilePendante,
 )
-from src.redis_client import ClientRedis
+from src.redis_client import ClientRedis, nouveau_client
 
 logger = logging.getLogger(__name__)
 
@@ -81,8 +81,6 @@ async def enregistrer_alerte_redis(alerte: AlerteWatcher) -> None:
 
 def _nouveau_client_redis() -> ClientRedis:
     """Fabrique un client Redis asynchrone (client maison, source unique)."""
-    from src.redis_client import nouveau_client
-
     return nouveau_client(
         host=cfg.redis_host,
         port=cfg.redis_port,

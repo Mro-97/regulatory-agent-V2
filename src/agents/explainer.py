@@ -41,6 +41,7 @@ from typing import TYPE_CHECKING
 
 from config import cfg
 from src.models import EvidenceRecuperee, NiveauConfiance
+from src.prompts_loader import charger_prompt
 
 if TYPE_CHECKING:
     from src.mlx_utils import MLXInference
@@ -217,8 +218,6 @@ def _preparer_messages_synthese(
     du code ou de révéler l'architecture. Défense frontale contre le
     prompt-injection persistant identifié lors de l'audit sécu.
     """
-    from src.prompts_loader import charger_prompt
-
     return charger_prompt("explainer/synthetiser", 2).rendre(
         question=question,
         contexte=contexte,
