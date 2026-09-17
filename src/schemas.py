@@ -40,6 +40,17 @@ from src.models import (
 _LibelleFiltre = Annotated[str, StringConstraints(max_length=64, strip_whitespace=True)]
 
 
+class RequeteSession(BaseModel):
+    """Corps de POST /auth/session : la clé arrive dans le corps, pas en URL."""
+
+    cle: str = Field(
+        ...,
+        min_length=8,
+        max_length=256,
+        description="Clé API en clair, validée contre le magasin de hachages.",
+    )
+
+
 class RequeteQuestion(BaseModel):
     """Corps de la requête POST /ask."""
 

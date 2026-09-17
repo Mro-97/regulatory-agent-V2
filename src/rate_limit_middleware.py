@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 # authentifiées et pollées par l'UI — hors quota. Le comptage se fait
 # AVANT l'auth et le parsing du body.
 _CHEMINS_RATE_LIMITES: frozenset[str] = frozenset(
-    {"/ask", "/ask/stream", "/ingest", "/feedback"}
+    {"/ask", "/ask/stream", "/ingest", "/feedback", "/auth/session"}
 )
 
 _MSG_TROP_DE_REQUETES = "Trop de requêtes, réessayez plus tard."

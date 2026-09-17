@@ -32,7 +32,7 @@ from pathlib import Path
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import Depends, FastAPI, HTTPException, Request, status
+from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -66,6 +66,11 @@ from src.api_security import (
 from src.api_security import (
     get_rate_limiter as get_rate_limiter,  # exposé par /health/details
 )
+from src.auth_session import (
+    effacer_cookies,
+    ouvrir_session,
+    poser_cookies,
+)
 from src.models import StatutValidation
 from src.orchestrator import Orchestrateur
 from src.schemas import (
@@ -79,6 +84,7 @@ from src.schemas import (
     RequeteFeedback,
     RequeteIngestion,
     RequeteQuestion,
+    RequeteSession,
 )
 
 logger = logging.getLogger(__name__)
@@ -401,6 +407,45 @@ async def health_details() -> dict[str, object]:
     except Exception:
         logger.exception("Statut rate-limiter indisponible pour /health/details")
     return reponse
+
+
+@app.post(
+    "/auth/session",
+    tags=["Système"],
+    summary="Établir une session par cookie",
+    description=(
+        "Valide la clé API et pose un cookie HttpOnly (la clé ne reste plus "
+        "lisible par JavaScript) plus un jeton CSRF à recopier dans "
+        "`X-CSRF-Token` sur les requêtes mutantes."
+    ),
+    include_in_schema=False,
+)
+async def ouvrir_session_http(
+    request: Request,
+    reponse: Response,
+    requete: RequeteSession,
+) -> dict[str, str]:
+    """Ouvre une session : valide la clé du corps et pose les cookies.
+
+    La clé ne transite jamais par l'URL : une query string se retrouve dans le
+    journal d'accès, l'historique du navigateur et l'en-tête `Referer`.
+    """
+    session = ouvrir_session(requete.cle)
+    poser_cookies(reponse, request, session)
+    return {"role": session.role.name.lower(), "label": session.label}
+
+
+@app.post(
+    "/auth/logout",
+    tags=["Système"],
+    summary="Fermer la session",
+    description="Supprime le cookie de session et le jeton CSRF.",
+    include_in_schema=False,
+)
+async def fermer_session_http(reponse: Response) -> dict[str, str]:
+    """Ferme la session courante (les cookies sont effacés)."""
+    effacer_cookies(reponse)
+    return {"statut": "deconnecte"}
 
 
 @app.get(

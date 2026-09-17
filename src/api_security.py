@@ -26,6 +26,7 @@ from fastapi.responses import JSONResponse
 
 from config import cfg
 from src.auth import Role, identifier, magasin_configure
+from src.auth_session import cle_depuis_requete, verifier_csrf_si_mutation
 from src.http_types import SuiteRequete
 from src.security_headers import appliquer_entetes_securite
 
@@ -112,15 +113,22 @@ def cle_api_valide(fournie: str | None) -> bool:
 
 
 def role_courant(request: Request) -> Role:
-    """Résout le rôle porté par l'en-tête `X-API-Key`.
+    """Résout le rôle porté par l'en-tête `X-API-Key` ou le cookie de session.
 
     503 si aucune clé n'est configurée (fail-closed), 401 si la clé fournie
     ne correspond à aucune entrée. Mémorise `(role, label)` sur
     `request.state` pour le journal d'accès et `/whoami`.
+
+    Quand la clé vient du cookie, la requête doit en plus porter le jeton CSRF
+    (double soumission, cf. src/auth_session.py) sur les méthodes mutantes : le
+    navigateur attache le cookie tout seul, le jeton prouve l'intention.
     """
     if not magasin_configure():
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, _MSG_AUTH_ABSENTE)
-    resultat = identifier(request.headers.get("X-API-Key"))
+    cle, depuis_cookie = cle_depuis_requete(request)
+    if depuis_cookie:
+        verifier_csrf_si_mutation(request)
+    resultat = identifier(cle)
     if resultat is None:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, _MSG_CLE_INVALIDE)
     role, label = resultat

@@ -1,11 +1,62 @@
 "use strict";
-const API={ask:"/ask",askStream:"/ask/stream",pending:"/pending",approve:"/approve",reject:"/reject",health:"/health",feedback:"/feedback",whoami:"/whoami"};
+const API={ask:"/ask",askStream:"/ask/stream",pending:"/pending",approve:"/approve",reject:"/reject",health:"/health",feedback:"/feedback",whoami:"/whoami",session:"/auth/session",logout:"/auth/logout"};
 
-// La clé API n'est jamais dans le HTML : saisie via la modale #login-overlay,
-// conservée en sessionStorage (par onglet, jamais sur disque). Sur 401,
-// apiFetch purge la clé, rouvre la modale, et retente UNE fois.
+// La clé API n'est JAMAIS conservée côté page : elle est échangée une seule
+// fois contre un cookie HttpOnly (POST /auth/session), que le navigateur
+// renvoie ensuite automatiquement. JavaScript ne peut pas lire ce cookie, donc
+// DevTools ne l'affiche plus et un script injecté ne peut plus l'exfiltrer.
+//
+// Le corollaire est CSRF : le navigateur attache le cookie même depuis un site
+// tiers. Le serveur pose donc aussi un jeton CSRF (cookie lisible) que l'on
+// recopie dans X-CSRF-Token sur les requêtes mutantes — un site tiers peut
+// faire partir le cookie, pas lire le jeton (double soumission).
+//
+// Seul l'ÉTAT de session (sait-on déjà ouvert ?) transite par sessionStorage :
+// ce n'est pas un secret.
 let API_KEY="";
-try{API_KEY=(sessionStorage.getItem("apiKey")||"").trim();}catch(_){}
+let CSRF="";
+let SESSION_OK=false;
+try{CSRF=sessionStorage.getItem("csrf")||"";}catch(_){}
+
+// Échange la clé API contre le cookie HttpOnly. La clé n'est conservée que le
+// temps de cet appel : elle n'est jamais écrite dans un stockage du navigateur.
+async function ouvrirSession(cle){
+  try{
+    const r=await fetch(API.session,{
+      method:"POST",credentials:"same-origin",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({cle:cle}),
+    });
+    if(!r.ok)return false;
+    CSRF=_lireCookie("ra_csrf");
+    try{sessionStorage.setItem("csrf",CSRF);}catch(_){}
+    SESSION_OK=true;API_KEY=cle;
+    return true;
+  }catch(_){return false;}
+}
+// Vérifie qu'un cookie déjà posé est encore valide (rechargement de l'onglet).
+async function sessionValide(){
+  if(!API_KEY&&!CSRF)return false;
+  try{
+    const r=await fetch(API.whoami,{credentials:"same-origin"});
+    if(!r.ok)return false;
+    SESSION_OK=true;
+    return true;
+  }catch(_){return false;}
+}
+function _lireCookie(nom){
+  try{
+    return document.cookie.split("; ").map(c=>c.split("=")).filter(p=>p[0]===nom&&p.length===2).map(p=>p[1])[0]||"";
+  }catch(_){return "";}
+}
+// N'ajoute X-CSRF-Token que sur les méthodes mutantes : les lectures n'en ont
+// pas besoin (et un GET ne doit jamais exiger de jeton).
+function _entetesAuth(h,method){
+  const entetes=Object.assign({},h||{});
+  if(CSRF&&(method||"GET").toUpperCase()!=="GET")entetes["X-CSRF-Token"]=CSRF;
+  entetes["X-Client-Id"]=CLIENT_ID;
+  return entetes;
+}
 
 let _resoudreCle=null;
 function demanderCle(message){
@@ -38,19 +89,25 @@ function fermerModaleCle(){
     eye.classList.toggle("on",inp.type==="text");
     inp.focus();
   });
-  f.addEventListener("submit",e=>{
+  f.addEventListener("submit",async e=>{
     e.preventDefault();
     const k=inp.value.trim();if(!k)return;
-    try{sessionStorage.setItem("apiKey",k);}catch(_){}
-    API_KEY=k;
+    const ok=await ouvrirSession(k);
+    if(!ok){
+      err.textContent="Clé API refusée.";
+      err.hidden=false;
+      inp.value="";inp.focus();
+      return;
+    }
     const res=_resoudreCle;_resoudreCle=null;
     if(res)res(k);
   });
 })();
 // Déconnexion : efface la clé de l'onglet et rouvre la modale.
-document.getElementById("user-badge").addEventListener("click",()=>{
-  try{sessionStorage.removeItem("apiKey");}catch(_){}
-  API_KEY="";location.reload();
+document.getElementById("user-badge").addEventListener("click",async()=>{
+  try{await fetch(API.logout,{method:"POST",credentials:"same-origin"});}catch(_){}
+  try{sessionStorage.removeItem("csrf");}catch(_){}
+  API_KEY="";CSRF="";SESSION_OK=false;location.reload();
 });
 // Identifiant de navigateur stable (pas un secret) : permet de distinguer
 // les postes dans le journal d'accès serveur, même derrière un tunnel SSH
@@ -65,19 +122,24 @@ function _clientId(){
 const CLIENT_ID=_clientId();
 async function apiFetch(url,opts){
   opts=opts||{};
-  const h=Object.assign({},opts.headers||{},{"X-API-Key":API_KEY,"X-Client-Id":CLIENT_ID});
+  const methode=(opts.method||"GET").toUpperCase();
+  const h=_entetesAuth(opts.headers,methode);
   if(opts.body&&!h["Content-Type"])h["Content-Type"]="application/json";
-  const r=await fetch(url,Object.assign({},opts,{headers:h}));
+  // `credentials:"same-origin"` : le cookie de session accompagne la requête.
+  const r=await fetch(url,Object.assign({},opts,{headers:h,credentials:"same-origin"}));
   if(r.status===401){
-    try{sessionStorage.removeItem("apiKey");}catch(_){}
-    _marquerAuth(false,"Clé API refusée");
-    const k=await demanderCle("Clé API refusée. Ressaisissez-la.");
+    try{sessionStorage.removeItem("csrf");}catch(_){}
+    CSRF="";SESSION_OK=false;
+    _marquerAuth(false,"Session expirée");
+    // La clé n'est plus stockée : l'utilisateur la ressaisit, et elle sert
+    // uniquement à rouvrir la session (jamais renvoyée en en-tête).
+    const k=await demanderCle("Session expirée. Ressaisissez votre clé API.");
     if(!k)return r;
-    API_KEY=k;
-    const h2=Object.assign({},opts.headers||{},{"X-API-Key":API_KEY,"X-Client-Id":CLIENT_ID});
+    if(!await ouvrirSession(k))return r;
+    const h2=_entetesAuth(opts.headers,methode);
     if(opts.body&&!h2["Content-Type"])h2["Content-Type"]="application/json";
-    const r2=await fetch(url,Object.assign({},opts,{headers:h2}));
-    if(r2.ok){_marquerAuth(true,"Clé API validée");fermerModaleCle();}
+    const r2=await fetch(url,Object.assign({},opts,{headers:h2,credentials:"same-origin"}));
+    if(r2.ok){_marquerAuth(true,"Session validée");fermerModaleCle();}
     return r2;
   }
   return r;
@@ -99,34 +161,35 @@ function _marquerAuth(ok,sub){
   if(sub)sb.textContent=sub;
 }
 
-// Valide la clé contre /whoami (rôle user minimum → marche pour toutes les
-// clés valides, contrairement à /pending réservé aux validateurs). Boucle
-// via la modale jusqu'à succès. Renvoie l'objet {role,label} ou null.
+// Valide la session au démarrage. Trois cas : le cookie est déjà posé et
+// reconnu (rechargement de l'onglet), il faut ouvrir une session (modale), ou
+// le serveur est injoignable. Renvoie {role,label} ou null.
 async function validerCleAuDemarrage(){
-  for(;;){
-    if(!API_KEY){
-      const k=await demanderCle();
-      if(!k){_marquerAuth(false,"Aucune clé");return null;}
-      API_KEY=k;
-    }
-    let r;
-    try{r=await fetch(API.whoami,{headers:{"X-API-Key":API_KEY,"X-Client-Id":CLIENT_ID}});}
-    catch(_){_marquerAuth(false,"API injoignable");return null;}
-    if(r.ok){
-      _marquerAuth(true,"Clé API validée");fermerModaleCle();
-      try{return await r.json();}catch(_){return {role:"user",label:"?"};}
-    }
-    if(r.status===401){
-      try{sessionStorage.removeItem("apiKey");}catch(_){}
-      API_KEY="";
-      await demanderCle("Clé refusée par le serveur. Vérifiez-la.");
-      try{API_KEY=(sessionStorage.getItem("apiKey")||"").trim();}catch(_){}
-      continue;
-    }
-    _marquerAuth(false,"Serveur indisponible ("+r.status+")");
-    fermerModaleCle();
-    return null;
+  if(CSRF&&await sessionValide()){
+    _marquerAuth(true,"Session active");fermerModaleCle();
+    return await _identiteWhoami();
   }
+  for(;;){
+    const k=await demanderCle();
+    if(!k){_marquerAuth(false,"Aucune clé");return null;}
+    if(!await ouvrirSession(k))continue;   // clé refusée : on redemande
+    const identite=await _identiteWhoami();
+    if(identite){
+      _marquerAuth(true,"Session ouverte");fermerModaleCle();
+      return identite;
+    }
+    if(!await sessionValide())continue;
+    _marquerAuth(true,"Session ouverte");fermerModaleCle();
+    return {role:"user",label:"?"};
+  }
+}
+// Rôle et libellé de la session courante (GET /whoami, porté par le cookie).
+async function _identiteWhoami(){
+  try{
+    const r=await fetch(API.whoami,{credentials:"same-origin"});
+    if(!r.ok)return null;
+    return await r.json();
+  }catch(_){return null;}
 }
 let enCours=false,sessionQueries=0,filtreActif="all",tachesData=[],activiteSession=[],historiqueSession=[];
 const chatMessages=document.getElementById("chat-messages"),champQuestion=document.getElementById("champ-question"),champDate=document.getElementById("champ-date"),btnEnvoyer=document.getElementById("btn-envoyer"),btnStop=document.getElementById("btn-stop"),toastZone=document.getElementById("toast-zone");
