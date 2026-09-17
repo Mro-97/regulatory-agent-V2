@@ -32,9 +32,9 @@ from pathlib import Path
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
+from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -66,7 +66,6 @@ from src.api_security import (
 from src.api_security import (
     get_rate_limiter as get_rate_limiter,  # exposé par /health/details
 )
-from src.http_types import SuiteRequete
 from src.models import StatutValidation
 from src.orchestrator import Orchestrateur
 from src.schemas import (
