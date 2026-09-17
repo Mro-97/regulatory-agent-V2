@@ -134,8 +134,3 @@ def get_rate_limiter() -> RateLimiterRedis:
         )
     return _singleton
 
-
-def reinitialiser_pour_tests() -> None:
-    """Efface le singleton pour forcer sa reconstruction (tests uniquement)."""
-    global _singleton
-    _singleton = None

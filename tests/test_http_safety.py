@@ -15,7 +15,6 @@ from src.http_safety import (
     UrlInterneRefuseeError,
     UrlRefuseeError,
     _est_ip_interne,
-    resoudre_url_publique_ou_lever,
     valider_url,
 )
 
@@ -108,7 +107,7 @@ class TestResoudreUrlPubliqueOuLever:
     def test_url_publique_passe(self):  # noqa: ANN201
         """URL vers IP publique : aucune exception, IP retournée."""
         with patch("socket.getaddrinfo", _mock_getaddrinfo(["8.8.8.8"])):
-            assert resoudre_url_publique_ou_lever("https://example.com/x") == [
+            assert valider_url("https://example.com/x") == [
                 "8.8.8.8"
             ]
 
@@ -118,7 +117,7 @@ class TestResoudreUrlPubliqueOuLever:
             patch("socket.getaddrinfo", _mock_getaddrinfo(["127.0.0.1"])),
             pytest.raises(UrlInterneRefuseeError),
         ):
-            resoudre_url_publique_ou_lever("http://internal-service/")
+            valider_url("http://internal-service/")
 
     def test_url_metadata_cloud_refusee(self):  # noqa: ANN201
         """URL vers 169.254.169.254 (AWS/GCP metadata) refusée."""
@@ -126,12 +125,12 @@ class TestResoudreUrlPubliqueOuLever:
             patch("socket.getaddrinfo", _mock_getaddrinfo(["169.254.169.254"])),
             pytest.raises(UrlInterneRefuseeError),
         ):
-            resoudre_url_publique_ou_lever("http://169.254.169.254/latest/meta-data/")
+            valider_url("http://169.254.169.254/latest/meta-data/")
 
     def test_ip_litterale_interne_refusee_sans_dns(self):  # noqa: ANN201
         """Une IP interne écrite en dur est refusée SANS résolution DNS."""
         with pytest.raises(UrlInterneRefuseeError):
-            resoudre_url_publique_ou_lever("http://127.0.0.1:80/")
+            valider_url("http://127.0.0.1:80/")
 
     def test_dns_dual_stack_avec_une_ip_interne_refuse(self):  # noqa: ANN201
         """Si le DNS renvoie plusieurs IPs et qu'UNE est interne → refus."""
@@ -142,7 +141,7 @@ class TestResoudreUrlPubliqueOuLever:
             ),
             pytest.raises(UrlInterneRefuseeError),
         ):
-            resoudre_url_publique_ou_lever("http://dual-stack.example/")
+            valider_url("http://dual-stack.example/")
 
     def test_dns_sans_reponse_refuse(self):  # noqa: ANN201
         """Un résolveur qui ne retourne rien est un refus, pas un laissez-passer."""
@@ -152,14 +151,14 @@ class TestResoudreUrlPubliqueOuLever:
             patch("socket.getaddrinfo", _mock_getaddrinfo([])),
             pytest.raises(DnsIrresoluError),
         ):
-            resoudre_url_publique_ou_lever("http://vide.example/")
+            valider_url("http://vide.example/")
 
     def test_url_sans_schema_refusee(self):  # noqa: ANN201
         """Une chaîne sans schéma http(s) est refusée avant toute résolution."""
         with pytest.raises(UrlRefuseeError, match="schéma"):
-            resoudre_url_publique_ou_lever("not-a-url")
+            valider_url("not-a-url")
 
     def test_url_sans_hostname_refusee(self):  # noqa: ANN201
         """Une URL http sans hostname est refusée explicitement."""
         with pytest.raises(UrlRefuseeError, match="hostname"):
-            resoudre_url_publique_ou_lever("http:///chemin")
+            valider_url("http:///chemin")

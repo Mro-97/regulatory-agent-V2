@@ -330,8 +330,3 @@ _ENISA_NIST: list[SourceReg] = [
 ]
 
 SOURCES: list[SourceReg] = [*_EURLEX, *_ANSSI, *_CNIL, *_ENISA_NIST]
-
-
-def par_id(identifiant: str) -> SourceReg | None:
-    """Retourne la source d'`id` donné, ou None."""
-    return next((s for s in SOURCES if s.id == identifiant), None)

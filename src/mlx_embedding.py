@@ -20,14 +20,6 @@ import mlx.core as mx
 from config import cfg
 from src.mlx_utils import _tronquer_pour_embedding
 
-
-def _emb_generate_direct(*args: Any, **kwargs: Any) -> Any:
-    """`mlx_embeddings.generate` (import paresseux, sans rebind)."""
-    from mlx_embeddings import generate as emb_generate
-
-    return emb_generate(*args, **kwargs)
-
-
 def _importer_emb_generate() -> Any:
     """Importe `mlx_embeddings.generate` ; lève ModelLoadError si l'import échoue."""
     try:

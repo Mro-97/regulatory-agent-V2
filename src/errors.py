@@ -183,19 +183,6 @@ class InvalidContextDateError(TemporalError, ValueError):
         self.reason = reason
         self.value = value
 
-
-class NoApplicableVersionError(TemporalError):
-    """Aucune version d'article n'est applicable à la date de référence."""
-
-
-class OverlappingVersionsError(TemporalError):
-    """Deux versions d'un même article se chevauchent."""
-
-
-class ValidityGapError(TemporalError):
-    """Un intervalle de validité présente une lacune non couverte."""
-
-
 # ---------------------------------------------------------------------------
 # Evidence (retrieval Qdrant, ancrage citations)
 # ---------------------------------------------------------------------------
@@ -203,15 +190,6 @@ class ValidityGapError(TemporalError):
 
 class EvidenceError(RegulatoryAgentError):
     """Racine des erreurs relatives aux preuves et citations."""
-
-
-class InsufficientEvidenceError(EvidenceError):
-    """Retrieval n'a pas trouvé de preuve exploitable pour la requête."""
-
-
-class CitationNotVerifiedError(EvidenceError):
-    """Une citation n'est pas ancrée dans les chunks récupérés."""
-
 
 class VectorStoreError(EvidenceError):
     """Qdrant est inaccessible ou renvoie une réponse invalide."""
@@ -258,15 +236,6 @@ class ModelNotLoadedError(InferenceError):
     def __init__(self, agent: str) -> None:  # noqa: D107 — constructeur documenté par la classe (§0.2)
         super().__init__(f"Modèle {agent} non chargé")
         self.agent = agent
-
-
-class UrlSansHostnameError(ValueError):
-    """URL malformée : impossible d'en extraire un hostname."""
-
-    def __init__(self, url: str) -> None:  # noqa: D107 — constructeur documenté par la classe (§0.2)
-        super().__init__(f"URL sans hostname : {url}")
-        self.url = url
-
 
 class DnsIrresoluError(ValueError):
     """Le hostname n'est résoluble par aucun serveur DNS."""
@@ -344,11 +313,6 @@ class TaskNotFoundError(ValidationQueueError, ValueError):
         super().__init__(f"Tâche introuvable : {tache_id}")
         self.tache_id = tache_id
 
-
-class InvalidTransitionError(ValidationQueueError):
-    """Transition de statut interdite pour une tâche de validation."""
-
-
 class QueueBackendError(ValidationQueueError):
     """Le backend Redis est indisponible ou a rejeté l'opération."""
 
@@ -361,6 +325,3 @@ class QueueBackendError(ValidationQueueError):
 # Audit
 # ---------------------------------------------------------------------------
 
-
-class AuditIntegrityError(RegulatoryAgentError):
-    """La chaîne d'audit SHA-256 est rompue ou incohérente."""

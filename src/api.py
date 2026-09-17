@@ -194,23 +194,6 @@ from src.access_log import installer_journal_acces  # noqa: E402
 installer_journal_acces(app)
 
 
-@app.middleware("http")
-async def _rediriger_https(request: Request, call_next: SuiteRequete) -> Response:
-    """Redirige http → https (308) si `forcer_https`, sauf /health.
-
-    Le schéma d'origine vient de `X-Forwarded-Proto` uniquement si le pair
-    est un `trusted_proxy` (cf. src/net) — sinon un client ne peut pas
-    prétendre être déjà en https.
-    """
-    if cfg.forcer_https and request.url.path != "/health":
-        from src.net import schema_origine
-
-        if schema_origine(request) == "http":
-            cible = request.url.replace(scheme="https")
-            return RedirectResponse(str(cible), status_code=308)
-    return await call_next(request)
-
-
 # Garde de concurrence pour le pipeline /ask.
 #
 # Un timeout MLX n'interrompt pas le thread de génération (src/mlx_utils y

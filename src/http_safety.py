@@ -143,17 +143,3 @@ def valider_url(url: str) -> list[str]:
     """
     _verifier_schema_et_port(url)
     return _resoudre_et_valider(_extraire_hostname(url), url)
-
-
-def resoudre_url_publique_ou_lever(url: str) -> list[str]:
-    """Valide `url` et retourne les IPs sûres (nom historique conservé).
-
-    Ne fait AUCUNE I/O de connexion : `src/http_client.ClientSortant` utilise
-    la valeur retournée pour ouvrir la connexion, ce qui supprime la fenêtre
-    de résolution double.
-
-    Raises:
-        UrlRefuseeError: schéma, port ou adresse non publique.
-        DnsIrresoluError: hostname non résoluble.
-    """
-    return valider_url(url)
