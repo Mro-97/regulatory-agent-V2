@@ -403,6 +403,7 @@ class MLXInference:
         messages: list[dict[str, str]],
         max_tokens: int = 512,
         temperature: float | None = None,
+        top_p: float | None = None,
     ) -> Iterator[str]:
         """Génère en flux : yield chaque fragment de texte au fil de l'inférence.
 
