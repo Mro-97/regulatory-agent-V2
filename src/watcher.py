@@ -24,10 +24,7 @@ import logging
 from collections.abc import Awaitable
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Any, cast
-
-if TYPE_CHECKING:
-    import redis.asyncio as aioredis
+from typing import Any, cast
 
 import httpx
 
@@ -39,6 +36,7 @@ from src.models import (
     TacheValidation,
     TypeFilePendante,
 )
+from src.redis_client import ClientRedis
 
 logger = logging.getLogger(__name__)
 
@@ -81,16 +79,16 @@ async def enregistrer_alerte_redis(alerte: AlerteWatcher) -> None:
         logger.exception("Redis indisponible pour l'alerte Watcher")
 
 
-def _nouveau_client_redis() -> aioredis.Redis:
-    """Fabrique un client Redis asynchrone avec les paramètres cfg."""
-    import redis.asyncio as aioredis
+def _nouveau_client_redis() -> ClientRedis:
+    """Fabrique un client Redis asynchrone (client maison, source unique)."""
+    from src.redis_client import nouveau_client
 
-    return aioredis.Redis(
+    return nouveau_client(
         host=cfg.redis_host,
         port=cfg.redis_port,
-        password=cfg.redis_password or None,
+        password=cfg.redis_password,
         db=cfg.redis_db,
-        decode_responses=True,
+        timeout_secondes=cfg.redis_timeout_secondes,
     )
 
 

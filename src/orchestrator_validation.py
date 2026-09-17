@@ -28,11 +28,11 @@ from src.models import (
 if TYPE_CHECKING:
     from uuid import UUID
 
-    import redis.asyncio as aioredis
+    from src.redis_client import ClientRedis
 
 logger = logging.getLogger(__name__)
 
-ClientFactory = Callable[[], Awaitable["aioredis.Redis"]]
+ClientFactory = Callable[[], Awaitable["ClientRedis"]]
 
 
 async def lister_taches_pendantes(
@@ -86,7 +86,7 @@ def _trier_du_plus_recent(
 
 
 async def _lister_toutes_les_files(
-    client: aioredis.Redis,
+    client: ClientRedis,
 ) -> tuple[list[TacheValidation], dict[str, int]]:
     """Itère sur chaque `TypeFilePendante` et agrège les taches parsées."""
     taches: list[TacheValidation] = []
@@ -123,7 +123,7 @@ async def obtenir_tache(
 
 
 async def _chercher_tache_par_id(
-    client: aioredis.Redis,
+    client: ClientRedis,
     tache_id: UUID,
 ) -> TacheValidation | None:
     """Parcourt `<file>` et `traite_<file>` de chaque `TypeFilePendante`."""
@@ -199,7 +199,7 @@ async def _appliquer_et_repondre(
 
 
 async def _appliquer_decision_sur_files(
-    client: aioredis.Redis,
+    client: ClientRedis,
     tache_id: UUID,
     decision: StatutValidation,
     commentaire: str | None,
@@ -236,7 +236,7 @@ def _serialiser_decision(
 
 
 async def _essayer_appliquer_a_cle(
-    client: aioredis.Redis,
+    client: ClientRedis,
     nom_file: str,
     cle: str,
     tache_id: UUID,
@@ -276,7 +276,7 @@ async def _essayer_appliquer_a_cle(
 
 
 async def _pousser_decision(
-    client: aioredis.Redis,
+    client: ClientRedis,
     nom_file: str,
     donnees: dict[str, Any],
     decision: StatutValidation,

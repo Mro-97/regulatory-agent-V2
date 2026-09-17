@@ -41,11 +41,10 @@ from uuid import UUID, uuid4
 from config import cfg
 
 if TYPE_CHECKING:
-    import redis.asyncio as aioredis
-
     from scripts.ingest import Ingester
     from src.agents.citation import ResultatCitation
     from src.agents.retriever import Retriever
+    from src.redis_client import ClientRedis
 
 from src.errors import QueueBackendError
 from src.models import (
@@ -363,16 +362,16 @@ class Orchestrateur:
         async with self._verrou_agents:
             return await asyncio.to_thread(fonction, *args, **kwargs)
 
-    async def _nouveau_client_redis(self) -> aioredis.Redis:
-        """Client Redis asynchrone avec authentification depuis la config."""
-        import redis.asyncio as aioredis
+    async def _nouveau_client_redis(self) -> ClientRedis:
+        """Client Redis asynchrone (client maison, cf. src/redis_client.py)."""
+        from src.redis_client import nouveau_client
 
-        return aioredis.Redis(
+        return nouveau_client(
             host=cfg.redis_host,
             port=cfg.redis_port,
-            password=cfg.redis_password or None,
+            password=cfg.redis_password,
             db=cfg.redis_db,
-            decode_responses=True,
+            timeout_secondes=cfg.redis_timeout_secondes,
         )
 
     @staticmethod

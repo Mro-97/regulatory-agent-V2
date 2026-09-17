@@ -22,33 +22,28 @@ from typing import TYPE_CHECKING
 from config import cfg
 
 if TYPE_CHECKING:
-    from redis.asyncio import Redis
-
     from src.api_security import LimiteurDebit
+    from src.redis_client import ClientRedis
 
 logger = logging.getLogger(__name__)
 
 
-def get_redis_client() -> Redis:
-    """Construit un client Redis asynchrone paramétré depuis `cfg`.
+def get_redis_client() -> ClientRedis:
+    """Construit un client Redis (maison) paramétré depuis `cfg`.
 
-    Les timeouts restent courts — un Redis lent ne doit pas figer l'API, le
-    repli mémoire prend le relais — mais pas trop : à 0,5 s, un Redis
-    momentanément chargé (fork de sauvegarde, disque lent) déclenchait des
-    bascules alors qu'il allait répondre. Le délai est configurable
-    (`REDIS_TIMEOUT_SECONDES`) sans changer la borne de disponibilité.
+    Le délai reste court — un Redis lent ne doit pas figer l'API, le repli
+    mémoire prend le relais — mais pas trop : à 0,5 s, un Redis momentanément
+    chargé déclenchait des bascules alors qu'il allait répondre. Le délai est
+    configurable (`REDIS_TIMEOUT_SECONDES`).
     """
-    import redis.asyncio as aioredis
+    from src.redis_client import nouveau_client
 
-    delai = float(cfg.redis_timeout_secondes)
-    return aioredis.Redis(
+    return nouveau_client(
         host=cfg.redis_host,
         port=cfg.redis_port,
-        password=cfg.redis_password or None,
+        password=cfg.redis_password,
         db=cfg.redis_db,
-        decode_responses=True,
-        socket_timeout=delai,
-        socket_connect_timeout=delai,
+        timeout_secondes=float(cfg.redis_timeout_secondes),
     )
 
 
@@ -62,7 +57,7 @@ class RateLimiterRedis:
 
     def __init__(
         self,
-        redis_client: Redis,
+        redis_client: ClientRedis,
         max_requests: int = 30,
         window_seconds: int = 60,
         fallback: LimiteurDebit | None = None,
