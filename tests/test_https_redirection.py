@@ -51,7 +51,9 @@ class TestRedirectionHttps:
         assert reponse.status_code == 308
         assert reponse.headers["location"] == "https://testserver/une-route"
 
-    def test_health_n_est_jamais_redirige(self, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_health_n_est_jamais_redirige(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Les sondes interrogent le port en clair : /health répond 200 direct."""
         monkeypatch.setattr(cfg, "forcer_https", True)
         reponse = _client().get("/health", follow_redirects=False)
@@ -92,7 +94,10 @@ class TestRedirectionHttps:
 
 
 class TestPredicatDeSchema:
-    """Le schéma décide seul : X-Forwarded-Proto n'est pas cru sans proxy de confiance."""
+    """Le schéma décide seul.
+
+     n'est pas cru sans proxy de confiance.
+    """
 
     def _scope(self, schema: str) -> dict[str, object]:
         """Scope ASGI minimal tel que le reçoit le middleware."""
