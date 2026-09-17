@@ -17,12 +17,18 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from fastapi import Request
 from fastapi.responses import JSONResponse
-from starlette.middleware.base import BaseHTTPMiddleware
 
 if TYPE_CHECKING:
-    from fastapi import FastAPI, Request, Response
-    from starlette.middleware.base import RequestResponseEndpoint
+    from fastapi import FastAPI
+
+    from src.http_types import (
+        ASGIApp,
+        EnvoyerASGI,
+        PorteeASGI,
+        RecevoirASGI,
+    )
 
 # Endpoints rate-limités par IP : les coûteux (pipeline MLX) et ceux qui
 # écrivent sur disque (/feedback). Les lectures et mutations validées
@@ -81,25 +87,35 @@ def _reponse_429() -> JSONResponse:
     )
 
 
-class RateLimitMiddleware(BaseHTTPMiddleware):
-    """Comptage `{api_key}:{ip}` avant parsing du body — 429 si quota dépassé."""
+def middleware_rate_limit(
+    application: ASGIApp,
+) -> ASGIApp:
+    """Middleware ASGI pur : compte le quota AVANT le parsing du corps.
 
-    async def dispatch(
-        self,
-        request: Request,
-        call_next: RequestResponseEndpoint,
-    ) -> Response:
-        """Incrémente le compteur puis délègue, ou renvoie 429 si épuisé."""
-        if not _est_rate_limite(request.url.path):
-            return await call_next(request)
-        # Import paresseux : évite de charger `redis.asyncio` au démarrage et
-        # laisse les tests monkey-patcher `src.api_security._limiteur`.
+    Écrit sous forme de fabrique ASGI plutôt qu'en héritant de
+    `BaseHTTPMiddleware` : c'est la forme standard, elle évite d'importer les
+    internes de Starlette, et elle ne fait rien d'autre que ce qui est décrit
+    ici (moindre surprise). Le `scope` est transmis tel quel à la suite de la
+    pile, seuls les chemins rate-limités sont interceptés.
+    """
+
+    async def _middleware(
+        portee: PorteeASGI, receive: RecevoirASGI, send: EnvoyerASGI
+    ) -> None:
+        if portee["type"] != "http" or not _est_rate_limite(portee.get("path", "")):
+            await application(portee, receive, send)
+            return
+        # Import paresseux : laisse les tests monkey-patcher le limiteur.
         from src.rate_limit_redis import get_rate_limiter
 
+        requete = Request(portee, receive)
         limiteur = get_rate_limiter()
-        if not await limiteur.is_allowed(_scope_cle(request), _cle_client(request)):
-            return _reponse_429()
-        return await call_next(request)
+        if await limiteur.is_allowed(_scope_cle(requete), _cle_client(requete)):
+            await application(portee, receive, send)
+            return
+        await _reponse_429()(portee, receive, send)
+
+    return _middleware
 
 
 def installer_rate_limit(app: FastAPI) -> None:
@@ -112,4 +128,4 @@ def installer_rate_limit(app: FastAPI) -> None:
     parsing du body. Ses refus (429) portent leurs propres en-têtes de
     sécurité, puisqu'ils ne traversent pas le middleware d'en-têtes.
     """
-    app.add_middleware(RateLimitMiddleware)
+    app.add_middleware(middleware_rate_limit)

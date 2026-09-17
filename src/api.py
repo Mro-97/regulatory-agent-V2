@@ -37,7 +37,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from starlette.middleware.base import RequestResponseEndpoint
 
 from config import cfg
 
@@ -67,6 +66,7 @@ from src.api_security import (
 from src.api_security import (
     get_rate_limiter as get_rate_limiter,  # exposé par /health/details
 )
+from src.http_types import SuiteRequete
 from src.models import (
     ReponseDecisionValidation,
     ReponseFeedback,
@@ -195,9 +195,7 @@ installer_journal_acces(app)
 
 
 @app.middleware("http")
-async def _rediriger_https(
-    request: Request, call_next: RequestResponseEndpoint
-) -> Response:
+async def _rediriger_https(request: Request, call_next: SuiteRequete) -> Response:
     """Redirige http → https (308) si `forcer_https`, sauf /health.
 
     Le schéma d'origine vient de `X-Forwarded-Proto` uniquement si le pair

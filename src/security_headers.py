@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from typing import TypeVar
 
-from starlette.responses import Response
+from fastapi import Response
 
 # Le type CONCRET de la réponse est préservé (`JSONResponse` reste un
 # `JSONResponse`) : les appelants qui fabriquent un refus typé

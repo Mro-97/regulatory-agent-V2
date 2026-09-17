@@ -67,7 +67,7 @@ class TestReponsesCourtCircuitees:
         _assert_entetes(reponse)
 
     def test_fonction_idempotente(self) -> None:
-        from starlette.responses import JSONResponse
+        from fastapi.responses import JSONResponse
 
         reponse = appliquer_entetes_securite(JSONResponse({"a": 1}))
         reponse2 = appliquer_entetes_securite(reponse)

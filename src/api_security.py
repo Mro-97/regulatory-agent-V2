@@ -23,10 +23,10 @@ from typing import TYPE_CHECKING
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import JSONResponse
-from starlette.middleware.base import RequestResponseEndpoint
 
 from config import cfg
 from src.auth import Role, identifier, magasin_configure
+from src.http_types import SuiteRequete
 from src.security_headers import appliquer_entetes_securite
 
 if TYPE_CHECKING:
@@ -45,7 +45,7 @@ def installer_middlewares(app: FastAPI) -> None:
     @app.middleware("http")
     async def en_tetes_securite(
         request: Request,
-        call_next: RequestResponseEndpoint,
+        call_next: SuiteRequete,
     ) -> Response:
         """Ajoute les en-têtes de sécurité à toutes les réponses."""
         reponse = await call_next(request)
@@ -55,7 +55,7 @@ def installer_middlewares(app: FastAPI) -> None:
     @app.middleware("http")
     async def limite_taille_requete(
         request: Request,
-        call_next: RequestResponseEndpoint,
+        call_next: SuiteRequete,
     ) -> Response:
         """Rejette 413 (body trop grand) ou 411 (Transfer-Encoding non-identity)."""
         refus = _controler_taille_et_encoding(request)

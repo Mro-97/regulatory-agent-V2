@@ -20,9 +20,9 @@ from config import cfg
 
 if TYPE_CHECKING:
     from fastapi import FastAPI, Request, Response
-    from starlette.middleware.base import RequestResponseEndpoint
 
     from src.auth import Role as _Role
+    from src.http_types import SuiteRequete
 
 logger = logging.getLogger("acces")
 
@@ -152,9 +152,7 @@ def installer_journal_acces(app: FastAPI) -> None:
     """
 
     @app.middleware("http")
-    async def journal_acces(
-        request: Request, call_next: RequestResponseEndpoint
-    ) -> Response:
+    async def journal_acces(request: Request, call_next: SuiteRequete) -> Response:
         debut = time.perf_counter()
         reponse = await call_next(request)
         duree_ms = int((time.perf_counter() - debut) * 1000)
