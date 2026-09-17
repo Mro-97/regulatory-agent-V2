@@ -23,10 +23,12 @@ if TYPE_CHECKING:
 
     from src.http_types import ASGIApp, EnvoyerASGI, PorteeASGI, RecevoirASGI
 
-# Caractères autorisés dans l'hôte repris d'un en-tête `Host` avant de le
-# recopier dans un en-tête `Location` : sans ce filtre, un `Host` forgé
-# (`evil.test/x`) construirait une redirection ouverte.
-_HOTE_VALIDE = re.compile(r"^[A-Za-z0-9.\-]+$")
+# Hôte repris d'un en-tête `Host` avant d'être recopié dans un `Location` :
+# nom d'hôte en tête, port optionnel. Sans ce filtre, un `Host` forgé
+# (`evil.test/x`, `evil.test@interne`) construirait une redirection ouverte ;
+# sans le port optionnel, tout `Host: hote:port` serait rejeté et la
+# redirection n'aurait jamais lieu.
+_HOTE_VALIDE = re.compile(r"^[A-Za-z0-9.\-]+(?::\d{1,5})?$")
 
 # Ports par défaut : les omettre évite qu'un `Host` sans port explicite
 # produise une redirection vers `https://exemple:80`.
@@ -62,7 +64,8 @@ def _cible_https(scope: PorteeASGI, port_scope: str | None) -> str | None:
     if hote_brut is None:
         return None
     hote, _, port_entete = hote_brut.partition(":")
-    port = port_entete or (port_scope if port_scope != _PORTS_PAR_DEFAUT["http"] else None)
+    defaut_http = port_scope == _PORTS_PAR_DEFAUT["http"]
+    port = port_entete or (None if defaut_http else port_scope)
     suffixe = f":{port}" if port and port != _PORTS_PAR_DEFAUT["https"] else ""
     return f"https://{hote}{suffixe}{scope.get('path', '')}"
 
