@@ -40,6 +40,7 @@ from datetime import date
 from typing import TYPE_CHECKING
 
 from config import cfg
+from src.agents.temperatures import TEMPERATURE_REDACTION
 from src.models import EvidenceRecuperee, NiveauConfiance
 from src.prompts_loader import charger_prompt
 
@@ -294,7 +295,7 @@ class AgentExplainer:
 
             self._modele = get_model(
                 model_name=cfg.modele_explainer,
-                temperature=0.1,
+                temperature=TEMPERATURE_REDACTION,
             )
             logger.info("Modèle Explainer chargé : %s", cfg.modele_explainer)
 

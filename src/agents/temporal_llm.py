@@ -15,6 +15,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from config import cfg
+from src.agents.temperatures import TEMPERATURE_RAISONNEMENT
 from src.prompts_loader import charger_prompt
 
 if TYPE_CHECKING:
@@ -34,7 +35,7 @@ def charger_modele_temporel(modele: MLXInference | None) -> MLXInference:
 
         modele = get_model(
             model_name=cfg.modele_temporal,
-            temperature=0.0,  # déterministe pour le raisonnement temporel
+            temperature=TEMPERATURE_RAISONNEMENT,
         )
         logger.info("Modèle temporel chargé : %s", cfg.modele_temporal)
     return modele

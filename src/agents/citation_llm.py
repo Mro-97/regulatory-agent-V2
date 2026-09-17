@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING
 
 from config import cfg
 from src.agents.citation import CitationReglementaire, _normaliser_pour_comparaison
+from src.agents.temperatures import TEMPERATURE_RAISONNEMENT
 from src.prompts_loader import charger_prompt
 
 if TYPE_CHECKING:
@@ -40,7 +41,7 @@ def charger_modele_citation(modele: MLXInference | None) -> MLXInference:
 
         modele = get_model(
             model_name=cfg.modele_citation,
-            temperature=0.0,
+            temperature=TEMPERATURE_RAISONNEMENT,
         )
         logger.info("Modèle Citation chargé : %s", cfg.modele_citation)
     return modele

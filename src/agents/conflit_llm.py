@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING, Any
 from config import cfg
 from src.agents.conflit import ConflitDetecte, NiveauConflit
 from src.agents.conflit_helpers import VERDICTS_VALIDES, normaliser_verdict
+from src.agents.temperatures import TEMPERATURE_RAISONNEMENT
 from src.prompts_loader import charger_prompt
 
 if TYPE_CHECKING:
@@ -35,7 +36,7 @@ def charger_modele_conflit(modele: MLXInference | None) -> MLXInference:
         )
         modele = get_model(
             model_name=cfg.modele_conflit,
-            temperature=0.0,  # raisonnement déterministe
+            temperature=TEMPERATURE_RAISONNEMENT,
         )
         logger.info("Modèle Conflit chargé : %s", cfg.modele_conflit)
     return modele
