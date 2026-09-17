@@ -12,11 +12,23 @@ function demanderCle(message){
   const ov=document.getElementById("login-overlay");
   const err=document.getElementById("login-err");
   const inp=document.getElementById("login-key");
+  const eye=document.getElementById("login-eye");
   if(message){err.textContent=message;err.hidden=false;}else{err.hidden=true;}
+  // Remise a zero systematique : le bouton "oeil" bascule l'input en type=text
+  // et rien ne le restaurait, si bien qu'apres un clic la cle restait affichee
+  // en clair a la reouverture de la modale (rechargement apres un 401).
+  inp.type="password";
+  eye.classList.remove("on");
   ov.hidden=false;inp.value="";inp.focus();
   return new Promise(res=>{_resoudreCle=res;});
 }
-function fermerModaleCle(){document.getElementById("login-overlay").hidden=true;}
+function fermerModaleCle(){
+  const inp=document.getElementById("login-key");
+  inp.value="";
+  inp.type="password";
+  document.getElementById("login-eye").classList.remove("on");
+  document.getElementById("login-overlay").hidden=true;
+}
 (function wireLogin(){
   const f=document.getElementById("login-form");
   const inp=document.getElementById("login-key");

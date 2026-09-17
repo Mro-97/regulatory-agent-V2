@@ -192,6 +192,15 @@ from src.access_log import installer_journal_acces  # noqa: E402
 
 installer_journal_acces(app)
 
+# Redirection http → https enregistrée en dernier : c'est donc le middleware
+# le plus externe. Une requête redirigée (308) n'entre ni dans le journal
+# d'accès ni dans le rate-limit, et le client n'atteint jamais les routes en
+# clair. Sans effet tant que `forcer_https` est faux (défaut).
+
+from src.https_redirection import installer_redirection_https  # noqa: E402
+
+installer_redirection_https(app)
+
 
 # Garde de concurrence pour le pipeline /ask.
 #
