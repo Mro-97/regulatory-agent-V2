@@ -677,8 +677,49 @@ document.getElementById("btn-refresh-val")?.addEventListener("click",e=>rafraich
 function rendrHisto(){
   const el=document.getElementById("hist-list");
   if(!historiqueSession.length){el.innerHTML=`<div class="activity-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg><p>Aucune analyse dans l'historique</p></div>`;return;}
-  el.innerHTML=historiqueSession.map(h=>{const nc=cls_conf(h.conf);return `<div class="hist-item"><div class="hist-head"><div class="hist-q">${esc(h.question)}</div><div class="hist-time">${heure(h.ts)}</div></div><div class="hist-preview">${formaterTexte(h.reponse.slice(0,200))}...</div><div class="hist-meta"><span class="badge badge-${esc(nc)}">${esc(lbl_conf(h.conf))}</span></div></div>`;}).join("");
+  // `data-index` porte la position dans `historiqueSession` : le detail est lu
+  // a la source plutot que reconstruit depuis le DOM, qui contient un extrait
+  // tronque a 200 caracteres.
+  el.innerHTML=historiqueSession.map((h,i)=>{const nc=cls_conf(h.conf);return `<div class="hist-item hist-cliquable" data-index="${i}" role="button" tabindex="0" title="Voir la reponse complete"><div class="hist-head"><div class="hist-q">${esc(h.question)}</div><div class="hist-time">${heure(h.ts)}</div></div><div class="hist-preview">${formaterTexte(h.reponse.slice(0,200))}...</div><div class="hist-meta"><span class="badge badge-${esc(nc)}">${esc(lbl_conf(h.conf))}</span></div></div>`;}).join("");
 }
+// Detail d'une entree d'historique : la reponse COMPLETE, la ou la liste
+// n'affiche que 200 caracteres. La reponse est deja stockee en entier ; il n'y
+// avait aucun moyen de la lire.
+function ouvrirDetailHisto(index){
+  const h=historiqueSession[index];
+  if(!h)return;
+  const ov=document.getElementById("histo-overlay");
+  document.getElementById("histo-question").textContent=h.question;
+  document.getElementById("histo-date").textContent=heure(h.ts);
+  const badge=document.getElementById("histo-badge");
+  badge.className="badge badge-"+cls_conf(h.conf);
+  badge.textContent=lbl_conf(h.conf);
+  document.getElementById("histo-reponse").innerHTML=formaterTexte(h.reponse);
+  ov.hidden=false;
+  document.getElementById("histo-fermer").focus();
+}
+function fermerDetailHisto(){
+  document.getElementById("histo-overlay").hidden=true;
+}
+document.getElementById("hist-list").addEventListener("click",e=>{
+  const item=e.target.closest(".hist-cliquable");
+  if(item)ouvrirDetailHisto(Number(item.dataset.index));
+});
+document.getElementById("hist-list").addEventListener("keydown",e=>{
+  if(e.key!=="Enter"&&e.key!==" ")return;
+  const item=e.target.closest(".hist-cliquable");
+  if(!item)return;
+  e.preventDefault();
+  ouvrirDetailHisto(Number(item.dataset.index));
+});
+document.getElementById("histo-fermer")?.addEventListener("click",fermerDetailHisto);
+document.getElementById("histo-overlay")?.addEventListener("click",e=>{
+  if(e.target.id==="histo-overlay")fermerDetailHisto();
+});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"&&!document.getElementById("histo-overlay").hidden)fermerDetailHisto();
+});
+
 document.getElementById("btn-vider-histo")?.addEventListener("click",()=>{
   if(!historiqueSession.length)return;
   if(!confirm("Effacer tout l'historique des analyses de ce navigateur ?"))return;

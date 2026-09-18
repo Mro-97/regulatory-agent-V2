@@ -138,6 +138,21 @@
 
   <!-- Connexion : la clé API n'est jamais dans le HTML. Saisie ici,
        conservée en sessionStorage (par onglet, jamais sur disque). -->
+  <!-- Detail d'une entree d'historique : la reponse complete (la liste n'en
+       montre que 200 caracteres). Fermeture par Echap, clic sur le fond, ou
+       le bouton. -->
+  <div class="login-overlay" id="histo-overlay" hidden>
+    <div class="login-card histo-card" role="dialog" aria-labelledby="histo-question">
+      <div class="histo-entete">
+        <span class="badge" id="histo-badge"></span>
+        <span class="histo-date" id="histo-date"></span>
+      </div>
+      <h2 id="histo-question"></h2>
+      <div class="histo-reponse" id="histo-reponse"></div>
+      <button type="button" class="login-go" id="histo-fermer">Fermer</button>
+    </div>
+  </div>
+
   <div class="login-overlay" id="login-overlay" hidden>
     <form class="login-card" id="login-form" autocomplete="off">
       <div class="login-logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>

@@ -452,3 +452,15 @@ body.req-busy .btn-stop{display:flex;animation:stop-pulse 1.7s ease-in-out infin
   .mode-badge{display:none;}
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;}}
+/* ---------------------------------------------------------------------------
+   Detail d'une entree d'historique (panneau #histo-overlay)
+   --------------------------------------------------------------------------- */
+.hist-cliquable{cursor:pointer;}
+.hist-cliquable:hover{border-color:var(--accent, #6b8afd);}
+.histo-card{max-width:44rem;width:min(92vw,44rem);max-height:82vh;overflow-y:auto;text-align:left;}
+.histo-entete{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin-bottom:.5rem;}
+.histo-date{font-size:.78rem;opacity:.7;}
+#histo-question{font-size:1.05rem;line-height:1.4;margin:.2rem 0 .9rem;}
+.histo-reponse{font-size:.9rem;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere;}
+.histo-reponse ul{margin:.4rem 0 .4rem 1.1rem;}
+.histo-reponse a{overflow-wrap:anywhere;}
