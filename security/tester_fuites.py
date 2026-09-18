@@ -101,11 +101,11 @@ def _appel(chemin: str, *, methode: str = "GET", corps: dict | None = None,
     donnees = json.dumps(corps).encode() if corps is not None else None
     if donnees:
         entetes["Content-Type"] = "application/json"
-    requete = urllib.request.Request(  # noqa: S310 — cible imposee par l'operateur
+    requete = urllib.request.Request(
         f"{BASE}{chemin}", data=donnees, headers=entetes, method=methode
     )
     try:
-        with urllib.request.urlopen(requete, timeout=TIMEOUT) as reponse:  # noqa: S310
+        with urllib.request.urlopen(requete, timeout=TIMEOUT) as reponse:
             return reponse.status, reponse.read(MAX_LECTURE).decode("utf-8", "replace"), dict(reponse.headers)
     except urllib.error.HTTPError as exc:
         return exc.code, exc.read(MAX_LECTURE).decode("utf-8", "replace"), dict(exc.headers or {})
@@ -376,7 +376,7 @@ def main() -> int:
             fonction()
         except RuntimeError as exc:
             _enregistrer(nom, "execution", ERROR, "INFO", str(exc))
-        except Exception as exc:  # noqa: BLE001 — un bloc ne doit pas tuer le reste
+        except Exception as exc:
             _enregistrer(nom, "execution", ERROR, "INFO", f"{type(exc).__name__}: {exc}")
 
     print("\n" + "=" * 62)
