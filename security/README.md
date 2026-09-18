@@ -12,11 +12,38 @@ quelques lignes dans `data/feedback.jsonl`).
 
 ## Lancement
 
+### 1. Créer une clé de test
+
+**N'essayez pas de lire une clé existante** : les clés ne sont stockées que
+hachées (SHA-256), une clé est donc irrécupérable. Et depuis le retrait de la
+voie dépréciée, il n'existe plus de ligne `API_KEY=` en clair dans `.env` — un
+`grep '^API_KEY=' .env` renvoie du vide, et le script sort alors en code 2 sans
+rien tester.
+
+Générez une clé dédiée au test, sur la machine qui héberge l'API :
+
+```bash
+cd ~/regulatory-agent
+LABEL=pentest-$(date +%Y%m%d)
+venv/bin/python scripts/gerer_cles.py generer --role admin --label "$LABEL"
+```
+
+Elle s'affiche **une seule fois**. Copiez-la.
+
+### 2. Configurer et lancer
+
 ```bash
 export B=http://127.0.0.1:8002          # port réel (cf. .env API_PORT) ; prod : https://ton-domaine
 export BASE=$B
-export ORIGIN=$B                        # doit matcher une valeur de CORS_ORIGINS
-export KEY=$(grep -E '^API_KEY=' .env | cut -d= -f2-)
+export ORIGIN=$B                        # DOIT figurer dans CORS_ORIGINS du .env
+export KEY=rak_…                        # la clé générée à l'étape 1
+```
+
+> **`ORIGIN` mal choisie = préflight refusé (400).** Le CORS compare les origines
+> **exactement**, schéma et port compris. Si le site est servi autrement que par
+> l'adresse locale — proxy inverse, tunnel, Tailscale —, il faut ajouter
+> l'origine publique à `CORS_ORIGINS` **et** la mettre dans `ORIGIN`, puis
+> redémarrer l'API (CORS est lu au démarrage).
 
 # runner consolidé (recommandé) — ~12-15 min tout compris
 venv/bin/python security/audit_securite.py | tee /tmp/audit_securite.txt
@@ -39,6 +66,30 @@ n'authentifie pas → sortie code 2 sans rien lancer. Sinon code **0** si tous
 les contrôles sont `réussi`, **1** si au moins un `fail` (utilisable en CI /
 gate de déploiement). Les blocs rate-limit et saturation insèrent des pauses
 `RL_WINDOW` (60 s) pour purger la fenêtre du limiteur.
+
+### 3. Révoquer la clé de test
+
+```bash
+venv/bin/python scripts/gerer_cles.py revoquer --label <label-utilisé>
+```
+
+**À faire systématiquement.** Sans cela, une clé `admin` valide reste dans le
+magasin — et depuis le correctif `da6f808`, la révocation prend effet
+**immédiatement**, sans redémarrage.
+
+### Variables reconnues
+
+| Variable | Effet |
+|---|---|
+| `BASE` | cible (défaut `http://127.0.0.1:8002`) |
+| `KEY` | clé de test — **obligatoire**, sinon sortie code 2 |
+| `ORIGIN` | origine envoyée en en-tête (défaut : `BASE`) |
+| `KEY_USER`, `KEY_VALIDATEUR` | activent les tests RBAC croisés |
+| `SKIP_RATELIMIT`, `SKIP_LLM`, `SKIP_SATURATION` | `=1` pour sauter un bloc lent |
+| `RL_WINDOW` | fenêtre du rate-limiter, en secondes (défaut 60) |
+| `STREAM` | `=1` pour viser `/ask/stream` |
+| `INSECURE_TLS` | `=1` pour accepter un certificat auto-signé |
+| `LLM_TIMEOUT`, `SAT_CONC`, `SAT_SECONDS` | réglages des blocs LLM et saturation |
 
 ## Lecture
 
