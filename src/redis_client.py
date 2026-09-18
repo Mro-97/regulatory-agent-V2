@@ -255,6 +255,32 @@ class ClientRedis:
         """Pose un TTL sur la clé ; `True` si la clé existe."""
         return bool(await self._commander("EXPIRE", cle, secondes))
 
+    async def sauvegarder(self) -> bool:
+        """Force une sauvegarde RDB synchrone (`SAVE`) et retourne True.
+
+        `SAVE` (et non `BGSAVE`) : le script de sauvegarde copie le fichier
+        juste après, donc la sauvegarde doit être terminée au retour.
+        """
+        return str(await self._commander("SAVE")) == "OK"
+
+    async def chemin_du_dump(self) -> str:
+        """Chemin absolu du fichier RDB, tel que Redis le voit.
+
+        `CONFIG GET` évite de coder en dur un chemin qui dépend de
+        l'installation : un opérateur qui déplace `--dir` ne doit pas voir sa
+        sauvegarde échouer silencieusement.
+        """
+        dossier = await self._premier_parametre("dir")
+        nom = await self._premier_parametre("dbfilename")
+        return f"{dossier.rstrip('/')}/{nom}"
+
+    async def _premier_parametre(self, nom: str) -> str:
+        """Deuxième element d'une reponse `CONFIG GET <nom>` (tableau a 2 cases)."""
+        reponse = await self._commander("CONFIG", "GET", nom)
+        if isinstance(reponse, list) and len(reponse) >= 2:
+            return str(reponse[1])
+        return ""
+
     async def aclose(self) -> None:
         """Ferme la connexion (contrat `redis.asyncio` conservé)."""
         await asyncio.to_thread(self._connexion.fermer)
