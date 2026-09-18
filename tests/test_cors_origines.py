@@ -19,7 +19,7 @@ def _erreurs(monkeypatch: pytest.MonkeyPatch, origines: str) -> list[str]:
 
     monkeypatch.setattr(cfg, "cors_origins_str", origines)
     erreurs: list[str] = []
-    main._erreur_cors_origines_invalides(erreurs)  # noqa: SLF001 — test unitaire
+    main._erreur_cors_origines_invalides(erreurs)
     return erreurs
 
 
