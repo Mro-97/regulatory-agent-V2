@@ -150,6 +150,51 @@ def _charger_env_clair() -> list[EntreeCle]:
     ]
 
 
+# Sentinelle « jamais chargé ». Un simple `None` ne peut pas servir de
+# marqueur : un fichier de clés absent produit légitimement une signature
+# `None`, et le magasin serait alors considéré comme déjà à jour.
+_JAMAIS_CHARGE = object()
+_signature_vue: object = _JAMAIS_CHARGE
+
+
+def _signature_fichier() -> tuple[float, int] | None:
+    """Signature `(mtime, taille)` du fichier de clés, ou None s'il est absent.
+
+    `gerer_cles.py` écrit ce fichier : le voir changer est le signal qu'une clé
+    a été ajoutée ou révoquée. `(mtime, taille)` et non le seul `mtime` : deux
+    écritures dans la même seconde avec des contenus de tailles différentes
+    restent distinguées.
+
+    Limite assumée : un attaquant qui réécrirait le fichier en restaurant son
+    `mtime` d'origine ne serait pas détecté — mais le compte capable d'écrire ce
+    fichier a de toute façon déjà la main sur les clés.
+    """
+    chemin = cfg.api_keys_file
+    try:
+        infos = chemin.stat()
+    except OSError:
+        return None
+    return infos.st_mtime, infos.st_size
+
+
+def _invalider_si_fichier_change() -> None:
+    """Vide le cache du magasin si le fichier de clés a changé.
+
+    Appelée DEPUIS L'EXTÉRIEUR de la fonction mémoïsée, avant toute lecture.
+
+    Pourquoi pas depuis l'intérieur : `lru_cache` rend son résultat sans
+    exécuter le corps de la fonction, donc une invalidation décidée dans le
+    corps n'est jamais atteinte dès que le cache est rempli — y compris quand
+    ce cache contient un tuple vide. C'est ce piège qui a fait échouer une
+    première tentative.
+    """
+    global _signature_vue
+    signature = _signature_fichier()
+    if signature != _signature_vue:
+        _magasin.cache_clear()
+        _signature_vue = signature
+
+
 @lru_cache(maxsize=1)
 def _magasin() -> tuple[EntreeCle, ...]:
     """Toutes les entrées de clés, tous canaux confondus (mémoïsé)."""
@@ -171,6 +216,7 @@ def recharger_magasin() -> None:
 
 def magasin_configure() -> bool:
     """True si au moins une clé est configurée (sinon l'API répond 503)."""
+    _invalider_si_fichier_change()
     return bool(_magasin())
 
 
@@ -186,6 +232,7 @@ def identifier(cle_fournie: str | None) -> tuple[Role, str] | None:
     Comparaison en temps constant sur TOUTES les entrées, sans court-circuit :
     le temps de réponse ne révèle ni le nombre de clés ni laquelle a matché.
     """
+    _invalider_si_fichier_change()
     proposee = (cle_fournie or "").strip()
     h = hacher_cle(proposee)
     trouve: EntreeCle | None = None

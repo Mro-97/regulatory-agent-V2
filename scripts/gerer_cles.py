@@ -94,7 +94,10 @@ def generer(role: str, label: str) -> int:
     _ecrire_stdout(f"      {cle}")
     _ecrire_stdout("")
     _ecrire_stdout("  À copier MAINTENANT — elle n'est plus jamais affichée.")
-    _ecrire_stdout(f"  Hash enregistré dans {cfg.api_keys_file}. Redémarrer l'API.")
+    _ecrire_stdout(
+        f"  Hash enregistré dans {cfg.api_keys_file}. "
+        "Prise en compte immédiate, sans redémarrage."
+    )
     return 0
 
 
@@ -132,7 +135,10 @@ def revoquer(label: str | None, prefixe_hash: str | None) -> int:
         _ecrire_stdout("Aucune entrée ne correspond.")
         return 1
     _ecrire(cfg.api_keys_file, restantes)
-    _ecrire_stdout(f"{retirees} clé(s) révoquée(s). Redémarrer l'API.")
+    _ecrire_stdout(
+        f"{retirees} clé(s) révoquée(s). Prise en compte immédiate, "
+        "sans redémarrage."
+    )
     return 0
 
 
