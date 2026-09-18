@@ -14,6 +14,7 @@ import asyncio
 import contextlib
 import logging
 import sys
+from urllib.parse import urlparse
 
 import uvicorn
 
@@ -96,11 +97,40 @@ def valider_configuration_demarrage() -> list[str]:
     """
     erreurs: list[str] = []
     _erreur_api_key_manquante(erreurs)
+    _erreur_cors_origines_invalides(erreurs)
     _erreur_rate_limiter_multi_worker(erreurs)
     _erreur_debug_et_docs_exposes(erreurs)
     _erreur_dimension_embedding_incoherente(erreurs)
     _erreurs_mode_production(erreurs)
     return erreurs
+
+
+def _erreur_cors_origines_invalides(erreurs: list[str]) -> None:
+    """Refuse une origine CORS wildcard ou malformée.
+
+    `CORS_ORIGINS=*` ferait accepter par le navigateur toute origine tierce :
+    combiné au cookie de session (envoyé automatiquement), cela rouvrirait la
+    porte que la vérification CSRF et SameSite ferment. Une entrée sans schéma
+    (`monsite.fr`) n'est jamais renvoyée par un navigateur, qui envoie
+    toujours `scheme://hote[:port]` — c'est donc une erreur de configuration
+    silencieuse, qui se traduit par un CORS refusé sans explication.
+    """
+    for origine in cfg.cors_origins:
+        if "*" in origine:
+            erreurs.append(
+                f"CORS_ORIGINS contient '{origine}' — le joker '*' est interdit : "
+                "il autoriserait toute origine tierce à porter le cookie de session. "
+                "Lister explicitement les origines (scheme://hote[:port])."
+            )
+            continue
+        analyse = urlparse(origine)
+        if analyse.scheme not in {"http", "https"} or not analyse.netloc:
+            erreurs.append(
+                f"CORS_ORIGINS contient '{origine}' — attendu "
+                "'scheme://hote[:port]' (ex. https://monsite.fr). Un navigateur "
+                "n'envoie jamais d'origine sans schéma : cette entrée ne "
+                "correspondra à rien."
+            )
 
 
 def _erreurs_mode_production(erreurs: list[str]) -> None:
