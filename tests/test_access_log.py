@@ -81,20 +81,43 @@ def test_acces_200_ligne_structuree(client, logs_acces) -> None:  # noqa: ANN001
     assert "motif=-" in ligne
 
 
-def test_acces_logue_la_question_et_le_client_id(client, logs_acces) -> None:  # noqa: ANN001
+def test_acces_logue_question_et_empreinte_de_cle(
+    client,  # noqa: ANN001
+    logs_acces,  # noqa: ANN001
+) -> None:
+    """`user=` porte l'empreinte VÉRIFIÉE de la clé, plus le client-id.
+
+    Le champ contenait auparavant `X-Client-Id`, un en-tête que l'appelant
+    choisit : le journal était donc falsifiable, et inutilisable comme pièce
+    d'audit. Il porte désormais une valeur décidable côté serveur.
+    """
     client.post(
         "/ask",
         json={"question": "Quel est le délai de notification d'une violation ?"},
         headers={"X-API-Key": CLE, "X-Client-Id": "poste-alice"},
     )
     ligne = _lignes(logs_acces)[-1]
-    assert "user=poste-alice" in ligne
     assert "délai de notification" in ligne
+    # L'empreinte serveur est présente …
+    champ_user = next(
+        (mot for mot in ligne.split() if mot.startswith("user=")), "user=MANQUANT"
+    )
+    replis = ("user=absente", "user=invalide", "user=MANQUANT")
+    assert champ_user not in replis, "clé valide : empreinte attendue, pas un repli"
+    # … et l'identifiant fourni par le client n'est PAS repris.
+    assert "poste-alice" not in champ_user
 
 
-def test_acces_user_repli_sur_x_user(client, logs_acces) -> None:  # noqa: ANN001
-    client.get("/health", headers={"X-User": "julien"})
-    assert "user=julien" in _lignes(logs_acces)[-1]
+def test_acces_ignore_un_client_id_falsifie(client, logs_acces) -> None:  # noqa: ANN001
+    """Un client ne peut pas choisir son nom dans le journal.
+
+    C'est la propriété qui rend la ligne exploitable en audit : sans elle, il
+    suffisait d'envoyer l'identifiant d'un autre pour apparaître sous son nom.
+    """
+    client.get("/health", headers={"X-User": "julien", "X-Client-Id": "poste-bob"})
+    ligne = _lignes(logs_acces)[-1]
+    assert "user=julien" not in ligne
+    assert "user=poste-bob" not in ligne
 
 
 def test_acces_401_motif_cle_absente(client, logs_acces) -> None:  # noqa: ANN001

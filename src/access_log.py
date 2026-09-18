@@ -53,15 +53,23 @@ def _empreinte_cle(fournie: str | None) -> str:
 
 
 def _identite(request: Request) -> str:
-    """Nom lisible du client : X-User, sinon X-Client-Id, sinon empreinte de clé.
+    """Identité VÉRIFIÉE du client : empreinte de sa clé API.
 
-    Les valeurs d'en-tête sont nettoyées (pas de CR/LF/contrôle) avant
-    d'entrer dans la ligne de log — sinon un client peut y injecter de
-    fausses lignes `acces ...`.
+    **Aucune valeur fournie par le client n'est reprise ici.** Le champ
+    `user=` contenait auparavant `X-User` ou `X-Client-Id` — deux en-têtes que
+    l'appelant choisit librement. Le journal d'accès en devenait falsifiable :
+    il suffisait d'envoyer l'identifiant d'un autre pour apparaître sous son
+    nom, ce qui interdit d'en faire une pièce d'audit.
+
+    L'empreinte vient de `_empreinte_cle`, qui valide la clé contre le magasin
+    avant de la hacher : sa valeur est donc décidable côté serveur.
+    `absente` et `invalide` pour les requêtes non authentifiées, un SHA-256
+    tronqué à 8 caractères sinon — jamais la clé elle-même.
+
+    Retirer `X-Client-Id` supprime une commodité (distinguer deux postes
+    partageant une clé). C'était le prix à payer : cette distinction n'avait
+    aucune valeur probante puisque le client la contrôlait.
     """
-    entete = request.headers.get("X-User") or request.headers.get("X-Client-Id")
-    if entete:
-        return nettoyer_entete(entete, taille_max=40)
     return _empreinte_cle(request.headers.get("X-API-Key"))
 
 
