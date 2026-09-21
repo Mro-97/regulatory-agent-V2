@@ -127,6 +127,30 @@ def _conditions_communes(
     return conditions
 
 
+def filtrer_par_pertinence(
+    points: list[ScoredPoint],
+    seuil: float,
+) -> list[ScoredPoint]:
+    """Ne garde que les points dont le score atteint `seuil`.
+
+    Appliqué aux deux passes sémantiques seulement : la passe « articles
+    cités » en est exemptée par l'appelant. Un article explicitement nommé
+    reste pertinent même quand son texte, fragmenté par l'extraction PDF,
+    obtient une similarité basse — mesuré 0,39-0,41 pour l'article 33 du
+    RGPD contre 0,76 pour des passages du guide CNIL sans rapport. Un score
+    ne peut donc pas invalider une correspondance de métadonnées.
+    """
+    gardes = [point for point in points if float(point.score) >= seuil]
+    if len(gardes) != len(points):
+        logger.info(
+            "Seuil de pertinence %.2f — %d point(s) sur %d écarté(s).",
+            seuil,
+            len(points) - len(gardes),
+            len(points),
+        )
+    return gardes
+
+
 def fusionner_passes(
     res_a: list[ScoredPoint],
     res_b: list[ScoredPoint],

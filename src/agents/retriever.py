@@ -35,6 +35,7 @@ from src.agents.retriever_helpers import (
     extraire_numeros_articles,
     extraire_reglement,
     filtre_articles,
+    filtrer_par_pertinence,
     fusionner_passes,
     point_vers_evidence,
 )
@@ -234,7 +235,15 @@ class Retriever:
         filtres_themes: list[str] | None,
         filtres_sources: list[SourceReglementaire] | None,
     ) -> list[EvidenceRecuperee]:
-        """Passe ciblée + 2 passes temporelles, fusion priorisée et conversion."""
+        """Passe ciblée + 2 passes temporelles, fusion priorisée et conversion.
+
+        Le seuil de pertinence (`cfg.qdrant_score_min`) ne s'applique qu'aux
+        passes sémantiques : les chunks de l'article explicitement cité
+        gardent leur place quelle que soit leur similarité (cf.
+        `filtrer_par_pertinence`). Sans candidat au-dessus du seuil, la
+        liste est vide et l'API s'abstient — c'est le comportement voulu
+        pour une question hors corpus.
+        """
         points_articles = self._passe_articles_cites(question, vecteur)
         points_bruts = self._executer_deux_passes(
             vecteur,
@@ -243,11 +252,16 @@ class Retriever:
             filtres_sources,
             repli_disponible=bool(points_articles),
         )
+        points_bruts = filtrer_par_pertinence(points_bruts, cfg.qdrant_score_min)
         fusionnes = _prioriser_articles_cites(
             points_articles, points_bruts, self._top_k
         )
         if not fusionnes:
-            logger.warning("Aucun chunk trouvé pour : %r", question[:80])
+            logger.warning(
+                "Aucun passage au-dessus du seuil de pertinence (%.2f) : %r",
+                cfg.qdrant_score_min,
+                question[:80],
+            )
             return []
         return _convertir_points_en_evidences(fusionnes)
 

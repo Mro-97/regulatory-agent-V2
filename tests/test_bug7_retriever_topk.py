@@ -75,9 +75,13 @@ class TestBug7RepartitionEquilibree:
         passe B (permanent). Avant le fix, un top-k global pur aurait
         entièrement évincé passe A. Après le fix, elle doit rester
         représentée dans le résultat final.
+
+        Les scores des deux passes restent au-dessus du seuil de pertinence
+        (`cfg.qdrant_score_min`) : le test porte sur la répartition du
+        budget top_k, pas sur le filtre de pertinence.
         """
         passe_a = [
-            _point(f"a{i}", score=0.50 - i * 0.01, valid_to="2030-01-01")
+            _point(f"a{i}", score=0.78 - i * 0.01, valid_to="2030-01-01")
             for i in range(4)
         ]
         passe_b = [
@@ -126,10 +130,10 @@ class TestBug7RepartitionEquilibree:
         assert "a0" in chunk_ids
 
     def test_resultat_final_trie_par_score_decroissant(self):  # noqa: ANN201
-        passe_a = [_point("a0", score=0.60, valid_to="2030-01-01")]
+        passe_a = [_point("a0", score=0.75, valid_to="2030-01-01")]
         passe_b = [
             _point("b0", score=0.95, valid_to=None),
-            _point("b1", score=0.70, valid_to=None),
+            _point("b1", score=0.76, valid_to=None),
         ]
 
         r, _ = _retriever(passe_a, passe_b, top_k=3)

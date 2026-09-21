@@ -299,6 +299,23 @@ class Parametres(BaseSettings):
     qdrant_collection: str = Field(default="regulatory_chunks")
     qdrant_vecteur_taille: int = Field(default=1024)
     qdrant_top_k: int = Field(default=15)
+    qdrant_score_min: float = Field(
+        default=0.72,
+        description=(
+            "Seuil de pertinence (similarité cosinus) des passes sémantiques. "
+            "En dessous, le passage est écarté ; si RIEN ne dépasse le seuil, "
+            "le retrieval ne renvoie rien et l'API s'abstient au lieu de "
+            "présenter 15 passages hors sujet comme pertinents. "
+            "Calibré sur bge-m3 le 2026-09-21 : questions absurdes "
+            "0,63-0,71 (« 123 789 33333 », « bonjour », « recette au "
+            "chocolat »), questions réglementaires réelles 0,73-0,88 (16 "
+            "mesurées). C'est un FILET, pas un séparateur : « réparer une "
+            "fuite d'eau » atteint 0,77 par recouvrement lexical et passe. "
+            "La passe « articles cités » est exemptée (cf. "
+            "src/agents/retriever_helpers.py). À re-mesurer si "
+            "`modele_embedding` change."
+        ),
+    )
 
     # ------------------------------------------------------------------
     # Redis — local sur m4pro2 (§3.1 CONTEXTE_PROJET)

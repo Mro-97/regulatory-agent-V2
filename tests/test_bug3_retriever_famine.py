@@ -60,34 +60,37 @@ def _retriever(passe_a, passe_b, top_k):  # noqa: ANN001, ANN202
 
 class TestB3PasDEvictionParScoreBas:
     def test_transitoire_haut_score_pas_evincee_par_permanent_bas_score(self):  # noqa: ANN201
+        # Tous les scores restent au-dessus du seuil de pertinence
+        # (cfg.qdrant_score_min) : le test porte sur la priorité relative
+        # entre passes, pas sur le filtre de pertinence.
         passe_a = [
             _point("a0", 0.90, valid_to="2030-01-01"),
-            _point("a1", 0.80, valid_to="2030-01-01"),
-            _point("a2", 0.70, valid_to="2030-01-01"),
+            _point("a1", 0.85, valid_to="2030-01-01"),
+            _point("a2", 0.79, valid_to="2030-01-01"),
         ]
         passe_b = [
-            _point("b0", 0.85, valid_to=None),
-            _point("b1", 0.50, valid_to=None),
+            _point("b0", 0.82, valid_to=None),
+            _point("b1", 0.77, valid_to=None),
         ]
         r = _retriever(passe_a, passe_b, top_k=4)
         evidences = r.retrieve(question="Q", date_contexte=date(2025, 6, 15))
         ids = {e.chunk_id for e in evidences}
 
         assert len(evidences) == 4
-        # a2 (0.70) doit être présent : il est meilleur que b1 (0.50).
+        # a2 (0.79) doit être présent : il est meilleur que b1 (0.77).
         assert "a2" in ids, (
-            f"a2 (score 0.70, transitoire) évincé par b1 (score 0.50, permanent) "
+            f"a2 (score 0.79, transitoire) évincé par b1 (score 0.77, permanent) "
             f"malgré un score supérieur. Résultat: {ids}"
         )
         # b1 (le plus bas) doit être celui qui saute.
         assert "b1" not in ids, (
-            f"b1 (0.50) présent alors que a2 (0.70) devait être préféré. Résultat: {ids}"  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
+            f"b1 (0.77) présent alors que a2 (0.79) devait être préféré. Résultat: {ids}"  # noqa: E501 — message ou docstring irréductible, cf. §12 (extraction plutôt que scission)
         )
 
     def test_passe_a_reste_representee_scores_bas(self):  # noqa: ANN201
         """Régression du fix B7 : passe A évincée par scores B tous meilleurs."""
         passe_a = [
-            _point(f"a{i}", 0.50 - i * 0.01, valid_to="2030-01-01") for i in range(4)
+            _point(f"a{i}", 0.78 - i * 0.01, valid_to="2030-01-01") for i in range(4)
         ]
         passe_b = [_point(f"b{i}", 0.90 - i * 0.01, valid_to=None) for i in range(4)]
         r = _retriever(passe_a, passe_b, top_k=4)

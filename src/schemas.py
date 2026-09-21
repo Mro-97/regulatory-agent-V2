@@ -101,10 +101,13 @@ class ReponseQuestion(BaseModel):
     mode_reponse: str = Field(
         default="llm",
         description=(
-            "Comment la reponse a ete produite : 'llm' (synthese par le modele) "
-            "ou 'assemblage' (repli brut, sans redaction ni verification de "
-            "pertinence — la synthese a echoue). Permet de distinguer une vraie "
-            "reponse d'un vidage de passages, ce qui etait jusqu'ici invisible."
+            "Comment la reponse a ete produite : 'llm' (synthese par le modele), "
+            "'assemblage' (repli brut, sans redaction ni verification de "
+            "pertinence — la synthese a echoue) ou 'abstention' (aucun passage "
+            "n'atteint le seuil de pertinence : le corpus ne couvre pas la "
+            "question, aucune reponse n'est inventee). Permet de distinguer une "
+            "vraie reponse d'un vidage de passages, ce qui etait jusqu'ici "
+            "invisible."
         ),
     )
 

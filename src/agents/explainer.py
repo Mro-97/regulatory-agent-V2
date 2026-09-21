@@ -62,7 +62,7 @@ class ResultatExplication:
     reponse: str
     sources_citees: list[str]
     niveau_confiance: NiveauConfiance
-    mode: str  # "llm" ou "assemblage"
+    mode: str  # "llm", "assemblage" (repli) ou "abstention" (aucune preuve)
 
 
 # ---------------------------------------------------------------------------
@@ -71,8 +71,8 @@ class ResultatExplication:
 
 
 _MSG_AUCUN_PASSAGE = (
-    "Aucun passage réglementaire pertinent n'a été trouvé "
-    "dans le corpus pour cette question.\n\n"
+    "Aucun passage du corpus n'est suffisamment pertinent pour répondre à "
+    "cette question.\n\n"
     "Vérifiez que les documents correspondants ont été ingérés, "
     "ou reformulez la question."
 )
@@ -91,13 +91,19 @@ _AVERTISSEMENT = (
 )
 
 
-def _resultat_assemblage_vide() -> ResultatExplication:
-    """Retourne un ResultatExplication INCERTAIN quand aucune preuve n'est fournie."""
+def _resultat_abstention() -> ResultatExplication:
+    """Résultat INCERTAIN quand aucune preuve n'atteint le seuil de pertinence.
+
+    Mode `abstention` et non `assemblage` : s'abstenir est un résultat
+    légitime du pipeline (le corpus ne couvre pas la question), pas une
+    dégradation de la synthèse. Confondre les deux ferait passer une
+    abstention honnête pour une panne LLM.
+    """
     return ResultatExplication(
         reponse=_MSG_AUCUN_PASSAGE,
         sources_citees=[],
         niveau_confiance=NiveauConfiance.INCERTAIN,
-        mode="assemblage",
+        mode="abstention",
     )
 
 
@@ -285,7 +291,7 @@ class AgentExplainer:
     ) -> ResultatExplication:
         """Assemblage direct : en-tête + blocs par evidence + avertissement."""
         if not evidences:
-            return _resultat_assemblage_vide()
+            return _resultat_abstention()
         lignes = [
             _MENTION_REPLI,
             _entete_assemblage(date_ref, type_pipeline),
@@ -418,7 +424,7 @@ class AgentExplainer:
                 "Explainer — aucune preuve : réponse INCERTAIN, pas d'appel LLM "
                 "(garde-fou anti-réponse non sourcée)"
             )
-            return _resultat_assemblage_vide()
+            return _resultat_abstention()
 
         # Toute la voie LLM (chargement du modèle inclus) est protégée : un
         # échec de `_charger_modele` — MLX en mauvais état, mémoire saturée

@@ -29,7 +29,7 @@ def test_llm_sans_preuve_retourne_incertain_sans_charger_modele() -> None:
     agent = AgentExplainer(use_llm=True)
     resultat = agent.expliquer(question="Obligations RGPD ?", evidences=[])
     assert resultat.niveau_confiance is NiveauConfiance.INCERTAIN
-    assert resultat.mode == "assemblage"
+    assert resultat.mode == "abstention"
     assert resultat.sources_citees == []
     assert agent._modele is None
 
@@ -38,6 +38,10 @@ def test_assemblage_sans_preuve_reste_incertain() -> None:
     agent = AgentExplainer(use_llm=False)
     resultat = agent.expliquer(question="Obligations RGPD ?", evidences=[])
     assert resultat.niveau_confiance is NiveauConfiance.INCERTAIN
+    # S'abstenir n'est pas une dégradation : le mode doit le distinguer
+    # d'un repli d'assemblage (échec de synthèse).
+    assert resultat.mode == "abstention"
+    assert "suffisamment pertinent" in resultat.reponse
 
 
 def test_evaluer_confiance_refus_llm_force_incertain() -> None:
