@@ -276,11 +276,19 @@ class _CacheEmbedding:
     def __init__(self) -> None:
         self._instances: dict[str, MLXEmbedding] = {}
 
-    def get(self, model_name: str = "BAAI/bge-m3") -> MLXEmbedding:
-        """Retourne l'instance mémorisée pour `model_name` (créée si absente)."""
-        if model_name not in self._instances:
-            self._instances[model_name] = MLXEmbedding(model_name=model_name)
-        return self._instances[model_name]
+    def get(self, model_name: str | None = None) -> MLXEmbedding:
+        """Retourne l'instance mémorisée pour `model_name` (créée si absente).
+
+        `model_name` absent vaut `cfg.modele_embedding` : le défaut était
+        auparavant `"BAAI/bge-m3"`, un dépôt HuggingFace **sans safetensors**,
+        donc inutilisable par `mlx_embeddings` (cf. `config.py`). Tout appelant
+        qui omettait l'argument chargeait donc un modèle cassé, en
+        téléchargeant 4,3 Go au passage.
+        """
+        effectif = model_name or cfg.modele_embedding
+        if effectif not in self._instances:
+            self._instances[effectif] = MLXEmbedding(model_name=effectif)
+        return self._instances[effectif]
 
     def unload_all(self) -> None:
         """Décharge toutes les instances mémorisées."""
@@ -295,11 +303,12 @@ class _CacheEmbedding:
 embedding_cache = _CacheEmbedding()
 
 
-def get_embedding(model_name: str = "BAAI/bge-m3") -> MLXEmbedding:
+def get_embedding(model_name: str | None = None) -> MLXEmbedding:
     """Retourne le modèle d'embedding depuis le cache global.
 
     Args:
-        model_name: Identifiant HuggingFace. Défaut : 'BAAI/bge-m3'.
+        model_name: chemin local ou identifiant HuggingFace. Absent, vaut
+            `cfg.modele_embedding` — source unique de vérité.
 
     Returns:
         MLXEmbedding prête à l'emploi (lazy — pas encore chargée).

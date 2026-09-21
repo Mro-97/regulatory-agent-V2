@@ -147,9 +147,15 @@ def prechauffer_modeles_en_arriere_plan() -> None:
     rattaché à aucune référence.
     """
     logger.info("Pré-chauffage modèle d'embedding en arrière-plan…")
+    # `cfg.modele_embedding` est passe EXPLICITEMENT : le defaut de
+    # `get_embedding()` etait `"BAAI/bge-m3"`, un depot HuggingFace sans
+    # safetensors, donc inutilisable. Le prechauffage chargeait ce modele casse
+    # au lieu de celui de la configuration.
     script = (
+        "from config import cfg; "
         "from src.mlx_embedding import get_embedding; "
-        "get_embedding().load(); print('preload OK', flush=True)"
+        "get_embedding(cfg.modele_embedding).load(); "
+        "print('preload OK', flush=True)"
     )
     processus = _lancer_arriere_plan(
         [sys.executable, "-c", script], LOG_DIR / "preload.log"
