@@ -8,7 +8,6 @@ et `_machine_pour_agent` sans dupliquer leur logique de sérialisation.
 
 from __future__ import annotations
 
-import asyncio
 import logging
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
@@ -19,6 +18,7 @@ from src.agents.conflit import AgentConflit
 from src.agents.explainer import AgentExplainer
 from src.agents.temporal import AgentTemporel
 from src.errors import QueueBackendError
+from src.mlx_utils import executer_mlx
 from src.models import (
     EvidenceRecuperee,
     NiveauConfiance,
@@ -73,9 +73,15 @@ async def _appeler_retriever(
     filtres_themes: list[str],
     filtres_sources: list[SourceReglementaire],
 ) -> list[EvidenceRecuperee]:
-    """Exécute `retriever.retrieve` en thread bloquant."""
+    """Exécute `retriever.retrieve` sur l'unique thread MLX du processus.
+
+    La recherche commence par un embedding MLX : elle doit tourner sur le même
+    thread que le reste du travail MLX (`mlx_utils.EXECUTEUR_MLX`), pas sur un
+    worker du pool par défaut. Le thread unique sérialise de fait embedding et
+    génération, ce qui est le comportement voulu.
+    """
     retriever = orchestrator._obtenir_retriever()
-    return await asyncio.to_thread(
+    return await executer_mlx(
         retriever.retrieve,
         question=question,
         date_contexte=date_contexte,

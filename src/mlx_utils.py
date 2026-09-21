@@ -27,8 +27,11 @@ Dépendances : mlx-lm >= 0.16, mlx-embeddings >= 0.1.0 (MIT/Apache).
 
 from __future__ import annotations
 
+import asyncio
+import functools
 import gc
 import logging
+import threading
 import time
 from collections.abc import Callable, Iterator
 from concurrent.futures import ThreadPoolExecutor
@@ -56,6 +59,33 @@ MLXTimeoutError = GenerationTimeoutError
 
 
 T = TypeVar("T")
+
+# --- Politique de threading MLX --------------------------------------------
+# TOUT le travail MLX (chargement de modèle, inférence, embedding) passe par ce
+# thread unique. `asyncio.to_thread` répartissait ces appels sur le pool par
+# défaut (jusqu'à 32 threads) : le modèle était chargé sur un thread puis
+# utilisé sur un autre, et `mx.eval` du cache de prompt levait « There is no
+# Stream(gpu, 2) in current thread » — une question sur six en service (mesuré
+# le 2026-09-21, trace à l'appui). MLX lie le stream GPU et l'état des tableaux
+# au thread qui les a créés : un seul thread, vivant pour tout le processus,
+# est la seule configuration stable. Même règle que `MLXEmbedding`.
+EXECUTEUR_MLX = ThreadPoolExecutor(max_workers=1, thread_name_prefix="mlx")
+_streams_par_thread: dict[int, Any] = {}
+_verrou_streams = Lock()
+
+
+async def executer_mlx(fonction: Callable[..., T], /, *args: Any, **kwargs: Any) -> T:
+    """Exécute un appel synchrone MLX sur l'unique thread MLX du processus.
+
+    Ne jamais appeler MLX depuis `asyncio.to_thread` : le pool par défaut
+    change de thread d'un appel à l'autre, ce qui casse le lien entre le
+    modèle (chargé une fois) et le thread qui génère.
+    """
+    boucle = asyncio.get_running_loop()
+    return await boucle.run_in_executor(
+        EXECUTEUR_MLX, functools.partial(fonction, *args, **kwargs)
+    )
+
 
 # Un unique executor dédié aux appels MLX bornés dans le temps. Un thread
 # unique suffit : MLX sérialise déjà l'accès aux poids sur le device.
@@ -113,26 +143,32 @@ def _lier_stream_generation_au_thread_courant() -> None:
     Ce global (mlx-lm 0.29) est un stream GPU créé à l'import du module, donc
     lié au thread importateur. Tous les chemins d'inférence font `mx.stream()`
     et `mx.synchronize()` dessus, ce que MLX 0.32 refuse hors du thread
-    propriétaire (« There is no Stream(gpu, 0) in current thread »). La
-    génération étant sérialisée par `Orchestrateur._verrou_agents`, recréer le
-    stream sur le thread courant juste avant chaque appel est sûr.
+    propriétaire (« There is no Stream(gpu, 0) in current thread »).
+
+    Un stream est mémorisé PAR THREAD : en créer un neuf à chaque appel
+    accumulait des streams GPU dans chaque thread du pool et rendait
+    l'inférence instable (« There is no Stream(gpu, 2) in current thread » sur
+    `mx.eval` du cache de prompt, mesuré 1 question sur 6). Comme tout le
+    travail MLX passe par `EXECUTEUR_MLX`, un seul thread — donc un seul
+    stream — est réellement utilisé.
     """
     try:
         import mlx.core as mx
         import mlx_lm.generate as _mlx_gen
 
-        # Frontière externe : rebind best-effort, on ne bloque jamais dessus.
-        _mlx_gen.generation_stream = mx.new_stream(mx.default_device())
+        identifiant = threading.get_ident()
+        with _verrou_streams:
+            flux = _streams_par_thread.get(identifiant)
+            if flux is None:
+                flux = mx.new_stream(mx.default_device())
+                _streams_par_thread[identifiant] = flux
+        _mlx_gen.generation_stream = flux
     except Exception:
         logger.exception("rebind du stream de génération MLX échoué")
 
 
 def _mlx_generate_lie(*args: Any, **kwargs: Any) -> str:
-    """`mlx_lm.generate` précédé du rebind du stream sur le thread appelant.
-
-    Passé à `_executer_avec_timeout` pour que le rebind s'exécute sur le thread
-    (executor ou inline) qui portera réellement l'inférence.
-    """
+    """`mlx_lm.generate` précédé du rebind du stream sur le thread appelant."""
     from mlx_lm import generate as mlx_generate
 
     _lier_stream_generation_au_thread_courant()

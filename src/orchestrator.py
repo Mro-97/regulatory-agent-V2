@@ -46,6 +46,7 @@ if TYPE_CHECKING:
     from src.redis_client import ClientRedis
 
 from src.errors import QueueBackendError
+from src.mlx_utils import EXECUTEUR_MLX, executer_mlx
 from src.models import (
     EnregistrementAudit,
     EvidenceRecuperee,
@@ -167,9 +168,9 @@ class Orchestrateur:
         self.mode = _resoudre_mode(mode)
         self._retriever: Retriever | None = None
         self._ingester: Ingester | None = None
-        # Sérialise l'usage du registre MLX : un seul modèle de génération
-        # actif à la fois ; le verrou empêche deux threads d'entrer en swap
-        # concurrent (cf. `_executer_bloquant`).
+        # Sérialise l'usage du registre MLX : le verrou empêche deux appels
+        # concurrents de charger/évincer un modèle pendant qu'une autre requête
+        # génère encore avec lui (cf. `_executer_bloquant`).
         self._verrou_agents = asyncio.Lock()
         logger.info("Orchestrateur initialisé — mode=%s", self.mode)
 
@@ -202,15 +203,19 @@ class Orchestrateur:
         *args: Any,
         **kwargs: Any,
     ) -> T:
-        """Exécute un appel synchrone (MLX) dans un thread borné par `_verrou_agents`.
+        """Exécute un appel synchrone (MLX) sur l'unique thread MLX du processus.
 
-        Le verrou sérialise l'usage du registre MLX (un seul modèle
-        résident à la fois) : deux appels concurrents non sérialisés
-        pourraient basculer le modèle pendant qu'une autre requête
-        génère encore avec lui. Le thread évite de figer l'event loop.
+        Le thread est dédié et permanent (`mlx_utils.EXECUTEUR_MLX`) et non un
+        worker quelconque du pool par défaut : MLX lie le stream GPU et l'état
+        du cache de prompt au thread qui crée les tableaux, donc charger le
+        modèle sur un thread et générer sur un autre échoue aléatoirement
+        (« There is no Stream(gpu, 2) in current thread »).
+
+        Le verrou sérialise l'accès au registre MLX : deux appels concurrents
+        ne peuvent pas évincer le modèle pendant qu'une autre requête génère.
         """
         async with self._verrou_agents:
-            return await asyncio.to_thread(fonction, *args, **kwargs)
+            return await executer_mlx(fonction, *args, **kwargs)
 
     async def _nouveau_client_redis(self) -> ClientRedis:
         """Client Redis asynchrone (client maison, cf. src/redis_client.py)."""
@@ -506,12 +511,19 @@ class Orchestrateur:
     async def _stream_sous_verrou(
         self, generateur_factory: Callable[[], Iterator[str]]
     ) -> AsyncIterator[str]:
-        """Pompe un générateur synchrone (MLX) dans un thread, sous `_verrou_agents`."""
+        """Pompe un générateur synchrone (MLX) sur le thread MLX, sous le verrou.
+
+        Le générateur tourne sur `EXECUTEUR_MLX` (thread unique permanent) et
+        non sur un worker du pool par défaut : MLX exige de charger et de
+        générer sur le même thread. La lecture bloquante de la file, elle,
+        reste sur le pool par défaut — la placer sur l'unique thread MLX
+        bloquerait la génération qu'elle alimente.
+        """
         file: queue.Queue[tuple[str, Any]] = queue.Queue(maxsize=128)
         loop = asyncio.get_running_loop()
         async with self._verrou_agents:
             futur = loop.run_in_executor(
-                None, self._pomper_generateur, generateur_factory, file
+                EXECUTEUR_MLX, self._pomper_generateur, generateur_factory, file
             )
             while True:
                 genre, charge = await loop.run_in_executor(None, file.get)
@@ -866,7 +878,8 @@ class Orchestrateur:
         """Ingère un document réglementaire (chunking + embedding + upsert Qdrant).
 
         Mode mock : renvoie une ReponseIngestion factice. Mode real :
-        délègue à `orchestrator_ingest.ingerer_sync` via un thread.
+        délègue à `orchestrator_ingest.ingerer_sync` sur le thread MLX
+        (l'ingestion embedde les chunks).
 
         Raises:
             MissingMetadataError / InvalidDocumentError : contenu_json absent
@@ -881,7 +894,7 @@ class Orchestrateur:
         )
         if self.mode == "mock":
             return _reponse_ingestion_mock(requete)
-        return await asyncio.to_thread(self._ingerer_sync, requete)
+        return await executer_mlx(self._ingerer_sync, requete)
 
     def _ingerer_sync(self, requete: RequeteIngestion) -> ReponseIngestion:
         """Ingestion synchrone déléguée à src.orchestrator_ingest."""
