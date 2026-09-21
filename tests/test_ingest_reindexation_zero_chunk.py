@@ -5,7 +5,7 @@ AVANT de chunker. Avec `forcer_reindexation=true` et un découpage qui ne
 produit aucun chunk survivant (seuil `ingest_taille_min_chunk`, sanitizer en
 mode `bloquer`), le document disparaissait du corpus alors que l'API
 répondait 200 `chunks_indexes=0`. `orchestrator_ingest` construit désormais
-les chunks (chunker + sanitizer) avant toute purge et refuse la
+les chunks (chunker + intégrité + sanitizer) avant toute purge et refuse la
 réindexation si le résultat est vide.
 """
 
@@ -22,7 +22,7 @@ from src.schemas import RequeteIngestion
 
 
 class FauxIngester:
-    """Ingester minimal : chunker + sanitizer simulés, sans Qdrant ni MLX."""
+    """Ingester minimal : chunker + préparation (intégrité, sanitizer) simulés."""
 
     def __init__(
         self,
@@ -30,10 +30,12 @@ class FauxIngester:
         existants: int,
         chunks: list[object],
         sanitizer_bloque: bool = False,
+        integrite_bloque: bool = False,
     ) -> None:
         self.existants = existants
         self.chunks = chunks
         self.sanitizer_bloque = sanitizer_bloque
+        self.integrite_bloque = integrite_bloque
         self.purges = 0
         self.ingestions = 0
 
@@ -45,9 +47,11 @@ class FauxIngester:
         """Chunks produits par le chunker (simulés)."""
         return list(self.chunks)
 
-    def _appliquer_sanitizer(self, chunks: list[object]) -> list[object]:
-        """Sanitizer : peut vider la liste (mode `bloquer`)."""
-        return [] if self.sanitizer_bloque else list(chunks)
+    def _preparer_chunks(self, chunks: list[object]) -> list[object]:
+        """Intégrité + sanitizer : chacun peut vider la liste (simulé)."""
+        if self.sanitizer_bloque or self.integrite_bloque:
+            return []
+        return list(chunks)
 
     def supprimer_chunks_document(self, _document_id: str) -> int:
         """Purge simulée."""
@@ -80,6 +84,13 @@ class TestReindexationSansChunk:
 
     def test_sanitizer_qui_vide_tout_refuse_et_ne_purge_pas(self) -> None:
         ingester = FauxIngester(existants=2, chunks=[object()], sanitizer_bloque=True)
+        with pytest.raises(InvalidDocumentError):
+            _resoudre_conflit_reindexation(ingester, _doc(), _requete(forcer=True))
+        assert ingester.purges == 0
+
+    def test_texte_inverse_qui_vide_tout_refuse_et_ne_purge_pas(self) -> None:
+        """Un découpage entièrement inversé ne doit pas purger l'existant."""
+        ingester = FauxIngester(existants=2, chunks=[object()], integrite_bloque=True)
         with pytest.raises(InvalidDocumentError):
             _resoudre_conflit_reindexation(ingester, _doc(), _requete(forcer=True))
         assert ingester.purges == 0

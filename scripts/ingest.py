@@ -14,6 +14,7 @@ from qdrant_client.models import Distance, PointStruct, VectorParams
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from config import cfg
+from src.corpus_integrite import est_inverse
 from src.models import DocumentReglementaire, MetadonneesChunk
 
 logging.basicConfig(
@@ -224,7 +225,7 @@ class Ingester:  # noqa: D101
         self.supprimer_chunks_document(doc.id)
         chunks = self.chunk_document(doc)
         logger.info("%d chunks générés pour %s", len(chunks), doc.id)
-        chunks_traites = self._appliquer_sanitizer(chunks)
+        chunks_traites = self._preparer_chunks(chunks)
         if not chunks_traites:
             logger.warning("Aucun point à indexer pour %s", doc.id)
             return 0
@@ -276,6 +277,40 @@ class Ingester:  # noqa: D101
                 chunk = chunk.model_copy(update={"texte_chunk": traite})
             conserves.append(chunk)
         return conserves
+
+    def _ecarter_inverses(
+        self, chunks: list[MetadonneesChunk]
+    ) -> list[MetadonneesChunk]:
+        """Écarte les chunks au texte lu à l'envers (cf. src.corpus_integrite).
+
+        Un texte inversé ne doit jamais être indexé : ses vecteurs attirent
+        des requêtes sans rapport (91 chunks mesurés dans REACH). Il est
+        écarté plutôt que réparé ici parce que ses bornes de découpage ont
+        été calculées sur le texte inversé — le remettre à l'endroit
+        produirait un découpage faux. La réparation se fait à la source, au
+        niveau de la page PDF (`scripts/pdf_parsing.py`).
+        """
+        conserves: list[MetadonneesChunk] = []
+        ecartes: list[str] = []
+        for chunk in chunks:
+            if est_inverse(chunk.texte_chunk):
+                ecartes.append(chunk.chunk_id)
+                continue
+            conserves.append(chunk)
+        if ecartes:
+            logger.warning(
+                "%d chunk(s) au texte inversé écartés — réextraire la source "
+                "(scripts/pdf_to_json.py) : %s",
+                len(ecartes),
+                ", ".join(ecartes[:5]),
+            )
+        return conserves
+
+    def _preparer_chunks(
+        self, chunks: list[MetadonneesChunk]
+    ) -> list[MetadonneesChunk]:
+        """Intégrité du corpus d'abord, politique de sécurité ensuite."""
+        return self._appliquer_sanitizer(self._ecarter_inverses(chunks))
 
     def _chunk_vers_point(self, chunk: Any) -> PointStruct:
         """Convertit un chunk en PointStruct Qdrant (id déterministe = uuid5(chunk_id)).

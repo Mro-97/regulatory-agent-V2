@@ -6,11 +6,9 @@ tels quels — ils produisent des vecteurs qui attirent des requetes sans aucun
 rapport. Mesure du 2026-09-21 : 91 chunks sur 1856 (4,9 %) de REACH, et aucun
 autre document touche.
 
-Signature : les mots francais courants y apparaissent inverses (« ed » pour
-« de », « al » pour « la », « el » pour « le »). Le critere est volontairement
-STRICT (au moins 10 inversions ET quatre fois plus d'inversions que de mots
-normaux) : un seuil plus laxiste signalait du texte anglais legitime (NIST,
-ENISA), et purger la-dessus supprimerait du bon contenu.
+La signature et le critere de detection vivent dans `src/corpus_integrite.py`,
+partages avec l'extraction PDF (reparation) et l'ingestion (garde-fou) : une
+seule definition du critere, donc aucun risque de divergence entre les trois.
 
 Deux modes :
     --inventaire   (defaut) rapporte, ne modifie RIEN ;
@@ -24,7 +22,6 @@ from __future__ import annotations
 
 import argparse
 import logging
-import re
 import sys
 from collections import Counter
 from pathlib import Path
@@ -35,34 +32,12 @@ RACINE = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RACINE))
 
 from config import cfg  # noqa: E402
+from src.corpus_integrite import est_inverse, mesurer  # noqa: E402
 
 if TYPE_CHECKING:
     from qdrant_client import QdrantClient
 
 logger = logging.getLogger("diagnostic_corpus")
-
-# Mots tres frequents en francais juridique, et leur inversion.
-COURANTS = (
-    "de", "la", "le", "les", "des", "du", "et", "un", "une", "est", "pour",
-    "dans", "que", "qui", "sur", "par", "avec", "ne", "pas", "au", "aux",
-    "en", "il", "elle", "sont", "cette", "son", "sa", "ses", "ou", "article",
-    "reglement", "commission",
-)
-_INVERSES = frozenset(mot[::-1] for mot in COURANTS)
-_JETON = re.compile(r"[a-zA-Zà-ÿ']{2,}")
-
-# Criteres stricts : voir la docstring — un seuil laxiste cree des faux positifs.
-MIN_INVERSIONS = 10
-RATIO_DOMINANCE = 4
-
-
-def est_corrompu(texte: str) -> tuple[bool, int, int]:
-    """True si le texte est inverse ; retourne aussi (inversions, normaux)."""
-    jetons = [j.lower() for j in _JETON.findall(texte)]
-    inverses = sum(1 for j in jetons if j in _INVERSES)
-    normaux = sum(1 for j in jetons if j in COURANTS)
-    corrompu = inverses >= MIN_INVERSIONS and inverses > normaux * RATIO_DOMINANCE
-    return corrompu, inverses, normaux
 
 
 def _client() -> QdrantClient:
@@ -88,14 +63,14 @@ def _parcourir(client: QdrantClient) -> list[tuple[str, str, str, int]]:
         for point in points:
             charge = point.payload or {}
             lus += 1
-            corrompu, inverses, _ = est_corrompu(str(charge.get("texte_chunk") or ""))
-            if corrompu:
+            texte = str(charge.get("texte_chunk") or "")
+            if est_inverse(texte):
                 trouves.append(
                     (
                         str(point.id),
                         str(charge.get("document_id") or "?"),
                         str(charge.get("article_id") or "?"),
-                        inverses,
+                        mesurer(texte)[0],
                     )
                 )
         if offset is None:

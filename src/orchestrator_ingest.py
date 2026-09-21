@@ -59,13 +59,13 @@ def _resoudre_conflit_reindexation(
     """Vérifie l'existence du document et purge si `forcer_reindexation=True`.
 
     M11 : les chunks de la nouvelle version sont construits (chunker +
-    sanitizer) AVANT toute purge. `Ingester.ingest_document` purge d'abord
-    puis chunk : si le découpage ne produit aucun chunk survivant (filtre
-    `ingest_taille_min_chunk`, sanitizer en mode `bloquer`), le document
-    disparaissait du corpus et l'API répondait 200 `chunks_indexes=0`. On
-    refuse donc la réindexation dans ce cas, en conservant l'ancienne
-    version. (Le correctif équivalent dans `scripts/ingest.py`
-    `ingest_document` est hors de ce module.)
+    intégrité + sanitizer) AVANT toute purge. `Ingester.ingest_document` purge
+    d'abord puis chunk : si le découpage ne produit aucun chunk survivant
+    (filtre `ingest_taille_min_chunk`, texte inversé, sanitizer en mode
+    `bloquer`), le document disparaissait du corpus et l'API répondait 200
+    `chunks_indexes=0`. On refuse donc la réindexation dans ce cas, en
+    conservant l'ancienne version. (Le correctif équivalent dans
+    `scripts/ingest.py` `ingest_document` est hors de ce module.)
 
     Raises:
         DocumentAlreadyIndexedError: document déjà indexé sans
@@ -91,14 +91,15 @@ def _resoudre_conflit_reindexation(
 
 
 def _produit_des_chunks(ingester: Ingester, doc: Any) -> bool:
-    """True si chunker + sanitizer produisent au moins un chunk pour `doc`.
+    """True si le découpage produit au moins un chunk survivant pour `doc`.
 
-    Pré-vol de `_resoudre_conflit_reindexation`. Le sanitizer privé de
-    l'`Ingester` est appelé faute d'API publique « préparer les chunks » et
-    parce que `scripts/ingest.py` est hors périmètre de ce correctif.
+    Pré-vol de `_resoudre_conflit_reindexation` : il applique exactement la
+    même préparation que l'ingestion (intégrité du corpus puis sanitizer),
+    faute d'API publique « préparer les chunks » et parce que
+    `scripts/ingest.py` est hors périmètre de ce correctif.
     """
     chunks = ingester.chunk_document(doc)
-    return bool(ingester._appliquer_sanitizer(chunks))
+    return bool(ingester._preparer_chunks(chunks))
 
 
 def ingerer_sync(

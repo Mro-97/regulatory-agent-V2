@@ -4,6 +4,10 @@ Extraits de scripts/pdf_to_json.py (§12 étape 6). Regroupe les patterns
 de détection (articles, chapitres) et les primitives de découpage : le
 script `pdf_to_json.py` ne conserve que la construction du document
 canonique et le point d'entrée CLI.
+
+Une page pivotée à 180 degrés (Journal officiel REACH) ressort lue à
+l'envers : `_texte_page` la remet à l'endroit avant toute découpe, sinon
+les articles détectés — donc les chunks indexés — sont du texte inversé.
 """
 
 from __future__ import annotations
@@ -13,6 +17,8 @@ import re
 import sys
 from pathlib import Path
 from typing import Any
+
+from src.corpus_integrite import est_inverse, reparer
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +90,7 @@ def _extraire_pages(chemin: Path) -> str:
     with pdfplumber.open(chemin) as pdf:
         logger.info("Nombre de pages : %d", len(pdf.pages))
         for i, page in enumerate(pdf.pages, 1):
-            texte = page.extract_text()
+            texte = _texte_page(page, i)
             if texte:
                 pages_texte.append(texte.strip())
             if i % 20 == 0:
@@ -92,6 +98,18 @@ def _extraire_pages(chemin: Path) -> str:
     texte_complet = "\n\n".join(pages_texte)
     logger.info("Extraction terminée — %d caractères", len(texte_complet))
     return texte_complet
+
+
+def _texte_page(page: Any, numero: int) -> str:
+    """Texte d'une page, remis à l'endroit s'il a été extrait à l'envers."""
+    texte = page.extract_text() or ""
+    if est_inverse(texte):
+        logger.warning(
+            "Page %d extraite à l'envers : remise à l'endroit avant découpe.",
+            numero,
+        )
+        return reparer(texte)
+    return texte
 
 
 # ---------------------------------------------------------------------------
