@@ -76,12 +76,30 @@ Le nombre de points doit correspondre à celui du snapshot restauré, et
 l'`EMBEDDING_DIMENSION` doit égaler `QDRANT_VECTEUR_TAILLE` — sinon le boot
 refuse de démarrer (garde-fou existant dans `main.py`).
 
+### Exporter hors machine
+
+```bash
+venv/bin/python scripts/sauvegarde.py --exporter /Volumes/sauvegarde
+```
+
+Copie **hors de m4pro2** le snapshot Qdrant le plus récent — téléchargé par
+l'API REST, `qdrant_client` n'exposant pas de méthode de téléchargement — et le
+dump Redis le plus récent. La taille de chaque fichier écrit est vérifiée
+contre celle annoncée : un export tronqué qui « a l'air » réussi serait pire
+que pas d'export.
+
+`DESTINATION` doit être un **point de montage réel** : disque USB, partage
+réseau, volume chiffré. Un sous-dossier de `~/regulatory-agent` serait sur le
+même disque que Qdrant et ne protégerait de rien. Le script vérifie les
+fichiers, pas la nature du montage : c'est à l'opérateur de le monter.
+
 ## Rythme recommandé
 
 | Fréquence | Action |
 |---|---|
 | Avant toute opération destructive (purge, réindexation, migration) | `--sauvegarder` |
 | Après un réindexation complète | `--sauvegarder`, puis `--purger --garder 2` |
+| Hebdomadaire, et après toute sauvegarde qui compte | `--exporter <montage>` (copie hors machine) |
 | Mensuel | `--etat` pour surveiller le volume |
 
 ## Points de vigilance
@@ -94,7 +112,8 @@ refuse de démarrer (garde-fou existant dans `main.py`).
 - **Redis a une persistance RDB configurée** (`save 3600 1 300 100 60 10000`),
   mais elle ne protège pas d'un arrêt juste après une écriture. Le `SAVE`
   explicite du script, lui, garantit que le fichier est à jour.
-- **Aucune sauvegarde hors machine** : tout est sur m4pro2. Une panne disque
-  emporterait corpus et sauvegardes. Une copie externe (autre machine du
-  tailnet, disque USB) reste à mettre en place — c'est le principal manque
-  résiduel de cette procédure.
+- **La copie hors machine est un geste séparé** (`--exporter`) :
+  `--sauvegarder` écrit tout sur le disque de m4pro2, donc sur le même volume
+  que le corpus. Seul un export vers un montage distinct survit à une panne
+  disque ; le script vérifie la taille des fichiers copiés, mais ne peut pas
+  deviner si la destination est vraiment un autre disque.

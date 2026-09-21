@@ -18,6 +18,7 @@ Usage :
     python scripts/sauvegarde.py --sauvegarder     # snapshot Qdrant + dump Redis
     python scripts/sauvegarde.py --purger --garder 2   # ménage (destructif)
     python scripts/sauvegarde.py --restaurer-chemin <chemin.snapshot>
+    python scripts/sauvegarde.py --exporter /Volumes/sauvegarde   # hors machine
 """
 
 from __future__ import annotations
@@ -190,6 +191,94 @@ def restaurer_chemin(chemin: str) -> int:
     return 0
 
 
+def _telecharger_snapshot(nom: str, destination: Path) -> Path:
+    """Télécharge un snapshot Qdrant par l'API REST dans `destination`.
+
+    `qdrant_client` n'expose aucune méthode de téléchargement : le fichier
+    s'obtient par `GET /collections/{collection}/snapshots/{nom}`. Le flux est
+    écrit directement sur disque — un snapshot de collection pèse des
+    centaines de Mo, le charger en mémoire pour le recopier serait inutile.
+    """
+    import httpx
+
+    schema = "https" if cfg.qdrant_https else "http"
+    url = (
+        f"{schema}://{cfg.qdrant_host}:{cfg.qdrant_port}"
+        f"/collections/{cfg.qdrant_collection}/snapshots/{nom}"
+    )
+    entetes = {"api-key": cfg.qdrant_api_key} if cfg.qdrant_api_key else {}
+    with (
+        httpx.Client(timeout=300.0) as client,
+        client.stream("GET", url, headers=entetes) as reponse,
+    ):
+        reponse.raise_for_status()
+        with destination.open("wb") as fichier:
+            for morceau in reponse.iter_bytes():
+                fichier.write(morceau)
+    return destination
+
+
+def _verifier_taille(fichier: Path, attendue: int) -> None:
+    """Lève si le fichier écrit n'a pas la taille annoncée (export tronqué)."""
+    reelle = fichier.stat().st_size
+    if attendue and reelle != attendue:
+        raise SystemExit(  # noqa: TRY003 — message opérateur
+            f"export incomplet : {fichier.name} fait {reelle} octets, "
+            f"{attendue} attendus"
+        )
+
+
+def _exporter_qdrant(client: QdrantClient, dossier: Path) -> None:
+    """Exporte le snapshot Qdrant le plus récent (taille vérifiée)."""
+    snapshots = sorted(
+        client.list_snapshots(collection_name=cfg.qdrant_collection),
+        key=lambda s: s.creation_time or "",
+    )
+    if not snapshots:
+        raise SystemExit(  # noqa: TRY003 — message opérateur
+            "aucun snapshot Qdrant : lancer --sauvegarder d'abord"
+        )
+    dernier = snapshots[-1]
+    chemin = _telecharger_snapshot(dernier.name, dossier / dernier.name)
+    _verifier_taille(chemin, dernier.size)
+    logger.info(
+        "  Qdrant : %s exporté (%.0f Mo)", chemin.name, chemin.stat().st_size / 1e6
+    )
+
+
+def _exporter_redis(dossier: Path) -> None:
+    """Exporte le dump Redis le plus récent (copie vérifiée)."""
+    dumps = sorted(DOSSIER_SNAPSHOTS.glob("redis-*.rdb"))
+    if not dumps:
+        logger.warning("  Redis  : aucun dump local — lancer --sauvegarder")
+        return
+    cible = dossier / dumps[-1].name
+    shutil.copy2(dumps[-1], cible)
+    _verifier_taille(cible, dumps[-1].stat().st_size)
+    logger.info(
+        "  Redis  : %s exporté (%.0f Ko)", cible.name, cible.stat().st_size / 1024
+    )
+
+
+def exporter(destination: str) -> int:
+    """Copie la sauvegarde HORS de la machine (disque externe, partage monté).
+
+    Tout vit sur m4pro2 : une panne disque emporterait le corpus ET ses
+    sauvegardes, qui sont sur le même volume. Chaque fichier exporté est
+    vérifié par sa taille — un export tronqué qui « a l'air » réussi est pire
+    que pas d'export.
+    """
+    dossier = Path(destination).expanduser()
+    if not dossier.is_dir():
+        raise SystemExit(  # noqa: TRY003 — message opérateur
+            f"destination inutilisable (montage absent ?) : {dossier}"
+        )
+    _exporter_qdrant(_client_qdrant(), dossier)
+    _exporter_redis(dossier)
+    logger.info("Export vérifié dans %s", dossier)
+    return 0
+
+
 def _parser() -> argparse.Namespace:
     """Analyse les arguments de la ligne de commande."""
     parser = argparse.ArgumentParser(
@@ -210,6 +299,11 @@ def _parser() -> argparse.Namespace:
     parser.add_argument(
         "--restaurer-chemin", help="Restaurer la collection depuis un snapshot."
     )
+    parser.add_argument(
+        "--exporter",
+        metavar="DESTINATION",
+        help="Copier la sauvegarde HORS machine (disque externe, partage monté).",
+    )
     return parser.parse_args()
 
 
@@ -225,6 +319,8 @@ def main() -> int:
         return purger(args.garder)
     if args.restaurer_chemin:
         return restaurer_chemin(args.restaurer_chemin)
+    if args.exporter:
+        return exporter(args.exporter)
     _parser().print_help()
     return 1
 

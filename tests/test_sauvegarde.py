@@ -144,3 +144,74 @@ class TestDimension:
     def test_forme_inconnue(self) -> None:
         """Une config inhabituelle ne doit pas lever, seulement signaler '?'."""
         assert sauvegarde._dimension(None) == "?"
+
+
+class TestExportHorsMachine:
+    """`--exporter` : sans copie hors machine, une panne disque emporte tout."""
+
+    @staticmethod
+    def _preparer(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, taille: int
+    ) -> FauxClientQdrant:
+        """Client factice + dossier de snapshots local, sans réseau."""
+        client = FauxClientQdrant(
+            [FauxSnapshot("recent.snapshot", "2026-09-21T00:00:00", taille)]
+        )
+        monkeypatch.setattr(sauvegarde, "_client_qdrant", lambda: client)
+        monkeypatch.setattr(sauvegarde, "DOSSIER_SNAPSHOTS", tmp_path / "snapshots")
+        (tmp_path / "snapshots").mkdir()
+        (tmp_path / "snapshots" / "redis-2026-09-21-160000.rdb").write_bytes(b"rdb")
+        return client
+
+    def test_exporte_snapshot_et_dump(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        """Le snapshot Qdrant et le dump Redis arrivent dans la destination."""
+        self._preparer(monkeypatch, tmp_path, taille=12)
+        destination = tmp_path / "hors-machine"
+        destination.mkdir()
+
+        def _faux_telechargement(_nom: str, cible: Path) -> Path:
+            cible.write_bytes(b"x" * 12)
+            return cible
+
+        monkeypatch.setattr(sauvegarde, "_telecharger_snapshot", _faux_telechargement)
+        assert sauvegarde.exporter(str(destination)) == 0
+        assert (destination / "recent.snapshot").stat().st_size == 12
+        assert (destination / "redis-2026-09-21-160000.rdb").read_bytes() == b"rdb"
+
+    def test_destination_absente_refuse(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Un montage absent échoue AVANT tout appel à Qdrant."""
+        monkeypatch.setattr(
+            sauvegarde,
+            "_client_qdrant",
+            lambda: pytest.fail("Qdrant ne doit pas être contacté"),
+        )
+        with pytest.raises(SystemExit):
+            sauvegarde.exporter("/inexistant/absolument")
+
+    def test_aucun_snapshot_refuse(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        """Sans snapshot Qdrant, l'export ne peut pas être complet."""
+        monkeypatch.setattr(sauvegarde, "_client_qdrant", lambda: FauxClientQdrant([]))
+        with pytest.raises(SystemExit):
+            sauvegarde.exporter(str(tmp_path))
+
+    def test_export_tronque_refuse(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        """Un snapshot de taille inattendue est signalé, pas accepté en silence."""
+        self._preparer(monkeypatch, tmp_path, taille=12)
+        destination = tmp_path / "hors-machine"
+        destination.mkdir()
+
+        def _telechargement_tronque(_nom: str, cible: Path) -> Path:
+            cible.write_bytes(b"x" * 5)
+            return cible
+
+        monkeypatch.setattr(
+            sauvegarde, "_telecharger_snapshot", _telechargement_tronque
+        )
+        with pytest.raises(SystemExit):
+            sauvegarde.exporter(str(destination))
