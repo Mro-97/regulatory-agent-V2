@@ -136,8 +136,7 @@ def revoquer(label: str | None, prefixe_hash: str | None) -> int:
         return 1
     _ecrire(cfg.api_keys_file, restantes)
     _ecrire_stdout(
-        f"{retirees} clé(s) révoquée(s). Prise en compte immédiate, "
-        "sans redémarrage."
+        f"{retirees} clé(s) révoquée(s). Prise en compte immédiate, sans redémarrage."
     )
     return 0
 

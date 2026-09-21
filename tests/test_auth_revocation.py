@@ -83,9 +83,7 @@ class TestRevocationSansRedemarrage:
         _ecrire(magasin, [("rak_z", "validateur")])
         assert identifier("rak_z") is not None
 
-    def test_toutes_cles_revoquees_desactive_le_magasin(
-        self, magasin: Path
-    ) -> None:
+    def test_toutes_cles_revoquees_desactive_le_magasin(self, magasin: Path) -> None:
         """Révoquer la dernière clé rend `magasin_configure` faux (→ 503)."""
         _ecrire(magasin, [("rak_seule", "admin")])
         assert magasin_configure() is True

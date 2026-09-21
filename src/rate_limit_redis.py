@@ -132,4 +132,3 @@ def get_rate_limiter() -> RateLimiterRedis:
             window_seconds=cfg.redis_rate_limit_window_seconds,
         )
     return _singleton
-

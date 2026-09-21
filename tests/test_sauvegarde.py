@@ -54,9 +54,7 @@ class FauxClientQdrant:
         self.crees.append(collection_name)
         return FauxSnapshot("nouveau.snapshot", "2026-09-18T00:00:00")
 
-    def recover_snapshot(
-        self, collection_name: str, location: str, wait: bool
-    ) -> None:
+    def recover_snapshot(self, collection_name: str, location: str, wait: bool) -> None:
         assert wait is True, "une restauration sans wait=True peut être partielle"
         self.restaures.append((collection_name, location))
 

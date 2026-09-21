@@ -395,4 +395,3 @@ class AlerteWatcher(BaseModel):
     horodatage_detection: datetime = Field(default_factory=lambda: datetime.now(UTC))
     description_modification: str | None = Field(default=None, max_length=2000)
     tache_validation_id: UUID | None = Field(default=None)
-

@@ -57,9 +57,7 @@ def _controler_api() -> Controle:
     """L'API répond-elle 200 sur `/health` dans le délai imparti ?"""
     url = f"http://{cfg.api_host}:{cfg.api_port}/health"
     try:
-        with urllib.request.urlopen(
-            url, timeout=DELAI_SECONDES
-        ) as reponse:
+        with urllib.request.urlopen(url, timeout=DELAI_SECONDES) as reponse:
             code = reponse.status
     except (urllib.error.URLError, OSError, TimeoutError) as exc:
         return Controle("api", False, f"injoignable ({type(exc).__name__})")

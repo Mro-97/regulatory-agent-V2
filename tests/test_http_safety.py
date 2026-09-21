@@ -107,9 +107,7 @@ class TestResoudreUrlPubliqueOuLever:
     def test_url_publique_passe(self):  # noqa: ANN201
         """URL vers IP publique : aucune exception, IP retournée."""
         with patch("socket.getaddrinfo", _mock_getaddrinfo(["8.8.8.8"])):
-            assert valider_url("https://example.com/x") == [
-                "8.8.8.8"
-            ]
+            assert valider_url("https://example.com/x") == ["8.8.8.8"]
 
     def test_url_localhost_refusee(self):  # noqa: ANN201
         """URL résolvant vers 127.0.0.1 → UrlInterneRefuseeError."""

@@ -195,9 +195,7 @@ def etat() -> int:
         check=False,
     )
     lignes = [
-        ligne
-        for ligne in resultat.stdout.splitlines()
-        if "regulatory-agent" in ligne
+        ligne for ligne in resultat.stdout.splitlines() if "regulatory-agent" in ligne
     ]
     if not lignes:
         logger.info("Aucun agent regulatory-agent installé.")

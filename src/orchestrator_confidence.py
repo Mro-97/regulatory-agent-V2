@@ -73,8 +73,7 @@ def doit_soumettre_validation(
     LLM) sort sans revue humaine ; `MOYEN` et en dessous sont escaladés.
     """
     return (
-        requete.demander_validation_humaine
-        or niveau_confiance in CONFIANCES_A_VALIDER
+        requete.demander_validation_humaine or niveau_confiance in CONFIANCES_A_VALIDER
     )
 
 

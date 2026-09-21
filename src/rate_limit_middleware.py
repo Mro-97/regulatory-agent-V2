@@ -61,7 +61,6 @@ def _scope_cle(request: Request) -> str:
     """
     import hashlib
 
-
     fournie = (request.headers.get("X-API-Key") or "").strip()
     if fournie and cle_api_valide(fournie):
         return hashlib.sha256(fournie.encode("utf-8")).hexdigest()[:12]

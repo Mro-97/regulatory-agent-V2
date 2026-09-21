@@ -183,6 +183,7 @@ class InvalidContextDateError(TemporalError, ValueError):
         self.reason = reason
         self.value = value
 
+
 # ---------------------------------------------------------------------------
 # Evidence (retrieval Qdrant, ancrage citations)
 # ---------------------------------------------------------------------------
@@ -190,6 +191,7 @@ class InvalidContextDateError(TemporalError, ValueError):
 
 class EvidenceError(RegulatoryAgentError):
     """Racine des erreurs relatives aux preuves et citations."""
+
 
 class VectorStoreError(EvidenceError):
     """Qdrant est inaccessible ou renvoie une réponse invalide."""
@@ -236,6 +238,7 @@ class ModelNotLoadedError(InferenceError):
     def __init__(self, agent: str) -> None:  # noqa: D107 — constructeur documenté par la classe (§0.2)
         super().__init__(f"Modèle {agent} non chargé")
         self.agent = agent
+
 
 class DnsIrresoluError(ValueError):
     """Le hostname n'est résoluble par aucun serveur DNS."""
@@ -313,6 +316,7 @@ class TaskNotFoundError(ValidationQueueError, ValueError):
         super().__init__(f"Tâche introuvable : {tache_id}")
         self.tache_id = tache_id
 
+
 class QueueBackendError(ValidationQueueError):
     """Le backend Redis est indisponible ou a rejeté l'opération."""
 
@@ -324,4 +328,3 @@ class QueueBackendError(ValidationQueueError):
 # ---------------------------------------------------------------------------
 # Audit
 # ---------------------------------------------------------------------------
-
