@@ -140,6 +140,7 @@ from src.classification import classifier_requete as _classifier_requete  # noqa
 _MSG_ERREUR_STREAM = "Erreur interne lors du traitement de la question."
 _MSG_ECHEC_SYNTHESE = "Erreur lors de la génération de la réponse."
 
+
 class Orchestrateur:
     """Orchestrateur central de Regulatory Agent V2.
 
@@ -410,7 +411,13 @@ class Orchestrateur:
         agents: list[SortieAgent],
         morceaux: list[str],
     ) -> ReponseQuestion:
-        """Clôt le flux : confiance, trace d'audit, citations, HITL et audit."""
+        """Clôt le flux : confiance, trace d'audit, citations, HITL et audit.
+
+        `mode` suit le même vocabulaire que le chemin non-flux
+        (`llm` / `abstention`) : c'est ce que lit `mode_reponse`. Le fait que
+        la synthèse ait été diffusée en flux est tracé à part (`flux`), sinon
+        un client devrait connaître une 3e valeur non documentée.
+        """
         from src.agents.explainer import _evaluer_confiance
 
         texte = "".join(morceaux).strip() or _MSG_ECHEC_SYNTHESE
@@ -420,7 +427,8 @@ class Orchestrateur:
                 nom_agent="Explainer",
                 machine=_MACHINE,
                 contenu={
-                    "mode": "stream",
+                    "mode": "abstention" if not evidences else "llm",
+                    "flux": True,
                     "evidences_utilisees": len(evidences),
                     "fragments": len(morceaux),
                     "niveau_confiance": confiance.value,

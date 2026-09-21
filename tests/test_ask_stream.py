@@ -140,3 +140,7 @@ def test_sequence_evenements_du_flux_reel() -> None:
     payload = evenements[-1][1]
     assert "request_id" in payload
     assert "niveau_confiance" in payload
+    # Aucune preuve : le flux s'abstient, et `mode_reponse` doit le dire avec le
+    # même vocabulaire que le chemin non-flux (pas de valeur « stream »
+    # indocumentée pour un client).
+    assert payload["mode_reponse"] == "abstention"
