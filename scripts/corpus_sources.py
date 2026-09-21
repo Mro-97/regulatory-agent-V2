@@ -33,10 +33,33 @@ class SourceReg:
     version: str
     themes: list[str] = field(default_factory=list)
     a_verifier: bool = False
+    # En-têtes HTTP supplémentaires, pour les sources qui négocient leur
+    # contenu : CELLAR renvoie une notice texte de 41 Mo au lieu du PDF s'il ne
+    # reçoit pas `Accept: application/pdf`.
+    entetes: dict[str, str] = field(default_factory=dict)
 
 
 def _eurlex(celex: str) -> str:
     return f"https://eur-lex.europa.eu/legal-content/FR/TXT/HTML/?uri=CELEX:{celex}"
+
+
+def _cellar(celex: str) -> str:
+    """Ressource PDF du Publications Office (CELLAR) pour un identifiant CELEX.
+
+    Le portail `eur-lex.europa.eu` est derrière un WAF AWS : depuis le
+    2026-09-21, toute requête non-navigateur y reçoit un `202 Accepted` au
+    corps vide (constaté sur les variantes HTML et PDF, en-têtes de navigateur
+    et cookies compris). L'API CELLAR du Publications Office sert le même
+    document sans cette protection, mais par NÉGOCIATION DE CONTENU, et les
+    deux en-têtes sont nécessaires :
+    - sans `Accept: application/pdf`, elle renvoie une notice texte de 41 Mo ;
+    - sans `Accept-Language: fr`, elle ne sait pas quelle version servir et
+      répond `400`.
+    Le PDF n'est donc pas « l'URL » mais le couple URL + `entetes` de l'entrée :
+    un oubli donne soit « No /Root object! - Is this really a PDF? » (notice),
+    soit un 400 (langue).
+    """
+    return f"https://publications.europa.eu/resource/celex/{celex}"
 
 
 _CYBER = ["cybersecurite", "numerique"]
@@ -179,6 +202,28 @@ _EURLEX: list[SourceReg] = [
         _DATA,
     ),
 ]
+
+# ---------------------------------------------------------------------------
+# EUR-Lex — textes récupérés en PDF faute de HTML exploitable sur le portail.
+# Le Journal officiel REACH contient des pages pivotées à 180° : l'extraction
+# les remet à l'endroit (cf. scripts/pdf_parsing._texte_page), sans quoi les
+# chunks indexés sont du texte inversé.
+# ---------------------------------------------------------------------------
+_EURLEX_PDF: list[SourceReg] = [
+    SourceReg(
+        "REACH_1907_2006",
+        "Règlement (CE) 1907/2006 — REACH (substances chimiques)",
+        "EUR-Lex",
+        _cellar("32006R1907"),
+        "pdf_prose",
+        "2006-12-18",
+        "2007-06-01",
+        "2006-12-18",
+        ["environnement", "substances_chimiques"],
+        entetes={"Accept": "application/pdf", "Accept-Language": "fr"},
+    ),
+]
+
 
 # ---------------------------------------------------------------------------
 # ANSSI — guides & recommandations (PDF). URLs à vérifier.
@@ -329,4 +374,10 @@ _ENISA_NIST: list[SourceReg] = [
     ),
 ]
 
-SOURCES: list[SourceReg] = [*_EURLEX, *_ANSSI, *_CNIL, *_ENISA_NIST]
+SOURCES: list[SourceReg] = [
+    *_EURLEX,
+    *_EURLEX_PDF,
+    *_ANSSI,
+    *_CNIL,
+    *_ENISA_NIST,
+]

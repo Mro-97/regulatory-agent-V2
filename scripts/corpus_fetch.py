@@ -82,12 +82,17 @@ def _telecharger(src: SourceReg) -> tuple[Path, dict[str, object]] | None:
     fichier de plusieurs Go (ou une bombe de décompression, les redirections
     étant suivies) faisait tomber le processus en OOM. Au-delà de
     `TAILLE_MAX_OCTETS` le téléchargement est abandonné proprement.
+
+    Les en-têtes de la source (`src.entetes`) sont transmis : les API à
+    négociation de contenu — CELLAR — renvoient une notice de 41 Mo au lieu du
+    PDF si `Accept: application/pdf` est absent.
     """
     chemin_partiel = DIR_RAW / f".{src.id}.part"
+    entetes = {"User-Agent": _UA, **src.entetes}
     try:
         with (
             httpx.Client(follow_redirects=True, timeout=60.0) as client,
-            client.stream("GET", src.url, headers={"User-Agent": _UA}) as rep,
+            client.stream("GET", src.url, headers=entetes) as rep,
         ):
             rep.raise_for_status()
             content_type = rep.headers.get("content-type", "")
