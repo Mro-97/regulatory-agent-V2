@@ -17,7 +17,9 @@ Contraintes :
 - Aucun appel externe (OpenAI / Anthropic / Google).
 - MLX uniquement — pas de PyTorch MPS.
 - Lazy loading : rien n'est chargé avant le premier appel.
-- Un seul modèle de génération actif à la fois sur Mac A (16 Go).
+- Modèles de génération résidents plafonnés (`cfg.mlx_modeles_residents_max`,
+  2 par défaut : les deux 7B d'une même question) et évincés en LRU au-delà,
+  avec un quota d'évictions anti-DoS (cf. `_CacheGeneration`).
 - Le modèle d'embedding (~570 Mo) reste chargé en permanence sur Mac B.
 
 Dépendances : mlx-lm >= 0.16, mlx-embeddings >= 0.1.0 (MIT/Apache).
@@ -460,11 +462,26 @@ class MLXInference:
 
 
 class _CacheGeneration:
-    """Un seul modèle de génération actif à la fois — swap throttlé anti-DoS."""
+    """Modèles de génération résidents, plafonnés et évincés en LRU.
+
+    Un seul modèle résident était la règle du Mac A (16 Go) : chaque question
+    provoquait donc deux swaps — Qwen pour la synthèse, Mistral pour la
+    vérification des citations — et au 4e swap en moins d'une minute le
+    throttle refusait le chargement. La synthèse échouait et l'Explainer
+    basculait sur l'assemblage brut : mesuré le 2026-09-21 sur m4pro2, la 3e
+    question consécutive était un vidage de passages, sans qu'aucun modèle ne
+    soit réellement en cause (les trois mêmes synthèses réussissent 3/3 quand
+    le modèle reste résident).
+
+    `cfg.mlx_modeles_residents_max` (2 par défaut) laisse cohabiter les deux
+    modèles d'une même question : plus aucun swap en régime normal. Au-delà
+    du plafond, le plus ancien est déchargé ; cette éviction réelle consomme
+    le quota anti-DoS `cfg.mlx_max_swaps_par_minute`.
+    """
 
     def __init__(self) -> None:
         self._instances: dict[str, MLXInference] = {}
-        self._actif: str | None = None
+        self._ordre: list[str] = []  # du plus récemment demandé au plus ancien
         self._historique_swaps: list[float] = []
 
     def get(
@@ -474,8 +491,7 @@ class _CacheGeneration:
         temperature: float | None = None,
         top_p: float | None = None,
     ) -> MLXInference:
-        """Retourne l'instance ; décharge l'actif si un autre modèle est demandé."""
-        self._decharger_si_swap(model_name)
+        """Retourne l'instance et la rend résidente (éviction LRU au besoin)."""
         if model_name not in self._instances:
             self._instances[model_name] = MLXInference(
                 model_name=model_name,
@@ -483,26 +499,34 @@ class _CacheGeneration:
                 temperature=temperature,
                 top_p=top_p,
             )
-        self._actif = model_name
+        self._promouvoir(model_name)
         return self._instances[model_name]
 
-    def _decharger_si_swap(self, model_name: str) -> None:
-        """Décharge l'actif si `model_name` diffère (soumis au throttle)."""
-        actif = self._instances.get(self._actif) if self._actif else None
-        est_un_swap = (
-            self._actif is not None
-            and self._actif != model_name
-            and actif is not None
-            and actif.est_charge
-        )
-        if not est_un_swap:
-            return
-        self._verifier_quota_swaps()
-        logger.info("Swap modèle : %s → %s", self._actif, model_name)
-        actif.unload()  # type: ignore[union-attr]
+    def _promouvoir(self, model_name: str) -> None:
+        """Place `model_name` en tête du LRU, puis évince le surplus."""
+        if model_name in self._ordre:
+            self._ordre.remove(model_name)
+        self._ordre.insert(0, model_name)
+        self._evincer_surplus()
+
+    def _evincer_surplus(self) -> None:
+        """Décharge les modèles les plus anciens au-delà du plafond.
+
+        Le quota anti-DoS n'est consommé que par une éviction RÉELLE : un
+        modèle jamais chargé quitte le LRU sans aucun accès disque. Le quota
+        est vérifié AVANT de retirer le modèle du LRU, pour qu'une éviction
+        refusée laisse l'état cohérent (le modèle reste suivi et résident).
+        """
+        plafond = max(1, cfg.mlx_modeles_residents_max)
+        for nom in reversed(self._ordre[plafond:]):
+            if self._instances[nom].est_charge:
+                self._verifier_quota_swaps()
+                logger.info("Éviction LRU de %s (plafond %d).", nom, plafond)
+                self._instances[nom].unload()
+            self._ordre.remove(nom)
 
     def _verifier_quota_swaps(self) -> None:
-        """Lève `ModelSwapThrottledError` si trop de swaps dans les 60 s."""
+        """Lève `ModelSwapThrottledError` si trop d'évictions dans les 60 s."""
         from src.errors import ModelSwapThrottledError
 
         maintenant = time.monotonic()
@@ -513,10 +537,10 @@ class _CacheGeneration:
         self._historique_swaps.append(maintenant)
 
     def unload_all(self) -> None:
-        """Décharge toutes les instances mémorisées et remet à zéro l'actif."""
+        """Décharge toutes les instances mémorisées et vide le LRU."""
         for inst in self._instances.values():
             inst.unload()
-        self._actif = None
+        self._ordre.clear()
 
     def statut(self) -> dict[str, bool]:
         """Retourne un mapping {nom_modèle: est_chargé}."""

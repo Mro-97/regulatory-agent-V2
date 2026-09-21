@@ -265,15 +265,35 @@ class Parametres(BaseSettings):
             "src/ingest_sanitizer.py pour les patterns détectés."
         ),
     )
+    mlx_modeles_residents_max: int = Field(
+        default=2,
+        description=(
+            "Nombre de modèles de génération gardés en mémoire. Une question "
+            "type en utilise DEUX — Qwen pour la synthèse (Explainer/Temporal), "
+            "Mistral pour la vérification des citations : avec un seul slot, "
+            "chaque question provoquait deux swaps et, au 4e swap en moins "
+            "d'une minute, le throttle refusait le chargement et la synthèse "
+            "échouait (mesuré le 2026-09-21 : 3e question consécutive servie "
+            "en vidage de passages). 2 laisse cohabiter les deux modèles "
+            "7B 4-bit (~9 Go) : confortable sur m4pro2 (24 Go), à baisser à 1 "
+            "sur une machine à 16 Go. Au-delà du plafond, le modèle le plus "
+            "ancien est déchargé (LRU) et cette éviction consomme le quota "
+            "`mlx_max_swaps_par_minute`."
+        ),
+    )
     mlx_max_swaps_par_minute: int = Field(
         default=3,
         description=(
-            "Nombre maximum de swaps de modèle MLX (unload + load) tolérés "
-            "par minute — anti-DoS. Un attaquant qui alterne rapidement des "
-            "questions classées vers Qwen/Mistral/DeepSeek forcerait des "
-            "swaps ~1 GB à la chaîne, gelant l'API. Au-delà de ce seuil, "
-            "`_CacheGeneration.get()` lève `ModelSwapThrottledError` et le "
-            "pipeline dégrade en réponse « service temporairement occupé »."
+            "Nombre maximum d'ÉVICTIONS de modèle MLX (unload + reload) "
+            "tolérées par minute — anti-DoS. Un attaquant qui alterne "
+            "rapidement des questions classées vers Qwen/Mistral/DeepSeek "
+            "forcerait des swaps de plusieurs Go à la chaîne, gelant l'API. "
+            "Au-delà de ce seuil, `_CacheGeneration` lève "
+            "`ModelSwapThrottledError` : l'Explainer bascule alors sur "
+            "l'assemblage brut (`mode_reponse='assemblage'`), ce qui reste "
+            "visible pour l'appelant. Ce quota ne s'applique plus au simple "
+            "changement de modèle d'une même question, seulement aux "
+            "évictions réelles une fois `mlx_modeles_residents_max` atteint."
         ),
     )
     mlx_taille_max_texte_embedding: int = Field(
