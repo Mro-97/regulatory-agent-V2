@@ -237,14 +237,6 @@ class Parametres(BaseSettings):
             "`src/mlx_utils.py` quand l'appelant ne fixe pas de valeur."
         ),
     )
-    mlx_timeout_seconds: float = Field(
-        default=60.0,
-        description=(
-            "Délai maximum (secondes) accordé à un appel MLX (generate / encode). "
-            "0 ou négatif = pas de timeout. Empêche un modèle bloqué ou un "
-            "prompt pathologique de figer l'API indéfiniment."
-        ),
-    )
     ingest_taille_min_chunk: int = Field(
         default=80,
         description=(

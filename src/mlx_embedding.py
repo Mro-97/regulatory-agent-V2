@@ -157,46 +157,40 @@ class MLXEmbedding:
         """True si le modèle d'embedding est déjà chargé en mémoire."""
         return self._loaded
 
-    def encode(self, texte: str, timeout_seconds: float | None = None) -> list[float]:
+    def encode(self, texte: str) -> list[float]:
         """Retourne le vecteur d'embedding normalisé de `texte`.
 
         Chargement et encodage se font sur le même thread : c'est la condition
-        pour que MLX accepte le stream GPU (cf. `_charger_et_encoder`).
+        pour que MLX accepte le stream GPU (cf. `_charger_et_encoder`). Aucun
+        délai maximal : MLX n'a pas d'interruption coopérative, un « timeout »
+        ne ferait qu'abandonner un thread en pleine évaluation GPU.
         """
-        return self._encoder_mlx_avec_chargement(texte, timeout_seconds)
+        return self._encoder_mlx_avec_chargement(texte)
 
-    def _encoder_mlx_avec_chargement(
-        self, texte: str, timeout_seconds: float | None
-    ) -> list[float]:
+    def _encoder_mlx_avec_chargement(self, texte: str) -> list[float]:
         """Charge (si besoin) puis encode la voie MLX, sur UN SEUL thread."""
         tronque = _tronquer_pour_embedding(texte)
-        timeout = (
-            timeout_seconds if timeout_seconds is not None else cfg.mlx_timeout_seconds
-        )
         try:
-            return self._encoder_mlx_thread(tronque, timeout)
+            return self._encoder_mlx_thread(tronque)
         except Exception as exc:
             from src.errors import EmbeddingFailedError
 
             raise EmbeddingFailedError(self.model_name, cause=str(exc)) from exc
 
-    def _encoder_mlx_thread(self, texte: str, timeout: float) -> list[float]:
-        """Charge puis encode — sur le thread appelant, SANS executor borné.
+    def _encoder_mlx_thread(self, texte: str) -> list[float]:
+        """Charge puis encode — sur le thread appelant, sans executor borné.
 
-        L'encodage MLX ne passe volontairement pas par `_executer_avec_timeout` :
-        sur dépassement, ce helper recycle l'executor et laisse le thread
-        orphelin en pleine évaluation GPU, ce qui fige ensuite
-        `mlx::core::eval` du nouveau thread (constaté sur un document de
-        1 692 chunks : process bloqué à 9 % de CPU, thread principal en
-        `_pthread_cond_wait`). MLX n'a pas d'interruption coopérative : borner
-        le temps n'apporte rien ici et introduit un interblocage. Le paramètre
-        `timeout` reste dans la signature pour la compatibilité de l'interface.
+        Borner le temps d'un encodage MLX est un piège : sans interruption
+        coopérative, le thread abandonné reste en pleine évaluation GPU, ce qui
+        fige ensuite `mlx::core::eval` du thread suivant (constaté sur un
+        document de 1 692 chunks : process bloqué à 9 % de CPU, thread
+        principal en `_pthread_cond_wait`). C'est pourquoi tout le travail MLX
+        passe par un thread unique et permanent (`mlx_utils.EXECUTEUR_MLX`).
         """
-        del timeout  # sans objet : voir docstring
         return self._charger_et_encoder(texte)
 
     def _charger_et_encoder(self, texte: str) -> list[float]:
-        """Charge (si besoin) puis encode — exécuté sur le thread de l'executor."""
+        """Charge (si besoin) puis encode — sur le thread MLX appelant."""
         self._charger_si_necessaire()
         from mlx_embeddings import generate as emb_generate
 

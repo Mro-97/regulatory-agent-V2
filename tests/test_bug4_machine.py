@@ -37,11 +37,13 @@ from src.models import (  # noqa: E402 — stubs MLX doivent précéder les impo
 )
 from src.orchestrator import (  # noqa: E402 — stubs MLX doivent précéder les imports du projet (sinon ImportError)
     _MACHINE,
-    _MACHINE_INCONNUE,
     Orchestrateur,
 )
+from src.orchestrator_audit import (  # noqa: E402 — stubs MLX avant imports projet
+    MACHINE_INCONNUE,
+)
 
-HOSTNAME_LOCAL = platform.node() or _MACHINE_INCONNUE
+HOSTNAME_LOCAL = platform.node() or MACHINE_INCONNUE
 
 
 # ---------------------------------------------------------------------------

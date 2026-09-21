@@ -32,8 +32,8 @@ logger = logging.getLogger(__name__)
 # éventuelle en cas d'évolution) mais retourne le nom réel de la machine
 # d'exécution, plus une étiquette « Mac_A/B/C » figée qui renvoyait à
 # l'ancienne architecture 3-machines abandonnée.
-MACHINE = platform.node() or "inconnue"
 MACHINE_INCONNUE = "inconnue"
+MACHINE = platform.node() or MACHINE_INCONNUE
 
 
 def resoudre_mode(mode: str | None) -> str:

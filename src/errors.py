@@ -258,16 +258,8 @@ class ModelSwapThrottledError(InferenceError):
         self.swaps_par_minute = swaps_par_minute
 
 
-class GenerationTimeoutError(InferenceError):
-    """La génération MLX a dépassé le délai imparti."""
-
-    def __init__(self, timeout_seconds: float) -> None:  # noqa: D107 — constructeur documenté par la classe (§0.2)
-        super().__init__(f"Appel MLX dépassé après {timeout_seconds}s")
-        self.timeout_seconds = timeout_seconds
-
-
 class GenerationFailedError(InferenceError):
-    """La génération MLX a échoué (hors timeout)."""
+    """La génération MLX a échoué."""
 
     def __init__(self, model_name: str, *, cause: str) -> None:  # noqa: D107 — constructeur documenté par la classe (§0.2)
         super().__init__(f"Génération échouée ({model_name}) : {cause}")

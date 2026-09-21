@@ -35,13 +35,11 @@ import threading
 import time
 from collections.abc import Callable, Iterator
 from concurrent.futures import ThreadPoolExecutor
-from concurrent.futures import TimeoutError as FuturesTimeoutError
 from dataclasses import dataclass
 from threading import Lock
 from typing import Any, TypeVar
 
 from config import cfg
-from src.errors import GenerationTimeoutError
 
 logger = logging.getLogger(__name__)
 
@@ -51,11 +49,6 @@ logger = logging.getLogger(__name__)
 # explicitement par chaque agent. Le top-p, lui, est commun à tous et vit
 # dans `cfg.mlx_top_p` — source unique, sans constante cachée.
 TEMPERATURE_PAR_DEFAUT = 0.1
-
-# Alias descendant : le nom historique reste importable pour ne pas
-# casser les callers extérieurs (tests, monkey-patch). La classe unique
-# vit désormais dans src.errors (§12 étape 8).
-MLXTimeoutError = GenerationTimeoutError
 
 
 T = TypeVar("T")
@@ -85,56 +78,6 @@ async def executer_mlx(fonction: Callable[..., T], /, *args: Any, **kwargs: Any)
     return await boucle.run_in_executor(
         EXECUTEUR_MLX, functools.partial(fonction, *args, **kwargs)
     )
-
-
-# Un unique executor dédié aux appels MLX bornés dans le temps. Un thread
-# unique suffit : MLX sérialise déjà l'accès aux poids sur le device.
-_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="mlx-timed")
-_executor_lock = Lock()
-
-
-def _recycler_executor() -> None:
-    """Remplace l'executor après un timeout.
-
-    MLX n'a pas d'interruption coopérative : sur timeout, le thread reste
-    bloqué sur la génération en cours. Avec `max_workers=1`, tout appel
-    suivant attendrait derrière ce thread mort — une seule génération
-    pathologique gèlerait `/ask` pour tout le monde jusqu'au redémarrage.
-    On abandonne donc l'executor (son thread est orphelin, borné à 1 par
-    timeout) et on en crée un neuf pour les requêtes suivantes.
-    """
-    global _executor
-    with _executor_lock:
-        ancien = _executor
-        _executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="mlx-timed")
-    ancien.shutdown(wait=False, cancel_futures=True)
-
-
-def _executer_avec_timeout(
-    fn: Callable[..., T],
-    timeout_seconds: float | None,
-    *args: Any,
-    **kwargs: Any,
-) -> T:
-    """Exécute `fn` sous timeout ; sans borne si `timeout_seconds` ≤ 0 ou None.
-
-    MLX n'a pas d'interruption coopérative : sur timeout le thread continue
-    en tâche de fond, mais l'executor est recyclé (`_recycler_executor`)
-    pour que la requête suivante ne reste pas coincée derrière lui.
-
-    Raises:
-        GenerationTimeoutError: si `fn` dépasse `timeout_seconds`.
-    """
-    if timeout_seconds is None or timeout_seconds <= 0:
-        return fn(*args, **kwargs)
-    with _executor_lock:
-        executor = _executor
-    future = executor.submit(fn, *args, **kwargs)
-    try:
-        return future.result(timeout=timeout_seconds)
-    except FuturesTimeoutError as exc:
-        _recycler_executor()
-        raise GenerationTimeoutError(timeout_seconds) from exc
 
 
 def _lier_stream_generation_au_thread_courant() -> None:
@@ -348,19 +291,17 @@ class MLXInference:
         max_tokens: int = 512,
         temperature: float | None = None,
         top_p: float | None = None,
-        timeout_seconds: float | None = None,
     ) -> ResultatGeneration:
-        """Génère du texte via mlx_lm ; lève GenerationFailedError sur échec."""
+        """Génère du texte via mlx_lm ; lève GenerationFailedError sur échec.
+
+        Aucun délai maximal : MLX n'a pas d'interruption coopérative, donc
+        « borner » la génération laissait un thread orphelin en pleine
+        évaluation GPU (cf. `_invoquer_mlx_generate`).
+        """
         if not self._loaded:
             self.load()
         try:
-            return self._generer_texte(
-                prompt,
-                max_tokens,
-                temperature,
-                top_p,
-                timeout_seconds,
-            )
+            return self._generer_texte(prompt, max_tokens, temperature, top_p)
         except Exception as exc:
             from src.errors import GenerationFailedError
 
@@ -372,16 +313,12 @@ class MLXInference:
         max_tokens: int,
         temperature: float | None,
         top_p: float | None,
-        timeout_seconds: float | None,
     ) -> ResultatGeneration:
-        """Appelle `mlx_lm.generate` sous timeout et compose le ResultatGeneration."""
+        """Appelle `mlx_lm.generate` et compose le ResultatGeneration."""
         temp = self._temperature(temperature)
         tp = self._top_p(top_p)
-        timeout = (
-            timeout_seconds if timeout_seconds is not None else cfg.mlx_timeout_seconds
-        )
         debut = time.time()
-        texte = self._invoquer_mlx_generate(prompt, max_tokens, temp, tp, timeout)
+        texte = self._invoquer_mlx_generate(prompt, max_tokens, temp, tp)
         duree = time.time() - debut
         tokens_out = _compter_tokens(self._tokenizer, texte)
         return _resultat_generation(self.model_name, texte, tokens_out, duree)
@@ -392,24 +329,19 @@ class MLXInference:
         max_tokens: int,
         temp: float,
         top_p: float,
-        timeout: float | None,
     ) -> str:
         """Appelle `mlx_lm.generate` INLINE, sur le thread appelant.
 
-        La génération ne passe volontairement plus par
-        `_executer_avec_timeout` : exécuter l'inférence sur un thread
-        d'executor faisait lever à `mlx_lm` « There is no Stream(gpu, 2) in
-        current thread » au moment de `mx.eval` sur le cache KV du prompt —
-        TOUTE synthèse échouait, et l'Explainer basculait sur l'assemblage
-        brut, recopiant les preuves au lieu de répondre.
-
-        C'est le motif déjà retenu pour l'embedding (cf.
-        `MLXEmbedding._encoder_mlx_thread`) : MLX n'a pas d'interruption
-        coopérative, donc borner le temps n'apporte rien et le recyclage de
-        l'executor laisse un thread orphelin en pleine évaluation GPU.
-        `timeout` reste dans la signature pour la compatibilité de l'interface.
+        La génération ne passe volontairement par aucun executor : exécuter
+        l'inférence sur un thread différent de celui qui a chargé le modèle
+        faisait lever à `mlx_lm` « There is no Stream(gpu, 2) in current
+        thread » au moment de `mx.eval` sur le cache KV du prompt — toute
+        synthèse échouait, et l'Explainer recopiait les preuves au lieu de
+        répondre. C'est le même motif que pour l'embedding (cf.
+        `MLXEmbedding`), et c'est pourquoi `EXECUTEUR_MLX` est un thread
+        unique et permanent plutôt qu'un pool : charger et générer doivent
+        rester sur le même thread.
         """
-        del timeout  # sans objet : voir docstring
         from mlx_lm.sample_utils import make_sampler
 
         return _mlx_generate_lie(

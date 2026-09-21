@@ -66,9 +66,6 @@ from src.orchestrator_audit import (
     MACHINE as _MACHINE,
 )
 from src.orchestrator_audit import (
-    MACHINE_INCONNUE as _MACHINE_INCONNUE,  # noqa: F401
-)
-from src.orchestrator_audit import (
     construire_audit_mock as _construire_audit_mock,
 )
 from src.orchestrator_audit import (
