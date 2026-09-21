@@ -356,12 +356,25 @@ class MLXInference:
         top_p: float,
         timeout: float | None,
     ) -> str:
-        """Appelle `mlx_lm.generate` sous timeout, avec sampler configuré."""
+        """Appelle `mlx_lm.generate` INLINE, sur le thread appelant.
+
+        La génération ne passe volontairement plus par
+        `_executer_avec_timeout` : exécuter l'inférence sur un thread
+        d'executor faisait lever à `mlx_lm` « There is no Stream(gpu, 2) in
+        current thread » au moment de `mx.eval` sur le cache KV du prompt —
+        TOUTE synthèse échouait, et l'Explainer basculait sur l'assemblage
+        brut, recopiant les preuves au lieu de répondre.
+
+        C'est le motif déjà retenu pour l'embedding (cf.
+        `MLXEmbedding._encoder_mlx_thread`) : MLX n'a pas d'interruption
+        coopérative, donc borner le temps n'apporte rien et le recyclage de
+        l'executor laisse un thread orphelin en pleine évaluation GPU.
+        `timeout` reste dans la signature pour la compatibilité de l'interface.
+        """
+        del timeout  # sans objet : voir docstring
         from mlx_lm.sample_utils import make_sampler
 
-        return _executer_avec_timeout(
-            _mlx_generate_lie,
-            timeout,
+        return _mlx_generate_lie(
             self._model,
             self._tokenizer,
             prompt=prompt,
