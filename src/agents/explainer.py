@@ -77,6 +77,13 @@ _MSG_AUCUN_PASSAGE = (
     "ou reformulez la question."
 )
 
+# Marqueur explicite : l'assemblage est un repli, pas une reponse. Il doit etre
+# visible pour l'utilisateur ET pour les appelants automatises (tests, scripts).
+_MENTION_REPLI = (
+    "⚠️ Synthèse indisponible : voici les passages bruts retournés par la "
+    "recherche, sans rédaction ni vérification de pertinence.\n"
+)
+
 _AVERTISSEMENT = (
     "⚠️ Ces passages sont extraits du corpus réglementaire indexé. "
     "Ils ne constituent pas un avis juridique. "
@@ -145,10 +152,16 @@ def _evaluer_confiance(
 
 
 def _entete_assemblage(date_ref: date | None, type_pipeline: str) -> str:
-    """Formatte l'en-tête d'un assemblage (temporel ou courant)."""
+    """En-tête d'un assemblage — SANS affirmer que les passages sont pertinents.
+
+    L'ancienne formulation (« Textes réglementaires pertinents ») était un
+    mensonge : l'assemblage ne vérifie aucune pertinence, il recopie les
+    preuves reçues du retrieval. Un utilisateur lisait donc une liste de
+    passages sans rapport présentée comme une sélection.
+    """
     if date_ref and type_pipeline == "temporelle":
-        return f"Textes applicables à la date du {date_ref.strftime('%d/%m/%Y')} :\n"
-    return "Textes réglementaires pertinents :\n"
+        return f"Passages applicables à la date du {date_ref.strftime('%d/%m/%Y')} :\n"
+    return "Passages du corpus correspondant à la recherche :\n"
 
 
 def _ajouter_blocs_evidences(
@@ -273,7 +286,10 @@ class AgentExplainer:
         """Assemblage direct : en-tête + blocs par evidence + avertissement."""
         if not evidences:
             return _resultat_assemblage_vide()
-        lignes = [_entete_assemblage(date_ref, type_pipeline)]
+        lignes = [
+            _MENTION_REPLI,
+            _entete_assemblage(date_ref, type_pipeline),
+        ]
         sources_citees: list[str] = []
         _ajouter_blocs_evidences(evidences, lignes, sources_citees)
         _ajouter_reste_et_avertissement(len(evidences), lignes)

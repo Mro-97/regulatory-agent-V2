@@ -88,8 +88,6 @@ from src.orchestrator_audit import (
 from src.orchestrator_audit import (
     resoudre_mode as _resoudre_mode,
 )
-
-# fmt: on
 from src.orchestrator_confidence import (
     CONFIANCES_A_VALIDER as CONFIANCES_A_VALIDER,
 )
@@ -104,6 +102,11 @@ from src.orchestrator_confidence import (
 )
 from src.orchestrator_confidence import (
     doit_soumettre_validation as _doit_soumettre_validation,
+)
+
+# fmt: on
+from src.orchestrator_confidence import (
+    mode_depuis_agents,
 )
 from src.orchestrator_confidence import (
     reponse_retrieval_indisponible as _reponse_retrieval_indisponible,
@@ -757,6 +760,7 @@ class Orchestrateur:
             niveau_confiance,
             soumettre,
             tache_id,
+            mode_reponse=mode_depuis_agents(agents_executes),
         )
 
     async def _soumettre_et_tracer(

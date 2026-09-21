@@ -18,7 +18,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from src.models import EvidenceRecuperee, NiveauConfiance
+from src.models import EvidenceRecuperee, NiveauConfiance, SortieAgent
 from src.schemas import ReponseQuestion, RequeteQuestion
 
 if TYPE_CHECKING:
@@ -93,6 +93,23 @@ def reponse_retrieval_indisponible(request_id: UUID) -> ReponseQuestion:
     )
 
 
+def mode_depuis_agents(agents: list[SortieAgent]) -> str:
+    """Mode de rédaction réel, lu sur la SortieAgent de l'Explainer.
+
+    Rend visible une dégradation jusqu'ici silencieuse : quand la synthèse LLM
+    échoue, l'Explainer bascule sur un assemblage brut (cf.
+    `_synthetiser_avec_llm`) et le client reçoit le même format de réponse,
+    sans aucun moyen de le savoir. « assemblage » signale donc que la réponse
+    n'a PAS été rédigée — c'est un vidage de passages.
+    """
+    for agent in agents:
+        if agent.nom_agent == "Explainer":
+            mode = agent.contenu.get("mode")
+            if isinstance(mode, str) and mode:
+                return mode
+    return "llm"
+
+
 def construire_reponse_question(
     request_id: UUID,
     reponse_texte: str,
@@ -100,6 +117,7 @@ def construire_reponse_question(
     niveau_confiance: NiveauConfiance,
     soumettre_validation: bool,
     tache_validation_id: UUID | None,
+    mode_reponse: str = "llm",
 ) -> ReponseQuestion:
     """Assemble le ReponseQuestion final renvoyé à l'API.
 
@@ -115,4 +133,5 @@ def construire_reponse_question(
         score_correspondance=score_correspondance(evidences),
         en_attente_validation=soumettre_validation,
         tache_validation_id=tache_validation_id,
+        mode_reponse=mode_reponse,
     )

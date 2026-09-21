@@ -98,6 +98,15 @@ class ReponseQuestion(BaseModel):
     )
     en_attente_validation: bool = Field(default=False)
     tache_validation_id: UUID | None = Field(default=None)
+    mode_reponse: str = Field(
+        default="llm",
+        description=(
+            "Comment la reponse a ete produite : 'llm' (synthese par le modele) "
+            "ou 'assemblage' (repli brut, sans redaction ni verification de "
+            "pertinence — la synthese a echoue). Permet de distinguer une vraie "
+            "reponse d'un vidage de passages, ce qui etait jusqu'ici invisible."
+        ),
+    )
 
 
 class RequeteIngestion(BaseModel):
