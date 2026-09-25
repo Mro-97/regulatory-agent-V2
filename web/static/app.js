@@ -440,21 +440,34 @@ function ajouterTyping(){
 }
 function supprimerTyping(){_typingTimers.forEach(clearTimeout);_typingTimers=[];document.getElementById("typing-tmp")?.remove();}
 
+// Neutralise le HTML inline dans un texte destiné au fichier Markdown.
+// La réponse du LLM est écrite par le modèle : un texte qu'il recopie
+// (« écris exactement <img src=x onerror=…> ») se retrouvait tel quel dans
+// le fichier exporté, et les viewers Markdown qui rendent le HTML inline
+// (Obsidian, Typora, certaines extensions) exécutaient le script chez
+// quiconque ouvrait le fichier. Les entités HTML s'affichent correctement
+// dans ces viewers ET restent du texte inerte partout ailleurs — là où un
+// simple retrait des balises aurait fait disparaître le contenu cité.
+function esc_md(s){
+  return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
 function md_export(data,question,dateCtx){
   const nl="\n";
   const src=(data.evidences||[]).map(ev=>{
     const fin=ev.valid_to||"en vigueur";const ab=est_abroge(ev.valid_to)?" — n'est plus en vigueur":"";
-    const ex=ev.texte_extrait?`${nl}> ${String(ev.texte_extrait).replace(/\s*\n+\s*/g," ")}${nl}`:"";
+    const ex=ev.texte_extrait?`${nl}> ${esc_md(String(ev.texte_extrait).replace(/\s*\n+\s*/g," "))}${nl}`:"";
     const url=lien_eurlex(ev.document_id);
     const lien=url?`${nl}${url}${nl}`:"";
-    return `### ${ev.document_id} / ${ev.article_id}${nl}Validité : ${ev.valid_from} → ${fin}${ab}${nl}${lien}${ex}`;
+    return `### ${esc_md(ev.document_id)} / ${esc_md(ev.article_id)}${nl}Validité : ${esc_md(ev.valid_from)} → ${esc_md(fin)}${ab}${nl}${lien}${ex}`;
   }).join(nl);
-  return `# Question réglementaire${nl}${nl}`+
-    `**Question :** ${question||"(non disponible)"}${nl}`+
-    (dateCtx?`**Date de contexte :** ${dateCtx}${nl}`:"")+
+  return `<!-- Contenu genere par IA a partir du corpus indexe. Le HTML inline y est`
+    +` neutralise (entites) : ne pas desactiver ce traitement sans raison. -->${nl}`+
+    `# Question réglementaire${nl}${nl}`+
+    `**Question :** ${esc_md(question)||"(non disponible)"}${nl}`+
+    (dateCtx?`**Date de contexte :** ${esc_md(dateCtx)}${nl}`:"")+
     `**Généré le :** ${new Date().toISOString()}${nl}`+
     `**Niveau de confiance :** ${lbl_conf(data.niveau_confiance)}${nl}${nl}`+
-    `## Réponse${nl}${nl}${data.reponse}${nl}${nl}`+
+    `## Réponse${nl}${nl}${esc_md(data.reponse)}${nl}${nl}`+
     `## Sources (${(data.evidences||[]).length})${nl}${nl}${src}${nl}${nl}`+
     `---${nl}⚠️ Réponse générée automatiquement à partir du corpus réglementaire indexé. `+
     `Ne constitue pas un avis juridique — vérifier les textes officiels (EUR-Lex, Légifrance).${nl}`;
@@ -532,6 +545,16 @@ function _parseFrameSSE(frame){
   }
   return {ev,data};
 }
+// Le détail d'une erreur peut être une chaîne (nos messages) ou la liste
+// structurée de FastAPI (`[{loc, msg, …}]`). Sans ce traitement, un tableau
+// s'affichait « [object Object] » dans le bandeau d'erreur — inutile pour
+// l'utilisateur comme pour le diagnostic.
+function _detailErreur(data){
+  let d;
+  try{d=JSON.parse(data).detail;}catch{d=data;}
+  if(Array.isArray(d))return d.map(e=>e&&e.msg?e.msg:"erreur").join(" ; ");
+  return String(d||"Erreur inconnue");
+}
 
 async function envoyerQuestionStream(body,question,date,ts,signal){
   let r;
@@ -553,7 +576,7 @@ async function envoyerQuestionStream(body,question,date,ts,signal){
         if(ev==="token"){texte+=JSON.parse(data).t;carte.txt.textContent=texte;scrollBas();}
         else if(ev==="etape"){carte.etape.textContent=PHASES_STREAM[JSON.parse(data).phase]||"";}
         else if(ev==="fin"){fin=JSON.parse(data);}
-        else if(ev==="erreur"){err=JSON.parse(data).detail;}
+        else if(ev==="erreur"){err=_detailErreur(data);}
       }
     }
   }catch(e){
