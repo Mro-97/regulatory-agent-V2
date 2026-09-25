@@ -40,6 +40,10 @@ from datetime import date
 from typing import TYPE_CHECKING
 
 from config import cfg
+from src.agents.reponse_fondee import (
+    reponse_est_non_fondee as reponse_est_non_fondee,
+)
+from src.agents.sources import reconstruire_section_sources
 from src.agents.temperatures import TEMPERATURE_REDACTION
 from src.models import EvidenceRecuperee, NiveauConfiance
 from src.prompts_loader import charger_prompt
@@ -116,24 +120,6 @@ def _resultat_abstention() -> ResultatExplication:
 # modèle de s'en servir pour signaler une couverture PARTIELLE (règle C et
 # commentaire de la règle 3), donc une réponse fondée pouvait la contenir et
 # était à tort estampillée INCERTAIN.
-_MARQUEURS_REPONSE_NON_FONDEE = (
-    "les sources disponibles ne contiennent pas d'information",
-    "cette question ne relève pas du droit réglementaire",
-    "je ne peux pas répondre à cette question",
-)
-
-
-def reponse_est_non_fondee(reponse: str) -> bool:
-    """True si la réponse LLM contient une phrase de repli prescrite (v2).
-
-    La détection porte sur les phrases de repli complètes, pas sur un
-    fragment générique : une réponse qui mentionne une lacune partielle
-    (« … ne contient pas d'information sur X, mais … ») reste fondée.
-    """
-    minuscule = reponse.lower()
-    return any(marqueur in minuscule for marqueur in _MARQUEURS_REPONSE_NON_FONDEE)
-
-
 def _evaluer_confiance(
     reponse: str, evidences: list[EvidenceRecuperee]
 ) -> NiveauConfiance:
@@ -193,15 +179,6 @@ def _ajouter_reste_et_avertissement(nb_total: int, lignes: list[str]) -> None:
         )
         lignes.append("")
     lignes.append(_AVERTISSEMENT)
-
-
-def _construire_sources_citees(evidences: list[EvidenceRecuperee]) -> list[str]:
-    """Formate `document_id/article_id [from→to]` pour les 8 premières preuves."""
-    return [
-        f"{ev.document_id}/{ev.article_id} "
-        f"[{ev.valid_from}→{ev.valid_to or 'en vigueur'}]"
-        for ev in evidences[:8]
-    ]
 
 
 def _bloc_source(ev: EvidenceRecuperee) -> str:
@@ -351,7 +328,7 @@ class AgentExplainer:
         d'appel LLM). Un flux vide (0 fragment, ou uniquement des blancs) est
         dégradé comme le chemin non-stream : `_assembler` (M8). La confiance /
         les sources sont recalculées par l'appelant sur le texte accumulé
-        (`_evaluer_confiance`, `_construire_sources_citees`).
+        (`_evaluer_confiance`, `reconstruire_section_sources`).
         """
         if not evidences:
             yield _MSG_AUCUN_PASSAGE
@@ -446,16 +423,14 @@ class AgentExplainer:
         """Charge le modèle, rend le prompt et génère la synthèse (lève si échec)."""
         self._modele_charge()
         contexte = self._construire_contexte(evidences)
-        sources_citees = _construire_sources_citees(evidences)
         messages = _preparer_messages_synthese(
             question, contexte, date_ref, type_pipeline
         )
-        return self._generer_synthese(messages, sources_citees, evidences)
+        return self._generer_synthese(messages, evidences)
 
     def _generer_synthese(
         self,
         messages: list[dict[str, str]],
-        sources_citees: list[str],
         evidences: list[EvidenceRecuperee],
     ) -> ResultatExplication:
         """Appelle le LLM, vérifie la réponse et en dérive le niveau de confiance."""
@@ -469,6 +444,10 @@ class AgentExplainer:
         reponse = resultat.texte.strip()
         if not reponse:
             raise StructuredOutputError("Explainer", detail="réponse vide")
+        # La section « Sources utilisées » est RECONSTRUITE à partir des
+        # preuves (cf. src/agents/sources.py) : le LLM en inventait, en
+        # dupliquait, ou y recopiait une URL présente dans la question.
+        reponse, sources_citees = reconstruire_section_sources(reponse, evidences)
         return ResultatExplication(
             reponse=reponse,
             sources_citees=sources_citees,

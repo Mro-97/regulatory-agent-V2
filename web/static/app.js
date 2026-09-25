@@ -508,7 +508,7 @@ function afficherReponse(data,question,dateCtx){
   let sources="";
   if(data.evidences?.length){
     const items=data.evidences.slice(0,8).map(ev=>{const abroge=est_abroge(ev.valid_to);const fin=ev.valid_to||"en vigueur";const vmark=abroge?" · n'est plus en vigueur":"";const ex=ev.texte_extrait?`<div class="src-excerpt">${esc(ev.texte_extrait.slice(0,160))}...</div>`:"";const url=lien_eurlex(ev.document_id);const ref=`${esc(ev.document_id)} / ${esc(ev.article_id)}`;const refHtml=url?`<a class="src-ref" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${ref} ↗</a>`:`<div class="src-ref">${ref}</div>`;return `<div class="src-item${abroge?" src-abroge":""}">${refHtml}<div class="src-valid${abroge?" abroge":""}">${esc(String(ev.valid_from))} → ${esc(String(fin))}${vmark}</div>${ex}</div>`;}).join("");
-    sources=`<button class="sources-toggle"><span>📎 ${data.evidences.length} source${data.evidences.length>1?"s":""} citée${data.evidences.length>1?"s":""}</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button><div class="sources-body">${items}</div>`;
+    sources=`<button class="sources-toggle"><span>📎 ${data.evidences.length} source${data.evidences.length>1?"s":""} retrouvée${data.evidences.length>1?"s":""}</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button><div class="sources-body">${items}</div>`;
   }
   // RBAC : un `user` ne peut pas suivre une tâche (/tache = validateur+).
   const suivi=data.tache_validation_id?(peutValider()

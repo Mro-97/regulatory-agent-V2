@@ -30,7 +30,6 @@ Dépendances : src/mlx_utils.py, src/models.py
 from __future__ import annotations
 
 import logging
-import re
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -46,7 +45,14 @@ from src.agents.citation_types import (
 from src.agents.citation_types import (
     normaliser_pour_comparaison as normaliser_pour_comparaison,
 )
-from src.agents.explainer import reponse_est_non_fondee
+
+# Normalisation des replis et calcul des sources citees vivent dans des
+# modules feuilles : `explainer` doit pouvoir les utiliser sans refermer
+# le cycle citation -> explainer. Re-exportes ici pour les appelants
+# historiques (orchestrator, tests).
+from src.agents.sources import (
+    sources_referencees as sources_referencees,
+)
 from src.models import EvidenceRecuperee
 
 if TYPE_CHECKING:
@@ -105,49 +111,6 @@ def _journaliser_verification(
         nb_douteuses,
         nb_total,
     )
-
-
-def _numero_article(article_id: str) -> str:
-    """Extrait la première suite de chiffres d'un `article_id` (`art_33` → `33`)."""
-    trouve = re.search(r"\d+", article_id or "")
-    return trouve.group(0) if trouve else ""
-
-
-def sources_referencees(
-    reponse_texte: str,
-    evidences: list[EvidenceRecuperee],
-) -> list[EvidenceRecuperee]:
-    """Sous-ensemble des `evidences` effectivement mentionnées dans la réponse.
-
-    Une preuve est retenue si son `article_id` brut (`art_33`) ou son
-    numéro cité en toutes lettres (« article 33 », « art. 33 ») apparaît
-    dans le texte — pas le `document_id` seul, trop large (nommer le RGPD
-    une fois n'implique pas les 15 articles).
-
-    Deux cas particuliers : une réponse de refus / « aucune information »
-    ne cite RIEN → liste vide, et une réponse sans citation reconnaissable
-    renvoie AUSSI une liste vide (M10) : attribuer toutes les preuves à une
-    réponse qui n'en nomme aucune gonflait artificiellement les sources et
-    la traçabilité d'audit. Les appelants
-    (`orchestrator._executer_etapes_pipeline`, `_stream_pipeline_reel`)
-    traitent déjà la liste vide.
-    """
-    if reponse_est_non_fondee(reponse_texte or ""):
-        return []
-    texte = (reponse_texte or "").lower()
-    gardees: list[EvidenceRecuperee] = []
-    for ev in evidences:
-        identifiant = ev.article_id.lower()
-        cite = identifiant in texte
-        # « article 33 » ne vaut que pour un vrai article (préfixe art_),
-        # pas pour la 33e section d'un guide (sec_33) ou un contrôle.
-        if not cite and identifiant.startswith("art_"):
-            numero = _numero_article(ev.article_id)
-            if numero:
-                cite = re.search(rf"\bart(?:icle|\.)?\s*{numero}\b", texte) is not None
-        if cite:
-            gardees.append(ev)
-    return gardees
 
 
 def _resultat_citation_vide() -> ResultatCitation:
