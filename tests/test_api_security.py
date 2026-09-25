@@ -185,6 +185,56 @@ class TestCorsEtOrigine:
         )
         assert rep.status_code == 403
 
+    def test_logout_origine_cross_site_refusee(self, client):  # noqa: ANN001, ANN201
+        """`/auth/logout` était la seule mutation sans `OrigineDep`.
+
+        Sans ce contrôle, une page tierce déconnectait l'utilisateur à son insu
+        (formulaire ou balise `<img>` vers `/auth/logout`) — un déni de service
+        tant qu'il restait sur la page piégée.
+        """
+        rep = client.post("/auth/logout", headers={"Origin": "https://evil.example"})
+        assert rep.status_code == 403
+
+    def test_logout_origine_locale_acceptee(self, client):  # noqa: ANN001, ANN201
+        """La déconnexion depuis l'interface reste possible."""
+        rep = client.post("/auth/logout", headers={"Origin": "http://testserver"})
+        assert rep.status_code == 200
+
+    def test_logout_sans_origine_acceptee(self, client):  # noqa: ANN001, ANN201
+        """Un client non-navigateur (curl, script) n'envoie pas d'`Origin`."""
+        rep = client.post("/auth/logout")
+        assert rep.status_code == 200
+
+
+# ---------------------------------------------------------------------------
+# Erreurs de validation — pas de fuite du schéma Pydantic
+# ---------------------------------------------------------------------------
+
+
+class TestErreursValidation:
+    def test_corps_vide_ne_revele_pas_le_schema(self, client):  # noqa: ANN001, ANN201
+        """FastAPI détaillait `loc`/`msg`/`ctx` : une carte gratuite de l'API."""
+        rep = client.post(
+            "/ask",
+            json={},
+            headers={"X-API-Key": CLE, "Origin": "http://testserver"},
+        )
+        assert rep.status_code == 422
+        detail = rep.json()["detail"]
+        assert isinstance(detail, str)
+        for fuite in ("question", "min_length", "loc", "Field required"):
+            assert fuite not in detail
+
+    def test_champ_trop_court_non_detaille(self, client):  # noqa: ANN001, ANN201
+        """La borne `min_length` ne doit pas être énonçable par tâtonnement."""
+        rep = client.post(
+            "/ask",
+            json={"question": "a"},
+            headers={"X-API-Key": CLE, "Origin": "http://testserver"},
+        )
+        assert rep.status_code == 422
+        assert "3" not in rep.json()["detail"]
+
 
 # ---------------------------------------------------------------------------
 # Rate limiting

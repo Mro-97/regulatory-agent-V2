@@ -33,8 +33,9 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -279,6 +280,10 @@ _MSG_ERREUR_PENDING = "Erreur interne lors de la récupération des tâches."
 _MSG_ERREUR_ASK = "Erreur interne lors du traitement de la question."
 _MSG_ERREUR_FEEDBACK = "Erreur interne lors de l'enregistrement du signalement."
 _MSG_QUEUE_INDISPONIBLE = "File de validation temporairement indisponible."
+# Réponse unique aux erreurs de validation : le détail Pydantic (nom des
+# champs, types, bornes) décrit le schéma de l'API et sert de carte gratuite
+# à un attaquant. L'opérateur garde le détail dans le journal d'accès.
+_MSG_VALIDATION = "Requête invalide : corps ou paramètres non conformes."
 
 
 def _erreur_500(detail: str) -> HTTPException:
@@ -291,6 +296,31 @@ def _erreur_500(detail: str) -> HTTPException:
 def _erreur_503(detail: str) -> HTTPException:
     """Fabrique une HTTPException 503 (backend externe indisponible)."""
     return HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=detail)
+
+
+@app.exception_handler(RequestValidationError)
+async def _erreur_validation(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
+    """Répond 422 sans exposer le schéma Pydantic au client.
+
+    FastAPI renvoie par défaut `loc`, `msg` et `ctx` (`{"min_length": 3}`), ce
+    qui permet d'énumérer les champs et leurs contraintes sans lire le code.
+    On journalise les CHAMPS fautifs — pas les valeurs, qui viennent du client —
+    et on ne renvoie qu'un message unique.
+    """
+    champs = sorted(
+        {
+            ".".join(str(partie) for partie in erreur.get("loc", ()))
+            for erreur in exc.errors()
+        }
+    )
+    logger.warning(
+        "Validation refusée sur %s — champ(s) : %s",
+        request.url.path,
+        ", ".join(champs) or "?",
+    )
+    return JSONResponse(status_code=422, content={"detail": _MSG_VALIDATION})
 
 
 def _tracer_decision_validation(
@@ -443,9 +473,18 @@ async def ouvrir_session_http(
     summary="Fermer la session",
     description="Supprime le cookie de session et le jeton CSRF.",
     include_in_schema=False,
+    dependencies=[OrigineDep],
 )
 async def fermer_session_http(reponse: Response) -> dict[str, str]:
-    """Ferme la session courante (les cookies sont effacés)."""
+    """Ferme la session courante (les cookies sont effacés).
+
+    `OrigineDep` est indispensable même si la route ne fait « que » déconnecter :
+    sans lui, n'importe quelle page tierce pouvait déclencher un POST
+    `/auth/logout` (formulaire ou balise `<img>`) et déconnecter l'utilisateur
+    à son insu — un déni de service permanent tant qu'il reste sur la page
+    piégée. Toutes les autres mutations (`/ask`, `/feedback`, `/ingest`,
+    `/approve`, `/reject`) vérifient déjà l'origine.
+    """
     effacer_cookies(reponse)
     return {"statut": "deconnecte"}
 
