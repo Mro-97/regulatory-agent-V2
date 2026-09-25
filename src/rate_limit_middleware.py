@@ -10,7 +10,7 @@ si elle finit par échouer à la validation Pydantic.
 Le comptage est délégué à `RateLimiterRedis` (src/rate_limit_redis.py),
 clé composite `{api_key}:{client_ip}` partagée entre workers via Redis.
 Si Redis est KO, le limiteur retombe automatiquement sur le compteur
-mémoire de `src.api_security` (que les tests monkey-patchent).
+mémoire partagé de `src.rate_limit_memory` (que les tests monkey-patchent).
 """
 
 from __future__ import annotations

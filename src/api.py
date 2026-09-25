@@ -40,7 +40,6 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from config import cfg
-from main import valider_configuration_demarrage
 from src.access_log import journaliser_acces_requete
 
 # `LimiteurDebit` et `_limiteur` ont été déplacés vers src/api_security.py
@@ -74,6 +73,7 @@ from src.auth_session import (
     ouvrir_session,
     poser_cookies,
 )
+from src.demarrage import valider_configuration_demarrage
 from src.errors import QueueBackendError, VectorStoreError
 from src.models import StatutValidation
 from src.orchestrator import DocumentDejaIndexeError, Orchestrateur

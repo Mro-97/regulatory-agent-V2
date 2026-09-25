@@ -35,6 +35,12 @@ from itertools import pairwise
 from typing import TYPE_CHECKING, NoReturn
 
 from src.agents.retriever_helpers import article_de_base
+
+# Type partagé extrait dans temporal_types.py (module neutre) : `temporal_llm`
+# en a besoin sans pouvoir importer ce module (cycle).
+from src.agents.temporal_types import (
+    EvidenceTemporelle as EvidenceTemporelle,
+)
 from src.errors import InvalidContextDateError
 from src.models import EvidenceRecuperee, NiveauConfiance
 
@@ -258,18 +264,9 @@ def _calculer_niveau_confiance(
 # ---------------------------------------------------------------------------
 # Structures de sortie
 # ---------------------------------------------------------------------------
-
-
-@dataclass
-class EvidenceTemporelle:
-    """Evidence enrichie d'une annotation temporelle.
-    Wrappée autour d'EvidenceRecuperee — on ne modifie pas le modèle source.
-    """  # noqa: D205
-
-    evidence: EvidenceRecuperee
-    applicable: bool
-    raison_exclusion: str | None = None
-    explication: str | None = None
+# `EvidenceTemporelle` vit dans `src/agents/temporal_types.py` (module neutre)
+# et est ré-exporté ci-dessus : `temporal_llm` en a besoin pour typer ses
+# entrées sans pouvoir importer ce module (cycle).
 
 
 @dataclass

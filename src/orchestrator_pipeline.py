@@ -26,6 +26,7 @@ from src.models import (
     TacheValidation,
     TypeFilePendante,
 )
+from src.orchestrator_types import OrchestrateurEtapes
 
 if TYPE_CHECKING:
     from datetime import date
@@ -33,13 +34,12 @@ if TYPE_CHECKING:
     from src.agents.citation import ResultatCitation
     from src.agents.conflit import ResultatConflit
     from src.models import SourceReglementaire
-    from src.orchestrator import Orchestrateur
 
 logger = logging.getLogger(__name__)
 
 
 async def etape_retrieval(
-    orchestrator: Orchestrateur,
+    orchestrator: OrchestrateurEtapes,
     question: str,
     date_contexte: date | None,
     filtres_themes: list[str],
@@ -67,7 +67,7 @@ async def etape_retrieval(
 
 
 async def _appeler_retriever(
-    orchestrator: Orchestrateur,
+    orchestrator: OrchestrateurEtapes,
     question: str,
     date_contexte: date | None,
     filtres_themes: list[str],
@@ -91,7 +91,7 @@ async def _appeler_retriever(
 
 
 def _sortie_agent_retriever(
-    orchestrator: Orchestrateur,
+    orchestrator: OrchestrateurEtapes,
     evidences: list[EvidenceRecuperee],
     date_contexte: date | None,
     filtres_themes: list[str],
@@ -113,7 +113,7 @@ def _sortie_agent_retriever(
 
 
 async def etape_temporal(
-    orchestrator: Orchestrateur,
+    orchestrator: OrchestrateurEtapes,
     question: str,
     date_contexte: date | None,
     evidences: list[EvidenceRecuperee],
@@ -134,7 +134,7 @@ async def etape_temporal(
 
 
 def _sortie_agent_temporal(
-    orchestrator: Orchestrateur,
+    orchestrator: OrchestrateurEtapes,
     evidences: list[EvidenceRecuperee],
     resultat: Any,
 ) -> SortieAgent:
@@ -157,7 +157,7 @@ def _sortie_agent_temporal(
 
 
 async def etape_explainer(
-    orchestrator: Orchestrateur,
+    orchestrator: OrchestrateurEtapes,
     question: str,
     evidences: list[EvidenceRecuperee],
     type_pipeline: str,
@@ -177,7 +177,7 @@ async def etape_explainer(
 
 
 def _sortie_agent_explainer(
-    orchestrator: Orchestrateur,
+    orchestrator: OrchestrateurEtapes,
     evidences: list[EvidenceRecuperee],
     resultat: Any,
 ) -> SortieAgent:
@@ -195,7 +195,7 @@ def _sortie_agent_explainer(
 
 
 async def etape_conflit(
-    orchestrator: Orchestrateur,
+    orchestrator: OrchestrateurEtapes,
     question: str,
     date_contexte: date | None,
     evidences: list[EvidenceRecuperee],
@@ -232,7 +232,7 @@ async def etape_conflit(
 
 
 def _sortie_agent_conflit_erreur(
-    orchestrator: Orchestrateur, exc: Exception
+    orchestrator: OrchestrateurEtapes, exc: Exception
 ) -> SortieAgent:
     """SortieAgent d'échec de l'agent Conflit (trace l'erreur dans l'audit)."""
     return SortieAgent(
@@ -243,7 +243,7 @@ def _sortie_agent_conflit_erreur(
 
 
 async def _executer_agent_conflit(
-    orchestrator: Orchestrateur,
+    orchestrator: OrchestrateurEtapes,
     question: str,
     date_contexte: date | None,
     evidences: list[EvidenceRecuperee],
@@ -259,7 +259,7 @@ async def _executer_agent_conflit(
 
 
 def _sortie_agent_conflit(
-    orchestrator: Orchestrateur,
+    orchestrator: OrchestrateurEtapes,
     resultat: Any,
 ) -> SortieAgent:
     """Emballe le résultat de l'analyse conflit dans une SortieAgent standard."""
@@ -287,7 +287,7 @@ def _tache_conflit(question: str, resultat: Any, request_id: UUID) -> TacheValid
 
 
 async def _soumettre_tache_conflit(
-    orchestrator: Orchestrateur,
+    orchestrator: OrchestrateurEtapes,
     question: str,
     resultat: Any,
     request_id: UUID,
@@ -326,7 +326,7 @@ def _dict_conflit(conflit: Any) -> dict[str, str]:
 
 
 async def etape_citation(
-    orchestrator: Orchestrateur,
+    orchestrator: OrchestrateurEtapes,
     evidences: list[EvidenceRecuperee],
     reponse_explainer: str | None = None,
 ) -> tuple[SortieAgent, ResultatCitation] | None:
@@ -352,7 +352,7 @@ async def etape_citation(
 
 
 def _sortie_agent_citation(
-    orchestrator: Orchestrateur,
+    orchestrator: OrchestrateurEtapes,
     resultat: Any,
 ) -> SortieAgent:
     """Emballe le résultat citation dans une SortieAgent standard."""

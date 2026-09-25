@@ -24,11 +24,12 @@ from fastapi.testclient import TestClient
 from config import cfg
 from src import api as api_module
 
-# Le limiteur et la classe LimiteurDebit vivent désormais dans
-# src.api_security (§12 étape 6). Le monkey-patch cible ce module —
-# `src.api._limiteur` ne serait qu'un alias.
-from src import api_security as api_security_module
-from src.api_security import LimiteurDebit
+# `LimiteurDebit` vit dans src/rate_limit_memory (§ import circulaire) et le
+# repli mémoire du middleware s'y trouve aussi : le monkey-patch qui rend le
+# quota observable cible donc ce module, pas `src.api_security` (dont le
+# `_limiteur` ne sert plus qu'à la dépendance héritée `verifier_rate_limit`).
+from src import rate_limit_memory
+from src.rate_limit_memory import LimiteurDebit
 
 CLE = "cle-de-test-0123456789abcdef"
 
@@ -242,32 +243,39 @@ class TestErreursValidation:
 
 
 class TestRateLimiting:
-    def test_debit_depasse_429(self, client):  # noqa: ANN001, ANN201
-        original = api_security_module._limiteur
-        try:
-            api_security_module._limiteur = LimiteurDebit(
-                max_requetes=2, fenetre_secondes=60
-            )
-            premier = client.post(
-                "/ask",
-                json={"question": "Question rate limit ?"},
-                headers={"X-API-Key": CLE},
-            )
-            second = client.post(
-                "/ask",
-                json={"question": "Question rate limit 2 ?"},
-                headers={"X-API-Key": CLE},
-            )
-            troisieme = client.post(
-                "/ask",
-                json={"question": "Question rate limit 3 ?"},
-                headers={"X-API-Key": CLE},
-            )
-            assert premier.status_code == 200
-            assert second.status_code == 200
-            assert troisieme.status_code == 429
-        finally:
-            api_security_module._limiteur = original
+    @staticmethod
+    def _quota_minuscule(
+        monkeypatch: pytest.MonkeyPatch, max_requetes: int = 2
+    ) -> None:
+        """Remplace le limiteur mémoire partagé par un seau à `max_requetes`.
+
+        Le repli mémoire du middleware (`RateLimiterRedis`) résout le limiteur
+        partagé à chaque appel : patcher `rate_limit_memory.limiteur_memoire`
+        rend donc le quota observable sans toucher au réseau ni à Redis.
+        """
+        seau = LimiteurDebit(max_requetes=max_requetes, fenetre_secondes=60)
+        monkeypatch.setattr(rate_limit_memory, "limiteur_memoire", lambda: seau)
+
+    def test_debit_depasse_429(self, client, monkeypatch):  # noqa: ANN001, ANN201
+        self._quota_minuscule(monkeypatch)
+        premier = client.post(
+            "/ask",
+            json={"question": "Question rate limit ?"},
+            headers={"X-API-Key": CLE},
+        )
+        second = client.post(
+            "/ask",
+            json={"question": "Question rate limit 2 ?"},
+            headers={"X-API-Key": CLE},
+        )
+        troisieme = client.post(
+            "/ask",
+            json={"question": "Question rate limit 3 ?"},
+            headers={"X-API-Key": CLE},
+        )
+        assert premier.status_code == 200
+        assert second.status_code == 200
+        assert troisieme.status_code == 429
 
     def test_limiteur_unitaire(self):  # noqa: ANN201
         limiteur = LimiteurDebit(max_requetes=3, fenetre_secondes=60)
@@ -278,7 +286,7 @@ class TestRateLimiting:
         # Une autre IP n'est pas affectée
         assert limiteur.autoriser("ip-b")
 
-    def test_requete_invalide_consomme_quota(self, client):  # noqa: ANN001, ANN201
+    def test_requete_invalide_consomme_quota(self, client, monkeypatch):  # noqa: ANN001, ANN201
         """Régression : le middleware compte avant Pydantic.
 
         Avant, une requête au JSON invalide (rejetée en 422) court-circuitait
@@ -286,20 +294,14 @@ class TestRateLimiting:
         bombarder sans jamais épuiser son quota. Le middleware doit compter
         chaque requête, même celle qui finira en 422.
         """
-        original = api_security_module._limiteur
-        try:
-            api_security_module._limiteur = LimiteurDebit(
-                max_requetes=2, fenetre_secondes=60
-            )
-            entetes = {"X-API-Key": CLE, "Content-Type": "application/json"}
-            r1 = client.post("/ask", content=b"pas-du-json", headers=entetes)
-            r2 = client.post("/ask", content=b"pas-du-json", headers=entetes)
-            r3 = client.post("/ask", content=b"pas-du-json", headers=entetes)
-            assert r1.status_code == 422
-            assert r2.status_code == 422
-            assert r3.status_code == 429
-        finally:
-            api_security_module._limiteur = original
+        self._quota_minuscule(monkeypatch)
+        entetes = {"X-API-Key": CLE, "Content-Type": "application/json"}
+        r1 = client.post("/ask", content=b"pas-du-json", headers=entetes)
+        r2 = client.post("/ask", content=b"pas-du-json", headers=entetes)
+        r3 = client.post("/ask", content=b"pas-du-json", headers=entetes)
+        assert r1.status_code == 422
+        assert r2.status_code == 422
+        assert r3.status_code == 429
 
 
 # ---------------------------------------------------------------------------

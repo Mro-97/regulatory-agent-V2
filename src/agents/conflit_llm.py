@@ -12,8 +12,8 @@ import logging
 from typing import TYPE_CHECKING, Any
 
 from config import cfg
-from src.agents.conflit import ConflitDetecte, NiveauConflit
 from src.agents.conflit_helpers import VERDICTS_VALIDES, normaliser_verdict
+from src.agents.conflit_types import ConflitDetecte, NiveauConflit
 from src.agents.temperatures import TEMPERATURE_RAISONNEMENT
 from src.prompts_loader import charger_prompt
 

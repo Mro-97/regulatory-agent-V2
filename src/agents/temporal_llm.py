@@ -21,7 +21,7 @@ from src.prompts_loader import charger_prompt
 if TYPE_CHECKING:
     from datetime import date
 
-    from src.agents.temporal import EvidenceTemporelle
+    from src.agents.temporal_types import EvidenceTemporelle
     from src.mlx_utils import MLXInference
     from src.models import EvidenceRecuperee
 

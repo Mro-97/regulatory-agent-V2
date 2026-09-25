@@ -3,7 +3,7 @@
 `CORS_ORIGINS=*` serait une régression de sécurité silencieuse : combiné au
 cookie de session (que le navigateur envoie automatiquement), il autoriserait
 toute origine tierce à porter l'authentification. Ces tests verrouillent le
-refus au démarrage, dans l'esprit des autres invariants de `main.py`.
+refus au démarrage, dans l'esprit des autres invariants de `src/demarrage.py`.
 """
 
 from __future__ import annotations
@@ -15,11 +15,11 @@ from config import cfg
 
 def _erreurs(monkeypatch: pytest.MonkeyPatch, origines: str) -> list[str]:
     """Applique la règle CORS à `CORS_ORIGINS` donné."""
-    import main
+    from src.demarrage import _erreur_cors_origines_invalides
 
     monkeypatch.setattr(cfg, "cors_origins_str", origines)
     erreurs: list[str] = []
-    main._erreur_cors_origines_invalides(erreurs)
+    _erreur_cors_origines_invalides(erreurs)
     return erreurs
 
 

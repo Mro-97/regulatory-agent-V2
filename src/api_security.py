@@ -15,10 +15,7 @@ Le fichier `src/api.py` importe `installer_middlewares(app)` et les
 
 from __future__ import annotations
 
-import time
-from collections import defaultdict
 from collections.abc import Callable
-from threading import Lock
 from typing import TYPE_CHECKING
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
@@ -29,6 +26,16 @@ from src.auth import Role, identifier, magasin_configure
 from src.auth_session import cle_depuis_requete, verifier_csrf_si_mutation
 from src.http_types import SuiteRequete
 from src.net import ip_client
+
+# `LimiteurDebit` vit dans src/rate_limit_memory.py (module feuille) :
+# `rate_limit_redis` en a besoin pour son repli, et l'importer d'ici
+# créait un cycle. Ré-exporté pour les appelants historiques (tests).
+from src.rate_limit_memory import (
+    LimiteurDebit as LimiteurDebit,
+)
+from src.rate_limit_memory import (
+    limiteur_memoire,
+)
 from src.rate_limit_redis import (  # ré-export : /health/details et l API
     get_rate_limiter as get_rate_limiter,
 )
@@ -175,74 +182,7 @@ def verifier_origine(request: Request) -> None:
 # fallback à `RateLimiterRedis` (src/rate_limit_redis.py) quand Redis est
 # injoignable. Le comptage nominal, partagé entre workers, se fait côté
 # Redis avec la clé composite `{api_key}:{ip}`.
-class LimiteurDebit:
-    """Limiteur de débit en mémoire (fenêtre glissante).
-
-    Deux appelants, deux découpages — c'est volontaire et documenté :
-
-    - `RateLimiterRedis` (chemin nominal, `src/rate_limit_redis.py`) lui
-      passe la clé composite `{empreinte_cle}:{ip}` : le repli mémoire
-      applique alors EXACTEMENT le même découpage que Redis, y compris
-      pendant une panne ;
-    - `verifier_rate_limit` (dépendance héritée, non montée sur les routes)
-      lui passe l'IP seule.
-
-    Le suivi est plafonné à `max_cles` entrées distinctes ; les entrées dont
-    tous les horodatages sont hors fenêtre sont purgées à chaque appel. Sans
-    ce plafond, un port-scan ou un flood d'IP sources faisait croître
-    `_horodatages` indéfiniment (fuite mémoire).
-
-    Le limiteur est un objet mono-process : en multi-worker (gunicorn -w N),
-    la limite effective est × N. `main.valider_configuration_demarrage()`
-    signale ce cas au boot.
-    """  # noqa: RUF002 — typographie française légitime dans la docstring
-
-    def __init__(  # noqa: D107
-        self,
-        max_requetes: int,
-        fenetre_secondes: int,
-        max_cles: int = 10_000,
-    ) -> None:
-        self.max_requetes = max_requetes
-        self.fenetre_secondes = fenetre_secondes
-        self.max_cles = max_cles
-        self._horodatages: defaultdict[str, list[float]] = defaultdict(list)
-        self._verrou = Lock()
-
-    def _purger(self, borne: float) -> None:
-        """Retire les clés dont tous les horodatages sont hors fenêtre."""
-        obsoletes = [
-            k for k, ts in self._horodatages.items() if not ts or max(ts) <= borne
-        ]
-        for k in obsoletes:
-            del self._horodatages[k]
-
-    def autoriser(self, cle: str) -> bool:  # noqa: D102
-        maintenant = time.monotonic()
-        borne = maintenant - self.fenetre_secondes
-        with self._verrou:
-            # Purge opportuniste quand le dictionnaire dépasse le plafond.
-            if len(self._horodatages) >= self.max_cles:
-                self._purger(borne)
-                if (
-                    len(self._horodatages) >= self.max_cles
-                    and cle not in self._horodatages
-                ):
-                    # Toujours saturé : on refuse la nouvelle clé plutôt que
-                    # de laisser croître à l'infini.
-                    return False
-            valeurs = [t for t in self._horodatages[cle] if t > borne]
-            self._horodatages[cle] = valeurs
-            if len(valeurs) >= self.max_requetes:
-                return False
-            valeurs.append(maintenant)
-            return True
-
-
-_limiteur = LimiteurDebit(
-    max_requetes=cfg.rate_limit_max_requetes,
-    fenetre_secondes=cfg.rate_limit_fenetre_secondes,
-)
+_limiteur = limiteur_memoire()
 
 
 def verifier_rate_limit(request: Request) -> None:

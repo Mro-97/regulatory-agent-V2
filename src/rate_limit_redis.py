@@ -23,7 +23,7 @@ from config import cfg
 from src.redis_client import nouveau_client
 
 if TYPE_CHECKING:
-    from src.api_security import LimiteurDebit
+    from src.rate_limit_memory import LimiteurDebit
     from src.redis_client import ClientRedis
 
 logger = logging.getLogger(__name__)
@@ -102,7 +102,7 @@ class RateLimiterRedis:
         return {"bascule_memoire": self.bascule_memoire}
 
     def _autoriser_via_fallback(self, cle: str) -> bool:
-        """Délègue au limiteur mémoire (celui de `src.api_security` si non injecté).
+        """Délègue au limiteur mémoire partagé (ou à celui injecté).
 
         `cle` est la clé composite `{empreinte_cle}:{ip}` déjà composée par
         `is_allowed` : le repli mémoire applique donc EXACTEMENT le même
@@ -113,9 +113,9 @@ class RateLimiterRedis:
         """
         limiteur = self._fallback
         if limiteur is None:
-            from src.api_security import _limiteur
+            from src.rate_limit_memory import limiteur_memoire
 
-            limiteur = _limiteur
+            limiteur = limiteur_memoire()
         return limiteur.autoriser(cle)
 
 

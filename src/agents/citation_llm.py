@@ -13,7 +13,10 @@ import re
 from typing import TYPE_CHECKING
 
 from config import cfg
-from src.agents.citation import CitationReglementaire, _normaliser_pour_comparaison
+from src.agents.citation_types import (
+    CitationReglementaire,
+    normaliser_pour_comparaison,
+)
 from src.agents.temperatures import TEMPERATURE_RAISONNEMENT
 from src.prompts_loader import charger_prompt
 
@@ -173,15 +176,15 @@ def _extraire_phrase_ancre(reponse_explainer: str, chunk: str) -> str | None:
 
     Retourne la PLUS LONGUE phrase ancrée (la plus significative), ou None
     si aucune phrase d'au moins `_LONGUEUR_MIN_ANCRAGE` caractères n'est
-    retrouvée. La comparaison réutilise `_normaliser_pour_comparaison` —
+    retrouvée. La comparaison réutilise `normaliser_pour_comparaison` —
     exactement ce que vérifiera `AgentCitation.verify()`.
     """
-    chunk_norm = _normaliser_pour_comparaison(chunk)
+    chunk_norm = normaliser_pour_comparaison(chunk)
     meilleure: str | None = None
     longueur_meilleure = 0
     for phrase in _RE_PHRASES.split(reponse_explainer or ""):
         candidate = phrase.strip()[:200]
-        candidate_norm = _normaliser_pour_comparaison(candidate)
+        candidate_norm = normaliser_pour_comparaison(candidate)
         if len(candidate_norm) < _LONGUEUR_MIN_ANCRAGE:
             continue
         if candidate_norm in chunk_norm and len(candidate_norm) > longueur_meilleure:

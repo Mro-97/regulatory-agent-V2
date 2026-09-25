@@ -39,11 +39,19 @@ import re
 from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import date
-from enum import StrEnum
 from typing import TYPE_CHECKING
 
 from src.agents.conflit_helpers import (  # noqa: F401 — ré-export compat descendante
     normaliser_verdict as _normaliser_verdict,
+)
+
+# Types partagés extraits dans conflit_types.py (module neutre) : `conflit_llm`
+# en a besoin sans pouvoir importer ce module (cycle).
+from src.agents.conflit_types import (
+    ConflitDetecte as ConflitDetecte,
+)
+from src.agents.conflit_types import (
+    NiveauConflit as NiveauConflit,
 )
 from src.agents.retriever_helpers import article_de_base
 from src.models import EvidenceRecuperee
@@ -57,26 +65,6 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Structures
 # ---------------------------------------------------------------------------
-
-
-class NiveauConflit(StrEnum):
-    """Niveau de sévérité d'un conflit détecté."""
-
-    AUCUN = "aucun"
-    POTENTIEL = "potentiel"  # heuristique — à confirmer par un juriste
-    PROBABLE = "probable"  # LLM confirme une tension réelle
-    CRITIQUE = "critique"  # obligations directement contradictoires
-
-
-@dataclass
-class ConflitDetecte:
-    """Description d'un conflit entre deux passages réglementaires."""
-
-    evidence_a: EvidenceRecuperee
-    evidence_b: EvidenceRecuperee
-    niveau: NiveauConflit
-    description: str
-    necessite_validation_humaine: bool = True
 
 
 @dataclass

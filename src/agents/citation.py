@@ -29,14 +29,23 @@ Dépendances : src/mlx_utils.py, src/models.py
 
 from __future__ import annotations
 
-import hashlib
 import logging
 import re
-from dataclasses import dataclass, field
-from datetime import date
-from enum import StrEnum
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+# Structures, statuts et normalisation extraits dans citation_types.py (module
+# neutre) : `citation_llm` en a besoin, et ne peut pas les importer d'ici sans
+# créer un cycle (ce module importe `citation_llm` dans ses méthodes).
+from src.agents.citation_types import (
+    CitationReglementaire as CitationReglementaire,
+)
+from src.agents.citation_types import (
+    StatutCitation as StatutCitation,
+)
+from src.agents.citation_types import (
+    normaliser_pour_comparaison as normaliser_pour_comparaison,
+)
 from src.agents.explainer import reponse_est_non_fondee
 from src.models import EvidenceRecuperee
 
@@ -45,35 +54,9 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-# Guillemets typographiques (ouvrants/fermants, simples/doubles) → forme droite,
-# pour que la vérification d'ancrage ne soit pas sensible au style de citation
-# utilisé par le LLM (Mistral 7B reformate parfois « ... » en " ... ").
-_GUILLEMETS = str.maketrans(
-    {
-        "«": '"',
-        "»": '"',
-        "“": '"',
-        "”": '"',
-        "„": '"',
-        "‘": "'",  # noqa: RUF001 — caractère typographique français légitime
-        "’": "'",  # noqa: RUF001 — caractère typographique français légitime
-        "‚": "'",  # noqa: RUF001 — caractère typographique français légitime
-    }
-)
-
-_ESPACES_MULTIPLES = re.compile(r"\s+")
-
-
-def _normaliser_pour_comparaison(texte: str) -> str:
-    """Normalise un texte pour la comparaison d'ancrage citation/chunk.
-
-    Neutralise les écarts purement typographiques (espaces multiples,
-    retours à la ligne, guillemets courbes vs droits) qui ne changent pas
-    le contenu réglementaire mais font échouer une comparaison littérale.
-    """
-    texte = texte.translate(_GUILLEMETS)
-    texte = _ESPACES_MULTIPLES.sub(" ", texte)
-    return texte.strip()
+# Alias historique : le nom privé reste importable (tests d'ancrage,
+# `citation_llm` avant ce découpage, monkey-patch éventuel).
+_normaliser_pour_comparaison = normaliser_pour_comparaison
 
 
 def _est_citation_verifiee(
@@ -223,47 +206,9 @@ def _assembler_resultat_citation(
 # ---------------------------------------------------------------------------
 # Structures
 # ---------------------------------------------------------------------------
-
-
-class StatutCitation(StrEnum):
-    """Statut de vérification d'une citation."""
-
-    VERIFIEE = "vérifiée"  # ancrée dans les preuves récupérées
-    DOUTEUSE = "douteuse"  # non retrouvée dans les preuves
-    NON_VERIFIEE = "non_vérifiée"  # vérification non encore effectuée
-
-
-@dataclass
-class CitationReglementaire:
-    """Référence exacte à un passage réglementaire.
-    Chaque citation doit être rattachée à un chunk_id connu.
-    """  # noqa: D205
-
-    document_id: str
-    article_id: str
-    valid_from: date
-    valid_to: date | None
-    extrait: str  # passage exact cité (max 200 chars)
-    chunk_id: str  # identifiant du chunk source
-    statut: StatutCitation = StatutCitation.NON_VERIFIEE
-    hash_extrait: str = field(default="")  # SHA-256 de l'extrait
-
-    def __post_init__(self) -> None:  # noqa: D105
-        if not self.hash_extrait:
-            self.hash_extrait = hashlib.sha256(self.extrait.encode("utf-8")).hexdigest()
-
-    def reference_courte(self) -> str:
-        """Format court pour affichage : DOCUMENT / ARTICLE [DATE→DATE]."""
-        fin = self.valid_to.isoformat() if self.valid_to else "en vigueur"
-        return f"{self.document_id} / {self.article_id} [{self.valid_from} → {fin}]"
-
-    def reference_complete(self) -> str:
-        """Format complet avec extrait et statut."""
-        return (
-            f"{self.reference_courte()}\n"
-            f"Extrait : « {self.extrait[:200]} »\n"
-            f"Statut : {self.statut.value} | hash : {self.hash_extrait[:16]}..."
-        )
+# `StatutCitation` et `CitationReglementaire` vivent dans
+# `src/agents/citation_types.py` (module neutre) et sont ré-exportés ci-dessus :
+# `citation_llm` en a besoin sans pouvoir importer ce module (cycle).
 
 
 @dataclass
