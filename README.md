@@ -42,8 +42,8 @@ Il permet de :
 | **Base vectorielle** | Qdrant |
 | **Cache / Files d’attente** | Redis |
 | **Base de données (audit)** | PostgreSQL (en cours) |
-| **Embeddings** | bge-m3 (dim 1024) |
-| **Modèles LLM** | Llama 3.2 3B, Mistral 7B, Qwen 2.5 7B, DeepSeek-R1 14B |
+| **Embeddings** | bge-m3 (dim 1024) — `models/bge-m3-mlx` |
+| **Modèles LLM** | Mistral 7B (citation), Qwen 2.5 7B (temporel + synthèse), DeepSeek-R1 14B (conflits) |
 
 ---
 
@@ -51,12 +51,16 @@ Il permet de :
 
 | Agent | Modèle | Rôle |
 | :--- | :--- | :--- |
-| **Orchestrateur** | Llama 3.2 3B | Routage des requêtes |
-| **Retriever** | Mistral 7B | Recherche vectorielle dans Qdrant |
+| **Orchestrateur** | aucun (classifieur déterministe) | Routage des requêtes |
+| **Retriever** | bge-m3 (embeddings, aucun LLM) | Recherche vectorielle dans Qdrant |
 | **Temporal** | Qwen 2.5 7B | Filtrage par date de validité |
 | **Explainer** | Qwen 2.5 7B | Synthèse en langage clair |
-| **Citation** | Mistral 7B | Génération des références exactes |
-| **Conflit** | DeepSeek-R1 14B | Détection de contradictions (appelé sur ~20 % des requêtes) |
+| **Citation** | Mistral 7B | Vérification et ancrage des citations |
+| **Conflit** | DeepSeek-R1 14B | Détection de contradictions (pipeline « conflit ») |
+
+> Un seul modèle Mistral est utilisé (rôle Citation). La ligne « Retriever =
+> Mistral 7B » des versions antérieures de ce tableau était fausse : le
+> Retriever n'appelle aucun LLM, seulement le modèle d'embedding.
 
 ---
 
