@@ -416,6 +416,7 @@ class Orchestrateur:
         un client devrait connaître une 3e valeur non documentée.
         """
         from src.agents.explainer import _evaluer_confiance
+        from src.agents.fuite_prompt import REFUS_SECURITE, reponse_revele_le_prompt
         from src.agents.sources import reconstruire_section_sources
 
         # Même nettoyage que le chemin non-flux : la section « Sources
@@ -423,6 +424,11 @@ class Orchestrateur:
         # les URL neutralisées. Les fragments déjà envoyés au client restent
         # bruts — l'affichage les traite comme du texte, jamais comme un lien.
         texte = "".join(morceaux).strip() or _MSG_ECHEC_SYNTHESE
+        if reponse_revele_le_prompt(texte):
+            logger.error(
+                "Fuite de prompt dans le flux — réponse remplacée par le refus."
+            )
+            texte = REFUS_SECURITE
         texte, _ = reconstruire_section_sources(texte, evidences)
         confiance = _evaluer_confiance(texte, evidences)
         agents.append(

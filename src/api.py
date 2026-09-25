@@ -77,6 +77,7 @@ from src.demarrage import valider_configuration_demarrage
 from src.errors import QueueBackendError, VectorStoreError
 from src.models import StatutValidation
 from src.orchestrator import DocumentDejaIndexeError, Orchestrateur
+from src.question_guard import motif_de_manipulation
 from src.schemas import (
     ReponseDecisionValidation,
     ReponseFeedback,
@@ -284,6 +285,22 @@ _MSG_QUEUE_INDISPONIBLE = "File de validation temporairement indisponible."
 # champs, types, bornes) décrit le schéma de l'API et sert de carte gratuite
 # à un attaquant. L'opérateur garde le détail dans le journal d'accès.
 _MSG_VALIDATION = "Requête invalide : corps ou paramètres non conformes."
+_MSG_QUESTION_MANIPULATOIRE = (
+    "Question refusée : elle demande de contourner les règles de l'assistant."
+)
+
+
+def _refuser_si_manipulation(question: str) -> None:
+    """Lève 400 si la question tente de manipuler l'assistant.
+
+    Refus AVANT le pipeline : aucun coût MLX, et le motif est journalisé
+    pour l'audit. Les motifs sont étroits (cf. src/question_guard.py) : une
+    question réglementaire légitime n'est jamais concernée.
+    """
+    motif = motif_de_manipulation(question)
+    if motif:
+        logger.warning("Question refusée (manipulation : %s)", motif)
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, _MSG_QUESTION_MANIPULATOIRE)
 
 
 def _erreur_500(detail: str) -> HTTPException:
@@ -518,6 +535,7 @@ async def poser_question(
     request: Request,
 ) -> ReponseQuestion:
     """Traite une question réglementaire via le pipeline multi-agent."""
+    _refuser_si_manipulation(requete.question)
     debut = time.perf_counter()
     statut = 200
     if not _ask_garde.entrer():
@@ -568,6 +586,7 @@ async def poser_question_stream(
     request: Request,
 ) -> StreamingResponse:
     """Diffuse la réponse en Server-Sent Events."""
+    _refuser_si_manipulation(requete.question)
     if not _ask_garde.entrer():
         journaliser_acces_requete(request, 503, 0, requete.question)
         raise _erreur_503(_MSG_ASK_SATURE)
