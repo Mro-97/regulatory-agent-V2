@@ -83,6 +83,19 @@ class Parametres(BaseSettings):
             "api_keys_file."
         ),
     )
+    cle_user_duree_vie_jours: int = Field(
+        default=7,
+        alias="CLE_USER_DUREE_VIE_JOURS",
+        description=(
+            "Durée de vie (jours) d'une clé de rôle `user` : le watcher révoque "
+            "automatiquement les clés `user` plus anciennes, à chaque tour de "
+            "boucle (6 h par défaut). Les rôles `validateur` et `admin` ne sont "
+            "JAMAIS révoqués automatiquement — une rotation qui emporterait la "
+            "dernière clé d'administration rendrait l'API inadministrable et "
+            "refuserait même son démarrage. 0 = rotation désactivée. Cf. "
+            "src/rotation_cles.py."
+        ),
+    )
     # --- Voie dépréciée : clés EN CLAIR dans l'environnement ---
     # Tolérée en dev (rôle admin, avec warning), REFUSÉE si environnement=prod.
     api_key: str = Field(

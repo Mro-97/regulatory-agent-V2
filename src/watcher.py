@@ -342,11 +342,37 @@ class Watcher:
             except Exception:
                 logger.exception("Watcher — erreur cycle")
 
+            await self._rotation_cles_user()
+
             logger.info(
                 "Watcher — prochain cycle dans %d h.",
                 cfg.watcher_intervalle_heures,
             )
             await asyncio.sleep(intervalle_s)
+
+    @staticmethod
+    async def _rotation_cles_user() -> None:
+        """Révoque les clés API de rôle `user` trop anciennes.
+
+        Accrochée à la boucle du watcher (6 h par défaut) plutôt qu'au
+        démarrage : l'API tourne des jours, une rotation décidée uniquement au
+        boot ne s'appliquerait jamais. JAMAIS les rôles `validateur`/`admin` —
+        cf. src/rotation_cles.py. Une erreur ici ne doit pas interrompre la
+        veille : elle est journalisée.
+        """
+        from src.rotation_cles import rotation
+
+        try:
+            revoquees = await asyncio.to_thread(rotation)
+        except Exception:
+            logger.exception("Rotation des clés échouée (non bloquant)")
+            return
+        for entree in revoquees:
+            logger.warning(
+                "Rotation : clé user %r révoquée (durée de vie %d jours).",
+                entree.get("label"),
+                cfg.cle_user_duree_vie_jours,
+            )
 
     async def fermer(self) -> None:
         """Ferme le client HTTP proprement."""

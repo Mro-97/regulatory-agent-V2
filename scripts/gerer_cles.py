@@ -141,6 +141,39 @@ def revoquer(label: str | None, prefixe_hash: str | None) -> int:
     return 0
 
 
+def rotation(jours: int | None, simuler: bool) -> int:
+    """Révoque les clés `user` plus anciennes que la durée de vie configurée.
+
+    Les rôles `validateur` et `admin` ne sont JAMAIS touchés (cf.
+    src/rotation_cles.py) : la même fonction est appelée par le watcher à
+    chaque cycle, cette commande sert au controle manuel et a la simulation.
+    """
+    from datetime import UTC, datetime
+
+    from src.rotation_cles import entrees_a_revoquer
+    from src.rotation_cles import rotation as faire_rotation
+
+    duree = cfg.cle_user_duree_vie_jours if jours is None else jours
+    if simuler:
+        fautives = entrees_a_revoquer(
+            _lire(cfg.api_keys_file), duree, datetime.now(UTC).date()
+        )
+        if not fautives:
+            _ecrire_stdout(f"Aucune clé user de plus de {duree} jours.")
+            return 0
+        for entree in fautives:
+            _ecrire_stdout(
+                f"  à révoquer : {entree.get('label')} (créée le {entree.get('cree')})"
+            )
+        return 0
+    revoquees = faire_rotation(jours)
+    _ecrire_stdout(
+        f"{len(revoquees)} clé(s) user révoquée(s) après {duree} jours "
+        "(les clés admin ne sont jamais révoquées automatiquement)."
+    )
+    return 0
+
+
 def _parser() -> argparse.ArgumentParser:
     """Construit le parseur d'arguments (sous-commandes)."""
     p = argparse.ArgumentParser(description="Gestion des clés API hachées (RBAC).")
@@ -152,6 +185,11 @@ def _parser() -> argparse.ArgumentParser:
     r = sub.add_parser("revoquer", help="retirer une clé")
     r.add_argument("--label")
     r.add_argument("--hash", dest="prefixe_hash", help="préfixe du hash suffit")
+    rot = sub.add_parser("rotation", help="révoquer les clés user trop anciennes")
+    rot.add_argument(
+        "--jours", type=int, default=None, help="durée de vie (défaut : config)"
+    )
+    rot.add_argument("--simuler", action="store_true", help="afficher sans révoquer")
     return p
 
 
@@ -164,6 +202,8 @@ def main(argv: list[str] | None = None) -> int:
         return lister()
     if args.cmd == "revoquer":
         return revoquer(args.label, args.prefixe_hash)
+    if args.cmd == "rotation":
+        return rotation(args.jours, args.simuler)
     return 2
 
 
